@@ -1,0 +1,112 @@
+.. _whatsnew_01110:
+
+
+v0.11.1 (September 26, 2024)
+----------------------------
+
+Enhancements
+~~~~~~~~~~~~
+* Add new function to calculate the average photon energy,
+  :py:func:`~pvlib.spectrum.average_photon_energy`.
+  (:issue:`2135`, :pull:`2140`)
+* Add new losses function that accounts for non-uniform irradiance on bifacial
+  modules, :py:func:`~pvlib.bifacial.power_mismatch_deline`.
+  (:issue:`2045`, :pull:`2046`)
+* Add new parameters for min/max absolute air mass to
+  :py:func:`~pvlib.spectrum.spectral_factor_firstsolar`.
+  (:issue:`2086`, :pull:`2100`)
+* Add ``roll_utc_offset`` and ``coerce_year`` arguments to
+  :py:func:`~pvlib.iotools.get_pvgis_tmy` to allow user to specify time zone,
+  rotate indices of TMY to begin at midnight, and force indices to desired
+  year. (:issue:`2139`, :pull:`2138`)
+* Restructured the pvlib/spectrum folder by breaking up the contents of
+  pvlib/spectrum/mismatch.py into pvlib/spectrum/mismatch.py,
+  pvlib/spectrum/irradiance.py, and
+  pvlib/spectrum/response.py. (:issue:`2125`, :pull:`2136`, :pull:`2151`)
+* Added function for calculating wind speed at different heights,
+  :py:func:`~pvlib.atmosphere.windspeed_powerlaw`.
+  (:issue:`2118`, :pull:`2124`)
+* ``delta_t`` can now be specified with an array in the SPA functions.
+  The numba implementation now also allows calculation of ``delta_t``
+  internally.  (:issue:`2189`, :pull:`2190`)
+* The multithreaded SPA functions no longer emit a warning when calculating
+  solar positions for short time series. (:pull:`2170`)
+* Implemented closed-form solution for alpha in :py:func:`~pvlib.clearsky.detect_clearsky`, 
+  obviating the call to scipy.optimize, which was prone to runtime errors, and minimizing
+  computation. (:issue:`2171`, :issue:`2216`, :pull:`2217`).
+
+Bug fixes
+~~~~~~~~~
+* To prevent simulation output from differing slightly based on the time zone
+  of the time stamps, models that use day of year for sun position and
+  irradiance calculations now determine the day of year according to the UTC
+  equivalent of the specified time stamps.  The following functions are affected:
+  :py:func:`~pvlib.clearsky.lookup_linke_turbidity`,
+  :py:func:`~pvlib.irradiance.get_extra_radiation`,
+  :py:func:`~pvlib.irradiance.disc`,
+  :py:func:`~pvlib.irradiance.dirint`,
+  :py:func:`~pvlib.spectrum.spectrl2`. (:issue:`2054`, :pull:`2055`)
+* :py:func:`~pvlib.solarposition.hour_angle` and
+  :py:func:`~pvlib.solarposition.sun_rise_set_transit_geometric` now raise
+  ``ValueError`` when given timezone-naive inputs, instead of assuming UTC.
+  (:pull:`2055`)
+
+Testing
+~~~~~~~
+* Updated the tests for :py:func:`~pvlib.iotools.get_pvgis_tmy`
+  and :py:func:`~pvlib.iotools.read_pvgis_tmy` as the default
+  API endpoint has changed from 5.1 to 5.2. (:pull:`2222`)
+* Removed unused ``times`` input from ``dni_et`` fixture. (:issue:`2105`, :pull:`2156`)
+
+Documentation
+~~~~~~~~~~~~~
+* Added new gallery example pages for:
+  
+  - Demonstrating the application of several spectral mismatch factor models.
+    (:issue:`2107`, :pull:`2114`)
+  - Demonstrating the application of :py:func:`~pvlib.spectrum.average_photon_energy`.
+    (:issue:`2194`, :pull:`2206`)
+  - Calculating cell temperature for floating PV. (:pull:`2110`)
+  - Demonstrating how to use different Perez coefficients in a ModelChain.
+    (:issue:`2127`, :pull:`2148`)
+
+* Fixed examples in :py:func:`~pvlib.shading.shaded_fraction1d`. (:pull:`2215`)
+* Updated model description, added equation variable definitions, and created a 
+  new "notes" section in :py:func:`~pvlib.irradiance.haydavies` and
+  :py:func:`~pvlib.irradiance.klucher`. (:issue:`2183`, :pull:`2191`,
+  :pull:`2192`)
+* Document units with Wm⁻² instead of W/m^2 throughout ``pvlib.irradiance``. (:issue:`2205`, :pull:`2191`)
+* Split the contributing page into several pages. (:issue:`2210`, :pull:`2219`)
+
+Requirements
+~~~~~~~~~~~~
+* Python 3.9 or greater. (:pull:`2213`)
+* Minimum numpy version increased to v1.19.3. (:pull:`2213`)
+
+Contributors
+~~~~~~~~~~~~
+* Echedey Luis (:ghuser:`echedey-ls`)
+* Yunho Kee (:ghuser:`yhkee0404`)
+* Chris Deline (:ghuser:`cdeline`)
+* Ioannis Sifnaios (:ghuser:`IoannisSifnaios`)
+* Leonardo Micheli (:ghuser:`lmicheli`)
+* Rajiv Daxini (:ghuser:`RDaxini`)
+* Mark A. Mikofski (:ghuser:`mikofski`)
+* Ben Pierce (:ghuser:`bgpierc`)
+* Jose Meza (:ghuser:`JoseMezaMendieta`)
+* Kevin Anderson (:ghuser:`kandersolar`)
+* Luiz Reis (:ghuser:`luizreiscver`)
+* Carlos Cárdenas-Bravo (:ghuser:`cardenca`)
+* Marcos R. Escudero (:ghuser:`marc-resc`)
+* Bernat Nicolau (:ghuser:`BernatNicolau`)
+* Eduardo Sarquis (:ghuser:`EduardoSarquis`)
+* Adam R. Jensen (:ghuser:`AdamRJensen`)
+* Andrew B Godbehere (:ghuser:`agodbehere`)
+* Cliff Hansen (:ghuser:`cwhanse`)
+* Anton Driesse (:ghuser:`adriesse`)
+* Miguel Angel Sevillano Bendezú (:ghuser:`msevillanob`)
+* Erfan (:ghuser:`Metal-Bat`)
+* Will Holmgren (:ghuser:`wholmgren`)
+* Kurt Rhee (:ghuser:`kurt-rhee`)
+* :ghuser:`PhilBrk8`
+* Mark Campanelli (:ghuser:`markcampanelli`)

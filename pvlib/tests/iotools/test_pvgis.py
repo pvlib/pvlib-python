@@ -11,8 +11,7 @@ from pvlib.iotools import get_pvgis_tmy, read_pvgis_tmy
 from pvlib.iotools import get_pvgis_hourly, read_pvgis_hourly
 from pvlib.iotools import get_pvgis_horizon
 from ..conftest import (DATA_DIR, RERUNS, RERUNS_DELAY, assert_frame_equal,
-                        fail_on_pvlib_version, assert_series_equal)
-from pvlib._deprecation import pvlibDeprecationWarning
+                        assert_series_equal)
 
 
 # PVGIS Hourly tests
@@ -201,8 +200,9 @@ def test_read_pvgis_hourly_bad_extension():
     # Test if ValueError is raised if an unkonwn pvgis_format is specified
     with pytest.raises(ValueError, match="pvgis format 'txt' was unknown"):
         read_pvgis_hourly(testfile_pv_json, pvgis_format='txt')
-    # Test if TypeError is raised if input is a buffer and pvgis_format=None
-    with pytest.raises(TypeError, match="expected str, bytes or os.PathLike"):
+    # Test if TypeError is raised if input is a buffer and pvgis_format=None.
+    # The error text changed in python 3.12. This regex matches both versions:
+    with pytest.raises(TypeError, match="str.*os.PathLike"):
         read_pvgis_hourly(io.StringIO())
 
 
@@ -315,7 +315,7 @@ def userhorizon_expected():
 @pytest.fixture
 def month_year_expected():
     return [
-        2009, 2012, 2014, 2010, 2011, 2013, 2011, 2011, 2013, 2013, 2013, 2011]
+        2014, 2011, 2008, 2011, 2009, 2011, 2020, 2006, 2006, 2013, 2007, 2018]
 
 
 @pytest.fixture
@@ -323,10 +323,10 @@ def inputs_expected():
     return {
         'location': {'latitude': 45.0, 'longitude': 8.0, 'elevation': 250.0},
         'meteo_data': {
-            'radiation_db': 'PVGIS-SARAH',
-            'meteo_db': 'ERA-Interim',
+            'radiation_db': 'PVGIS-SARAH2',
+            'meteo_db': 'ERA5',
             'year_min': 2005,
-            'year_max': 2016,
+            'year_max': 2020,
             'use_horizon': True,
             'horizon_db': 'DEM-calculated'}}
 
@@ -436,6 +436,53 @@ def _compare_pvgis_tmy_basic(expected, meta_expected, pvgis_data):
 
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
+def test_get_pvgis_tmy_coerce_year():
+    """test utc_offset and coerce_year work as expected"""
+    base_case, _, _, _ = get_pvgis_tmy(45, 8)  # Turin
+    assert str(base_case.index.tz) == 'UTC'
+    assert base_case.index.name == 'time(UTC)'
+    noon_test_data = [
+        base_case[base_case.index.month == m].iloc[12]
+        for m in range(1, 13)]
+    cet_tz = 1  # Turin time is CET
+    cet_name = 'Etc/GMT-1'
+    # check indices of rolled data after converting timezone
+    pvgis_data, _, _, _ = get_pvgis_tmy(45, 8, roll_utc_offset=cet_tz)
+    jan1_midnight = pd.Timestamp('1990-01-01 00:00:00', tz=cet_name)
+    dec31_midnight = pd.Timestamp('1990-12-31 23:00:00', tz=cet_name)
+    assert pvgis_data.index[0] == jan1_midnight
+    assert pvgis_data.index[-1] == dec31_midnight
+    assert pvgis_data.index.name == f'time({cet_name})'
+    # spot check rolled data matches original
+    for m, test_case in enumerate(noon_test_data):
+        expected = pvgis_data[pvgis_data.index.month == m+1].iloc[12+cet_tz]
+        assert all(test_case == expected)
+    # repeat tests with year coerced
+    test_yr = 2021
+    pvgis_data, _, _, _ = get_pvgis_tmy(
+        45, 8, roll_utc_offset=cet_tz, coerce_year=test_yr)
+    jan1_midnight = pd.Timestamp(f'{test_yr}-01-01 00:00:00', tz=cet_name)
+    dec31_midnight = pd.Timestamp(f'{test_yr}-12-31 23:00:00', tz=cet_name)
+    assert pvgis_data.index[0] == jan1_midnight
+    assert pvgis_data.index[-1] == dec31_midnight
+    assert pvgis_data.index.name == f'time({cet_name})'
+    for m, test_case in enumerate(noon_test_data):
+        expected = pvgis_data[pvgis_data.index.month == m+1].iloc[12+cet_tz]
+        assert all(test_case == expected)
+    # repeat tests with year coerced but utc offset none or zero
+    pvgis_data, _, _, _ = get_pvgis_tmy(45, 8, coerce_year=test_yr)
+    jan1_midnight = pd.Timestamp(f'{test_yr}-01-01 00:00:00', tz='UTC')
+    dec31_midnight = pd.Timestamp(f'{test_yr}-12-31 23:00:00', tz='UTC')
+    assert pvgis_data.index[0] == jan1_midnight
+    assert pvgis_data.index[-1] == dec31_midnight
+    assert pvgis_data.index.name == 'time(UTC)'
+    for m, test_case in enumerate(noon_test_data):
+        expected = pvgis_data[pvgis_data.index.month == m+1].iloc[12]
+        assert all(test_case == expected)
+
+
+@pytest.mark.remote_data
+@pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_get_pvgis_tmy_csv(expected, month_year_expected, inputs_expected,
                            meta_expected, csv_meta):
     pvgis_data = get_pvgis_tmy(45, 8, outputformat='csv', map_variables=False)
@@ -517,14 +564,14 @@ def test_read_pvgis_horizon_invalid_coords():
 
 
 def test_read_pvgis_tmy_map_variables(pvgis_tmy_mapped_columns):
-    fn = DATA_DIR / 'tmy_45.000_8.000_2005_2016.json'
+    fn = DATA_DIR / 'tmy_45.000_8.000_2005_2020.json'
     actual, _, _, _ = read_pvgis_tmy(fn, map_variables=True)
     assert all(c in pvgis_tmy_mapped_columns for c in actual.columns)
 
 
 def test_read_pvgis_tmy_json(expected, month_year_expected, inputs_expected,
                              meta_expected):
-    fn = DATA_DIR / 'tmy_45.000_8.000_2005_2016.json'
+    fn = DATA_DIR / 'tmy_45.000_8.000_2005_2020.json'
     # infer outputformat from file extensions
     pvgis_data = read_pvgis_tmy(fn, map_variables=False)
     _compare_pvgis_tmy_json(expected, month_year_expected, inputs_expected,
@@ -541,7 +588,7 @@ def test_read_pvgis_tmy_json(expected, month_year_expected, inputs_expected,
 
 
 def test_read_pvgis_tmy_epw(expected, epw_meta):
-    fn = DATA_DIR / 'tmy_45.000_8.000_2005_2016.epw'
+    fn = DATA_DIR / 'tmy_45.000_8.000_2005_2020.epw'
     # infer outputformat from file extensions
     pvgis_data = read_pvgis_tmy(fn, map_variables=False)
     _compare_pvgis_tmy_epw(expected, epw_meta, pvgis_data)
@@ -556,7 +603,7 @@ def test_read_pvgis_tmy_epw(expected, epw_meta):
 
 def test_read_pvgis_tmy_csv(expected, month_year_expected, inputs_expected,
                             meta_expected, csv_meta):
-    fn = DATA_DIR / 'tmy_45.000_8.000_2005_2016.csv'
+    fn = DATA_DIR / 'tmy_45.000_8.000_2005_2020.csv'
     # infer outputformat from file extensions
     pvgis_data = read_pvgis_tmy(fn, map_variables=False)
     _compare_pvgis_tmy_csv(expected, month_year_expected, inputs_expected,
@@ -573,7 +620,7 @@ def test_read_pvgis_tmy_csv(expected, month_year_expected, inputs_expected,
 
 
 def test_read_pvgis_tmy_basic(expected, meta_expected):
-    fn = DATA_DIR / 'tmy_45.000_8.000_2005_2016.txt'
+    fn = DATA_DIR / 'tmy_45.000_8.000_2005_2020.txt'
     # XXX: can't infer outputformat from file extensions for basic
     with pytest.raises(ValueError, match="pvgis format 'txt' was unknown"):
         read_pvgis_tmy(fn, map_variables=False)

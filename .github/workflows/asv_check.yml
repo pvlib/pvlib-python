@@ -16,17 +16,29 @@ jobs:
         shell: bash -el {0}
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
       - name: Install Python
-        uses: actions/setup-python@v3
+        uses: actions/setup-python@v5
         with:
           python-version: '3.9'
 
       - name: Install asv
         run: pip install asv==0.4.2
+
+      # asv 0.4.2 (and more recent versions as well) creates conda envs
+      # using the --force option, which was removed in conda 24.3.
+      # Since ubuntu-latest now comes with conda 24.3 pre-installed,
+      # using the system's conda will result in error.
+      # To prevent that, we install an older version.
+      # TODO: remove this when we eventually upgrade our asv version.
+      # https://github.com/airspeed-velocity/asv/issues/1396
+      - name: Install Conda
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+          conda-version: 24.1.2
 
       - name: Run asv benchmarks
         run: |

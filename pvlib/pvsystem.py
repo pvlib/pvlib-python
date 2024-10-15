@@ -7,7 +7,7 @@ from collections import OrderedDict
 import functools
 import io
 import itertools
-import os
+from pathlib import Path
 import inspect
 from urllib.request import urlopen
 import numpy as np
@@ -19,6 +19,7 @@ from typing import Optional, Union
 
 from pvlib._deprecation import deprecated, warn_deprecated
 
+import pvlib  # used to avoid albedo name collision in the Array class
 from pvlib import (atmosphere, iam, inverter, irradiance,
                    singlediode as _singlediode, spectrum, temperature)
 from pvlib.tools import _build_kwargs, _build_args
@@ -129,29 +130,29 @@ class PVSystem:
         Azimuth angle of the module surface.
         North=0, East=90, South=180, West=270.
 
-    albedo : None or float, default None
-        Ground surface albedo. If ``None``, then ``surface_type`` is used
-        to look up a value in ``irradiance.SURFACE_ALBEDOS``.
-        If ``surface_type`` is also None then a ground surface albedo
+    albedo : float, optional
+        Ground surface albedo. If not supplied, then ``surface_type`` is used
+        to look up a value in  :py:const:`pvlib.albedo.SURFACE_ALBEDOS`.
+        If ``surface_type`` is also not supplied then a ground surface albedo
         of 0.25 is used.
 
-    surface_type : None or string, default None
-        The ground surface type. See ``irradiance.SURFACE_ALBEDOS`` for
-        valid values.
+    surface_type : string, optional
+        The ground surface type. See  :py:const:`pvlib.albedo.SURFACE_ALBEDOS`
+        for valid values.
 
-    module : None or string, default None
+    module : string, optional
         The model name of the modules.
         May be used to look up the module_parameters dictionary
         via some other method.
 
-    module_type : None or string, default 'glass_polymer'
+    module_type : string, default 'glass_polymer'
          Describes the module's construction. Valid strings are 'glass_polymer'
          and 'glass_glass'. Used for cell and module temperature calculations.
 
-    module_parameters : None, dict or Series, default None
+    module_parameters : dict or Series, optional
         Module parameters as defined by the SAPM, CEC, or other.
 
-    temperature_model_parameters : None, dict or Series, default None.
+    temperature_model_parameters : dict or Series, optional
         Temperature model parameters as required by one of the models in
         pvlib.temperature (excluding poa_global, temp_air and wind_speed).
 
@@ -161,22 +162,22 @@ class PVSystem:
     strings_per_inverter: int or float, default 1
         See system topology discussion above.
 
-    inverter : None or string, default None
+    inverter : string, optional
         The model name of the inverters.
         May be used to look up the inverter_parameters dictionary
         via some other method.
 
-    inverter_parameters : None, dict or Series, default None
+    inverter_parameters : dict or Series, optional
         Inverter parameters as defined by the SAPM, CEC, or other.
 
-    racking_model : None or string, default 'open_rack'
+    racking_model : string, default 'open_rack'
         Valid strings are 'open_rack', 'close_mount', and 'insulated_back'.
         Used to identify a parameter set for the SAPM cell temperature model.
 
-    losses_parameters : None, dict or Series, default None
+    losses_parameters : dict or Series, optional
         Losses parameters as defined by PVWatts or other.
 
-    name : None or string, default None
+    name : string, optional
 
     **kwargs
         Arbitrary keyword arguments.
@@ -328,12 +329,11 @@ class PVSystem:
             Global horizontal irradiance. [W/m2]
         dhi : float or Series or tuple of float or Series
             Diffuse horizontal irradiance. [W/m2]
-        dni_extra : None, float, Series or tuple of float or Series,\
-            default None
+        dni_extra : float, Series or tuple of float or Series, optional
             Extraterrestrial direct normal irradiance. [W/m2]
-        airmass : None, float or Series, default None
+        airmass : float or Series, optional
             Airmass. [unitless]
-        albedo : None, float or Series, default None
+        albedo : float or Series, optional
             Ground surface albedo. [unitless]
         model : String, default 'haydavies'
             Irradiance model.
@@ -722,15 +722,13 @@ class PVSystem:
         )
 
     def singlediode(self, photocurrent, saturation_current,
-                    resistance_series, resistance_shunt, nNsVth,
-                    ivcurve_pnts=None):
+                    resistance_series, resistance_shunt, nNsVth):
         """Wrapper around the :py:func:`pvlib.pvsystem.singlediode` function.
 
         See :py:func:`pvsystem.singlediode` for details
         """
         return singlediode(photocurrent, saturation_current,
-                           resistance_series, resistance_shunt, nNsVth,
-                           ivcurve_pnts=ivcurve_pnts)
+                           resistance_series, resistance_shunt, nNsVth)
 
     def i_from_v(self, voltage, photocurrent, saturation_current,
                  resistance_series, resistance_shunt, nNsVth):
@@ -843,7 +841,7 @@ class PVSystem:
     @_unwrap_single_value
     def pvwatts_dc(self, g_poa_effective, temp_cell):
         """
-        Calcuates DC power according to the PVWatts model using
+        Calculates DC power according to the PVWatts model using
         :py:func:`pvlib.pvsystem.pvwatts_dc`, `self.module_parameters['pdc0']`,
         and `self.module_parameters['gamma_pdc']`.
 
@@ -893,7 +891,7 @@ class PVSystem:
 
 class Array:
     """
-    An Array is a set of of modules at the same orientation.
+    An Array is a set of modules at the same orientation.
 
     Specifically, an array is defined by its mount, the
     module parameters, the number of parallel strings of modules
@@ -906,29 +904,29 @@ class Array:
         single axis tracker. Mounting is used to determine module orientation.
         If not provided, a FixedMount with zero tilt is used.
 
-    albedo : None or float, default None
-        Ground surface albedo. If ``None``, then ``surface_type`` is used
-        to look up a value in ``irradiance.SURFACE_ALBEDOS``.
-        If ``surface_type`` is also None then a ground surface albedo
+    albedo : float, optional
+        Ground surface albedo. If not supplied, then ``surface_type`` is used
+        to look up a value in  :py:const:`pvlib.albedo.SURFACE_ALBEDOS`.
+        If ``surface_type`` is also not supplied then a ground surface albedo
         of 0.25 is used.
 
-    surface_type : None or string, default None
-        The ground surface type. See ``irradiance.SURFACE_ALBEDOS`` for valid
-        values.
+    surface_type : string, optional
+        The ground surface type. See  :py:const:`pvlib.albedo.SURFACE_ALBEDOS`
+        for valid values.
 
-    module : None or string, default None
+    module : string, optional
         The model name of the modules.
         May be used to look up the module_parameters dictionary
         via some other method.
 
-    module_type : None or string, default None
+    module_type : string, optional
          Describes the module's construction. Valid strings are 'glass_polymer'
          and 'glass_glass'. Used for cell and module temperature calculations.
 
-    module_parameters : None, dict or Series, default None
+    module_parameters : dict or Series, optional
         Parameters for the module model, e.g., SAPM, CEC, or other.
 
-    temperature_model_parameters : None, dict or Series, default None.
+    temperature_model_parameters : dict or Series, optional
         Parameters for the module temperature model, e.g., SAPM, Pvsyst, or
         other.
 
@@ -938,10 +936,10 @@ class Array:
     strings: int, default 1
         Number of parallel strings in the array.
 
-    array_losses_parameters: None, dict or Series, default None.
+    array_losses_parameters : dict or Series, optional
         Supported keys are 'dc_ohmic_percent'.
 
-    name: None or str, default None
+    name : str, optional
         Name of Array instance.
     """
 
@@ -957,7 +955,7 @@ class Array:
 
         self.surface_type = surface_type
         if albedo is None:
-            self.albedo = irradiance.SURFACE_ALBEDOS.get(surface_type, 0.25)
+            self.albedo = pvlib.albedo.SURFACE_ALBEDOS.get(surface_type, 0.25)
         else:
             self.albedo = albedo
 
@@ -996,7 +994,7 @@ class Array:
         )
 
     def _infer_temperature_model_params(self):
-        # try to infer temperature model parameters from from racking_model
+        # try to infer temperature model parameters from racking_model
         # and module_type
         param_set = f'{self.mount.racking_model}_{self.module_type}'
         if param_set in temperature.TEMPERATURE_MODEL_PARAMETERS['sapm']:
@@ -1095,11 +1093,11 @@ class Array:
             Global horizontal irradiance
         dhi : float or Series
             Diffuse horizontal irradiance. [W/m2]
-        dni_extra : None, float or Series, default None
+        dni_extra : float or Series, optional
             Extraterrestrial direct normal irradiance. [W/m2]
-        airmass : None, float or Series, default None
+        airmass : float or Series, optional
             Airmass. [unitless]
-        albedo : None, float or Series, default None
+        albedo : float or Series, optional
             Ground surface albedo. [unitless]
         model : String, default 'haydavies'
             Irradiance model.
@@ -1488,8 +1486,10 @@ def calcparams_desoto(effective_irradiance, temp_cell,
     '''
     Calculates five parameter values for the single diode equation at
     effective irradiance and cell temperature using the De Soto et al.
-    model described in [1]_. The five values returned by calcparams_desoto
-    can be used by singlediode to calculate an IV curve.
+    model. The five values returned by ``calcparams_desoto`` can be used by
+    singlediode to calculate an IV curve.
+
+    The model is described in [1]_.
 
     Parameters
     ----------
@@ -1536,10 +1536,10 @@ def calcparams_desoto(effective_irradiance, temp_cell,
         the SAM CEC module database, dEgdT=-0.0002677 is implicit for all cell
         types in the parameter estimation algorithm used by NREL.
 
-    irrad_ref : float (optional, default=1000)
+    irrad_ref : float, default 1000
         Reference irradiance in W/m^2.
 
-    temp_ref : float (optional, default=25)
+    temp_ref : float, default 25
         Reference cell temperature in C.
 
     Returns
@@ -1550,7 +1550,7 @@ def calcparams_desoto(effective_irradiance, temp_cell,
         Light-generated current in amperes
 
     saturation_current : numeric
-        Diode saturation curent in amperes
+        Diode saturation current in amperes
 
     resistance_series : numeric
         Series resistance in ohms
@@ -1752,10 +1752,10 @@ def calcparams_cec(effective_irradiance, temp_cell,
         the SAM CEC module database, dEgdT=-0.0002677 is implicit for all cell
         types in the parameter estimation algorithm used by NREL.
 
-    irrad_ref : float (optional, default=1000)
+    irrad_ref : float, default 1000
         Reference irradiance in W/m^2.
 
-    temp_ref : float (optional, default=25)
+    temp_ref : float, default 25
         Reference cell temperature in C.
 
     Returns
@@ -1869,10 +1869,10 @@ def calcparams_pvsyst(effective_irradiance, temp_cell,
         The energy bandgap at reference temperature in units of eV.
         1.121 eV for crystalline silicon. EgRef must be >0.
 
-    irrad_ref : float (optional, default=1000)
+    irrad_ref : float, default 1000
         Reference irradiance in W/m^2.
 
-    temp_ref : float (optional, default=25)
+    temp_ref : float, default 25
         Reference cell temperature in C.
 
     Returns
@@ -1959,9 +1959,9 @@ def calcparams_pvsyst(effective_irradiance, temp_cell,
 
 
 def retrieve_sam(name=None, path=None):
-    '''
-    Retrieve latest module and inverter info from a local file or the
-    SAM website.
+    """
+    Retrieve latest module and inverter info from a file bundled with pvlib,
+    a path or an URL (like SAM's website).
 
     This function will retrieve either:
 
@@ -1972,10 +1972,14 @@ def retrieve_sam(name=None, path=None):
 
     and return it as a pandas DataFrame.
 
+    .. note::
+        Only provide one of ``name`` or ``path``.
+
     Parameters
     ----------
-    name : None or string, default None
-        Name can be one of:
+    name : string, optional
+        Use one of the following strings to retrieve a database bundled with
+        pvlib:
 
         * 'CECMod' - returns the CEC module database
         * 'CECInverter' - returns the CEC Inverter database
@@ -1985,8 +1989,8 @@ def retrieve_sam(name=None, path=None):
         * 'SandiaMod' - returns the Sandia Module database
         * 'ADRInverter' - returns the ADR Inverter database
 
-    path : None or string, default None
-        Path to the SAM file. May also be a URL.
+    path : string, optional
+        Path to a CSV file or a URL.
 
     Returns
     -------
@@ -1998,7 +2002,11 @@ def retrieve_sam(name=None, path=None):
     Raises
     ------
     ValueError
-        If no name or path is provided.
+        If no ``name`` or ``path`` is provided.
+    ValueError
+        If both ``name`` and ``path`` are provided.
+    KeyError
+        If the provided ``name`` is not a valid database name.
 
     Notes
     -----
@@ -2031,38 +2039,38 @@ def retrieve_sam(name=None, path=None):
     CEC_Date                     NaN
     CEC_Type     Utility Interactive
     Name: AE_Solar_Energy__AE6_0__277V_, dtype: object
-    '''
-
-    if name is not None:
-        name = name.lower()
-        data_path = os.path.join(
-            os.path.dirname(os.path.abspath(__file__)), 'data')
-        if name == 'cecmod':
-            csvdata = os.path.join(
-                data_path, 'sam-library-cec-modules-2019-03-05.csv')
-        elif name == 'sandiamod':
-            csvdata = os.path.join(
-                data_path, 'sam-library-sandia-modules-2015-6-30.csv')
-        elif name == 'adrinverter':
-            csvdata = os.path.join(
-                data_path, 'adr-library-cec-inverters-2019-03-05.csv')
-        elif name in ['cecinverter', 'sandiainverter']:
-            # Allowing either, to provide for old code,
-            # while aligning with current expectations
-            csvdata = os.path.join(
-                data_path, 'sam-library-cec-inverters-2019-03-05.csv')
-        else:
-            raise ValueError(f'invalid name {name}')
-    elif path is not None:
-        if path.startswith('http'):
-            response = urlopen(path)
-            csvdata = io.StringIO(response.read().decode(errors='ignore'))
-        else:
-            csvdata = path
+    """
+    # error: path was previously silently ignored if name was given GH#2018
+    if name is not None and path is not None:
+        raise ValueError("Please provide either 'name' or 'path', not both.")
     elif name is None and path is None:
-        raise ValueError("A name or path must be provided!")
-
-    return _parse_raw_sam_df(csvdata)
+        raise ValueError("Please provide either 'name' or 'path'.")
+    elif name is not None:
+        internal_dbs = {
+            "cecmod": "sam-library-cec-modules-2019-03-05.csv",
+            "sandiamod": "sam-library-sandia-modules-2015-6-30.csv",
+            "adrinverter": "adr-library-cec-inverters-2019-03-05.csv",
+            # Both 'cecinverter' and 'sandiainverter', point to same database
+            # to provide for old code, while aligning with current expectations
+            "cecinverter": "sam-library-cec-inverters-2019-03-05.csv",
+            "sandiainverter": "sam-library-cec-inverters-2019-03-05.csv",
+        }
+        try:
+            csvdata_path = Path(__file__).parent.joinpath(
+                "data", internal_dbs[name.lower()]
+            )
+        except KeyError:
+            raise KeyError(
+                f"Invalid name {name}. "
+                + f"Provide one of {list(internal_dbs.keys())}."
+            ) from None
+    else:  # path is not None
+        if path.lower().startswith("http"):  # URL check is not case-sensitive
+            response = urlopen(path)  # URL is case-sensitive
+            csvdata_path = io.StringIO(response.read().decode(errors="ignore"))
+        else:
+            csvdata_path = path
+    return _parse_raw_sam_df(csvdata_path)
 
 
 def _normalize_sam_product_names(names):
@@ -2255,10 +2263,9 @@ def sapm(effective_irradiance, temp_cell, module):
         module['IXO'] * (module['C4']*Ee + module['C5']*(Ee**2)) *
         (1 + module['Aisc']*(temp_cell - temp_ref)))
 
-    # the Ixx calculation in King 2004 has a typo (mixes up Aisc and Aimp)
     out['i_xx'] = (
         module['IXXO'] * (module['C6']*Ee + module['C7']*(Ee**2)) *
-        (1 + module['Aisc']*(temp_cell - temp_ref)))
+        (1 + module['Aimp']*(temp_cell - temp_ref)))
 
     if isinstance(out['i_sc'], pd.Series):
         out = pd.DataFrame(out)
@@ -2310,9 +2317,10 @@ def sapm_effective_irradiance(poa_direct, poa_diffuse, airmass_absolute, aoi,
     a module's cells.
 
     The model is
+
     .. math::
 
-        `Ee = f_1(AM_a) (E_b f_2(AOI) + f_d E_d)`
+        Ee = f_1(AM_a) (E_b f_2(AOI) + f_d E_d)
 
     where :math:`Ee` is effective irradiance (W/m2), :math:`f_1` is a fourth
     degree polynomial in air mass :math:`AM_a`, :math:`E_b` is beam (direct)
@@ -2342,8 +2350,7 @@ def sapm_effective_irradiance(poa_direct, poa_diffuse, airmass_absolute, aoi,
 
 
 def singlediode(photocurrent, saturation_current, resistance_series,
-                resistance_shunt, nNsVth, ivcurve_pnts=None,
-                method='lambertw'):
+                resistance_shunt, nNsVth, method='lambertw'):
     r"""
     Solve the single diode equation to obtain a photovoltaic IV curve.
 
@@ -2395,14 +2402,6 @@ def singlediode(photocurrent, saturation_current, resistance_series,
         junction in Kelvin, and :math:`q` is the charge of an electron
         (coulombs). ``0 < nNsVth``.  [V]
 
-    ivcurve_pnts : None or int, default None
-        Number of points in the desired IV curve. If None or 0, no points on
-        the IV curves will be produced.
-
-        .. deprecated:: 0.10.0
-           Use :py:func:`pvlib.pvsystem.v_from_i` and
-           :py:func:`pvlib.pvsystem.i_from_v` instead.
-
     method : str, default 'lambertw'
         Determines the method used to calculate points on the IV curve. The
         options are ``'lambertw'``, ``'newton'``, or ``'brentq'``.
@@ -2412,20 +2411,15 @@ def singlediode(photocurrent, saturation_current, resistance_series,
     dict or pandas.DataFrame
         The returned dict-like object always contains the keys/columns:
 
-            * i_sc - short circuit current in amperes.
-            * v_oc - open circuit voltage in volts.
-            * i_mp - current at maximum power point in amperes.
-            * v_mp - voltage at maximum power point in volts.
-            * p_mp - power at maximum power point in watts.
-            * i_x - current, in amperes, at ``v = 0.5*v_oc``.
-            * i_xx - current, in amperes, at ``v = 0.5*(v_oc+v_mp)``.
+        * i_sc - short circuit current in amperes.
+        * v_oc - open circuit voltage in volts.
+        * i_mp - current at maximum power point in amperes.
+        * v_mp - voltage at maximum power point in volts.
+        * p_mp - power at maximum power point in watts.
+        * i_x - current, in amperes, at ``v = 0.5*v_oc``.
+        * i_xx - current, in amperes, at ``v = 0.5*(v_oc+v_mp)``.
 
-        A dict is returned when the input parameters are scalars or
-        ``ivcurve_pnts > 0``. If ``ivcurve_pnts > 0``, the output dictionary
-        will also include the keys:
-
-            * i - IV curve current in amperes.
-            * v - IV curve voltage in volts.
+        A dict is returned when the input parameters are scalars.
 
     See also
     --------
@@ -2449,13 +2443,6 @@ def singlediode(photocurrent, saturation_current, resistance_series,
     that guarantees convergence by bounding the voltage between zero and
     open-circuit.
 
-    If the method is either ``'newton'`` or ``'brentq'`` and ``ivcurve_pnts``
-    are indicated, then :func:`pvlib.singlediode.bishop88` [4]_ is used to
-    calculate the points on the IV curve points at diode voltages from zero to
-    open-circuit voltage with a log spacing that gets closer as voltage
-    increases. If the method is ``'lambertw'`` then the calculated points on
-    the IV curve are linearly spaced.
-
     References
     ----------
     .. [1] S.R. Wenham, M.A. Green, M.E. Watt, "Applied Photovoltaics" ISBN
@@ -2472,21 +2459,13 @@ def singlediode(photocurrent, saturation_current, resistance_series,
        photovoltaic cell interconnection circuits" JW Bishop, Solar Cell (1988)
        https://doi.org/10.1016/0379-6787(88)90059-2
     """
-    if ivcurve_pnts:
-        warn_deprecated('0.10.0', name='pvlib.pvsystem.singlediode',
-                        alternative=('pvlib.pvsystem.v_from_i and '
-                                     'pvlib.pvsystem.i_from_v'),
-                        obj_type='parameter ivcurve_pnts',
-                        removal='0.11.0')
     args = (photocurrent, saturation_current, resistance_series,
             resistance_shunt, nNsVth)  # collect args
     # Calculate points on the IV curve using the LambertW solution to the
     # single diode equation
     if method.lower() == 'lambertw':
-        out = _singlediode._lambertw(*args, ivcurve_pnts)
+        out = _singlediode._lambertw(*args)
         points = out[:7]
-        if ivcurve_pnts:
-            ivcurve_i, ivcurve_v = out[7:]
     else:
         # Calculate points on the IV curve using either 'newton' or 'brentq'
         # methods. Voltages are determined by first solving the single diode
@@ -2508,21 +2487,10 @@ def singlediode(photocurrent, saturation_current, resistance_series,
         )
         points = i_sc, v_oc, i_mp, v_mp, p_mp, i_x, i_xx
 
-        # calculate the IV curve if requested using bishop88
-        if ivcurve_pnts:
-            vd = v_oc * (
-                (11.0 - np.logspace(np.log10(11.0), 0.0, ivcurve_pnts)) / 10.0
-            )
-            ivcurve_i, ivcurve_v, _ = _singlediode.bishop88(vd, *args)
-
     columns = ('i_sc', 'v_oc', 'i_mp', 'v_mp', 'p_mp', 'i_x', 'i_xx')
 
-    if all(map(np.isscalar, args)) or ivcurve_pnts:
+    if all(map(np.isscalar, args)):
         out = {c: p for c, p in zip(columns, points)}
-
-        if ivcurve_pnts:
-            out.update(i=ivcurve_i, v=ivcurve_v)
-
         return out
 
     points = np.atleast_1d(*points)  # convert scalars to 1d-arrays
@@ -2537,7 +2505,7 @@ def singlediode(photocurrent, saturation_current, resistance_series,
 
 
 def max_power_point(photocurrent, saturation_current, resistance_series,
-                    resistance_shunt, nNsVth, d2mutau=0, NsVbi=np.Inf,
+                    resistance_shunt, nNsVth, d2mutau=0, NsVbi=np.inf,
                     method='brentq'):
     """
     Given the single diode equation coefficients, calculates the maximum power
@@ -2903,46 +2871,49 @@ def pvwatts_losses(soiling=2, shading=3, snow=0, mismatch=2, wiring=2,
 def dc_ohms_from_percent(vmp_ref, imp_ref, dc_ohmic_percent,
                          modules_per_string=1,
                          strings=1):
-    """
-    Calculates the equivalent resistance of the wires from a percent
-    ohmic loss at STC.
-
-    Equivalent resistance is calculated with the function:
-
-    .. math::
-        Rw = (L_{stc} / 100) * (Varray / Iarray)
-
-    :math:`Rw` is the equivalent resistance in ohms
-    :math:`Varray` is the Vmp of the modules times modules per string
-    :math:`Iarray` is the Imp of the modules times strings per array
-    :math:`L_{stc}` is the input dc loss percent
+    r"""
+    Calculate the equivalent resistance of the conductors from the percent
+    ohmic loss of an array at reference conditions.
 
     Parameters
     ----------
     vmp_ref: numeric
-        Voltage at maximum power in reference conditions [V]
+        Maximum power voltage of one module at reference conditions. [V]
     imp_ref: numeric
-        Current at maximum power in reference conditions [V]
-    dc_ohmic_percent: numeric, default 0
-        input dc loss as a percent, e.g. 1.5% loss is input as 1.5
+        Maximum power current of one module at reference conditions. [A]
+    dc_ohmic_percent: numeric
+        Array DC power loss as a percent of DC power loss at reference
+        conditions. In percent, e.g. 1.5% loss is input as 1.5.
     modules_per_string: int, default 1
-        Number of modules per string in the array.
+        Number of series-connected modules per string in the array.
     strings: int, default 1
         Number of parallel strings in the array.
 
     Returns
     ----------
     Rw: numeric
-        Equivalent resistance [ohm]
+        Equivalent resistance. [ohm]
 
     See Also
     --------
     pvlib.pvsystem.dc_ohmic_losses
 
-    References
-    ----------
-    .. [1] PVsyst 7 Help. "Array ohmic wiring loss".
-       https://www.pvsyst.com/help/ohmic_loss.htm
+    Notes
+    -----
+    Equivalent resistance is calculated as:
+
+    .. math::
+
+        R_w = \left(\frac{L_{stc}}{100}\right) \times \left(\frac{
+        V_{array}}{I_{array}}\right)
+
+    :math:`R_w` is the equivalent resistance in ohms.
+    :math:`V_{array}` is the array voltage, equal to ``vmp_ref`` times
+    ``modules_per_string``.
+    :math:`I_{array}` is the array current, equal to ``imp_ref`` times
+    ``strings``.
+    :math:`L_{stc}` is the input DC loss percent at reference conditions.
+
     """
     vmp = modules_per_string * vmp_ref
 
@@ -2954,30 +2925,37 @@ def dc_ohms_from_percent(vmp_ref, imp_ref, dc_ohmic_percent,
 
 
 def dc_ohmic_losses(resistance, current):
-    """
+    r"""
     Returns ohmic losses in units of power from the equivalent
     resistance of the wires and the operating current.
 
     Parameters
     ----------
     resistance: numeric
-        Equivalent resistance of wires [ohm]
+        Equivalent resistance of wires. [ohm]
     current: numeric, float or array-like
-        Operating current [A]
+        Operating current. [A]
 
     Returns
     ----------
     loss: numeric
-        Power Loss [W]
+        Power loss. [W]
 
     See Also
     --------
     pvlib.pvsystem.dc_ohms_from_percent
 
-    References
-    ----------
-    .. [1] PVsyst 7 Help. "Array ohmic wiring loss".
-       https://www.pvsyst.com/help/ohmic_loss.htm
+    Notes
+    -----
+    Ohmic (also termed joule or heat) loss is the power lost due to current
+    flowing through a conductor. Ohmic loss, :math:`L`, is computed as
+
+    .. math::
+
+        L = I^2 \times R
+
+    where :math:`I` is the current (A) and :math:`R` is the resistance of the
+    conductor (ohms).
     """
     return resistance * current * current
 

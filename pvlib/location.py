@@ -4,7 +4,7 @@ This module contains the Location class.
 
 # Will Holmgren, University of Arizona, 2014-2016.
 
-import os
+import pathlib
 import datetime
 
 import pandas as pd
@@ -13,6 +13,7 @@ import h5py
 
 from pvlib import solarposition, clearsky, atmosphere, irradiance
 from pvlib.tools import _degrees_to_index
+
 
 class Location:
     """
@@ -44,10 +45,13 @@ class Location:
         pytz.timezone objects will be converted to strings.
         ints and floats must be in hours from UTC.
 
-    altitude : float, default 0.
+    altitude : float, optional
         Altitude from sea level in meters.
+        If not specified, the altitude will be fetched from
+        :py:func:`pvlib.location.lookup_altitude`.
+        If no data is available for the location, the altitude is set to 0.
 
-    name : None or string, default None.
+    name : string, optional
         Sets the name attribute of the Location object.
 
     See also
@@ -55,7 +59,8 @@ class Location:
     pvlib.pvsystem.PVSystem
     """
 
-    def __init__(self, latitude, longitude, tz='UTC', altitude=0, name=None):
+    def __init__(self, latitude, longitude, tz='UTC', altitude=None,
+                 name=None):
 
         self.latitude = latitude
         self.longitude = longitude
@@ -75,6 +80,9 @@ class Location:
         else:
             raise TypeError('Invalid tz specification')
 
+        if altitude is None:
+            altitude = lookup_altitude(latitude, longitude)
+
         self.altitude = altitude
 
         self.name = name
@@ -93,8 +101,9 @@ class Location:
         Parameters
         ----------
         tmy_metadata : dict
-            Returned from tmy.readtmy2 or tmy.readtmy3
-        tmy_data : None or DataFrame, default None
+            Returned from :py:func:`~pvlib.iotools.read_tmy2` or
+            :py:func:`~pvlib.iotools.read_tmy3`
+        tmy_data : DataFrame, optional
             Optionally attach the TMY data to this object.
 
         Returns
@@ -137,14 +146,13 @@ class Location:
         Parameters
         ----------
         metadata : dict
-            Returned from epw.read_epw
-        data : None or DataFrame, default None
+            Returned from :py:func:`~pvlib.iotools.read_epw`
+        data : DataFrame, optional
             Optionally attach the epw data to this object.
 
         Returns
         -------
-        Location object (or the child class of Location that you
-        called this method from).
+        Location
         """
 
         latitude = metadata['latitude']
@@ -173,10 +181,10 @@ class Location:
         ----------
         times : pandas.DatetimeIndex
             Must be localized or UTC will be assumed.
-        pressure : None, float, or array-like, default None
-            If None, pressure will be calculated using
+        pressure : float, or array-like, optional
+            If not specified, ``pressure`` is calculated using
             :py:func:`pvlib.atmosphere.alt2pres` and ``self.altitude``.
-        temperature : None, float, or array-like, default 12
+        temperature : float or array-like, default 12
 
         kwargs
             passed to :py:func:`pvlib.solarposition.get_solarposition`
@@ -209,11 +217,11 @@ class Location:
         model: str, default 'ineichen'
             The clear sky model to use. Must be one of
             'ineichen', 'haurwitz', 'simplified_solis'.
-        solar_position : None or DataFrame, default None
+        solar_position : DataFrame, optional
             DataFrame with columns 'apparent_zenith', 'zenith',
             'apparent_elevation'.
-        dni_extra: None or numeric, default None
-            If None, will be calculated from times.
+        dni_extra : numeric, optional
+            If not specified, will be calculated from times.
 
         kwargs
             Extra parameters passed to the relevant functions. Climatological
@@ -274,15 +282,15 @@ class Location:
         """
         Calculate the relative and absolute airmass.
 
-        Automatically chooses zenith or apparant zenith
+        Automatically chooses zenith or apparent zenith
         depending on the selected model.
 
         Parameters
         ----------
-        times : None or DatetimeIndex, default None
+        times : DatetimeIndex, optional
             Only used if solar_position is not provided.
-        solar_position : None or DataFrame, default None
-            DataFrame with with columns 'apparent_zenith', 'zenith'.
+        solar_position : DataFrame, optional
+            DataFrame with columns 'apparent_zenith', 'zenith'.
         model : str, default 'kastenyoung1989'
             Relative airmass model. See
             :py:func:`pvlib.atmosphere.get_relative_airmass`
@@ -427,8 +435,8 @@ def lookup_altitude(latitude, longitude):
 
     """
 
-    pvlib_path = os.path.dirname(os.path.abspath(__file__))
-    filepath = os.path.join(pvlib_path, 'data', 'Altitude.h5')
+    pvlib_path = pathlib.Path(__file__).parent
+    filepath = pvlib_path / 'data' / 'Altitude.h5'
 
     latitude_index = _degrees_to_index(latitude, coordinate='latitude')
     longitude_index = _degrees_to_index(longitude, coordinate='longitude')
@@ -439,8 +447,10 @@ def lookup_altitude(latitude, longitude):
     # 255 is a special value that means nodata. Fallback to 0 if nodata.
     if alt == 255:
         return 0
+    # convert from np.uint8 to float so that the following operations succeed
+    alt = float(alt)
     # Altitude is encoded in 28 meter steps from -450 meters to 6561 meters
     # There are 0-254 possible altitudes, with 255 reserved for nodata.
     alt *= 28
     alt -= 450
-    return float(alt)
+    return alt

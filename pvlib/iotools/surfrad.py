@@ -146,13 +146,13 @@ def read_surfrad(filename, map_variables=True):
     metadata['surfrad_version'] = int(metadata_list[-1])
     metadata['tz'] = 'UTC'
 
-    data = pd.read_csv(file_buffer, delim_whitespace=True,
+    data = pd.read_csv(file_buffer, sep=r'\s+',
                        header=None, names=SURFRAD_COLUMNS)
     file_buffer.close()
 
     data = _format_index(data)
     missing = data == -9999.9
-    data = data.where(~missing, np.NaN)
+    data = data.where(~missing, np.nan)
 
     if map_variables:
         data.rename(columns=VARIABLE_MAP, inplace=True)

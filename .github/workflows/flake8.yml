@@ -6,9 +6,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout source
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Install Python 3.11
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.11'
       - name: Install Flake8 5.0.4 linter
@@ -20,7 +20,7 @@ jobs:
           git remote add upstream https://github.com/pvlib/pvlib-python.git
           git fetch upstream $GITHUB_BASE_REF
       - name: Run Flake8 linter
-        run: git diff upstream/$GITHUB_BASE_REF HEAD | flake8
+        run: git diff upstream/$GITHUB_BASE_REF HEAD -- "*.py" | flake8
           --exclude pvlib/version.py
           --ignore E201,E241,E226,W503,W504
           --max-line-length 79

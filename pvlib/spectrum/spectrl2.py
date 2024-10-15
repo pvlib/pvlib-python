@@ -181,7 +181,7 @@ def spectrl2(apparent_zenith, aoi, surface_tilt, ground_albedo,
     (SPECTRL2).
 
     The Bird Simple Spectral Model [1]_ produces terrestrial spectra between
-    300 and 4000 nm with a resolution of approximately 10 nm. Direct and
+    300 nm and 4000 nm with a resolution of approximately 10 nm. Direct and
     diffuse spectral irradiance are modeled for horizontal and tilted surfaces
     under cloudless skies. SPECTRL2 models radiative transmission, absorption,
     and scattering due to atmospheric aerosol, water vapor, and ozone content.
@@ -189,31 +189,31 @@ def spectrl2(apparent_zenith, aoi, surface_tilt, ground_albedo,
     Parameters
     ----------
     apparent_zenith : numeric
-        Solar zenith angle [degrees]
+        Solar zenith angle. [degrees]
     aoi : numeric
-        Angle of incidence of the solar vector on the panel [degrees]
+        Angle of incidence of the solar vector on the panel. [degrees]
     surface_tilt : numeric
-        Panel tilt from horizontal [degrees]
+        Panel tilt from horizontal. [degrees]
     ground_albedo : numeric
         Albedo [0-1] of the ground surface. Can be provided as a scalar value
         if albedo is not spectrally-dependent, or as a 122xN matrix where
         the first dimension spans the wavelength range and the second spans
         the number of simulations. [unitless]
     surface_pressure : numeric
-        Surface pressure [Pa]
+        Surface pressure. [Pa]
     relative_airmass : numeric
         Relative airmass. The airmass model used in [1]_ is the `'kasten1966'`
         model, while a later implementation by NREL uses the
         `'kastenyoung1989'` model. [unitless]
     precipitable_water : numeric
-        Atmospheric water vapor content [cm]
+        Atmospheric water vapor content. [cm]
     ozone : numeric
-        Atmospheric ozone content [atm-cm]
+        Atmospheric ozone content. [atm-cm]
     aerosol_turbidity_500nm : numeric
-        Aerosol turbidity at 500 nm [unitless]
+        Aerosol turbidity at 500 nm. [unitless]
     dayofyear : numeric, optional
-        The day of year [1-365].  Must be provided if ``apparent_zenith`` is
-        not a pandas Series.
+        The day of year [1-365]. Must be provided if ``apparent_zenith`` is
+        not a ``pandas.Series``.
     scattering_albedo_400nm : numeric, default 0.945
         Aerosol single scattering albedo at 400nm. The default value of 0.945
         is suggested in [1]_ for a rural aerosol model. [unitless]
@@ -223,24 +223,24 @@ def spectrl2(apparent_zenith, aoi, surface_tilt, ground_albedo,
     wavelength_variation_factor : numeric, default 0.095
         Wavelength variation factor [unitless]
     aerosol_asymmetry_factor : numeric, default 0.65
-        Aerosol asymmetry factor (mean cosine of scattering angle) [unitless]
+        Aerosol asymmetry factor (mean cosine of scattering angle). [unitless]
 
     Returns
     -------
-    spectra : dict
+    spectra_components : dict
         A dict of arrays.  With the exception of `wavelength`, which has length
         122, each array has shape (122, N) where N is the length of the
         input ``apparent_zenith``.  All values are spectral irradiance
-        with units W/m^2/nm except for `wavelength`, which is in nanometers.
+        with units Wm⁻²nm⁻¹, except for `wavelength`, which is in nanometers.
 
-            * wavelength
-            * dni_extra
-            * dhi
-            * dni
-            * poa_sky_diffuse
-            * poa_ground_diffuse
-            * poa_direct
-            * poa_global
+        * wavelength
+        * dni_extra
+        * dhi
+        * dni
+        * poa_sky_diffuse
+        * poa_ground_diffuse
+        * poa_direct
+        * poa_global
 
     Notes
     -----
@@ -267,10 +267,10 @@ def spectrl2(apparent_zenith, aoi, surface_tilt, ground_albedo,
 
     References
     ----------
-    .. [1] Bird, R, and Riordan, C., 1984, "Simple solar spectral model for
+    .. [1] Bird, R., and Riordan, C., 1984, "Simple solar spectral model for
        direct and diffuse irradiance on horizontal and tilted planes at the
        earth's surface for cloudless atmospheres", NREL Technical Report
-       TR-215-2436 doi:10.2172/5986936.
+       TR-215-2436 :doi:`10.2172/5986936`.
     .. [2] Bird Simple Spectral Model: spectrl2_2.c.
        https://www.nrel.gov/grid/solar-resource/spectral.html
     """
@@ -288,7 +288,7 @@ def spectrl2(apparent_zenith, aoi, surface_tilt, ground_albedo,
                 aerosol_turbidity_500nm, scattering_albedo_400nm, alpha,
                 wavelength_variation_factor, aerosol_asymmetry_factor]))
 
-        dayofyear = original_index.dayofyear.values
+        dayofyear = pvlib.tools._pandas_to_doy(original_index).values
 
     if not is_pandas and dayofyear is None:
         raise ValueError('dayofyear must be specified if not using pandas '
@@ -363,7 +363,7 @@ def spectrl2(apparent_zenith, aoi, surface_tilt, ground_albedo,
 
     # calculate spectral irradiance on a tilted surface, Eq 3-18
     # Note: clipping cosd(aoi) to >=0 is not in the reference, but is necessary
-    # to prevent nonsense values when the sun is behind the plane of array.
+    # to prevent negative values when the sun is behind the plane of array.
     # The same constraint is applied in irradiance.haydavies when not
     # supplying `projection_ratio`.
     aoi_projection_nn = np.maximum(cosd(aoi), 0)  # GH 1348

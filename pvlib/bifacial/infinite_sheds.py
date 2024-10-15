@@ -283,6 +283,8 @@ def get_irradiance_poa(surface_tilt, surface_azimuth, solar_zenith,
       [W/m^2]
     - ``poa_ground_diffuse`` : total ground-reflected diffuse irradiance on the
       plane of array. [W/m^2]
+    - ``shaded_fraction`` : fraction of row slant height from the bottom that
+      is shaded from direct irradiance by adjacent rows. [unitless]
 
     References
     ----------
@@ -376,7 +378,7 @@ def get_irradiance_poa(surface_tilt, surface_azimuth, solar_zenith,
     output = {
         'poa_global': poa_global, 'poa_direct': poa_direct,
         'poa_diffuse': poa_diffuse, 'poa_ground_diffuse': poa_gnd_pv,
-        'poa_sky_diffuse': poa_sky_pv}
+        'poa_sky_diffuse': poa_sky_pv, 'shaded_fraction': f_x}
     if isinstance(poa_global, pd.Series):
         output = pd.DataFrame(output)
     return output
@@ -515,6 +517,9 @@ def get_irradiance(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
       cells from the front surface. [W/m^2]
     - ``poa_front_ground_diffuse`` : ground-reflected diffuse irradiance
       reaching the module cells from the front surface. [W/m^2]
+    - ``shaded_fraction_front`` : fraction of row slant height from the bottom
+      that is shaded from direct irradiance on the front surface by adjacent
+      rows. [unitless]
     - ``poa_back_direct`` : direct irradiance reaching the module cells from
       the back surface. [W/m^2]
     - ``poa_back_diffuse`` : total diffuse irradiance reaching the module
@@ -523,6 +528,9 @@ def get_irradiance(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
       cells from the back surface. [W/m^2]
     - ``poa_back_ground_diffuse`` : ground-reflected diffuse irradiance
       reaching the module cells from the back surface. [W/m^2]
+    - ``shaded_fraction_back`` : fraction of row slant height from the bottom
+      that is shaded from direct irradiance on the back surface by adjacent
+      rows. [unitless]
 
     References
     ----------
@@ -558,6 +566,7 @@ def get_irradiance(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
         'poa_diffuse': 'poa_front_diffuse',
         'poa_sky_diffuse': 'poa_front_sky_diffuse',
         'poa_ground_diffuse': 'poa_front_ground_diffuse',
+        'shaded_fraction': 'shaded_fraction_front',
     }
     colmap_back = {
         'poa_global': 'poa_back',
@@ -565,6 +574,7 @@ def get_irradiance(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
         'poa_diffuse': 'poa_back_diffuse',
         'poa_sky_diffuse': 'poa_back_sky_diffuse',
         'poa_ground_diffuse': 'poa_back_ground_diffuse',
+        'shaded_fraction': 'shaded_fraction_back',
     }
 
     if isinstance(ghi, pd.Series):

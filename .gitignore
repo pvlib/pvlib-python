@@ -43,6 +43,7 @@ docs/sphinx/source/reference/generated
 docs/sphinx/source/reference/*/generated
 docs/sphinx/source/savefig
 docs/sphinx/source/gallery
+docs/sphinx/source/sg_execution_times.rst
 
 # Installer logs
 pip-log.txt

@@ -1,0 +1,96 @@
+.. _whatsnew_01100:
+
+
+v0.11.0 (June 21, 2024)
+-----------------------
+
+
+Breaking changes
+~~~~~~~~~~~~~~~~
+* The deprecated ``pvlib.modelchain.basic_chain`` has now been removed. (:pull:`1862`)
+* Remove the ``poa_horizontal_ratio`` function and all of its references. (:issue:`1697`, :pull:`2021`)
+* Updated :py:const:`~pvlib.iotools.MIDC_VARIABLE_MAP` to reflect
+  changes in instrumentation. (:pull:`2006`)
+* ``pvlib.iotools.read_srml_month_from_solardat`` was deprecated in v0.10.0 and has
+  now been completely removed. The function is replaced by :py:func:`~pvlib.iotools.get_srml()`.
+  (:pull:`1779`, :pull:`1989`)
+* The ``leap_day`` parameter in :py:func:`~pvlib.iotools.get_psm3`
+  now defaults to True instead of False. (:issue:`1481`, :pull:`1991`)
+* :py:func:`~pvlib.iotools.get_psm3`, :py:func:`~pvlib.iotools.read_psm3`, and
+  :py:func:`~pvlib.iotools.parse_psm3` all now have ``map_variables=True`` by
+  default. (:issue:`1425`, :pull:`2094`)
+* The deprecated ``ivcurve_pnts`` parameter of :py:func:`pvlib.pvsystem.singlediode`
+  is removed. Use :py:func:`pvlib.pvsystem.v_from_i` and
+  :py:func:`pvlib.pvsystem.i_from_v` instead. (:pull:`2101`)
+
+
+Deprecations
+~~~~~~~~~~~~
+* The ``pvlib.irradiance.SURFACE_ALBEDOS`` dictionary has been moved to
+  :py:const:`pvlib.albedo.SURFACE_ALBEDOS`. (:pull:`2095`)
+* Function :py:func:`pvlib.spectrum.get_am15g` has been deprecated in favor
+  of the new function :py:func:`pvlib.spectrum.get_reference_spectra`. Use
+  ``pvlib.spectrum.get_reference_spectra(standard="ASTM G173-03")["global"]``
+  instead. (:pull:`2039`)
+
+
+Enhancements
+~~~~~~~~~~~~
+* Add a simple transformer efficiency model :py:func:`pvlib.transformer.simple_efficiency`.
+  (:issue:`1269`, :pull:`2053`)
+* Add function :py:func:`pvlib.shading.shaded_fraction1d`, to calculate the
+  shade perpendicular to ``axis_azimuth``. The function is applicable to both
+  fixed-tilt and one-axis tracking systems.
+  (:issue:`1689`, :pull:`1725`, :pull:`1962`)
+* Add function :py:func:`pvlib.albedo.inland_water_dvoracek`, to calculate the
+  albedo for inland water bodies.
+  (:pull:`2079`)
+* Added conversion functions from spectral response ([A/W]) to quantum
+  efficiency ([unitless]) and vice versa. The conversion functions are
+  :py:func:`pvlib.spectrum.sr_to_qe` and :py:func:`pvlib.spectrum.qe_to_sr`
+  respectively. (:issue:`2040`, :pull:`2041`)
+* Add function :py:func:`pvlib.spectrum.spectral_factor_pvspec`, which
+  calculates the spectral mismatch factor as a function of absolute airmass and
+  clearsky index using the PVSPEC model.
+  (:issue:`1950`, :issue:`2065`, :pull:`2072`)
+* Add function :py:func:`pvlib.spectrum.spectral_factor_jrc`, which calculates
+  the spectral mismatch factor as a function of airmass and clearsky
+  index using the JRC model.
+  (:issue:`1950`, :issue:`2065`, :issue:`2087`, :pull:`2088`)
+* Added extraterrestrial and direct spectra of the ASTM G173-03 standard with
+  the new function :py:func:`pvlib.spectrum.get_reference_spectra`.
+  (:issue:`1963`, :pull:`2039`)
+* Added function :py:func:`pvlib.shading.direct_martinez` to calculate
+  shading losses by taking into account the amount of bypass diodes of a module.
+  (:issue:`2063`, :pull:`2070`)
+* Add function :py:func:`pvlib.irradiance.diffuse_par_spitters` to calculate the
+  diffuse fraction of Photosynthetically Active Radiation (PAR) from the
+  global diffuse fraction and the solar zenith.
+  (:issue:`2047`, :pull:`2048`)
+* Default altitude in :py:class:`pvlib.location.Location`
+  now comes from :py:func:`~pvlib.location.lookup_altitude` (:issue:`1516`, :pull:`1850`)
+
+
+Documentation
+~~~~~~~~~~~~~
+* Configure mathjax to left-align and indent equations in docstrings. (:pull:`2056`)
+
+
+Contributors
+~~~~~~~~~~~~
+* Cliff Hansen (:ghuser:`cwhanse`)
+* Kurt Rhee (:ghuser:`kurt-rhee`)
+* Mark Mikofski (:ghuser:`mikofski`)
+* Siddharth Kaul (:ghuser:`k10blogger`)
+* Ioannis Sifnaios (:ghuser:`IoannisSifnaios`)
+* Mark Campanelli (:ghuser:`markcampanelli`)
+* Rajiv Daxini (:ghuser:`RDaxini`)
+* Nicolas Martinez (:ghuser:`nicomt`)
+* :ghuser:`PhilBrk8`
+* John Obrecht (:ghuser:`jmobrecht`)
+* Echedey Luis (:ghuser:`echedey-ls`)
+* Adam R. Jensen (:ghuser:`AdamRJensen`)
+* Anton Driesse (:ghuser:`adriesse`)
+* Will Holmgren (:ghuser:`wholmgren`)
+* Will Hobbs (:ghuser:`williamhobbs`)
+* Kevin Anderson (:ghuser:`kandersolar`)

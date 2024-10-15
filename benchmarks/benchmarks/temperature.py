@@ -4,7 +4,7 @@ ASV benchmarks for irradiance.py
 
 import pandas as pd
 import pvlib
-from pkg_resources import parse_version
+from packaging.version import Version
 from functools import partial
 
 
@@ -20,7 +20,7 @@ class SAPM:
 
     def setup(self):
         set_weather_data(self)
-        if parse_version(pvlib.__version__) >= parse_version('0.7.0'):
+        if Version(pvlib.__version__) >= Version('0.7.0'):
             kwargs = pvlib.temperature.TEMPERATURE_MODEL_PARAMETERS['sapm']
             kwargs = kwargs['open_rack_glass_glass']
             self.sapm_cell_wrapper = partial(pvlib.temperature.sapm_cell,
@@ -41,7 +41,7 @@ class SAPM:
 class Fuentes:
 
     def setup(self):
-        if parse_version(pvlib.__version__) < parse_version('0.8.0'):
+        if Version(pvlib.__version__) < Version('0.8.0'):
             raise NotImplementedError
 
         set_weather_data(self)

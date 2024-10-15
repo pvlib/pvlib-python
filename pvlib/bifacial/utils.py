@@ -6,6 +6,8 @@ import numpy as np
 from pvlib.tools import sind, cosd, tand
 import warnings
 from pvlib._deprecation import pvlibDeprecationWarning
+from scipy.integrate import trapezoid
+
 
 def _solar_projection_tangent(solar_zenith, solar_azimuth, surface_azimuth):
     """
@@ -81,7 +83,7 @@ def _unshaded_ground_fraction(surface_tilt, surface_azimuth, solar_zenith,
     .. [1] Mikofski, M., Darawali, R., Hamer, M., Neubert, A., and Newmiller,
        J. "Bifacial Performance Modeling in Large Arrays". 2019 IEEE 46th
        Photovoltaic Specialists Conference (PVSC), 2019, pp. 1282-1287.
-       doi: 10.1109/PVSC40753.2019.8980572.
+       :doi:`10.1109/PVSC40753.2019.8980572`.
     """
     tan_phi = _solar_projection_tangent(solar_zenith, solar_azimuth,
                                         surface_azimuth)

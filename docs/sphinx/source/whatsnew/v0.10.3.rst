@@ -1,0 +1,75 @@
+.. _whatsnew_01030:
+
+
+v0.10.3 (December 20, 2023)
+---------------------------
+
+
+Enhancements
+~~~~~~~~~~~~
+* Added the continuous Perez-Driesse transposition model.
+  :py:func:`pvlib.irradiance.perez_driesse` (:issue:`1841`, :pull:`1876`)
+* Added a reverse transposition algorithm using the Perez-Driesse model.
+  :py:func:`pvlib.irradiance.ghi_from_poa_driesse_2023`
+  (:issue:`1901`, :pull:`1907`)
+* :py:func:`pvlib.bifacial.infinite_sheds.get_irradiance` and
+  :py:func:`pvlib.bifacial.infinite_sheds.get_irradiance_poa` now include
+  shaded fraction in returned variables. (:pull:`1871`)
+* Added :py:func:`~pvlib.iotools.get_solcast_tmy`, :py:func:`~pvlib.iotools.get_solcast_historic`,
+  :py:func:`~pvlib.iotools.get_solcast_forecast` and :py:func:`~pvlib.iotools.get_solcast_live` to
+  read data from the Solcast API. (:issue:`1313`, :pull:`1875`)
+* Added :py:func:`~pvlib.iam.convert` and :py:func:`~pvlib.iam.fit` that
+  convert between IAM models, and that fit an IAM model to data. (:issue:`1824`, :pull:`1827`)
+* Add :py:func:`pvlib.iotools.read_solaranywhere` and
+  :py:func:`pvlib.iotools.get_solaranywhere` for reading and retrieving
+  SolarAnywhere solar irradiance data. (:pull:`1497`, :discuss:`1310`)
+
+Bug fixes
+~~~~~~~~~
+* Fixed CAMS error message handler in
+  :py:func:`pvlib.iotools.get_cams`. (:issue:`1799`, :pull:`1905`)
+* Fix mapping of the dew point column to ``temp_dew`` when ``map_variables``
+  is True in :py:func:`pvlib.iotools.get_psm3`. (:pull:`1920`)
+* Fix :py:class:`pvlib.modelchain.ModelChain` to use attribute `clearsky_model`.
+  (:pull:`1924`)
+
+Testing
+~~~~~~~
+* Replace use of deprecated ``pkg_resources``. (:issue:`1881`, :pull:`1882`)
+* Added Python 3.12 to test suite. (:pull:`1886`)
+
+Documentation
+~~~~~~~~~~~~~
+* Create :ref:`weatherdata` User's Guide page. (:pull:`1754`)
+* Fixed a plotting issue in the IV curve gallery example. (:pull:`1895`)
+* Added two examples to demonstrate reverse transposition. (:pull:`1907`)
+* Fixed :py:func:`~pvlib.clearsky.detect_clearsky` example in :ref:`clearsky`. (:issue:`1914`)
+* Clarified purpose of `ModelChain.clearsky_model`. (:pull:`1924`)
+
+
+Requirements
+~~~~~~~~~~~~
+* Minimum version of scipy advanced from 1.4.0 to 1.5.0. (:issue:`1918`, :pull:`1919`)
+
+
+Contributors
+~~~~~~~~~~~~
+* Arjan Keeman (:ghuser:`akeeman`)
+* Miguel Sánchez de León Peque (:ghuser:`Peque`)
+* Will Hobbs (:ghuser:`williamhobbs`)
+* Anton Driesse (:ghuser:`adriesse`)
+* Abigail Jones (:ghuser:`ajonesr`)
+* Cliff Hansen (:ghuser:`cwhanse`)
+* Gilles Fischer (:ghuser:`GillesFischerV`)
+* Adam R. Jensen (:ghuser:`AdamRJensen`)
+* :ghuser:`matsuobasho`
+* Harry Jack (:ghuser:`harry-solcast`)
+* Kevin Anderson (:ghuser:`kandersolar`)
+* Lorenzo Riches (:ghuser:`lorenzo-solcast`)
+* Hugh Cutcher (:ghuser:`hugh-solcast`)
+* Echedey Luis (:ghuser:`echedey-ls`)
+* Will Holmgren (:ghuser:`wholmgren`)
+* Miroslav Šedivý (:ghuser:`eumiro`)
+* Mark Mikofski (:ghuser:`mikofski`)
+* Phoebe Pearce (:ghuser:`phoebe-p`)
+* Eva-Maria Grommes (:ghuser:`EwaGomez`)

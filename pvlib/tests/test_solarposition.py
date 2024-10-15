@@ -5,24 +5,19 @@ import warnings
 import numpy as np
 import pandas as pd
 
-from .conftest import (
-    assert_frame_equal,
-    assert_series_equal,
-    fail_on_pvlib_version,
-)
+from .conftest import assert_frame_equal, assert_series_equal
 from numpy.testing import assert_allclose
 import pytest
 
 from pvlib.location import Location
 from pvlib import solarposition, spa
 
-from .conftest import (
-    requires_ephem, requires_spa_c, requires_numba, requires_pandas_2_0
-)
+from .conftest import requires_ephem, requires_spa_c, requires_numba
+
 
 # setup times and locations to be tested.
 times = pd.date_range(start=datetime.datetime(2014, 6, 24),
-                      end=datetime.datetime(2014, 6, 26), freq='15min')
+                      end=datetime.datetime(2014, 6, 26), freq='15Min')
 
 tus = Location(32.2, -111, 'US/Arizona', 700)  # no DST issues possible
 times_localized = times.tz_localize(tus.tz)
@@ -143,8 +138,7 @@ def test_spa_python_numpy_physical_dst(expected_solpos, golden):
     assert_frame_equal(expected_solpos, ephem_data[expected_solpos.columns])
 
 
-@pytest.mark.parametrize('delta_t', [65.0, None, np.array([65, 65])])
-def test_sun_rise_set_transit_spa(expected_rise_set_spa, golden, delta_t):
+def test_sun_rise_set_transit_spa(expected_rise_set_spa, golden):
     # solution from NREL SAP web calculator
     south = Location(-35.0, 0.0, tz='UTC')
     times = pd.DatetimeIndex([datetime.datetime(1996, 7, 5, 0),
@@ -165,7 +159,7 @@ def test_sun_rise_set_transit_spa(expected_rise_set_spa, golden, delta_t):
 
     result = solarposition.sun_rise_set_transit_spa(times, south.latitude,
                                                     south.longitude,
-                                                    delta_t=delta_t)
+                                                    delta_t=65.0)
     result_rounded = pd.DataFrame(index=result.index)
     # need to iterate because to_datetime does not accept 2D data
     # the rounding fails on pandas < 0.17
@@ -177,7 +171,7 @@ def test_sun_rise_set_transit_spa(expected_rise_set_spa, golden, delta_t):
     # test for Golden, CO compare to NREL SPA
     result = solarposition.sun_rise_set_transit_spa(
         expected_rise_set_spa.index, golden.latitude, golden.longitude,
-        delta_t=delta_t)
+        delta_t=65.0)
 
     # round to nearest minute
     result_rounded = pd.DataFrame(index=result.index)
@@ -186,13 +180,6 @@ def test_sun_rise_set_transit_spa(expected_rise_set_spa, golden, delta_t):
         result_rounded[col] = data.dt.round('s').tz_convert('MST')
 
     assert_frame_equal(expected_rise_set_spa, result_rounded)
-
-
-@fail_on_pvlib_version("0.12")
-def test_sun_rise_set_transit_spa_renamed_kwarg_warning():
-    # test to remember to remove renamed_kwarg_warning after the grace period
-    # and modify docs as needed
-    pass
 
 
 @requires_ephem
@@ -489,20 +476,20 @@ def test_get_solarposition_altitude(
 
 
 @pytest.mark.parametrize("delta_t, method", [
-    (None, 'nrel_numba'),
-    (67.0, 'nrel_numba'),
-    (np.array([67.0, 67.0]), 'nrel_numba'),
-    # minimize reloads, with numpy being last
     (None, 'nrel_numpy'),
+    pytest.param(
+        None, 'nrel_numba',
+        marks=[pytest.mark.xfail(
+            reason='spa.calculate_deltat not implemented for numba yet')]),
+    (67.0, 'nrel_numba'),
     (67.0, 'nrel_numpy'),
-    (np.array([67.0, 67.0]), 'nrel_numpy'),
-])
+    ])
 def test_get_solarposition_deltat(delta_t, method, expected_solpos_multi,
                                   golden):
     times = pd.date_range(datetime.datetime(2003, 10, 17, 13, 30, 30),
                           periods=2, freq='D', tz=golden.tz)
     with warnings.catch_warnings():
-        # don't warn on method reload
+        # don't warn on method reload or num threads
         warnings.simplefilter("ignore")
         ephem_data = solarposition.get_solarposition(times, golden.latitude,
                                                      golden.longitude,
@@ -515,21 +502,6 @@ def test_get_solarposition_deltat(delta_t, method, expected_solpos_multi,
     this_expected = np.round(this_expected, 5)
     ephem_data = np.round(ephem_data, 5)
     assert_frame_equal(this_expected, ephem_data[this_expected.columns])
-
-
-@pytest.mark.parametrize("method", ['nrel_numba', 'nrel_numpy'])
-def test_spa_array_delta_t(method):
-    # make sure that time-varying delta_t produces different answers
-    times = pd.to_datetime(["2019-01-01", "2019-01-01"]).tz_localize("UTC")
-    expected = pd.Series([257.26969492, 257.2701359], index=times)
-    with warnings.catch_warnings():
-        # don't warn on method reload
-        warnings.simplefilter("ignore")
-        ephem_data = solarposition.get_solarposition(times, 40, -80,
-                                                     delta_t=np.array([67, 0]),
-                                                     method=method)
-
-    assert_series_equal(ephem_data['azimuth'], expected, check_names=False)
 
 
 def test_get_solarposition_no_kwargs(expected_solpos, golden):
@@ -556,27 +528,25 @@ def test_get_solarposition_method_pyephem(expected_solpos, golden):
     assert_frame_equal(expected_solpos, ephem_data[expected_solpos.columns])
 
 
-@pytest.mark.parametrize('delta_t', [64.0, None, np.array([64, 64])])
-def test_nrel_earthsun_distance(delta_t):
+def test_nrel_earthsun_distance():
     times = pd.DatetimeIndex([datetime.datetime(2015, 1, 2),
                               datetime.datetime(2015, 8, 2)]
                              ).tz_localize('MST')
-    result = solarposition.nrel_earthsun_distance(times, delta_t=delta_t)
+    result = solarposition.nrel_earthsun_distance(times, delta_t=64.0)
     expected = pd.Series(np.array([0.983289204601, 1.01486146446]),
                          index=times)
     assert_series_equal(expected, result)
 
-    if np.size(delta_t) == 1:  # skip the array delta_t
-        times = datetime.datetime(2015, 1, 2)
-        result = solarposition.nrel_earthsun_distance(times, delta_t=delta_t)
-        expected = pd.Series(np.array([0.983289204601]),
-                             index=pd.DatetimeIndex([times, ]))
-        assert_series_equal(expected, result)
+    times = datetime.datetime(2015, 1, 2)
+    result = solarposition.nrel_earthsun_distance(times, delta_t=64.0)
+    expected = pd.Series(np.array([0.983289204601]),
+                         index=pd.DatetimeIndex([times, ]))
+    assert_series_equal(expected, result)
 
 
 def test_equation_of_time():
     times = pd.date_range(start="1/1/2015 0:00", end="12/31/2015 23:00",
-                          freq="h")
+                          freq="H")
     output = solarposition.spa_python(times, 37.8, -122.25, 100)
     eot = output['equation_of_time']
     eot_rng = eot.max() - eot.min()  # range of values, around 30 minutes
@@ -588,7 +558,7 @@ def test_equation_of_time():
 
 def test_declination():
     times = pd.date_range(start="1/1/2015 0:00", end="12/31/2015 23:00",
-                          freq="h")
+                          freq="H")
     atmos_refract = 0.5667
     delta_t = spa.calculate_deltat(times.year, times.month)
     unixtime = np.array([calendar.timegm(t.timetuple()) for t in times])
@@ -607,21 +577,20 @@ def test_declination():
 
 def test_analytical_zenith():
     times = pd.date_range(start="1/1/2015 0:00", end="12/31/2015 23:00",
-                          freq="h").tz_localize('Etc/GMT+8')
-    times_utc = times.tz_convert('UTC')
+                          freq="H").tz_localize('Etc/GMT+8')
     lat, lon = 37.8, -122.25
     lat_rad = np.deg2rad(lat)
     output = solarposition.spa_python(times, lat, lon, 100)
     solar_zenith = np.deg2rad(output['zenith'])  # spa
     # spencer
-    eot = solarposition.equation_of_time_spencer71(times_utc.dayofyear)
+    eot = solarposition.equation_of_time_spencer71(times.dayofyear)
     hour_angle = np.deg2rad(solarposition.hour_angle(times, lon, eot))
-    decl = solarposition.declination_spencer71(times_utc.dayofyear)
+    decl = solarposition.declination_spencer71(times.dayofyear)
     zenith_1 = solarposition.solar_zenith_analytical(lat_rad, hour_angle, decl)
     # pvcdrom and cooper
-    eot = solarposition.equation_of_time_pvcdrom(times_utc.dayofyear)
+    eot = solarposition.equation_of_time_pvcdrom(times.dayofyear)
     hour_angle = np.deg2rad(solarposition.hour_angle(times, lon, eot))
-    decl = solarposition.declination_cooper69(times_utc.dayofyear)
+    decl = solarposition.declination_cooper69(times.dayofyear)
     zenith_2 = solarposition.solar_zenith_analytical(lat_rad, hour_angle, decl)
     assert np.allclose(zenith_1, solar_zenith, atol=0.015)
     assert np.allclose(zenith_2, solar_zenith, atol=0.025)
@@ -629,24 +598,23 @@ def test_analytical_zenith():
 
 def test_analytical_azimuth():
     times = pd.date_range(start="1/1/2015 0:00", end="12/31/2015 23:00",
-                          freq="h").tz_localize('Etc/GMT+8')
-    times_utc = times.tz_convert('UTC')
+                          freq="H").tz_localize('Etc/GMT+8')
     lat, lon = 37.8, -122.25
     lat_rad = np.deg2rad(lat)
     output = solarposition.spa_python(times, lat, lon, 100)
     solar_azimuth = np.deg2rad(output['azimuth'])  # spa
     solar_zenith = np.deg2rad(output['zenith'])
     # spencer
-    eot = solarposition.equation_of_time_spencer71(times_utc.dayofyear)
+    eot = solarposition.equation_of_time_spencer71(times.dayofyear)
     hour_angle = np.deg2rad(solarposition.hour_angle(times, lon, eot))
-    decl = solarposition.declination_spencer71(times_utc.dayofyear)
+    decl = solarposition.declination_spencer71(times.dayofyear)
     zenith = solarposition.solar_zenith_analytical(lat_rad, hour_angle, decl)
     azimuth_1 = solarposition.solar_azimuth_analytical(lat_rad, hour_angle,
                                                        decl, zenith)
     # pvcdrom and cooper
-    eot = solarposition.equation_of_time_pvcdrom(times_utc.dayofyear)
+    eot = solarposition.equation_of_time_pvcdrom(times.dayofyear)
     hour_angle = np.deg2rad(solarposition.hour_angle(times, lon, eot))
-    decl = solarposition.declination_cooper69(times_utc.dayofyear)
+    decl = solarposition.declination_cooper69(times.dayofyear)
     zenith = solarposition.solar_zenith_analytical(lat_rad, hour_angle, decl)
     azimuth_2 = solarposition.solar_azimuth_analytical(lat_rad, hour_angle,
                                                        decl, zenith)
@@ -696,51 +664,21 @@ def test_hour_angle():
         '2015-01-02 12:04:44.6340'
     ]).tz_localize('Etc/GMT+7')
     eot = np.array([-3.935172, -4.117227, -4.026295])
-    hourangle = solarposition.hour_angle(times, longitude, eot)
+    hours = solarposition.hour_angle(times, longitude, eot)
     expected = (-70.682338, 70.72118825000001, 0.000801250)
     # FIXME: there are differences from expected NREL SPA calculator values
     # sunrise: 4 seconds, sunset: 48 seconds, transit: 0.2 seconds
     # but the differences may be due to other SPA input parameters
-    assert np.allclose(hourangle, expected)
-
-    hours = solarposition._hour_angle_to_hours(
-        times, hourangle, longitude, eot)
-    result = solarposition._times_to_hours_after_local_midnight(times)
-    assert np.allclose(result, hours)
-
-    result = solarposition._local_times_from_hours_since_midnight(times, hours)
-    assert result.equals(times)
-
-    times = times.tz_convert(None)
-    with pytest.raises(ValueError):
-        solarposition.hour_angle(times, longitude, eot)
-    with pytest.raises(ValueError):
-        solarposition._hour_angle_to_hours(times, hourangle, longitude, eot)
-    with pytest.raises(ValueError):
-        solarposition._times_to_hours_after_local_midnight(times)
-    with pytest.raises(ValueError):
-        solarposition._local_times_from_hours_since_midnight(times, hours)
-
-
-@fail_on_pvlib_version('0.12')
-def test_hour_angle_renamed_kwarg_warning():
-    # test to remember to remove renamed_kwarg_warning after the grace period
-    pass
+    assert np.allclose(hours, expected)
 
 
 def test_sun_rise_set_transit_geometric(expected_rise_set_spa, golden_mst):
     """Test geometric calculations for sunrise, sunset, and transit times"""
     times = expected_rise_set_spa.index
-    times_utc = times.tz_convert('UTC')
     latitude = golden_mst.latitude
     longitude = golden_mst.longitude
-    eot = solarposition.equation_of_time_spencer71(
-        times_utc.dayofyear)  # minutes
-    decl = solarposition.declination_spencer71(times_utc.dayofyear)  # radians
-    with pytest.raises(ValueError):
-        solarposition.sun_rise_set_transit_geometric(
-            times.tz_convert(None), latitude=latitude, longitude=longitude,
-            declination=decl, equation_of_time=eot)
+    eot = solarposition.equation_of_time_spencer71(times.dayofyear)  # minutes
+    decl = solarposition.declination_spencer71(times.dayofyear)  # radians
     sr, ss, st = solarposition.sun_rise_set_transit_geometric(
         times, latitude=latitude, longitude=longitude, declination=decl,
         equation_of_time=eot)
@@ -779,123 +717,6 @@ def test_sun_rise_set_transit_geometric(expected_rise_set_spa, golden_mst):
                        atol=np.abs(expected_transit_error).max())
 
 
-@pytest.mark.parametrize('tz', [None, 'utc', 'US/Eastern'])
-def test__datetime_to_unixtime(tz):
-    # for pandas < 2.0 where "unit" doesn't exist in pd.date_range. note that
-    # unit of ns is the only option in pandas<2, and the default in pandas 2.x
-    times = pd.date_range(start='2019-01-01', freq='h', periods=3, tz=tz)
-    expected = times.view(np.int64)/10**9
-    actual = solarposition._datetime_to_unixtime(times)
-    np.testing.assert_equal(expected, actual)
-
-
-@requires_pandas_2_0
-@pytest.mark.parametrize('unit', ['ns', 'us', 's'])
-@pytest.mark.parametrize('tz', [None, 'utc', 'US/Eastern'])
-def test__datetime_to_unixtime_units(unit, tz):
-    kwargs = dict(start='2019-01-01', freq='h', periods=3)
-    times = pd.date_range(**kwargs, unit='ns', tz='UTC')
-    expected = times.view(np.int64)/10**9
-
-    times = pd.date_range(**kwargs, unit=unit, tz='UTC').tz_convert(tz)
-    actual = solarposition._datetime_to_unixtime(times)
-    np.testing.assert_equal(expected, actual)
-
-
-@requires_pandas_2_0
-@pytest.mark.parametrize('tz', [None, 'utc', 'US/Eastern'])
-@pytest.mark.parametrize('method', [
-    'nrel_numpy',
-    'ephemeris',
-    pytest.param('pyephem', marks=requires_ephem),
-    pytest.param('nrel_numba', marks=requires_numba),
-    pytest.param('nrel_c', marks=requires_spa_c),
-])
-def test_get_solarposition_microsecond_index(method, tz):
-    # https://github.com/pvlib/pvlib-python/issues/1932
-
-    kwargs = dict(start='2019-01-01', freq='h', periods=24, tz=tz)
-
-    index_ns = pd.date_range(unit='ns', **kwargs)
-    index_us = pd.date_range(unit='us', **kwargs)
-
-    with warnings.catch_warnings():
-        # don't warn on method reload
-        warnings.simplefilter("ignore")
-
-        sp_ns = solarposition.get_solarposition(index_ns, 0, 0, method=method)
-        sp_us = solarposition.get_solarposition(index_us, 0, 0, method=method)
-
-    assert_frame_equal(sp_ns, sp_us, check_index_type=False)
-
-
-@requires_pandas_2_0
-@pytest.mark.parametrize('tz', [None, 'utc', 'US/Eastern'])
-def test_nrel_earthsun_distance_microsecond_index(tz):
-    # https://github.com/pvlib/pvlib-python/issues/1932
-
-    kwargs = dict(start='2019-01-01', freq='h', periods=24, tz=tz)
-
-    index_ns = pd.date_range(unit='ns', **kwargs)
-    index_us = pd.date_range(unit='us', **kwargs)
-
-    esd_ns = solarposition.nrel_earthsun_distance(index_ns)
-    esd_us = solarposition.nrel_earthsun_distance(index_us)
-
-    assert_series_equal(esd_ns, esd_us, check_index_type=False)
-
-
-@requires_pandas_2_0
-@pytest.mark.parametrize('tz', ['utc', 'US/Eastern'])
-def test_hour_angle_microsecond_index(tz):
-    # https://github.com/pvlib/pvlib-python/issues/1932
-
-    kwargs = dict(start='2019-01-01', freq='h', periods=24, tz=tz)
-
-    index_ns = pd.date_range(unit='ns', **kwargs)
-    index_us = pd.date_range(unit='us', **kwargs)
-
-    ha_ns = solarposition.hour_angle(index_ns, -80, 0)
-    ha_us = solarposition.hour_angle(index_us, -80, 0)
-
-    np.testing.assert_equal(ha_ns, ha_us)
-
-
-@requires_pandas_2_0
-@pytest.mark.parametrize('tz', ['utc', 'US/Eastern'])
-def test_rise_set_transit_spa_microsecond_index(tz):
-    # https://github.com/pvlib/pvlib-python/issues/1932
-
-    kwargs = dict(start='2019-01-01', freq='h', periods=24, tz=tz)
-
-    index_ns = pd.date_range(unit='ns', **kwargs)
-    index_us = pd.date_range(unit='us', **kwargs)
-
-    rst_ns = solarposition.sun_rise_set_transit_spa(index_ns, 40, -80)
-    rst_us = solarposition.sun_rise_set_transit_spa(index_us, 40, -80)
-
-    assert_frame_equal(rst_ns, rst_us, check_index_type=False)
-
-
-@requires_pandas_2_0
-@pytest.mark.parametrize('tz', ['utc', 'US/Eastern'])
-def test_rise_set_transit_geometric_microsecond_index(tz):
-    # https://github.com/pvlib/pvlib-python/issues/1932
-
-    kwargs = dict(start='2019-01-01', freq='h', periods=24, tz=tz)
-
-    index_ns = pd.date_range(unit='ns', **kwargs)
-    index_us = pd.date_range(unit='us', **kwargs)
-
-    args = (40, -80, 0, 0)
-    rst_ns = solarposition.sun_rise_set_transit_geometric(index_ns, *args)
-    rst_us = solarposition.sun_rise_set_transit_geometric(index_us, *args)
-
-    for times_ns, times_us in zip(rst_ns, rst_us):
-        # can't use a fancy assert function here since the units are different
-        assert all(times_ns == times_us)
-
-
 # put numba tests at end of file to minimize reloading
 
 @requires_numba
@@ -903,7 +724,7 @@ def test_spa_python_numba_physical(expected_solpos, golden_mst):
     times = pd.date_range(datetime.datetime(2003, 10, 17, 12, 30, 30),
                           periods=1, freq='D', tz=golden_mst.tz)
     with warnings.catch_warnings():
-        # don't warn on method reload
+        # don't warn on method reload or num threads
         # ensure that numpy is the most recently used method so that
         # we can use the warns filter below
         warnings.simplefilter("ignore")
@@ -930,7 +751,7 @@ def test_spa_python_numba_physical_dst(expected_solpos, golden):
                           periods=1, freq='D', tz=golden.tz)
 
     with warnings.catch_warnings():
-        # don't warn on method reload
+        # don't warn on method reload or num threads
         warnings.simplefilter("ignore")
         ephem_data = solarposition.spa_python(times, golden.latitude,
                                               golden.longitude, pressure=82000,

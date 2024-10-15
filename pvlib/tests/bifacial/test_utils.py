@@ -10,6 +10,7 @@ from scipy.integrate import trapezoid
 
 from pvlib._deprecation import pvlibDeprecationWarning
 
+
 @pytest.fixture
 def test_system_fixed_tilt():
     syst = {'height': 1.0,

@@ -6,7 +6,6 @@ import numpy as np
 from pvlib.tools import sind, cosd, tand
 import warnings
 from pvlib._deprecation import pvlibDeprecationWarning
-from scipy.integrate import trapezoid
 
 
 def _solar_projection_tangent(solar_zenith, solar_azimuth, surface_azimuth):

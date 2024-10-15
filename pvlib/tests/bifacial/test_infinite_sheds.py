@@ -7,6 +7,8 @@ import pandas as pd
 from pvlib.bifacial import infinite_sheds
 from ..conftest import assert_series_equal
 
+from pvlib._deprecation import pvlibDeprecationWarning
+
 import pytest
 
 
@@ -92,11 +94,10 @@ def test_get_irradiance_poa():
     dni = 700
     albedo = 0
     iam = 1.0
-    npoints = 100
     res = infinite_sheds.get_irradiance_poa(
         surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
         gcr, height, pitch, ghi, dhi, dni,
-        albedo, iam=iam, npoints=npoints)
+        albedo, iam=iam)
     expected_diffuse = np.array([300.])
     expected_direct = np.array([700.])
     expected_global = expected_diffuse + expected_direct
@@ -118,7 +119,7 @@ def test_get_irradiance_poa():
     res = infinite_sheds.get_irradiance_poa(
         surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
         gcr, height, pitch, ghi, dhi, dni,
-        albedo, iam=iam, npoints=npoints)
+        albedo, iam=iam)
     assert np.allclose(res['poa_global'], expected_global)
     assert np.allclose(res['poa_diffuse'], expected_diffuse)
     assert np.allclose(res['poa_direct'], expected_direct)
@@ -136,7 +137,7 @@ def test_get_irradiance_poa():
     res = infinite_sheds.get_irradiance_poa(
         surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
         gcr, height, pitch, ghi, dhi, dni,
-        albedo, iam=iam, npoints=npoints)
+        albedo, iam=iam)
     assert isinstance(res, pd.DataFrame)
     assert_series_equal(res['poa_global'], expected_global)
     assert all(k in res.columns for k in [
@@ -152,8 +153,7 @@ def test__backside_tilt():
     assert np.allclose(back_az, np.array([0., 330., 90., 180.]))
 
 
-@pytest.mark.parametrize("vectorize", [True, False])
-def test_get_irradiance(vectorize):
+def test_get_irradiance():
     # singleton inputs
     solar_zenith = 0.
     solar_azimuth = 180.
@@ -168,12 +168,10 @@ def test_get_irradiance(vectorize):
     albedo = 0.
     iam_front = 1.0
     iam_back = 1.0
-    npoints = 100
     result = infinite_sheds.get_irradiance(
         surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
         gcr, height, pitch, ghi, dhi, dni, albedo, iam_front, iam_back,
-        bifaciality=0.8, shade_factor=-0.02, transmission_factor=0,
-        npoints=npoints, vectorize=vectorize)
+        bifaciality=0.8, shade_factor=-0.02, transmission_factor=0)
     expected_front_diffuse = np.array([300.])
     expected_front_direct = np.array([700.])
     expected_front_global = expected_front_diffuse + expected_front_direct
@@ -190,17 +188,40 @@ def test_get_irradiance(vectorize):
     result = infinite_sheds.get_irradiance(
         surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
         gcr, height, pitch, ghi, dhi, dni, albedo, iam_front, iam_back,
-        bifaciality=0.8, shade_factor=-0.02, transmission_factor=0,
-        npoints=npoints, vectorize=vectorize)
+        bifaciality=0.8, shade_factor=-0.02, transmission_factor=0)
     result_front = infinite_sheds.get_irradiance_poa(
         surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
         gcr, height, pitch, ghi, dhi, dni,
-        albedo, iam=iam_front, vectorize=vectorize)
+        albedo, iam=iam_front)
     assert isinstance(result, pd.DataFrame)
     expected_poa_global = pd.Series(
         [1000., 500., result_front['poa_global'][2] * (1 + 0.8 * 0.98),
          np.nan], index=ghi.index, name='poa_global')
     assert_series_equal(result['poa_global'], expected_poa_global)
+
+
+def test_get_irradiance_deprecated():
+    kwargs = {"surface_tilt": 0, "surface_azimuth": 0, "solar_zenith": 0,
+              "solar_azimuth": 0, "gcr": 0.5, "height": 1, "pitch": 1,
+              "ghi": 1000, "dhi": 200, "dni": 800, "albedo": 0.2}
+
+    with pytest.warns(pvlibDeprecationWarning, match="have no effect"):
+        _ = infinite_sheds.get_irradiance(**kwargs, npoints=10)
+
+    with pytest.warns(pvlibDeprecationWarning, match="have no effect"):
+        _ = infinite_sheds.get_irradiance(**kwargs, vectorize=True)
+
+
+def test_get_irradiance_poa_deprecated():
+    kwargs = {"surface_tilt": 0, "surface_azimuth": 0, "solar_zenith": 0,
+              "solar_azimuth": 0, "gcr": 0.5, "height": 1, "pitch": 1,
+              "ghi": 1000, "dhi": 200, "dni": 800, "albedo": 0.2}
+
+    with pytest.warns(pvlibDeprecationWarning, match="have no effect"):
+        _ = infinite_sheds.get_irradiance_poa(**kwargs, npoints=10)
+
+    with pytest.warns(pvlibDeprecationWarning, match="have no effect"):
+        _ = infinite_sheds.get_irradiance_poa(**kwargs, vectorize=True)
 
 
 def test_get_irradiance_limiting_gcr():
@@ -219,12 +240,10 @@ def test_get_irradiance_limiting_gcr():
     albedo = 1.
     iam_front = 1.0
     iam_back = 1.0
-    npoints = 100
     result = infinite_sheds.get_irradiance(
         surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
         gcr, height, pitch, ghi, dhi, dni, albedo, iam_front, iam_back,
-        bifaciality=1., shade_factor=-0.00, transmission_factor=0.,
-        npoints=npoints)
+        bifaciality=1., shade_factor=-0.00, transmission_factor=0.)
     expected_ground_diffuse = np.array([500.])
     expected_sky_diffuse = np.array([150.])
     expected_direct = np.array([0.])
@@ -263,12 +282,11 @@ def test_get_irradiance_with_haydavies():
     model = 'haydavies'
     iam_front = 1.0
     iam_back = 1.0
-    npoints = 100
     result = infinite_sheds.get_irradiance(
         surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
         gcr, height, pitch, ghi, dhi, dni, albedo, model, dni_extra,
         iam_front, iam_back, bifaciality=0.8, shade_factor=-0.02,
-        transmission_factor=0, npoints=npoints)
+        transmission_factor=0)
     expected_front_diffuse = np.array([151.38])
     expected_front_direct = np.array([848.62])
     expected_front_global = expected_front_diffuse + expected_front_direct
@@ -282,4 +300,4 @@ def test_get_irradiance_with_haydavies():
             surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
             gcr, height, pitch, ghi, dhi, dni, albedo, model, None,
             iam_front, iam_back, bifaciality=0.8, shade_factor=-0.02,
-            transmission_factor=0, npoints=npoints)
+            transmission_factor=0)

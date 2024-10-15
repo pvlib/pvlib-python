@@ -1360,7 +1360,8 @@ def hour_angle(time, longitude, equation_of_time):
         ``longitude``.
 
         .. versionchanged:: 0.11.2
-            Renamed from ``times`` to ``time``. Removal in ``v0.12.0``.
+            The ``times` parameter has been renamed ``time``. The deprecated
+            ``times`` parameter will be removed in ``v0.12.0``.
 
     longitude : numeric
         Longitude in degrees

@@ -14,7 +14,7 @@ import warnings
                    reason='fail_on_pvlib_version should cause test to fail')
 @fail_on_pvlib_version('0.0')
 def test_fail_on_pvlib_version():
-    pass
+    pass  # pragma: no cover
 
 
 @fail_on_pvlib_version('100000.0')

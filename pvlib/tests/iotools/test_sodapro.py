@@ -19,7 +19,7 @@ testfile_radiation_monthly = DATA_DIR / 'cams_radiation_monthly.csv'
 
 index_verbose = pd.date_range('2020-06-01 12', periods=4, freq='1min',
                               tz='UTC')
-index_monthly = pd.date_range('2020-01-01', periods=4, freq='1ME')
+index_monthly = pd.date_range('2020-01-01', periods=4, freq='1MS')
 
 
 dtypes_mcclear_verbose = [

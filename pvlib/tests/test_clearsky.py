@@ -225,7 +225,7 @@ def test_lookup_linke_turbidity_nointerp():
 
 def test_lookup_linke_turbidity_months():
     times = pd.date_range(start='2014-04-01', end='2014-07-01',
-                          freq='1ME', tz='America/Phoenix')
+                          freq='1MS', tz='America/Phoenix')
     expected = pd.Series(
         np.array([2.89918032787, 2.97540983607, 3.19672131148]), index=times
     )
@@ -235,7 +235,7 @@ def test_lookup_linke_turbidity_months():
 
 def test_lookup_linke_turbidity_months_leapyear():
     times = pd.date_range(start='2016-04-01', end='2016-07-01',
-                          freq='1ME', tz='America/Phoenix')
+                          freq='1MS', tz='America/Phoenix')
     expected = pd.Series(
         np.array([2.89918032787, 2.97540983607, 3.19672131148]), index=times
     )
@@ -245,14 +245,14 @@ def test_lookup_linke_turbidity_months_leapyear():
 
 def test_lookup_linke_turbidity_nointerp_months():
     times = pd.date_range(start='2014-04-10', end='2014-07-10',
-                          freq='1ME', tz='America/Phoenix')
+                          freq='1MS', tz='America/Phoenix')
     expected = pd.Series(np.array([2.85, 2.95, 3.]), index=times)
     out = clearsky.lookup_linke_turbidity(times, 32.125, -110.875,
                                           interp_turbidity=False)
     assert_series_equal(expected, out)
     # changing the dates shouldn't matter if interp=False
     times = pd.date_range(start='2014-04-05', end='2014-07-05',
-                          freq='1ME', tz='America/Phoenix')
+                          freq='1MS', tz='America/Phoenix')
     out = clearsky.lookup_linke_turbidity(times, 32.125, -110.875,
                                           interp_turbidity=False)
     assert_series_equal(expected, out)

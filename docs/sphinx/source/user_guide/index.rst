@@ -16,5 +16,6 @@ User Guide
    bifacial
    weather_data
    variables_style_rules
+   glossary
    singlediode
    faq

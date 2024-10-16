@@ -237,7 +237,7 @@ def get_srml(station, start, end, filetype='PO', map_variables=True,
 
     # Generate list of months
     months = pd.date_range(
-        start, end.replace(day=1) + pd.DateOffset(months=1), freq='1M')
+        start, end.replace(day=1) + pd.DateOffset(months=1), freq='1ME')
     months_str = months.strftime('%y%m')
 
     # Generate list of filenames

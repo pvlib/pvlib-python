@@ -15,7 +15,7 @@ Enhancements
 Documentation
 ~~~~~~~~~~~~~
 * Edited docstrings for :py:func:`~pvlib.pvsystem.dc_ohms_from_percent` and
-  :py:func:`~pvlib.pvsystem.dc_ohmic_loss` for clarity. (:issue:`1601`, :pull:`2229`)
+  :py:func:`~pvlib.pvsystem.dc_ohmic_losses` for clarity. (:issue:`1601`, :pull:`2229`)
 * Added a new citation style guide to the contributing page. (:issue:`2202`,
   :pull:`2226`)
 * Updated :py:func:`~pvlib.irradiance.reindl` to include definitions of terms

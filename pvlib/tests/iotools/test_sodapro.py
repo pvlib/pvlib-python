@@ -172,19 +172,6 @@ def test_read_cams(testfile, index, columns, values, dtypes):
     assert_frame_equal(out, expected, check_less_precise=True)
 
 
-def test_read_cams_integrated_unmapped_label():
-    # Default label is 'left' for 1 minute time resolution, hence 1 minute is
-    # added for label='right'
-    expected = generate_expected_dataframe(
-        values_radiation_verbose_integrated,
-        columns_radiation_verbose_unmapped,
-        index_verbose+pd.Timedelta(minutes=1), dtypes=dtypes_radiation_verbose)
-    out, metadata = sodapro.read_cams(testfile_radiation_verbose,
-                                      integrated=True, label='right',
-                                      map_variables=False)
-    assert_frame_equal(out, expected, check_less_precise=True)
-
-
 def test_read_cams_metadata():
     _, metadata = sodapro.read_cams(testfile_mcclear_monthly, integrated=False)
     assert metadata['Time reference'] == 'Universal time (UT)'
@@ -193,7 +180,7 @@ def test_read_cams_metadata():
     assert metadata['longitude'] == 12.5251
     assert metadata['altitude'] == 39.0
     assert metadata['radiation_unit'] == 'W/m^2'
-    assert metadata['time_step'] == '1M'
+    assert metadata['time_step'] == '1MS'
 
 
 @pytest.mark.parametrize('testfile,index,columns,values,dtypes,identifier', [
@@ -224,7 +211,7 @@ def test_get_cams(requests_mock, testfile, index, columns, values, dtypes,
         email='pvlib-admin@googlegroups.com',
         identifier=identifier,
         altitude=80,
-        time_step='1M',
+        time_step='1MS',
         verbose=False,
         integrated=False)
     expected = generate_expected_dataframe(values, columns, index, dtypes)
@@ -240,7 +227,7 @@ def test_get_cams(requests_mock, testfile, index, columns, values, dtypes,
             email='pvlib-admin@googlegroups.com',
             identifier=identifier,
             altitude=80,
-            time_step='1M',
+            time_step='1MS',
             verbose=True)
 
 

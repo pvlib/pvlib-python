@@ -32,7 +32,7 @@ VARIABLE_MAP = {
 
 # Dictionary mapping time steps to CAMS time step format
 TIME_STEPS_MAP = {'1min': 'PT01M', '15min': 'PT15M', '1h': 'PT01H',
-                  '1d': 'P01D', '1M': 'P01M'}
+                  '1d': 'P01D', '1MS': 'P01M'}
 
 TIME_STEPS_IN_HOURS = {'1min': 1/60, '15min': 15/60, '1h': 1, '1d': 24}
 
@@ -40,12 +40,12 @@ SUMMATION_PERIOD_TO_TIME_STEP = {'0 year 0 month 0 day 0 h 1 min 0 s': '1min',
                                  '0 year 0 month 0 day 0 h 15 min 0 s': '15min',  # noqa
                                  '0 year 0 month 0 day 1 h 0 min 0 s': '1h',
                                  '0 year 0 month 1 day 0 h 0 min 0 s': '1d',
-                                 '0 year 1 month 0 day 0 h 0 min 0 s': '1M'}
+                                 '0 year 1 month 0 day 0 h 0 min 0 s': '1MS'}
 
 
 def get_cams(latitude, longitude, start, end, email, identifier='mcclear',
              altitude=None, time_step='1h', time_ref='UT', verbose=False,
-             integrated=False, label=None, map_variables=True,
+             integrated=False, map_variables=True,
              server=URL, timeout=30):
     """Retrieve irradiance and clear-sky time series from CAMS.
 
@@ -79,7 +79,7 @@ def get_cams(latitude, longitude, start, end, email, identifier='mcclear',
     altitude: float, optional
         Altitude in meters. If not specified, then the altitude is determined
         from the NASA SRTM database
-    time_step: str, {'1min', '15min', '1h', '1d', '1M'}, default: '1h'
+    time_step: str, {'1min', '15min', '1h', '1d', '1MS'}, default: '1h'
         Time step of the time series, either 1 minute, 15 minute, hourly,
         daily, or monthly.
     time_ref: str, {'UT', 'TST'}, default: 'UT'
@@ -90,9 +90,6 @@ def get_cams(latitude, longitude, start, end, email, identifier='mcclear',
     integrated: boolean, default False
         Whether to return radiation parameters as integrated values (Wh/m^2)
         or as average irradiance values (W/m^2) (pvlib preferred units)
-    label : {'right', 'left'}, optional
-        Which bin edge label to label time-step with. The default is 'left' for
-        all time steps except for '1M' which has a default of 'right'.
     map_variables: bool, default: True
         When true, renames columns of the DataFrame to pvlib variable names
         where applicable. See variable :const:`VARIABLE_MAP`.
@@ -120,7 +117,7 @@ def get_cams(latitude, longitude, start, end, email, identifier='mcclear',
     ========================  ======  =========================================
     **Mapped field names are returned when the map_variables argument is True**
     ---------------------------------------------------------------------------
-    Observation period        str     Beginning/end of time period
+    Observation period        str     Start of time period
     TOA, ghi_extra            float   Horizontal radiation at top of atmosphere
     Clear sky GHI, ghi_clear  float   Clear sky global radiation on horizontal
     Clear sky BHI, bhi_clear  float   Clear sky beam radiation on horizontal
@@ -231,12 +228,12 @@ def get_cams(latitude, longitude, start, end, email, identifier='mcclear',
     # Successful requests returns a csv data file
     else:
         fbuf = io.StringIO(res.content.decode('utf-8'))
-        data, metadata = parse_cams(fbuf, integrated=integrated, label=label,
+        data, metadata = parse_cams(fbuf, integrated=integrated,
                                     map_variables=map_variables)
         return data, metadata
 
 
-def parse_cams(fbuf, integrated=False, label=None, map_variables=True):
+def parse_cams(fbuf, integrated=False, map_variables=True):
     """
     Parse a file-like buffer with data in the format of a CAMS Radiation or
     McClear file. The CAMS solar radiation services are described in [1]_.
@@ -248,9 +245,6 @@ def parse_cams(fbuf, integrated=False, label=None, map_variables=True):
     integrated: boolean, default False
         Whether to return radiation parameters as integrated values (Wh/m^2)
         or as average irradiance values (W/m^2) (pvlib preferred units)
-    label : {'right', 'left'}, optional
-        Which bin edge label to label time-step with. The default is 'left' for
-        all time steps except for '1M' which has a default of 'right'.
     map_variables: bool, default: True
         When true, renames columns of the Dataframe to pvlib variable names
         where applicable. See variable :const:`VARIABLE_MAP`.
@@ -261,6 +255,10 @@ def parse_cams(fbuf, integrated=False, label=None, map_variables=True):
         Timeseries data from CAMS Radiation or McClear
     metadata: dict
         Metadata available in the file.
+
+    Notes
+    -----
+    The index timestamps correspond to the start/left of the interval.
 
     See Also
     --------
@@ -301,26 +299,17 @@ def parse_cams(fbuf, integrated=False, label=None, map_variables=True):
     obs_period = data['Observation period'].str.split('/')
 
     # Set index as the start observation time (left) and localize to UTC
-    if (label == 'left') | ((label is None) & (time_step != '1M')):
-        data.index = pd.to_datetime(obs_period.str[0], utc=True)
-    # Set index as the stop observation time (right) and localize to UTC
-    # default label for monthly data is 'right' following Pandas' convention
-    elif (label == 'right') | ((label is None) & (time_step == '1M')):
-        data.index = pd.to_datetime(obs_period.str[1], utc=True)
+    data.index = pd.to_datetime(obs_period.str[0], utc=True)
 
-    # For time_steps '1d' and '1M', drop timezone and round to nearest midnight
-    if (time_step == '1d') | (time_step == '1M'):
+    # For time_steps '1d' and '1MS' drop timezone and round to nearest midnight
+    if (time_step == '1d') | time_step.endswith('MS'):  # noqa
         data.index = pd.DatetimeIndex(data.index.date)
-    # For monthly data with 'right' label, the index should be the last
-    # date of the month and not the first date of the following month
-    if (time_step == '1M') & (label != 'left'):
-        data.index = data.index - pd.Timedelta(days=1)
 
     if not integrated:  # Convert radiation values from Wh/m2 to W/m2
         integrated_cols = [c for c in CAMS_INTEGRATED_COLUMNS
                            if c in data.columns]
 
-        if time_step == '1M':
+        if time_step.endswith('MS'):
             time_delta = (pd.to_datetime(obs_period.str[1])
                           - pd.to_datetime(obs_period.str[0]))
             hours = time_delta.dt.total_seconds()/60/60
@@ -336,7 +325,7 @@ def parse_cams(fbuf, integrated=False, label=None, map_variables=True):
     return data, metadata
 
 
-def read_cams(filename, integrated=False, label=None, map_variables=True):
+def read_cams(filename, integrated=False, map_variables=True):
     """
     Read a CAMS Radiation or McClear file into a pandas DataFrame.
 
@@ -349,9 +338,6 @@ def read_cams(filename, integrated=False, label=None, map_variables=True):
     integrated: boolean, default False
         Whether to return radiation parameters as integrated values (Wh/m^2)
         or as average irradiance values (W/m^2) (pvlib preferred units)
-    label : {'right', 'left}, optional
-        Which bin edge label to label time-step with. The default is 'left' for
-        all time steps except for '1M' which has a default of 'right'.
     map_variables: bool, default: True
         When true, renames columns of the Dataframe to pvlib variable names
         where applicable. See variable :const:`VARIABLE_MAP`.
@@ -368,11 +354,15 @@ def read_cams(filename, integrated=False, label=None, map_variables=True):
     --------
     pvlib.iotools.parse_cams, pvlib.iotools.get_cams
 
+    Notes
+    -----
+    The index timestamps correspond to the start/left of the interval.
+
     References
     ----------
     .. [1] `CAMS solar radiation documentation
        <https://atmosphere.copernicus.eu/solar-radiation>`_
     """
     with open(str(filename), 'r') as fbuf:
-        content = parse_cams(fbuf, integrated, label, map_variables)
+        content = parse_cams(fbuf, integrated, map_variables)
     return content

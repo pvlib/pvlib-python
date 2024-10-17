@@ -109,28 +109,32 @@ using the IEEE style in a docstring::
     are also some conference papers linked to pvlib, for example [2]_.
     
     Other types of reference you may find in the pvlib-python documentation
-    include books [3]_ and technical reports [4]_.
+    include books [3]_, technical reports [4]_, and websites [5]_.
 
     References
     ----------
     .. [1] K. Anderson, C. Hansen, W. Holmgren, A. Jensen, M. Mikofski,
            and A Driesse. "pvlib python: 2023 project update." J. Open Source
            Softw. vol. 8, no. 92, pp. 5994, Dec 2023,
-           :doi:`10.21105/joss.05994`
+           :doi:`10.21105/joss.05994`.
 
     .. [2] J. S. Stein, "The Photovoltaic Performance Modeling Collaborative
            (PVPMC)," In Proc. 38th IEEE Photovoltaic Specialists Conference
            (PVSC), Austin, TX, USA, 2012, pp. 3048-3052,
-           :doi:`10.1109/PVSC.2012.6318225`
+           :doi:`10.1109/PVSC.2012.6318225`.
 
     .. [3] J. A. Duffie and W. A. Beckman, "Solar Radiation" in Solar
            Engineering of Thermal Processes, 3rd ed, New York, USA, J. Wiley
-           and Sons, 2006, ch. 1, sec. 1.5, pp.9-11
+           and Sons, 2006, ch. 1, sec. 1.5, pp.9-11.
 
     .. [4] R. Bird and C. Riordan, "Simple solar spectral model for direct and
            diffuse irradiance on horizontal and tilted planes at the earth’s
            surface for cloudless atmospheres", NREL, Golden, CO, USA, Technical
-           Report TR-215-2436, 1984, :doi:`10.2172/5986936`
+           Report TR-215-2436, 1984, :doi:`10.2172/5986936`.
+
+    .. [5] "PVPMC Home." Sandia National Laboratories PV Performance Modeling
+           Collaborative. Accessed: Oct. 17, 2024. [Online.] Available:
+           <https://pvpmc.sandia.gov/>_
 
 Things to note:
 

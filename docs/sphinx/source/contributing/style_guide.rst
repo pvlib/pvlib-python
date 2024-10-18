@@ -112,20 +112,20 @@ includes a ``make.bat`` batch file that emulates its interface.
 Example Docstring
 -----------------
 
-Here is a template for a function docstring that tries to encapsulate all
-the features that may be used in any docstring. This is a template, so
-not all sections are required for every function, but is a good starting point.
+Here is a template for a function docstring that encapsulates the main
+features that may be used in any docstring. Note that not all sections are
+required for every function.
 
 .. code-block:: python
 
     def example_function(poa_global, exponents, degree_symbol,
-                        default_arg='someval', optional_arg=None):
+                         default_arg='someval', optional_arg=None):
         r"""
-        A brief summary of the function.
+        Brief summary of the function (no citations).
 
-        A longer description of the function. This can include references
-        to literature [1]_, websites, and other code elements such as
-        functions (:py:func:`pvlib.location.lookup_altitude`) and
+        A longer description of the function. This can include citations
+        (references) to literature [1]_, websites [2]_, and other code elements
+        such as functions (:py:func:`pvlib.location.lookup_altitude`) and
         classes (:py:class:`pvlib.location.Location`).
 
         .. versionadded:: 0.0.1
@@ -139,8 +139,8 @@ not all sections are required for every function, but is a good starting point.
         poa_global : numeric
             Plane-of-array global irradiance, see :term:`poa_global`. [Wm⁻²].
         exponents : array-like
-            A list of exponents. [x⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻].
-        degree_symbol : numeric
+            A list of exponents. [x⁰¹²³⁴⁵⁶⁷⁸⁹⁻].
+        degree_symbol : pandas.Series or pandas.DataFrame
             It's different from superscript zero. [°].
         default_arg : string, default ``'someval'``.
             Text enclosed in double backticks mean code formatting.
@@ -169,7 +169,7 @@ not all sections are required for every function, but is a good starting point.
 
             a = \left(\frac{b}{c}\right)^2
 
-        where :math:`a` is the result of the equation, :math:`b` and :math:`c`
+        where :math:`a` is the result of the equation, and :math:`b` and :math:`c`
         are inputs.
 
         Or a figure with a caption:
@@ -202,7 +202,7 @@ not all sections are required for every function, but is a good starting point.
         """
         return "None"
 
-A preview on how this would render in the documentation can be seen in the
+A preview of how this docstring would render in the documentation can be seen in the
 following file: :download:`Example docstring<../_images/example_function_screenshot.png>`.
 
 Remember that to show the docstring in the documentation, you must list

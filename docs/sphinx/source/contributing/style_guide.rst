@@ -189,7 +189,7 @@ required for every function.
         Examples
         --------
         >>> example_function(1, 1, 1)
-        'None'
+        'Something'
 
         References
         ----------
@@ -200,7 +200,7 @@ required for every function.
         and Driesse, A. “pvlib python: 2023 project update.” Journal of Open
         Source Software, 8(92), 5994, (2023). :doi:`10.21105/joss.05994`.
         """
-        return "None"
+        return "Something"
 
 A preview of how this docstring would render in the documentation can be seen in the
 following file: :download:`Example docstring<../_images/example_function_screenshot.png>`.

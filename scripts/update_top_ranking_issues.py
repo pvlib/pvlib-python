@@ -1,4 +1,5 @@
 import os
+import itertools
 from datetime import datetime, timedelta
 
 from github import Github
@@ -38,7 +39,7 @@ def main():
     )
     issues = github.search_issues(query)
 
-    # Format markdown
+    # Format
     ranked_issues = []
     # Continuous number generator for the numbered list, starts at 1
     index_generator = itertools.count(1)
@@ -49,6 +50,8 @@ def main():
 
         # Get numbered list item index from generator
         i = next(index_generator)
+        if i >= MAX_ISSUES:
+            break
 
         markdown_bullet_point: str = (
             f"{issue.html_url} " +

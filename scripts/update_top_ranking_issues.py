@@ -40,18 +40,22 @@ def main():
 
     # Format markdown
     ranked_issues = []
-    for (i, issue) in zip(range(MAX_ISSUES), issues):
-
-        # Don't include the overview card
+    # Continuous number generator for the numbered list, starts at 1
+    index_generator = itertools.count(1)
+    for issue in issues:
+        # Don't include the overview card (skip to next iteration)
         if issue.number == TOP_ISSUES_CARD_NUMBER:
-            pass
+            continue
+
+        # Get numbered list item index from generator
+        i = next(index_generator)
 
         markdown_bullet_point: str = (
             f"{issue.html_url} " +
             f"({issue._rawData['reactions']['+1']} :thumbsup:)"
         )
 
-        markdown_bullet_point = f"{i + 1}. {markdown_bullet_point}"
+        markdown_bullet_point = f"{i}. {markdown_bullet_point}"
         ranked_issues.append(markdown_bullet_point)
 
     # edit top issues

@@ -6,7 +6,8 @@ on:
   schedule:
     # # Runs every day at 3:00 AM UTC
     # - cron: '0 3 * * *'
-    - cron: */10 * * * *
+    - cron: '*/10 * * * *'
+
 jobs:
   run-script:
     runs-on: ubuntu-latest

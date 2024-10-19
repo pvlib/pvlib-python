@@ -39,7 +39,7 @@ def main():
     for i, issue in enumerate(issues):
         markdown_bullet_point: str = (
             f"{issue.html_url} " +
-            f"({issue._rawData["reactions"]["+1"]} :thumbsup:)"
+            f"({issue._rawData['reactions']['+1']} :thumbsup:)"
         )
 
         markdown_bullet_point = f"{i + 1}. {markdown_bullet_point}"

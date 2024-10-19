@@ -15,7 +15,7 @@ def main():
     # for convenience
     local_github_token: str | None = None
     github_token: str | None = (
-        local_github_token or os.getenv("GITHUB_TOKEN")
+        local_github_token or os.getenv("GITHUB_ACCESS_TOKEN")
     )
     github = Github(github_token)
 

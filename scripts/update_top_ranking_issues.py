@@ -15,13 +15,17 @@ def main():
     # for convenience
     local_github_token: str | None = None
     github_token: str | None = (
-        local_github_token or os.getenv("GITHUB_ACCESS_TOKEN")
+        local_github_token or os.getenv("GITHUB_TOKEN")
     )
     github = Github(github_token)
 
     # repository name
     repo_name: str = "pvlib/pvlib-python"
     repository: Repository = github.get_repo(repo_name)
+
+    # Number of top issues to list
+    MAX_ISSUES = 19
+    TOP_ISSUES_CARD_NUMBER = 2196
 
     # Rate limiting
     remaining_requests_before: int = github.rate_limiting[0]
@@ -36,7 +40,12 @@ def main():
 
     # Format markdown
     ranked_issues = []
-    for i, issue in enumerate(issues):
+    for (i, issue) in zip(range(MAX_ISSUES), issues):
+
+        # Don't include the overview card
+        if issue.number == TOP_ISSUES_CARD_NUMBER:
+            pass
+
         markdown_bullet_point: str = (
             f"{issue.html_url} " +
             f"({issue._rawData['reactions']['+1']} :thumbsup:)"
@@ -45,11 +54,10 @@ def main():
         markdown_bullet_point = f"{i + 1}. {markdown_bullet_point}"
         ranked_issues.append(markdown_bullet_point)
 
-        if i >= 19:
-            break
-
     # edit top issues
-    top_issues_card: Issue = repository.get_issue(number=2196)
+    top_issues_card: Issue = repository.get_issue(
+        number=TOP_ISSUES_CARD_NUMBER
+    )
     header = "Top Ranking Issues"
     new_body = header + "\n" + "\n".join(ranked_issues)
     top_issues_card.edit(

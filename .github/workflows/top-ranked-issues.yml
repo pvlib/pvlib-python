@@ -9,6 +9,9 @@ jobs:
   run-script:
     runs-on: ubuntu-latest
 
+    # Run only if the repository is pvlib/pvlib-python
+    if: ${{ github.repository == 'pvlib/pvlib-python' }}
+
     env:
       GITHUB_ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

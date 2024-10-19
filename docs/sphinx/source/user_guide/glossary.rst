@@ -146,9 +146,6 @@ There is a convention on consistent variable names throughout the library:
         Azimuth angle of the surface
 
     surface_tilt
-        Tilt angle of the surface
-
-    surface_tilt
         Panel tilt from horizontal [°]. For example, a surface facing up = 0°,
         surface facing horizon = 90°.
 

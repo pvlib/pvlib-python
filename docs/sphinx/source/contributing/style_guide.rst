@@ -118,8 +118,8 @@ required for every function.
 
 .. code-block:: python
 
-    def example_function(poa_global, exponents, degree_symbol,
-                         default_arg='someval', optional_arg=None):
+    def example_function(poa_global, exponents, time_ref,
+                        default_arg='someval', optional_arg=None):
         r"""
         Brief summary of the function (no citations).
 
@@ -129,10 +129,11 @@ required for every function.
         classes (:py:class:`pvlib.location.Location`).
 
         .. versionadded:: 0.0.1
+        There are many more purpose-specific directives, admonitions and such
+        available at `this link <admonitions>`_. E.g.: ``.. versionchanged::``,
+        ``.. deprecated::``,  ``.. note::`` and ``.. warning::``.
 
-        .. note:: This docstring is a template.
-
-        .. warning:: Code body is not included in this example!
+        .. _admonitions: https://www.sphinx-doc.org/en/master/usage/restructuredtext/directives.html#admonitions-messages-and-warnings
 
         Parameters
         ----------
@@ -142,8 +143,8 @@ required for every function.
             A list of exponents. [x⁰¹²³⁴⁵⁶⁷⁸⁹⁻].
         degree_symbol : pandas.Series or pandas.DataFrame
             It's different from superscript zero. [°].
-        default_arg : string, default ``'someval'``.
-            Text enclosed in double backticks mean code formatting.
+        time_ref : ``'UT'`` or ``'TST'``, default: ``'UT'``
+            ``'UT'`` (universal time) or ``'TST'`` (True Solar Time).
         optional_arg : integer, optional
             A description of ``optional_arg``. [Unitless].
 
@@ -157,7 +158,7 @@ required for every function.
         ValueError
             If ``poa_global`` is negative.
         KeyError
-            If ``default_arg`` does not exist.
+            If ``time_ref`` does not exist.
 
         Notes
         -----
@@ -183,8 +184,7 @@ required for every function.
 
         See Also
         --------
-        pvlib.location.lookup_altitude
-        pvlib.location.Location
+        pvlib.location.lookup_altitude, pvlib.location.Location
 
         Examples
         --------
@@ -197,8 +197,11 @@ required for every function.
         citation generator to format the citation correctly.
 
         .. [1] Anderson, K., Hansen, C., Holmgren, W., Jensen, A., Mikofski, M.,
-        and Driesse, A. “pvlib python: 2023 project update.” Journal of Open
-        Source Software, 8(92), 5994, (2023). :doi:`10.21105/joss.05994`.
+           and Driesse, A. "pvlib python: 2023 project update." Journal of Open
+           Source Software, 8(92), 5994, (2023). :doi:`10.21105/joss.05994`.
+        .. [2] J. Smith and J. Doe. "Obama inaugurated as President." CNN.com.
+           Accessed: Feb. 1, 2009. [Online.]
+           Available: http://www.cnn.com/POLITICS/01/21/obama_inaugurated/index.html
         """
         return "Something"
 

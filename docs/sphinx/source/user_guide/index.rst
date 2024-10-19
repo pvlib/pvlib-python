@@ -15,6 +15,6 @@ User Guide
    clearsky
    bifacial
    weather_data
-   glossary
    singlediode
+   glossary
    faq

@@ -4,8 +4,12 @@ on:
   # For testing purposes (can be removed later)
   pull_request:  
   schedule:
-    # Runs every day at 3:00 AM UTC
-    - cron: '0 3 * * *'
+    # # Runs every day at 3:00 AM UTC
+    # - cron: '0 3 * * *'
+    - cron: */10 * * * *
+
+permissions:
+  issues: write  # This grants permission to create, update, and manage issues
 
 jobs:
   run-script:

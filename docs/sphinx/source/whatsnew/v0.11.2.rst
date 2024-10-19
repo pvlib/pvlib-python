@@ -27,8 +27,15 @@ Requirements
 ~~~~~~~~~~~~
 
 
+Maintenance
+~~~~~~~~~~~
+* Added a decorator to deprecate renamed keyword arguments in functions,
+  :py:func:`pvlib._deprecation.renamed_kwarg_warning`. (:pull:`2237`)
+
+
 Contributors
 ~~~~~~~~~~~~
 * Cliff Hansen (:ghuser:`cwhanse`)
 * Rajiv Daxini (:ghuser:`RDaxini`)
+* Echedey Luis (:ghuser:`echedey-ls`)
 

@@ -28,6 +28,6 @@ jobs:
           python -m pip install --upgrade pip
           pip install PyGithub
 
-      - name: Run Script
+      - name: Run update_top_ranking_issues.py
         run: |
           python ./scripts/update_top_ranking_issues.py

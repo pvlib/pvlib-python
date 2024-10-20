@@ -7,12 +7,9 @@ from pvlib import iam, modelchain, pvsystem, temperature, inverter
 from pvlib.modelchain import ModelChain
 from pvlib.pvsystem import PVSystem
 from pvlib.location import Location
-from pvlib._deprecation import pvlibDeprecationWarning
 
 from .conftest import assert_series_equal, assert_frame_equal
 import pytest
-
-from .conftest import fail_on_pvlib_version
 
 
 @pytest.fixture(scope='function')

@@ -13,7 +13,7 @@ pvlib python generally follows the `PEP 8 -- Style Guide for Python Code
 is 79 characters.
 
 pvlib python uses a mix of full and abbreviated variable names. See
-:ref:`variables_style_rules`. We could be better about consistency.
+:ref:`glossary`. We could be better about consistency.
 Prefer full names for new contributions. This is especially important
 for the API. Abbreviations can be used within a function to improve the
 readability of formulae.

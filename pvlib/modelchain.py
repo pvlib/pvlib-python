@@ -1709,11 +1709,6 @@ class ModelChain:
         weather = _to_tuple(weather)
         self.prepare_inputs(weather)
         self.aoi_model()
-
-        # spectral model is optional, and weather may impact model inference
-        # check if spectral model inference is requested by means of "None"
-        if self._spectral_model is None:
-            self._spectral_model = self.infer_spectral_model(weather=weather)
         self.spectral_model()
 
         self.effective_irradiance_model()

@@ -1271,6 +1271,28 @@ def test_infer_spectral_model(location, sapm_dc_snl_ac_system,
     assert isinstance(mc, ModelChain)
 
 
+def test_infer_spectral_model_with_weather(location, sapm_dc_snl_ac_system,
+                                           cec_dc_snl_ac_system, weather):
+    # instantiate example ModelChain to get the default spectral model
+    # inferred without weather available by default
+    # - should resolve to sapm
+    mc = ModelChain(sapm_dc_snl_ac_system, location, aoi_model='physical')
+    assert mc.spectral_model == mc.sapm_spectral_loss
+    # - should resolve to no loss
+    mc = ModelChain(cec_dc_snl_ac_system, location, aoi_model='physical')
+    assert mc.spectral_model == mc.no_spectral_loss
+
+    # infer spectral model from weather
+    # - without precipitable water in it, should resolve to no loss
+    mc.spectral_model = mc.infer_spectral_model(weather=weather)
+    assert mc.spectral_model == mc.no_spectral_loss
+    # - with precipitable water in it, should resolve to first solar
+    weather['precipitable_water'] = 1.42
+    mc.spectral_model = mc.infer_spectral_model(weather=weather)
+    assert mc.spectral_model == mc.first_solar_spectral_loss
+    assert isinstance(mc, ModelChain)
+
+
 @pytest.mark.parametrize('temp_model', [
     'sapm_temp', 'faiman_temp', 'pvsyst_temp', 'fuentes_temp',
     'noct_sam_temp'])

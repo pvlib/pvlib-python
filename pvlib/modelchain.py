@@ -873,8 +873,9 @@ class ModelChain:
             else:
                 raise ValueError(model + ' is not a valid spectral loss model')
         elif model is None:
-            self._spectral_model = self.infer_spectral_model(weather=None)
-        else:
+            # uses recursive setter to infer model, which returns a string
+            self.spectral_model = self.infer_spectral_model(weather=None)
+        else:  # assume model is a callable
             self._spectral_model = partial(model, self)
 
     def infer_spectral_model(self, weather=None):
@@ -891,7 +892,7 @@ class ModelChain:
 
         Returns
         -------
-        Inferred spectral correction model : function
+        Inferred spectral correction model : string key for model setter
 
         Examples
         --------
@@ -899,13 +900,14 @@ class ModelChain:
         >>> mc.spectral_model = mc.infer_spectral_model(weather=weather)
         """
         module_parameters = tuple(
-            array.module_parameters for array in self.system.arrays)
+            array.module_parameters for array in self.system.arrays
+        )
         params = _common_keys(module_parameters)
-        if {'A4', 'A3', 'A2', 'A1', 'A0'} <= params:
-            return self.sapm_spectral_loss
+        if {"A4", "A3", "A2", "A1", "A0"} <= params:
+            return "sapm"
         elif "first_solar_spectral_coefficients" in params:
             # user explicitly sets spectral coefficients
-            return self.first_solar_spectral_loss
+            return "first_solar"
         elif (
             # cell type is known or can be inferred
             ("Technology" in params or "Material" in params)
@@ -916,9 +918,9 @@ class ModelChain:
             # parameters, so we need to check if they are available.
             if weather is not None:  # weather is available
                 if "precipitable_water" in weather:
-                    return self.first_solar_spectral_loss
+                    return "first_solar"
 
-        return self.no_spectral_loss
+        return "no_loss"
 
     def first_solar_spectral_loss(self):
         self.results.spectral_modifier = self.system.first_solar_spectral_loss(

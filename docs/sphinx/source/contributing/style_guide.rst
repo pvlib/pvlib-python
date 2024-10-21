@@ -118,8 +118,8 @@ required for every function.
 
 .. code-block:: python
 
-    def example_function(poa_global, exponents, time_ref,
-                        default_arg='someval', optional_arg=None):
+    def example_function(poa_global, exponents, degree_symbol, time_ref='UT',
+                         optional_arg=None):
         r"""
         Brief summary of the function (no citations).
 

@@ -1603,7 +1603,7 @@ def ghi_from_poa_driesse_2023(surface_tilt, surface_azimuth,
         return ghi
 
 
-def clearsky_index(ghi, clearsky_ghi, max_clearsky_index=2.0):
+def clearsky_index(ghi, ghi_clear, max_clearsky_index=2.0):
     """
     Calculate the clearsky index.
 
@@ -1615,8 +1615,8 @@ def clearsky_index(ghi, clearsky_ghi, max_clearsky_index=2.0):
     ghi : numeric
         Global horizontal irradiance. [Wm⁻²]
 
-    clearsky_ghi : numeric
-        Modeled clearsky GHI
+    ghi_clear : numeric
+        Modeled clearsky GHI. [Wm⁻²]
 
     max_clearsky_index : numeric, default 2.0
         Maximum value of the clearsky index. The default, 2.0, allows
@@ -1627,12 +1627,12 @@ def clearsky_index(ghi, clearsky_ghi, max_clearsky_index=2.0):
     clearsky_index : numeric
         Clearsky index
     """
-    clearsky_index = ghi / clearsky_ghi
+    clearsky_index = ghi / ghi_clear
     # set +inf, -inf, and nans to zero
     clearsky_index = np.where(~np.isfinite(clearsky_index), 0,
                               clearsky_index)
     # but preserve nans in the input arrays
-    input_is_nan = ~np.isfinite(ghi) | ~np.isfinite(clearsky_ghi)
+    input_is_nan = ~np.isfinite(ghi) | ~np.isfinite(ghi_clear)
     clearsky_index = np.where(input_is_nan, np.nan, clearsky_index)
 
     clearsky_index = np.maximum(clearsky_index, 0)

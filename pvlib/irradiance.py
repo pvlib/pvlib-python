@@ -2140,7 +2140,7 @@ def _dirint_bins(times, kt_prime, zenith, w, delta_kt_prime):
     return kt_prime_bin, zenith_bin, w_bin, delta_kt_prime_bin
 
 
-def dirindex(ghi, ghi_clearsky, dni_clearsky, zenith, times, pressure=101325.,
+def dirindex(ghi, ghi_clearsky, dni_clear, zenith, times, pressure=101325.,
              use_delta_kt_prime=True, temp_dew=None, min_cos_zenith=0.065,
              max_zenith=87):
     """
@@ -2162,7 +2162,7 @@ def dirindex(ghi, ghi_clearsky, dni_clearsky, zenith, times, pressure=101325.,
     ghi_clearsky : array-like
         Global horizontal irradiance from clear sky model. [Wm⁻²]
 
-    dni_clearsky : array-like
+    dni_clear : array-like
         Direct normal irradiance from clear sky model. [Wm⁻²]
 
     zenith : array-like
@@ -2228,7 +2228,7 @@ def dirindex(ghi, ghi_clearsky, dni_clearsky, zenith, times, pressure=101325.,
                                  min_cos_zenith=min_cos_zenith,
                                  max_zenith=max_zenith)
 
-    dni_dirindex = dni_clearsky * dni_dirint / dni_dirint_clearsky
+    dni_dirindex = dni_clear * dni_dirint / dni_dirint_clearsky
 
     dni_dirindex[dni_dirindex < 0] = 0.
 

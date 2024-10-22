@@ -192,7 +192,7 @@ required for every function.
 
         Examples
         --------
-        >>> example_function(1, 1, 1)
+        >>> example_function(1, 1, pd.Series([1]), "TST", 2)
         'Something'
 
         References

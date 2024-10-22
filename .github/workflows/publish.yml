@@ -46,7 +46,7 @@ jobs:
 
     - name: List installed file sizes
       run: |
-        du -h ./tmp
+        cd ./tmp && du -h pvlib
 
     # only publish distribution to PyPI for tagged commits
     - name: Publish distribution to PyPI

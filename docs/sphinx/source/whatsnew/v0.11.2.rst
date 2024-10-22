@@ -10,7 +10,10 @@ Deprecations
 
 Enhancements
 ~~~~~~~~~~~~
-
+* Reduced space requirements by removing tests and test files from wheel.
+  Zipped wheel is now 66% of the previous size, and installed size is 50% of
+  the previous size.
+  (:issue:`2271`, :pull:`2277`)
 
 Documentation
 ~~~~~~~~~~~~~
@@ -21,7 +24,8 @@ Documentation
 
 Testing
 ~~~~~~~
-
+* Moved data exclusively used in tests to ``pvlib/tests/data``.
+  (:issue:`2271`, :pull:`2277`)
 
 Requirements
 ~~~~~~~~~~~~

@@ -426,6 +426,7 @@ class NumbaSpaTest(unittest.TestCase, SpaBase):
                 times, lat, lon, elev, pressure, temp, delta_t,
                 atmos_refract, numthreads=3, sst=True)[:3], 5)
 
+
 # Define extra test cases for issue #2077
 test_cases_issue_2207 = [
     ((2000, 1, 1, 12, 0, 0), 2451545.0),
@@ -450,3 +451,5 @@ test_cases_issue_2207 = [
 def test_julian_day_issue_2207(inputs, expected):
     result = pvlib.spa.julian_day_dt(*inputs, microsecond=0)
     assert result == expected, f"Failed for inputs {inputs}"
+
+

@@ -2,7 +2,7 @@ import os
 import datetime as dt
 import warnings
 import pytest
-import pylib
+import pvlib
 
 try:
     from importlib import reload
@@ -443,7 +443,7 @@ test_cases_issue_2207 = [
     ((-1000, 7, 12, 12, 0, 0), 1356001.0),
     ((-1000, 2, 29, 0, 0, 0), 1355866.5),
     ((-1001, 8, 17, 21, 36, 0), 1355671.4),
-    ((-4712, 1, 1, 12, 0, 0), 0.1),
+    ((-4712, 1, 1, 12, 0, 0), 0.0),
 ]
 
 @pytest.mark.parametrize("inputs, expected", test_cases_issue_2207)

@@ -39,6 +39,11 @@ jobs:
     - name: Check metadata verification
       run: python -m twine check --strict dist/*
 
+    - name: Ensure that the wheel installs correctly, and show installed size
+      run: |
+        pip install $(find dist -type f -name "*.whl")
+        du -h $(python -c "import pvlib; print(pvlib.__path__[0])")
+        
     # only publish distribution to PyPI for tagged commits
     - name: Publish distribution to PyPI
       if: startsWith(github.ref, 'refs/tags/v')

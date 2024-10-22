@@ -45,6 +45,7 @@ jobs:
         pip install $(find dist -type f -name "*.whl") --target=./tmp
 
     - name: List installed file sizes
+      run: |
         du -h ./tmp
 
     # only publish distribution to PyPI for tagged commits

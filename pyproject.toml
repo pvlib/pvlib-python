@@ -86,6 +86,11 @@ Documentation = "https://pvlib-python.readthedocs.io/"
 
 [tool.setuptools.packages.find]
 include = ["pvlib*"]
+exclude = ["pvlib.tests*"]
+
+[tool.setuptools.exclude-package-data]
+pvlib = ["tests/data/*"]
+
 
 [tool.setuptools_scm]
 

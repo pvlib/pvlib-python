@@ -84,13 +84,17 @@ all = ["pvlib[test,optional,doc]"]
 Documentation = "https://pvlib-python.readthedocs.io/"
 "Source Code" = "https://github.com/pvlib/pvlib-python"
 
+[tool.setuptools]
+# do not include all non-python files in the bdist by default, but select them manually
+# https://setuptools.pypa.io/en/latest/userguide/datafiles.html#interplay-between-these-keywords (2024-10-22)
+include-package-data = false  # true by default
+
 [tool.setuptools.packages.find]
 include = ["pvlib*"]
 exclude = ["pvlib.tests*"]
 
-[tool.setuptools.exclude-package-data]
-pvlib = ["tests/data/*"]
-
+[tool.setuptools.package-data]
+pvlib = ["data/*"]
 
 [tool.setuptools_scm]
 

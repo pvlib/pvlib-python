@@ -7,8 +7,13 @@ import pytest
 import os
 import tempfile
 from pvlib.iotools import read_bsrn, get_bsrn
-from ..conftest import (TESTS_DATA_DIR, RERUNS, RERUNS_DELAY, assert_index_equal,
-                        requires_bsrn_credentials)
+from ..conftest import (
+    TESTS_DATA_DIR,
+    RERUNS,
+    RERUNS_DELAY,
+    assert_index_equal,
+    requires_bsrn_credentials,
+)
 
 
 @pytest.fixture(scope="module")

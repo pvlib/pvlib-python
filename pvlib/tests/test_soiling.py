@@ -147,9 +147,10 @@ def test_hsu_variable_time_intervals(rainfall_input, expected_output_3):
 @pytest.fixture
 def greensboro_rain():
     # get TMY3 data with rain
-    greensboro, _ = read_tmy3(PVLIB_DATA_DIR / '723170TYA.CSV', coerce_year=1990,
-                              map_variables=True)
-    return greensboro['Lprecip depth (mm)']
+    greensboro, _ = read_tmy3(
+        PVLIB_DATA_DIR / "723170TYA.CSV", coerce_year=1990, map_variables=True
+    )
+    return greensboro["Lprecip depth (mm)"]
 
 
 @pytest.fixture

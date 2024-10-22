@@ -10,8 +10,13 @@ import requests
 from pvlib.iotools import get_pvgis_tmy, read_pvgis_tmy
 from pvlib.iotools import get_pvgis_hourly, read_pvgis_hourly
 from pvlib.iotools import get_pvgis_horizon
-from ..conftest import (TESTS_DATA_DIR, RERUNS, RERUNS_DELAY, assert_frame_equal,
-                        assert_series_equal)
+from ..conftest import (
+    TESTS_DATA_DIR,
+    RERUNS,
+    RERUNS_DELAY,
+    assert_frame_equal,
+    assert_series_equal,
+)
 
 
 # PVGIS Hourly tests
@@ -304,7 +309,9 @@ def test_read_pvgis_hourly_empty_file():
 # PVGIS TMY tests
 @pytest.fixture
 def expected():
-    return pd.read_csv(TESTS_DATA_DIR / 'pvgis_tmy_test.dat', index_col='time(UTC)')
+    return pd.read_csv(
+        TESTS_DATA_DIR / "pvgis_tmy_test.dat", index_col="time(UTC)"
+    )
 
 
 @pytest.fixture

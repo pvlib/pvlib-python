@@ -8,7 +8,6 @@ from numpy.testing import assert_allclose
 import pvlib
 from pvlib import tracking
 from .conftest import TESTS_DATA_DIR, assert_frame_equal, assert_series_equal
-from pvlib._deprecation import pvlibDeprecationWarning
 
 SINGLEAXIS_COL_ORDER = ['tracker_theta', 'aoi',
                         'surface_azimuth', 'surface_tilt']

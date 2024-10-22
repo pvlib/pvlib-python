@@ -7,7 +7,7 @@ from numpy.testing import assert_allclose
 
 import pvlib
 from pvlib import tracking
-from .conftest import DATA_DIR, assert_frame_equal, assert_series_equal
+from .conftest import TESTS_DATA_DIR, assert_frame_equal, assert_series_equal
 from pvlib._deprecation import pvlibDeprecationWarning
 
 SINGLEAXIS_COL_ORDER = ['tracker_theta', 'aoi',
@@ -310,7 +310,7 @@ def test_calc_axis_tilt():
     # expected values
     expected_axis_tilt = 2.239  # [degrees]
     expected_side_slope = 9.86649274360294  # [degrees]
-    expected = DATA_DIR / 'singleaxis_tracker_wslope.csv'
+    expected = TESTS_DATA_DIR / 'singleaxis_tracker_wslope.csv'
     expected = pd.read_csv(expected, index_col='timestamp', parse_dates=True)
     # solar positions
     starttime = '2017-01-01T00:30:00-0300'

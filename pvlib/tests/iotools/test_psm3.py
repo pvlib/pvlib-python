@@ -4,7 +4,7 @@ test iotools for PSM3
 
 import os
 from pvlib.iotools import psm3
-from ..conftest import DATA_DIR, RERUNS, RERUNS_DELAY, assert_index_equal
+from ..conftest import TESTS_DATA_DIR, RERUNS, RERUNS_DELAY, assert_index_equal
 import numpy as np
 import pandas as pd
 import pytest
@@ -13,10 +13,10 @@ from io import StringIO
 import warnings
 from pvlib._deprecation import pvlibDeprecationWarning
 
-TMY_TEST_DATA = DATA_DIR / 'test_psm3_tmy-2017.csv'
-YEAR_TEST_DATA = DATA_DIR / 'test_psm3_2017.csv'
-YEAR_TEST_DATA_5MIN = DATA_DIR / 'test_psm3_2019_5min.csv'
-MANUAL_TEST_DATA = DATA_DIR / 'test_read_psm3.csv'
+TMY_TEST_DATA = TESTS_DATA_DIR / 'test_psm3_tmy-2017.csv'
+YEAR_TEST_DATA = TESTS_DATA_DIR / 'test_psm3_2017.csv'
+YEAR_TEST_DATA_5MIN = TESTS_DATA_DIR / 'test_psm3_2019_5min.csv'
+MANUAL_TEST_DATA = TESTS_DATA_DIR / 'test_read_psm3.csv'
 LATITUDE, LONGITUDE = 40.5137, -108.5449
 METADATA_FIELDS = [
     'Source', 'Location ID', 'City', 'State', 'Country', 'Latitude',

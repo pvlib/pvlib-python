@@ -6,7 +6,7 @@ import pandas as pd
 from .conftest import assert_series_equal
 from pvlib.soiling import hsu, kimber
 from pvlib.iotools import read_tmy3
-from .conftest import DATA_DIR
+from .conftest import TESTS_DATA_DIR, PVLIB_DATA_DIR
 import pytest
 
 
@@ -147,7 +147,7 @@ def test_hsu_variable_time_intervals(rainfall_input, expected_output_3):
 @pytest.fixture
 def greensboro_rain():
     # get TMY3 data with rain
-    greensboro, _ = read_tmy3(DATA_DIR / '723170TYA.CSV', coerce_year=1990,
+    greensboro, _ = read_tmy3(PVLIB_DATA_DIR / '723170TYA.CSV', coerce_year=1990,
                               map_variables=True)
     return greensboro['Lprecip depth (mm)']
 
@@ -155,7 +155,7 @@ def greensboro_rain():
 @pytest.fixture
 def expected_kimber_nowash():
     return pd.read_csv(
-        DATA_DIR / 'greensboro_kimber_soil_nowash.dat',
+        TESTS_DATA_DIR / 'greensboro_kimber_soil_nowash.dat',
         parse_dates=True, index_col='timestamp')
 
 
@@ -172,7 +172,7 @@ def test_kimber_nowash(greensboro_rain, expected_kimber_nowash):
 @pytest.fixture
 def expected_kimber_manwash():
     return pd.read_csv(
-        DATA_DIR / 'greensboro_kimber_soil_manwash.dat',
+        TESTS_DATA_DIR / 'greensboro_kimber_soil_manwash.dat',
         parse_dates=True, index_col='timestamp')
 
 

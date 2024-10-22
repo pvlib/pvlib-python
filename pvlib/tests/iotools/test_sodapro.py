@@ -8,13 +8,13 @@ import requests
 import pytest
 
 from pvlib.iotools import sodapro
-from ..conftest import DATA_DIR, assert_frame_equal
+from ..conftest import TESTS_DATA_DIR, assert_frame_equal
 
 
-testfile_mcclear_verbose = DATA_DIR / 'cams_mcclear_1min_verbose.csv'
-testfile_mcclear_monthly = DATA_DIR / 'cams_mcclear_monthly.csv'
-testfile_radiation_verbose = DATA_DIR / 'cams_radiation_1min_verbose.csv'
-testfile_radiation_monthly = DATA_DIR / 'cams_radiation_monthly.csv'
+testfile_mcclear_verbose = TESTS_DATA_DIR / 'cams_mcclear_1min_verbose.csv'
+testfile_mcclear_monthly = TESTS_DATA_DIR / 'cams_mcclear_monthly.csv'
+testfile_radiation_verbose = TESTS_DATA_DIR / 'cams_radiation_1min_verbose.csv'
+testfile_radiation_monthly = TESTS_DATA_DIR / 'cams_radiation_monthly.csv'
 
 
 index_verbose = pd.date_range('2020-06-01 12', periods=4, freq='1min',

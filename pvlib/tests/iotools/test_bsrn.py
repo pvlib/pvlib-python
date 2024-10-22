@@ -7,7 +7,7 @@ import pytest
 import os
 import tempfile
 from pvlib.iotools import read_bsrn, get_bsrn
-from ..conftest import (DATA_DIR, RERUNS, RERUNS_DELAY, assert_index_equal,
+from ..conftest import (TESTS_DATA_DIR, RERUNS, RERUNS_DELAY, assert_index_equal,
                         requires_bsrn_credentials)
 
 
@@ -33,7 +33,7 @@ def expected_index():
     ('bsrn-lr0100-pay0616.dat'),
 ])
 def test_read_bsrn(testfile, expected_index):
-    data, metadata = read_bsrn(DATA_DIR / testfile)
+    data, metadata = read_bsrn(TESTS_DATA_DIR / testfile)
     assert_index_equal(expected_index, data.index)
     assert 'ghi' in data.columns
     assert 'dni_std' in data.columns
@@ -45,7 +45,7 @@ def test_read_bsrn(testfile, expected_index):
 def test_read_bsrn_logical_records(expected_index):
     # Test if logical records 0300 and 0500 are correct parsed
     # and that 0100 is not passed when not specified
-    data, metadata = read_bsrn(DATA_DIR / 'bsrn-pay0616.dat.gz',
+    data, metadata = read_bsrn(TESTS_DATA_DIR / 'bsrn-pay0616.dat.gz',
                                logical_records=['0300', '0500'])
     assert_index_equal(expected_index, data.index)
     assert 'lwu' in data.columns
@@ -57,13 +57,13 @@ def test_read_bsrn_logical_records(expected_index):
 def test_read_bsrn_bad_logical_record():
     # Test if ValueError is raised if an unsupported logical record is passed
     with pytest.raises(ValueError, match='not in'):
-        read_bsrn(DATA_DIR / 'bsrn-lr0100-pay0616.dat',
+        read_bsrn(TESTS_DATA_DIR / 'bsrn-lr0100-pay0616.dat',
                   logical_records=['dummy'])
 
 
 def test_read_bsrn_logical_records_not_found():
     # Test if an empty dataframe is returned if specified LRs are not present
-    data, metadata = read_bsrn(DATA_DIR / 'bsrn-lr0100-pay0616.dat',
+    data, metadata = read_bsrn(TESTS_DATA_DIR / 'bsrn-lr0100-pay0616.dat',
                                logical_records=['0300', '0500'])
     assert data.empty  # assert that the dataframe is empty
     assert 'uva_global' in data.columns

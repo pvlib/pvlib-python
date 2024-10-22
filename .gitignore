@@ -82,8 +82,9 @@ coverage.xml
 
 # Datafiles
 *.csv
-# Ignore some csv 
-!pvlib/data/*.csv 
+# Do not exclude data directories
+!pvlib/data/**
+!pvlib/tests/data/**
 
 # vi
 *.swp

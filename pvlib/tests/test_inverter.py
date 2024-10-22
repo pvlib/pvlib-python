@@ -4,7 +4,7 @@ import pandas as pd
 from .conftest import assert_series_equal
 from numpy.testing import assert_allclose
 
-from .conftest import DATA_DIR
+from .conftest import TESTS_DATA_DIR
 import pytest
 
 from pvlib import inverter
@@ -190,8 +190,8 @@ def test_pvwatts_multi():
     assert_series_equal(pd.Series(expected), out)
 
 
-INVERTER_TEST_MEAS = DATA_DIR / 'inverter_fit_snl_meas.csv'
-INVERTER_TEST_SIM = DATA_DIR / 'inverter_fit_snl_sim.csv'
+INVERTER_TEST_MEAS = TESTS_DATA_DIR / 'inverter_fit_snl_meas.csv'
+INVERTER_TEST_SIM = TESTS_DATA_DIR / 'inverter_fit_snl_sim.csv'
 
 
 @pytest.mark.parametrize('infilen, expected', [

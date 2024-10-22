@@ -4,7 +4,7 @@ import pytest
 from pvlib.ivtools.utils import _numdiff, rectify_iv_curve, astm_e1036
 from pvlib.ivtools.utils import _schumaker_qspline
 
-from ..conftest import DATA_DIR
+from ..conftest import TESTS_DATA_DIR
 
 
 @pytest.fixture
@@ -17,7 +17,7 @@ def ivcurve():
 
 
 def test__numdiff():
-    iv = pd.read_csv(DATA_DIR / 'ivtools_numdiff.csv',
+    iv = pd.read_csv(TESTS_DATA_DIR / 'ivtools_numdiff.csv',
                      names=['I', 'V', 'dIdV', 'd2IdV2'], dtype=float)
     df, d2f = _numdiff(iv.V, iv.I)
     assert np.allclose(iv.dIdV, df, equal_nan=True)

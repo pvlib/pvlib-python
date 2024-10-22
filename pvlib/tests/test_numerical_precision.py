@@ -21,13 +21,13 @@ import numpy as np
 import pandas as pd
 from pvlib import pvsystem
 from pvlib.singlediode import bishop88, estimate_voc
-from .conftest import DATA_DIR
+from .conftest import TESTS_DATA_DIR
 
 logging.basicConfig()
 LOGGER = logging.getLogger(__name__)
 LOGGER.setLevel(logging.DEBUG)
 TEST_DATA = 'bishop88_numerical_precision.csv'
-DATA_PATH = DATA_DIR / TEST_DATA
+DATA_PATH = TESTS_DATA_DIR / TEST_DATA
 POA = 888
 TCELL = 55
 # module parameters from CEC module SunPower SPR-E20-327

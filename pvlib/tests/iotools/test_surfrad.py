@@ -2,9 +2,9 @@ import pandas as pd
 import pytest
 
 from pvlib.iotools import surfrad
-from ..conftest import DATA_DIR, RERUNS, RERUNS_DELAY
+from ..conftest import TESTS_DATA_DIR, RERUNS, RERUNS_DELAY
 
-testfile = DATA_DIR / 'surfrad-slv16001.dat'
+testfile = TESTS_DATA_DIR / 'surfrad-slv16001.dat'
 network_testfile = ('ftp://aftp.cmdl.noaa.gov/data/radiation/surfrad/'
                     'Alamosa_CO/2016/slv16001.dat')
 https_testfile = ('https://gml.noaa.gov/aftp/data/radiation/surfrad/'

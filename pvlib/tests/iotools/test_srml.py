@@ -3,10 +3,10 @@ import pandas as pd
 import pytest
 
 from pvlib.iotools import srml
-from ..conftest import (DATA_DIR, RERUNS, RERUNS_DELAY, assert_index_equal,
+from ..conftest import (TESTS_DATA_DIR, RERUNS, RERUNS_DELAY, assert_index_equal,
                         assert_frame_equal)
 
-srml_testfile = DATA_DIR / 'SRML-day-EUPO1801.txt'
+srml_testfile = TESTS_DATA_DIR / 'SRML-day-EUPO1801.txt'
 
 
 def test_read_srml():

@@ -10,7 +10,7 @@ from pvlib.singlediode import (bishop88_mpp, estimate_voc, VOLTAGE_BUILTIN,
                                bishop88, bishop88_i_from_v, bishop88_v_from_i)
 import pytest
 from numpy.testing import assert_array_equal
-from .conftest import DATA_DIR
+from .conftest import TESTS_DATA_DIR
 
 POA = 888
 TCELL = 55
@@ -128,12 +128,12 @@ def build_precise_iv_curve_dataframe(file_csv, file_json):
 
 @pytest.fixture(scope='function', params=[
     {
-        'csv': f'{DATA_DIR}/precise_iv_curves_parameter_sets1.csv',
-        'json': f'{DATA_DIR}/precise_iv_curves1.json'
+        'csv': f'{TESTS_DATA_DIR}/precise_iv_curves_parameter_sets1.csv',
+        'json': f'{TESTS_DATA_DIR}/precise_iv_curves1.json'
     },
     {
-        'csv': f'{DATA_DIR}/precise_iv_curves_parameter_sets2.csv',
-        'json': f'{DATA_DIR}/precise_iv_curves2.json'
+        'csv': f'{TESTS_DATA_DIR}/precise_iv_curves_parameter_sets2.csv',
+        'json': f'{TESTS_DATA_DIR}/precise_iv_curves2.json'
     }
 ], ids=[1, 2])
 def precise_iv_curves(request):

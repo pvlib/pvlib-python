@@ -207,7 +207,9 @@ required for every function.
            Accessed: Feb. 1, 2009. [Online.]
            Available: http://www.cnn.com/POLITICS/01/21/obama_inaugurated/index.html
         """
-        return "Something"
+        a = "Some"
+        b = "thing"
+        return a + b
 
 A preview of how this docstring would render in the documentation can be seen in the
 following file: :download:`Example docstring<../_images/example_function_screenshot.png>`.

@@ -121,7 +121,7 @@ required for every function.
     def example_function(poa_global, exponents, degree_symbol, time_ref='UT',
                          optional_arg=None):
         r"""
-        Brief summary of the function (no citations).
+        One-sentence summary of the function (no citations).
 
         A longer description of the function. This can include citations
         (references) to literature [1]_, websites [2]_, and other code elements
@@ -215,7 +215,7 @@ A preview of how this docstring would render in the documentation can be seen in
 following file: :download:`Example docstring<../_images/example_function_screenshot.png>`.
 
 Remember that to show the docstring in the documentation, you must list
-the function in the appropriate ``.rst`` file in the ``docs/sphinx/source/reference`` file.
+the function in the appropriate ``.rst`` file in the ``docs/sphinx/source/reference`` folder.
 
 .. _example-gallery:
 

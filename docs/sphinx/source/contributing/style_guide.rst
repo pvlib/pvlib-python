@@ -148,6 +148,10 @@ required for every function.
         optional_arg : integer, optional
             A description of ``optional_arg``. [Unitless].
 
+            Specify a suitable datatype for each parameter. Other common
+            data types include ``str``, ``bool``, ``float``, ``numeric``
+            and ``pandas.DatetimeIndex``.
+
         Returns
         -------
         name : numeric

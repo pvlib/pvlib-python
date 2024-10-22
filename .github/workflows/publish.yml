@@ -33,6 +33,9 @@ jobs:
     - name: Build packages
       run: python -m build
 
+    - name: List distribution file sizes
+      run: ls -hl dist/*
+
     - name: Check metadata verification
       run: python -m twine check --strict dist/*
 

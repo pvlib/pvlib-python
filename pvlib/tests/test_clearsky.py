@@ -16,7 +16,7 @@ from pvlib import solarposition
 from pvlib import atmosphere
 from pvlib import irradiance
 
-from .conftest import DATA_DIR
+from .conftest import TESTS_DATA_DIR
 
 
 def test_ineichen_series():
@@ -513,7 +513,7 @@ def test_linke_turbidity_corners():
 
 @pytest.fixture
 def detect_clearsky_data():
-    data_file = DATA_DIR / 'detect_clearsky_data.csv'
+    data_file = TESTS_DATA_DIR / 'detect_clearsky_data.csv'
     expected = pd.read_csv(
         data_file, index_col=0, parse_dates=True, comment='#')
     expected = expected.tz_localize('UTC').tz_convert('Etc/GMT+7')
@@ -537,7 +537,7 @@ def detect_clearsky_data():
 def detect_clearsky_threshold_data():
     # this is (roughly) just a 2 hour period of the same data in
     # detect_clearsky_data (which only spans 30 minutes)
-    data_file = DATA_DIR / 'detect_clearsky_threshold_data.csv'
+    data_file = TESTS_DATA_DIR / 'detect_clearsky_threshold_data.csv'
     expected = pd.read_csv(
         data_file, index_col=0, parse_dates=True, comment='#')
     expected = expected.tz_localize('UTC').tz_convert('Etc/GMT+7')
@@ -781,7 +781,7 @@ def test_bird():
         etr, b_a, alb
     )
     Eb, Ebh, Gh, Dh = (irrads[_] for _ in field_names)
-    data_path = DATA_DIR / 'BIRD_08_16_2012.csv'
+    data_path = TESTS_DATA_DIR / 'BIRD_08_16_2012.csv'
     testdata = pd.read_csv(data_path, usecols=range(1, 26), header=1).dropna()
     testdata[['DEC', 'EQT']] = testdata[['DEC', 'EQT']].shift(tz)
     testdata = testdata[:tz]
@@ -842,7 +842,7 @@ def test_bird():
         zenith, airmass, aod_380nm, aod_500nm, h2o_cm, dni_extra=etr
     )
     Eb2, Ebh2, Gh2, Dh2 = (irrads2[_] for _ in field_names)
-    data_path = DATA_DIR / 'BIRD_08_16_2012_patm.csv'
+    data_path = TESTS_DATA_DIR / 'BIRD_08_16_2012_patm.csv'
     testdata2 = pd.read_csv(data_path, usecols=range(1, 26), header=1).dropna()
     testdata2[['DEC', 'EQT']] = testdata2[['DEC', 'EQT']].shift(tz)
     testdata2 = testdata2[:tz]

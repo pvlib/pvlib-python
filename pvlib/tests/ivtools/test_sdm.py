@@ -10,7 +10,7 @@ from pvlib._deprecation import pvlibDeprecationWarning
 
 from pvlib.tests.conftest import requires_pysam, requires_statsmodels
 
-from ..conftest import DATA_DIR
+from ..conftest import TESTS_DATA_DIR
 
 
 @pytest.fixture
@@ -130,7 +130,7 @@ def _read_iv_curves_for_test(datafile, npts):
     ivcurves = dict.fromkeys(['i_sc', 'i_mp', 'v_mp', 'v_oc', 'poa', 'tc',
                               'ee'])
 
-    infilen = DATA_DIR / datafile
+    infilen = TESTS_DATA_DIR / datafile
     with infilen.open(mode='r') as f:
 
         Ns, aIsc, bVoc, descr = f.readline().split(',')
@@ -194,7 +194,7 @@ def _read_pvsyst_expected(datafile):
     varlist = ['iph', 'io', 'rs', 'rsh', 'u']
     pvsyst = dict.fromkeys(paramlist + varlist)
 
-    infilen = DATA_DIR / datafile
+    infilen = TESTS_DATA_DIR / datafile
     with infilen.open(mode='r') as f:
 
         Ns, aIsc, bVoc, descr = f.readline().split(',')

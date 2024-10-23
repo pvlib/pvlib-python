@@ -3,10 +3,10 @@ test iotools for panond
 """
 
 from pvlib.iotools import read_panond
-from pvlib.tests.conftest import DATA_DIR
+from pvlib.tests.conftest import TESTS_DATA_DIR
 
-PAN_FILE = DATA_DIR / 'ET-M772BH550GL.PAN'
-OND_FILE = DATA_DIR / 'CPS SCH275KTL-DO-US-800-250kW_275kVA_1.OND'
+PAN_FILE = TESTS_DATA_DIR / 'ET-M772BH550GL.PAN'
+OND_FILE = TESTS_DATA_DIR / 'CPS SCH275KTL-DO-US-800-250kW_275kVA_1.OND'
 
 
 def test_read_panond():

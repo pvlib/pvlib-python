@@ -2,19 +2,19 @@ import numpy as np
 import pandas as pd
 from pvlib.iotools import tmy
 from pvlib._deprecation import pvlibDeprecationWarning
-from ..conftest import DATA_DIR
+from ..conftest import TESTS_DATA_DIR, PVLIB_DATA_DIR
 import pytest
 import warnings
 
 # test the API works
 from pvlib.iotools import read_tmy3
 
-TMY2_TESTFILE = DATA_DIR / '12839.tm2'
+TMY2_TESTFILE = PVLIB_DATA_DIR / '12839.tm2'
 # TMY3 format (two files below) represents midnight as 24:00
-TMY3_TESTFILE = DATA_DIR / '703165TY.csv'
-TMY3_FEB_LEAPYEAR = DATA_DIR / '723170TYA.CSV'
+TMY3_TESTFILE = PVLIB_DATA_DIR / '703165TY.csv'
+TMY3_FEB_LEAPYEAR = PVLIB_DATA_DIR / '723170TYA.CSV'
 # The SolarAnywhere TMY3 format (file below) represents midnight as 00:00
-TMY3_SOLARANYWHERE = DATA_DIR / 'Burlington, United States SolarAnywhere Time Series 2021 Lat_44_465 Lon_-73_205 TMY3 format.csv'  # noqa: E501
+TMY3_SOLARANYWHERE = TESTS_DATA_DIR / 'Burlington, United States SolarAnywhere Time Series 2021 Lat_44_465 Lon_-73_205 TMY3 format.csv'  # noqa: E501
 
 
 def test_read_tmy3():

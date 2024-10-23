@@ -2,14 +2,14 @@ import pandas as pd
 import pytest
 import pvlib
 import os
-from ..conftest import (DATA_DIR, RERUNS, RERUNS_DELAY,
+from ..conftest import (TESTS_DATA_DIR, RERUNS, RERUNS_DELAY,
                         requires_solaranywhere_credentials)
 
 # High spatial resolution and 5-min data, true dynamics enabled
-TESTFILE_HIGH_RESOLUTION = DATA_DIR / 'Burlington, United States SolarAnywhere Time Series 20210101 to 20210103 Lat_44_4675 Lon_-73_2075 SA format.csv'  # noqa: E501
+TESTFILE_HIGH_RESOLUTION = TESTS_DATA_DIR / 'Burlington, United States SolarAnywhere Time Series 20210101 to 20210103 Lat_44_4675 Lon_-73_2075 SA format.csv'  # noqa: E501
 # TGY test file (v3.6) containing GHI/DHI and temperature.
 # Note, the test file only contains the first three days.
-TESTFILE_TMY = DATA_DIR / 'Burlington, United States SolarAnywhere Typical GHI Year Lat_44_465 Lon_-73_205 SA format.csv'  # noqa: E501
+TESTFILE_TMY = TESTS_DATA_DIR / 'Burlington, United States SolarAnywhere Typical GHI Year Lat_44_465 Lon_-73_205 SA format.csv'  # noqa: E501
 
 
 @pytest.fixture(scope="module")

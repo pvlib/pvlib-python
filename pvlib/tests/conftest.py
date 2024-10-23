@@ -70,7 +70,8 @@ def assert_frame_equal(left, right, **kwargs):
 
 # commonly used directories in the tests
 TEST_DIR = Path(__file__).parent
-DATA_DIR = TEST_DIR.parent / 'data'
+PVLIB_DATA_DIR = TEST_DIR.parent / 'data'
+TESTS_DATA_DIR = TEST_DIR / 'data'
 
 
 # pytest-rerunfailures variables

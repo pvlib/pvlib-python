@@ -2,9 +2,9 @@ import numpy as np
 import pytest
 import pandas as pd
 
-from ..conftest import DATA_DIR
+from ..conftest import TESTS_DATA_DIR
 
-SPECTRL2_TEST_DATA = DATA_DIR / 'spectrl2_example_spectra.csv'
+SPECTRL2_TEST_DATA = TESTS_DATA_DIR / 'spectrl2_example_spectra.csv'
 
 
 @pytest.fixture

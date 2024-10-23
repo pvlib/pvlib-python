@@ -3,7 +3,7 @@ import pytest
 import pytz
 
 from pvlib.iotools import midc
-from ..conftest import DATA_DIR, RERUNS, RERUNS_DELAY
+from ..conftest import TESTS_DATA_DIR, RERUNS, RERUNS_DELAY
 
 
 @pytest.fixture
@@ -17,10 +17,10 @@ def test_mapping():
     }
 
 
-MIDC_TESTFILE = DATA_DIR / 'midc_20181014.txt'
-MIDC_RAW_TESTFILE = DATA_DIR / 'midc_raw_20181018.txt'
+MIDC_TESTFILE = TESTS_DATA_DIR / 'midc_20181014.txt'
+MIDC_RAW_TESTFILE = TESTS_DATA_DIR / 'midc_raw_20181018.txt'
 MIDC_RAW_SHORT_HEADER_TESTFILE = (
-    DATA_DIR / 'midc_raw_short_header_20191115.txt')
+    TESTS_DATA_DIR / 'midc_raw_short_header_20191115.txt')
 
 # TODO: not used, remove?
 # midc_network_testfile = ('https://midcdmz.nrel.gov/apps/data_api.pl'

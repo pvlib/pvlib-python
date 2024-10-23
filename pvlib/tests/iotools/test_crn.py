@@ -3,7 +3,7 @@ import numpy as np
 from numpy import dtype, nan
 import pytest
 from pvlib.iotools import crn
-from ..conftest import DATA_DIR, assert_frame_equal, assert_index_equal
+from ..conftest import TESTS_DATA_DIR, assert_frame_equal, assert_index_equal
 
 
 @pytest.fixture
@@ -41,12 +41,12 @@ def dtypes():
 
 @pytest.fixture
 def testfile():
-    return DATA_DIR / 'CRNS0101-05-2019-AZ_Tucson_11_W.txt'
+    return TESTS_DATA_DIR / 'CRNS0101-05-2019-AZ_Tucson_11_W.txt'
 
 
 @pytest.fixture
 def testfile_problems():
-    return DATA_DIR / 'CRN_with_problems.txt'
+    return TESTS_DATA_DIR / 'CRN_with_problems.txt'
 
 
 def test_read_crn(testfile, columns_mapped, dtypes):

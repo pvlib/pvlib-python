@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 
 import pytest
-from .conftest import DATA_DIR, assert_series_equal
+from .conftest import TESTS_DATA_DIR, assert_series_equal
 from numpy.testing import assert_allclose
 
 from pvlib import temperature, tools
@@ -196,7 +196,7 @@ def _read_pvwatts_8760(filename):
 ])
 def test_fuentes(filename, inoct):
     # Test against data exported from pvwatts.nrel.gov
-    data = _read_pvwatts_8760(DATA_DIR / filename)
+    data = _read_pvwatts_8760(TESTS_DATA_DIR / filename)
     data = data.iloc[:24*7, :]  # just use one week
     inputs = {
         'poa_global': data['Plane of Array Irradiance (W/m^2)'],

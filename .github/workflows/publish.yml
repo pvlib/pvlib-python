@@ -33,8 +33,20 @@ jobs:
     - name: Build packages
       run: python -m build
 
+    - name: List distribution file sizes
+      run: du -h dist/*
+
     - name: Check metadata verification
       run: python -m twine check --strict dist/*
+
+    - name: Ensure that the wheel installs successfully
+      run: |
+        mkdir ./tmp
+        pip install $(find dist -type f -name "*.whl") --target=./tmp
+
+    - name: List installed file sizes
+      run: du -h pvlib
+      working-directory: ./tmp
 
     # only publish distribution to PyPI for tagged commits
     - name: Publish distribution to PyPI

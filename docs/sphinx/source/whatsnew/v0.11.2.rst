@@ -12,6 +12,11 @@ Enhancements
 ~~~~~~~~~~~~
 
 
+Bug fixes
+~~~~~~~~~
+* :py:func:`~pvlib.spa.julian_day_dt` now accounts for the 10 day difference
+  between Julian and Gregorian calendars prior to the year 1582. (:issue:`2077`, :pull:`2249`)
+
 Documentation
 ~~~~~~~~~~~~~
 * Edited docstrings for :py:func:`~pvlib.pvsystem.dc_ohms_from_percent` and
@@ -37,6 +42,8 @@ Contributors
 ~~~~~~~~~~~~
 * Cliff Hansen (:ghuser:`cwhanse`)
 * Rajiv Daxini (:ghuser:`RDaxini`)
+* Dave Pitts (:ghuser:`dgapitts`)
+* Kurt Rhee (:ghuser:`kurt-rhee`)
 * Mark Mikofski (:ghuser:`mikofski`)
 * matsuobasho (:ghuser:`matsuobasho`)
 * Echedey Luis (:ghuser:`echedey-ls`)

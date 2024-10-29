@@ -759,6 +759,10 @@ def detect_clearsky(measured, clearsky, times=None, infer_limits=False,
     ------
     ValueError
         If measured is not a Series and times is not provided.
+    ValueError
+        If a window contains less than three data points.
+    ValueError
+        If the measured data is not sufficient to fill a window.
     NotImplementedError
         If timestamps are not equally spaced.
 

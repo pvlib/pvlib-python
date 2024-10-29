@@ -680,7 +680,7 @@ def test_detect_clearsky_not_enough_data(detect_clearsky_data):
 
 def test_detect_clearsky_window_too_short(detect_clearsky_data):
     expected, cs = detect_clearsky_data
-    with pytest.raises(ValueError, match="window_length must contain"):
+    with pytest.raises(ValueError, match="Window of length"):
         clearsky.detect_clearsky(expected['GHI'], cs['ghi'], window_length=2)
 
 

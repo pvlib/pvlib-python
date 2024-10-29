@@ -27,10 +27,16 @@ from pvlib import atmosphere, tools
 from pvlib.tools import datetime_to_djd, djd_to_datetime
 
 
-def get_solarposition(time, latitude, longitude,
-                      altitude=None, pressure=None,
-                      method='nrel_numpy',
-                      temperature=12, **kwargs):
+def get_solarposition(
+    time: pd.DatetimeIndex,
+    latitude: float,
+    longitude: float,
+    altitude: float | None = None,
+    pressure: float | None = None,
+    method: str = 'nrel_numpy',
+    temperature: float = 12.,
+    **kwargs
+):
     """
     A convenience wrapper for the solar position calculators.
 
@@ -125,8 +131,8 @@ def get_solarposition(time, latitude, longitude,
     return ephem_df
 
 
-def spa_c(time, latitude, longitude, pressure=101325, altitude=0,
-          temperature=12, delta_t=67.0,
+def spa_c(time, latitude, longitude, pressure=101325., altitude=0.,
+          temperature=12., delta_t=67.0,
           raw_spa_output=False):
     r"""
     Calculate the solar position using the C implementation of the NREL
@@ -279,7 +285,7 @@ def _datetime_to_unixtime(dtindex):
 
 
 def spa_python(time, latitude, longitude,
-               altitude=0, pressure=101325, temperature=12, delta_t=67.0,
+               altitude=0., pressure=101325., temperature=12., delta_t=67.0,
                atmos_refract=None, how='numpy', numthreads=4):
     """
     Calculate the solar position using a python implementation of the

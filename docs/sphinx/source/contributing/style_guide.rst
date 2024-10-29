@@ -70,6 +70,81 @@ the ``docs/readthedocs.org:pvlib-python`` link within the checks
 status box at the bottom of the pull request.
 
 
+.. _references:
+
+References
+----------
+pvlib-python is transitioning to the `IEEE reference style <https://journals.ieeeauthorcenter.ieee.org/wp-content/uploads/sites/7/IEEE_Reference_Guide.pdf>`_,
+which should be used in all new contributions. At minimum, a reference should
+include:
+
+* Author list (for more than six authors, list only the first with et al.)
+* Publication title
+* Publisher (journal title, laboratory name, etc.)
+* Year of publication
+* DOI (if available)
+
+The recommended citation style for several media types is as follows:
+
+**Journal article**:
+
+    Author initials and surname, "Title of article," abbreviated journal
+    title, vol. number, issue number, page numbers, Abbreviated Month Year.
+
+**Book**:
+
+    Author initials. Author Surname, "Chapter title" in Book Title, xth ed.
+    City of Publisher, (only U.S. State), Country: Abbrev. of Publisher, year,
+    ch. x, sec. x, pp. xxx–xxx.
+
+**Technical report**:
+
+    Author initials. Author Surname, "Report title" Abbrev. publisher name,
+    City of publisher, Abbrev. State, Country, Rep. xxx, year
+
+The example below shows how to cite material and generate a reference list
+using the IEEE style in a docstring::
+
+    This is the recommended citation for the pvlib-python project [1]_. There
+    are also some conference papers linked to pvlib, for example [2]_.
+    
+    Other types of reference you may find in the pvlib-python documentation
+    include books [3]_, technical reports [4]_, and websites [5]_.
+
+    References
+    ----------
+    .. [1] K. Anderson, C. Hansen, W. Holmgren, A. Jensen, M. Mikofski,
+           and A Driesse. "pvlib python: 2023 project update." J. Open Source
+           Softw. vol. 8, no. 92, pp. 5994, Dec 2023,
+           :doi:`10.21105/joss.05994`.
+
+    .. [2] J. S. Stein, "The Photovoltaic Performance Modeling Collaborative
+           (PVPMC)," In Proc. 38th IEEE Photovoltaic Specialists Conference
+           (PVSC), Austin, TX, USA, 2012, pp. 3048-3052,
+           :doi:`10.1109/PVSC.2012.6318225`.
+
+    .. [3] J. A. Duffie and W. A. Beckman, "Solar Radiation" in Solar
+           Engineering of Thermal Processes, 3rd ed, New York, USA, J. Wiley
+           and Sons, 2006, ch. 1, sec. 1.5, pp.9-11.
+
+    .. [4] R. Bird and C. Riordan, "Simple solar spectral model for direct and
+           diffuse irradiance on horizontal and tilted planes at the earth’s
+           surface for cloudless atmospheres", NREL, Golden, CO, USA, Technical
+           Report TR-215-2436, 1984, :doi:`10.2172/5986936`.
+
+    .. [5] "PVPMC Home." Sandia National Laboratories PV Performance Modeling
+           Collaborative. Accessed: Oct. 17, 2024. [Online.] Available:
+           <https://pvpmc.sandia.gov/>_
+
+Things to note:
+
+* In-text numeric citations are a number inside square brackets, followed
+  by an underscore, e.g. ``[1]_``.
+* To include a DOI, you can use pvlib's custom ``:doi:``
+  `Sphinx role <https://www.sphinx-doc.org/en/master/usage/restructuredtext/roles.html>`_,
+  followed by the DOI inside a set of backticks.
+
+
 .. _building-the-documentation:
 
 Building the documentation

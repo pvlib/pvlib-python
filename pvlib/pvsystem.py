@@ -2969,7 +2969,7 @@ def dc_ohmic_losses(resistance, current):
 
     .. math::
 
-        L = I \times R^2
+        L = I^2 \times R
 
     where :math:`I` is the current (A) and :math:`R` is the resistance of the
     conductor (ohms).

@@ -16,6 +16,11 @@ Bug Fixes
 * :py:meth:`~pvlib.pvsystem.PVSystem.get_irradiance` accepts float inputs.
   (:issue:`1338`, :pull:`2227`)
 
+Bug fixes
+~~~~~~~~~
+* :py:func:`~pvlib.spa.julian_day_dt` now accounts for the 10 day difference
+  between Julian and Gregorian calendars prior to the year 1582. (:issue:`2077`, :pull:`2249`)
+
 Documentation
 ~~~~~~~~~~~~~
 * Edited docstrings for :py:func:`~pvlib.pvsystem.dc_ohms_from_percent` and
@@ -23,7 +28,10 @@ Documentation
 * Clarified that :py:meth:`~pvlib.pvsystem.PVSystem.get_irradiance` and
   :py:meth:`~pvlib.pvsystem.Array.get_irradiance` do not accept tuple of float
   as input. (:pull:`2227`)
-
+* Added a new citation style guide (:ref:`references`) to the contributing
+  page. (:issue:`2202`, :pull:`2226`)
+* Updated :py:func:`~pvlib.irradiance.reindl` to include definitions of terms
+  and a new "notes" section (:issue:`2183`, :pull:`2193`)
 
 Testing
 ~~~~~~~
@@ -33,7 +41,18 @@ Requirements
 ~~~~~~~~~~~~
 
 
+Maintenance
+~~~~~~~~~~~
+* Added a decorator to deprecate renamed keyword arguments in functions,
+  :py:func:`pvlib._deprecation.renamed_kwarg_warning`. (:pull:`2237`)
+
+
 Contributors
 ~~~~~~~~~~~~
 * Cliff Hansen (:ghuser:`cwhanse`)
-
+* Rajiv Daxini (:ghuser:`RDaxini`)
+* Dave Pitts (:ghuser:`dgapitts`)
+* Kurt Rhee (:ghuser:`kurt-rhee`)
+* Mark Mikofski (:ghuser:`mikofski`)
+* matsuobasho (:ghuser:`matsuobasho`)
+* Echedey Luis (:ghuser:`echedey-ls`)

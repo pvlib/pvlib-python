@@ -323,11 +323,11 @@ class PVSystem:
             Solar zenith angle.
         solar_azimuth : float or Series
             Solar azimuth angle.
-        dni : float or Series or tuple of Series
+        dni : float, Series, or tuple of Series
             Direct Normal Irradiance. [W/m2]
-        ghi : float or Series or tuple of Series
+        ghi : float, Series, or tuple of Series
             Global horizontal irradiance. [W/m2]
-        dhi : float or Series or tuple of Series
+        dhi : float, Series, or tuple of Series
             Diffuse horizontal irradiance. [W/m2]
         dni_extra : float, Series or tuple of Series, optional
             Extraterrestrial direct normal irradiance. [W/m2]
@@ -344,11 +344,12 @@ class PVSystem:
 
         Notes
         -----
-        Each of ``dni``, ``ghi``, and ``dni`` may be passed as a tuple
-        of Series to provide different irradiance for each array in the system.
-        If passed as a tuple of Series the tuple length must be the same
-        as the number of Arrays. If not passed as a tuple then the same values
-        are used for each Array.
+        Each of ``dni``, ``ghi``, and ``dni`` may be passed as a float, Series,
+        or tuple of Series. If passed as a float or Series, these values are
+        used for each Array. If passed as a tuple of Series the tuple length
+        must be the same as the number of Arrays. The first tuple element is
+        used for the first Array, the second tuple element for the second
+        Array, and so forth.
 
         Some sky irradiance models require ``dni_extra``. For these models,
         if ``dni_extra`` is not provided and ``solar_zenith`` has a

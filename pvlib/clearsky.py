@@ -713,8 +713,8 @@ def detect_clearsky(measured, clearsky, times=None, infer_limits=False,
         If True, does not use passed in kwargs (or defaults), but instead
         interpolates these values from Table 1 in [2]_.
     window_length : int, default 10
-        Length of sliding time window in minutes. Must be greater than 2
-        periods.
+        Length of sliding time window in minutes. Each window must contain at
+        least three data points.
     mean_diff : float, default 75
         Threshold value for agreement between mean values of measured
         and clearsky in each interval, see Eq. 6 in [1]. [W/m2]
@@ -758,9 +758,9 @@ def detect_clearsky(measured, clearsky, times=None, infer_limits=False,
     Raises
     ------
     ValueError
-        If measured is not a Series and times is not provided
+        If measured is not a Series and times is not provided.
     NotImplementedError
-        If timestamps are not equally spaced
+        If timestamps are not equally spaced.
 
     References
     ----------
@@ -811,6 +811,12 @@ def detect_clearsky(measured, clearsky, times=None, infer_limits=False,
 
     sample_interval, samples_per_window = \
         tools._get_sample_intervals(times, window_length)
+
+    if samples_per_window < 3:
+        raise ValueError(f"window_length must contain at least"
+                         " three data points; {samples_per_window} results"
+                         " from time interval of {sample_interval} and"
+                         " window_length of {window_length}")
 
     # if infer_limits, find threshold values using the sample interval
     if infer_limits:

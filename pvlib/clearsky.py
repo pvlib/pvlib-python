@@ -813,10 +813,10 @@ def detect_clearsky(measured, clearsky, times=None, infer_limits=False,
         tools._get_sample_intervals(times, window_length)
 
     if samples_per_window < 3:
-        raise ValueError(f"window_length must contain at least"
+        raise ValueError(f"Window of length {window_length} found"
+                         " Each window must contain at least"
                          " three data points; {samples_per_window} results"
-                         " from time interval of {sample_interval} and"
-                         " window_length of {window_length}")
+                         " from time interval of {sample_interval}")
 
     # if infer_limits, find threshold values using the sample interval
     if infer_limits:

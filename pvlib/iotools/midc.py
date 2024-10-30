@@ -193,7 +193,7 @@ def read_midc(filename, variable_map={}, raw_data=False, **kwargs):
 
     See the MIDC_VARIABLE_MAP for collection of mappings by site.
     For a full list of pvlib variable names see the
-    :ref:`glossary`.
+    :ref:`pvlib-glossary`.
 
     Be sure to check the units for the variables you will use on the
     `MIDC site <https://midcdmz.nrel.gov/>`_.

@@ -16,5 +16,5 @@ User Guide
    bifacial
    weather_data
    singlediode
-   glossary
+   pvlib-glossary
    faq

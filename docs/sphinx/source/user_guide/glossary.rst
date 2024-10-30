@@ -1,7 +1,7 @@
-.. _pvlib-glossary:
+.. _nomenclature:
 
-Glossary
-========
+Nomenclature
+============
 
 There is a convention on consistent variable names throughout the library:
 

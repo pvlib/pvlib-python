@@ -818,10 +818,10 @@ def detect_clearsky(measured, clearsky, times=None, infer_limits=False,
 
     if samples_per_window < 3:
         raise ValueError(f"Samples per window of {samples_per_window}"
-                         f" found. Each window must contain at least 3 data"
-                         f" points."
+                         " found. Each window must contain at least 3 data"
+                         " points."
                          " Samples per window is calculated from window_length"
-                         " ({window_length} found) and the data interval"
+                         f" ({window_length} found) and the data interval"
                          f" ({sample_interval} found)."
                          " Increase window_length.")
 

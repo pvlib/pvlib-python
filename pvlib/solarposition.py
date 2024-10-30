@@ -27,16 +27,10 @@ from pvlib import atmosphere, tools
 from pvlib.tools import datetime_to_djd, djd_to_datetime
 
 
-def get_solarposition(
-    time,
-    latitude,
-    longitude,
-    altitude,
-    pressure = None,
-    method = 'nrel_numpy',
-    temperature = 12.,
-    **kwargs
-):
+def get_solarposition(time, latitude, longitude,
+                      altitude=None, pressure=None,
+                      method='nrel_numpy',
+                      temperature=12, **kwargs):
     """
     A convenience wrapper for the solar position calculators.
 
@@ -131,8 +125,8 @@ def get_solarposition(
     return ephem_df
 
 
-def spa_c(time, latitude, longitude, pressure=101325., altitude=0.,
-          temperature=12., delta_t=67.0,
+def spa_c(time, latitude, longitude, pressure=101325, altitude=0,
+          temperature=12, delta_t=67.0,
           raw_spa_output=False):
     r"""
     Calculate the solar position using the C implementation of the NREL
@@ -155,11 +149,11 @@ def spa_c(time, latitude, longitude, pressure=101325., altitude=0.,
     longitude : float
         Longitude in decimal degrees. Positive east of prime meridian,
         negative to west.
-    pressure : float, default 101325.0
+    pressure : float, default 101325
         Pressure in Pascals
-    altitude : float, default 0.0
+    altitude : float, default 0
         Height above sea level. [m]
-    temperature : float, default 12.0
+    temperature : float, default 12
         Temperature in C
     delta_t : float, default 67.0
         Difference between terrestrial time and UT1.
@@ -285,7 +279,7 @@ def _datetime_to_unixtime(dtindex):
 
 
 def spa_python(time, latitude, longitude,
-               altitude=0., pressure=101325., temperature=12., delta_t=67.0,
+               altitude=0, pressure=101325, temperature=12, delta_t=67.0,
                atmos_refract=None, how='numpy', numthreads=4):
     """
     Calculate the solar position using a python implementation of the
@@ -308,11 +302,11 @@ def spa_python(time, latitude, longitude,
     longitude : float
         Longitude in decimal degrees. Positive east of prime meridian,
         negative to west.
-    altitude : float, default 0.0
+    altitude : float, default 0
         Distance above sea level.
-    pressure : int or float, optional, default 101325.0
+    pressure : int or float, optional, default 101325
         avg. yearly air pressure in Pascals.
-    temperature : int or float, optional, default 12.0
+    temperature : int or float, optional, default 12
         avg. yearly air temperature in degrees C.
     delta_t : float or array, optional, default 67.0
         Difference between terrestrial time and UT1.
@@ -513,9 +507,9 @@ def _ephem_setup(latitude, longitude, altitude, pressure, temperature,
 
 def sun_rise_set_transit_ephem(times, latitude, longitude,
                                next_or_previous='next',
-                               altitude=0.,
-                               pressure=101325.,
-                               temperature=12., horizon='0:00'):
+                               altitude=0,
+                               pressure=101325,
+                               temperature=12, horizon='0:00'):
     """
     Calculate the next sunrise and sunset times using the PyEphem package.
 
@@ -529,11 +523,11 @@ def sun_rise_set_transit_ephem(times, latitude, longitude,
         Longitude in degrees, positive east of prime meridian, negative to west
     next_or_previous : str
         'next' or 'previous' sunrise and sunset relative to time
-    altitude : float, default 0.0
+    altitude : float, default 0
         distance above sea level in meters.
-    pressure : int or float, optional, default 101325.0
+    pressure : int or float, optional, default 101325
         air pressure in Pascals.
-    temperature : int or float, optional, default 12.0
+    temperature : int or float, optional, default 12
         air temperature in degrees C.
     horizon : string, format +/-X:YY
         arc degrees:arc minutes from geometrical horizon for sunrise and
@@ -596,8 +590,8 @@ def sun_rise_set_transit_ephem(times, latitude, longitude,
                                            'transit': trans})
 
 
-def pyephem(time, latitude, longitude, altitude=0., pressure=101325.,
-            temperature=12., horizon='+0:00'):
+def pyephem(time, latitude, longitude, altitude=0, pressure=101325,
+            temperature=12, horizon='+0:00'):
     """
     Calculate the solar position using the PyEphem package.
 
@@ -611,11 +605,11 @@ def pyephem(time, latitude, longitude, altitude=0., pressure=101325.,
     longitude : float
         Longitude in decimal degrees. Positive east of prime meridian,
         negative to west.
-    altitude : float, default 0.0
+    altitude : float, default 0
         Height above sea level in meters. [m]
-    pressure : int or float, optional, default 101325.0
+    pressure : int or float, optional, default 101325
         air pressure in Pascals.
-    temperature : int or float, optional, default 12.0
+    temperature : int or float, optional, default 12
         air temperature in degrees C.
     horizon : string, optional, default '+0:00'
         arc degrees:arc minutes from geometrical horizon for sunrise and
@@ -685,7 +679,7 @@ def pyephem(time, latitude, longitude, altitude=0., pressure=101325.,
     return sun_coords
 
 
-def ephemeris(time, latitude, longitude, pressure=101325.0, temperature=12.0):
+def ephemeris(time, latitude, longitude, pressure=101325, temperature=12):
     """
     Python-native solar position calculator.
     The accuracy of this code is not guaranteed.
@@ -701,9 +695,9 @@ def ephemeris(time, latitude, longitude, pressure=101325.0, temperature=12.0):
     longitude : float
         Longitude in decimal degrees. Positive east of prime meridian,
         negative to west.
-    pressure : float or Series, default 101325.0
+    pressure : float or Series, default 101325
         Ambient pressure (Pascals)
-    temperature : float or Series, default 12.0
+    temperature : float or Series, default 12
         Ambient temperature (C)
 
     Returns
@@ -862,8 +856,8 @@ def ephemeris(time, latitude, longitude, pressure=101325.0, temperature=12.0):
 
 
 def calc_time(lower_bound, upper_bound, latitude, longitude, attribute, value,
-              altitude=0.0, pressure=101325.0, temperature=12.0,
-              horizon='+0:00', xtol=1.0e-12):
+              altitude=0, pressure=101325, temperature=12, horizon='+0:00',
+              xtol=1.0e-12):
     """
     Calculate the time between lower_bound and upper_bound
     where the attribute is equal to value. Uses PyEphem for
@@ -885,12 +879,12 @@ def calc_time(lower_bound, upper_bound, latitude, longitude, attribute, value,
         and 'az' (which must be given in radians).
     value : int or float
         The value of the attribute to solve for
-    altitude : float, default 0.0
+    altitude : float, default 0
         Distance above sea level.
-    pressure : int or float, optional, default 101325.0
+    pressure : int or float, optional, default 101325
         Air pressure in Pascals. Set to 0 for no
         atmospheric correction.
-    temperature : int or float, optional, default 12.0
+    temperature : int or float, optional, default 12
         Air temperature in degrees C.
     horizon : string, optional, default '+0:00'
         arc degrees:arc minutes from geometrical horizon for sunrise and

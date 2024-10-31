@@ -323,13 +323,13 @@ class PVSystem:
             Solar zenith angle.
         solar_azimuth : float or Series
             Solar azimuth angle.
-        dni : float, Series, or tuple of Series
+        dni : float, Series, or tuple of float or Series
             Direct Normal Irradiance. [W/m2]
-        ghi : float, Series, or tuple of Series
+        ghi : float, Series, or tuple of float or Series
             Global horizontal irradiance. [W/m2]
-        dhi : float, Series, or tuple of Series
+        dhi : float, Series, or tuple of float or Series
             Diffuse horizontal irradiance. [W/m2]
-        dni_extra : float, Series or tuple of Series, optional
+        dni_extra : float, Series or tuple of float or Series, optional
             Extraterrestrial direct normal irradiance. [W/m2]
         airmass : float or Series, optional
             Airmass. [unitless]
@@ -364,7 +364,7 @@ class PVSystem:
 
         See also
         --------
-        :py:func:`pvlib.irradiance.get_total_irradiance`
+        pvlib.irradiance.get_total_irradiance
         """
         dni = self._validate_per_array(dni, system_wide=True)
         ghi = self._validate_per_array(ghi, system_wide=True)

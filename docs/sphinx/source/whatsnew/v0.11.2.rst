@@ -24,10 +24,10 @@ Bug fixes
 Documentation
 ~~~~~~~~~~~~~
 * Edited docstrings for :py:func:`~pvlib.pvsystem.dc_ohms_from_percent` and
-  :py:func:`~pvlib.pvsystem.dc_ohmic_loss` for clarity. (:issue:`1601`, :pull:`2229`)
-* Clarified that :py:meth:`~pvlib.pvsystem.PVSystem.get_irradiance` and
-  :py:meth:`~pvlib.pvsystem.Array.get_irradiance` do not accept tuple of float
-  as input. (:pull:`2227`)
+  :py:func:`~pvlib.pvsystem.dc_ohmic_losses` for clarity. (:issue:`1601`, :pull:`2229`)
+* Corrected a bug in :py:meth:`~pvlib.pvsystem.PVSystem.get_irradiance` and
+  :py:meth:`~pvlib.pvsystem.Array.get_irradiance` when `solar_zenith` is passed
+  float as input. (:issue:`1338`, :pull:`2227`)
 * Added a new citation style guide (:ref:`references`) to the contributing
   page. (:issue:`2202`, :pull:`2226`)
 * Updated :py:func:`~pvlib.irradiance.reindl` to include definitions of terms

@@ -1,16 +1,16 @@
 name: Update Top Ranked Issues
 
 on:
-  # For testing purposes (can be removed later)
-  pull_request:  
   schedule:
-    # # Runs every day at 3:00 AM UTC
-    # - cron: '0 3 * * *'
-    - cron: '*/10 * * * *'
+    # Runs every day at 00:00 AM UTC
+    - cron: '0 0 * * *'
 
 jobs:
   run-script:
     runs-on: ubuntu-latest
+
+    # Run only if the repository is pvlib/pvlib-python
+    if: ${{ github.repository == 'pvlib/pvlib-python' }}
 
     env:
       GITHUB_ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}

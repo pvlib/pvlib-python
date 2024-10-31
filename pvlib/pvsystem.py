@@ -345,8 +345,8 @@ class PVSystem:
         Notes
         -----
         Each of ``dni``, ``ghi``, and ``dni`` may be passed as a float, Series,
-        or tuple of Series. If passed as a float or Series, these values are
-        used for each Array. If passed as a tuple of Series the tuple length
+        or tuple of float or Series. If passed as a float or Series, these
+        values are used for all Arrays. If passed as a tuple, the tuple length
         must be the same as the number of Arrays. The first tuple element is
         used for the first Array, the second tuple element for the second
         Array, and so forth.

@@ -1136,9 +1136,10 @@ class Array:
         # dni_extra is not needed for all models, but this is easier
         if dni_extra is None:
             if (hasattr(solar_zenith, 'index') and
-                isinstance(solar_zenith.index, pd.DatetimeIndex)):
-                    dni_extra = irradiance.get_extra_radiation(
-                        solar_zenith.index)
+                    isinstance(solar_zenith.index, pd.DatetimeIndex)):
+                # calculate extraterrestrial irradiance
+                dni_extra = irradiance.get_extra_radiation(
+                    solar_zenith.index)
             else:
                 # use the solar constant
                 dni_extra = 1367.0

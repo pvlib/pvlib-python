@@ -1140,7 +1140,7 @@ class Array:
                 dni_extra = irradiance.get_extra_radiation(solar_zenith.index)
             else:
                 # use the solar constant
-                dni_extra = 1367
+                dni_extra = 1367.0
 
         if airmass is None:
             airmass = atmosphere.get_relative_airmass(solar_zenith)

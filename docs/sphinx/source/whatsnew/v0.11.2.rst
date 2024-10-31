@@ -25,6 +25,8 @@ Documentation
   page. (:issue:`2202`, :pull:`2226`)
 * Updated :py:func:`~pvlib.irradiance.reindl` to include definitions of terms
   and a new "notes" section (:issue:`2183`, :pull:`2193`)
+* Explained how to write docstrings for new functions in :ref:`example-docstring`
+  (:discussion:`2081`, :pull:`2254`)
 
 Testing
 ~~~~~~~

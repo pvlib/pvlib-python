@@ -27,16 +27,10 @@ from pvlib import atmosphere, tools
 from pvlib.tools import datetime_to_djd, djd_to_datetime
 
 
-def get_solarposition(
-    time,
-    latitude,
-    longitude,
-    altitude,
-    pressure = None,
-    method = 'nrel_numpy',
-    temperature = 12.,
-    **kwargs
-):
+def get_solarposition(time, latitude, longitude,
+                      altitude=None, pressure=None,
+                      method='nrel_numpy',
+                      temperature=12.0, **kwargs):
     """
     A convenience wrapper for the solar position calculators.
 

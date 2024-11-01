@@ -146,7 +146,7 @@ There is a convention on consistent variable names throughout the library:
         Spectral irradiance (components) [Wm⁻²nm⁻¹]. The amount of energy
         incident on a horizontal unit area per unit time and per unit
         wavelength. As with broadband irradiance, global spectral irradiance
-        is composed of direct amd diffuse components.
+        is composed of direct and diffuse components.
     
     surface_azimuth
         Azimuth angle of the surface

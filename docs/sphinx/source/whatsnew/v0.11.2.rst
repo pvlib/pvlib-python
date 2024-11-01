@@ -11,6 +11,10 @@ Deprecations
 Enhancements
 ~~~~~~~~~~~~
 
+Bug Fixes
+~~~~~~~~~
+* :py:meth:`~pvlib.pvsystem.PVSystem.get_irradiance` accepts float inputs.
+  (:issue:`1338`, :pull:`2227`)
 
 Bug fixes
 ~~~~~~~~~

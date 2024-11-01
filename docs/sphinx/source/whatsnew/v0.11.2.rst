@@ -26,7 +26,7 @@ Documentation
 * Edited docstrings for :py:func:`~pvlib.pvsystem.dc_ohms_from_percent` and
   :py:func:`~pvlib.pvsystem.dc_ohmic_losses` for clarity. (:issue:`1601`, :pull:`2229`)
 * Added variables `spectra` and `spectra_components` to the
-  :ref:`variables_style_rules` page. (:issue:`2150`, :pull:`2264`)
+  :ref:`nomenclature` page. (:issue:`2150`, :pull:`2264`)
 * Added a new citation style guide (:ref:`references`) to the contributing
   page. (:issue:`2202`, :pull:`2226`)
 * Updated :py:func:`~pvlib.irradiance.reindl` to include definitions of terms

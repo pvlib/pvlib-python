@@ -244,7 +244,7 @@ def beam_component(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
     solar_azimuth : numeric
         Solar azimuth angle.
     dni : numeric
-        Direct Normal Irradiance
+        Direct normal irradiance, see :term:`dni`. [Wm⁻²]
 
     Returns
     -------

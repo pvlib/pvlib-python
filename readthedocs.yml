@@ -21,3 +21,4 @@ python:
         path: .
         extra_requirements:
           - doc
+          - hoverxref

@@ -15,12 +15,28 @@ Enhancements
   the previous size.
   (:issue:`2271`, :pull:`2277`)
 
+Bug Fixes
+~~~~~~~~~
+* :py:meth:`~pvlib.pvsystem.PVSystem.get_irradiance` accepts float inputs.
+  (:issue:`1338`, :pull:`2227`)
+
+Bug fixes
+~~~~~~~~~
+* :py:func:`~pvlib.spa.julian_day_dt` now accounts for the 10 day difference
+  between Julian and Gregorian calendars prior to the year 1582. (:issue:`2077`, :pull:`2249`)
+
 Documentation
 ~~~~~~~~~~~~~
 * Edited docstrings for :py:func:`~pvlib.pvsystem.dc_ohms_from_percent` and
   :py:func:`~pvlib.pvsystem.dc_ohmic_losses` for clarity. (:issue:`1601`, :pull:`2229`)
+* Added a new citation style guide (:ref:`references`) to the contributing
+  page. (:issue:`2202`, :pull:`2226`)
 * Updated :py:func:`~pvlib.irradiance.reindl` to include definitions of terms
   and a new "notes" section (:issue:`2183`, :pull:`2193`)
+* Added a new :ref:`nomenclature` page, in place of the Variables and Symbols
+  page, using the sphinx glossary directive. (:issue:`1421`, :pull:`2234`)
+* Explained how to write docstrings for new functions in :ref:`example-docstring`
+  (:discussion:`2081`, :pull:`2254`)
 
 Testing
 ~~~~~~~
@@ -41,6 +57,8 @@ Contributors
 ~~~~~~~~~~~~
 * Cliff Hansen (:ghuser:`cwhanse`)
 * Rajiv Daxini (:ghuser:`RDaxini`)
+* Dave Pitts (:ghuser:`dgapitts`)
+* Kurt Rhee (:ghuser:`kurt-rhee`)
 * Mark Mikofski (:ghuser:`mikofski`)
 * matsuobasho (:ghuser:`matsuobasho`)
 * Echedey Luis (:ghuser:`echedey-ls`)

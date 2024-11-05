@@ -26,4 +26,3 @@ dependencies:
     - pip:
         - nrel-pysam>=2.0
         - solarfactors
-        - hoverxref

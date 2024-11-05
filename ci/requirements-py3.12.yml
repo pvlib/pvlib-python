@@ -25,5 +25,4 @@ dependencies:
     - statsmodels
     - pip:
         - nrel-pysam>=2.0
-        - hoverxref
         # - solarfactors  # required shapely<2 isn't available for 3.12

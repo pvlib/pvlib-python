@@ -21,7 +21,3 @@ python:
         path: .
         extra_requirements:
           - doc
-      - method: pip
-        path: .
-        extra_requirements:
-          - hoverxref

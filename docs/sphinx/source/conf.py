@@ -61,6 +61,11 @@ extensions = [
 mathjax3_config = {'chtml': {'displayAlign': 'left',
                              'displayIndent': '2em'}}
 
+# Enable hover tooltips for glossary terms
+hoverxref_roles = [
+    'term',
+]
+
 napoleon_use_rtype = False  # group rtype on same line together with return
 
 # Add any paths that contain templates here, relative to this directory.

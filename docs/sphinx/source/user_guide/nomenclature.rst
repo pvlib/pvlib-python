@@ -102,20 +102,21 @@ There is a convention on consistent variable names throughout the library:
         Photocurrent
 
     poa_diffuse
-        Total diffuse irradiation in plane. Sum of ground and sky diffuse.
+        Total diffuse irradiance in plane [Wm⁻²]. Sum of ground and sky diffuse
+        components of global irradiance.
 
     poa_direct
-        Direct/beam irradiation in plane
+        Direct/beam irradiance in plane [Wm⁻²].
 
     poa_global
-        Global irradiation in plane. sum of diffuse and beam projection.
+        Global irradiance in plane. sum of diffuse and beam projection [Wm⁻²].
 
     poa_ground_diffuse
-        In plane ground reflected irradiation
+        In plane ground reflected irradiance [Wm⁻²].
 
     poa_sky_diffuse
-        Diffuse irradiation in plane from scattered light in the atmosphere
-        (without ground reflected irradiation)
+        Diffuse irradiance in plane from scattered light in the atmosphere
+        (without ground reflected irradiance) [Wm⁻²].
 
     precipitable_water
         Total precipitable water contained in a column of unit cross section

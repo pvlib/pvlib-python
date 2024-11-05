@@ -56,6 +56,7 @@ extensions = [
     'sphinx_gallery.gen_gallery',
     'sphinx_toggleprompt',
     'sphinx_favicon',
+    'hoverxref.extension',
 ]
 
 mathjax3_config = {'chtml': {'displayAlign': 'left',

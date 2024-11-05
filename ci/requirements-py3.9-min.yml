@@ -19,3 +19,4 @@ dependencies:
         - pytest-rerunfailures # conda version is >3.6
         - pytest-remotedata # conda package is 0.3.0, needs > 0.3.1
         - requests-mock
+        - hoverxref

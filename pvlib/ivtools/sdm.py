@@ -211,7 +211,7 @@ def fit_desoto(v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc, cells_in_series,
     .. [2] W. De Soto et al., "Improvement and validation of a model for
        photovoltaic array performance", Solar Energy, vol 80, pp. 78-88,
        2006. :doi:`10.1016/j.solener.2005.06.010`
-       
+
     """
 
     # Constants
@@ -232,7 +232,7 @@ def fit_desoto(v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc, cells_in_series,
         Rs_0 = init_guess['Rs_0']
         Rsh_0 = init_guess['Rsh_0']
         a_0 = init_guess['a_0']
-        
+
     # params_i : initial values vector
     params_i = np.array([IL_0, Io_0, Rs_0, Rsh_0, a_0])
 

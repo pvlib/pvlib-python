@@ -683,22 +683,26 @@ def detect_clearsky(measured, clearsky, times=None, infer_limits=False,
                     var_diff=0.005, slope_dev=8, max_iterations=20,
                     return_components=False):
     """
-    Detects clear sky times according to the algorithm developed by Reno
-    and Hansen for GHI measurements. The algorithm [1]_ was designed and
-    validated for analyzing GHI time series only. Users may attempt to
-    apply it to other types of time series data using different filter
-    settings, but should be skeptical of the results.
+    Detects clear sky times using the algorithm developed by Reno
+    and Hansen.
 
-    The algorithm detects clear sky times by comparing statistics for a
+    The algorithm [1]_ was designed and
+    validated for analyzing GHI time series. Jordan and Hansen [2]_ extended
+    the algorithm to plane-of-array (POA) irradiance measurements.
+
+    The algorithm [1]_ detects clear sky times by comparing statistics for a
     measured time series and an expected clearsky time series.
     Statistics are calculated using a sliding time window (e.g., 10
     minutes). An iterative algorithm identifies clear periods, uses the
     identified periods to estimate bias in the clearsky data, scales the
-    clearsky data and repeats.
+    clearsky data and repeats
 
-    Clear times are identified by meeting 5 criteria. Default values for
+    Clear times are identified by meeting five criteria. Default values for
     these thresholds are appropriate for 10 minute windows of 1 minute
-    GHI data.
+    GHI data. For data at longer intervals, it is recommended
+    to set ``infer_limits=True`` to use the thresholds from [2]_.
+
+    For POA data, ``clearsky`` must be on the same plane as ``measured``.
 
     Parameters
     ----------
@@ -723,8 +727,6 @@ def detect_clearsky(measured, clearsky, times=None, infer_limits=False,
         clearsky values in each interval, see Eq. 7 in [1]. [W/m2]
     lower_line_length : float, default -5
         Lower limit of line length criterion from Eq. 8 in [1].
-        Criterion satisfied when lower_line_length < line length difference
-        < upper_line_length.
     upper_line_length : float, default 10
         Upper limit of line length criterion from Eq. 8 in [1].
     var_diff : float, default 0.005
@@ -736,7 +738,7 @@ def detect_clearsky(measured, clearsky, times=None, infer_limits=False,
         change in successive values, see Eqs. 12 through 14 in [1].
     max_iterations : int, default 20
         Maximum number of times to apply a different scaling factor to
-        the clearsky and redetermine clear_samples. Must be 1 or larger.
+        the clearsky and redetermine ``clear_samples``. Must be 1 or larger.
     return_components : bool, default False
         Controls if additional output should be returned. See below.
 
@@ -751,7 +753,7 @@ def detect_clearsky(measured, clearsky, times=None, infer_limits=False,
         for each condition. Only provided if return_components is True.
 
     alpha : scalar, optional
-        Scaling factor applied to the clearsky_ghi to obtain the
+        Scaling factor applied to the ``clearsky_ghi`` to obtain the
         detected clear_samples. Only provided if return_components is
         True.
 
@@ -820,10 +822,8 @@ def detect_clearsky(measured, clearsky, times=None, infer_limits=False,
         raise ValueError(f"Samples per window of {samples_per_window}"
                          " found. Each window must contain at least 3 data"
                          " points."
-                         " Samples per window is calculated from window_length"
-                         f" ({window_length} found) and the data interval"
-                         f" ({sample_interval} found)."
-                         " Increase window_length.")
+                         f" Window length of {window_length} found; increase"
+                         f" window length to {3*sample_interval} or longer.")
 
     # if infer_limits, find threshold values using the sample interval
     if infer_limits:

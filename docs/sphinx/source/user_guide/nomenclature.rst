@@ -142,9 +142,10 @@ There is a convention on consistent variable names throughout the library:
     solar_zenith
         Zenith angle of the sun in degrees
 
-    spectra, spectra_components
+    spectra
+    spectra_components
         Spectral irradiance (components) [Wm⁻²nm⁻¹]. The amount of energy
-        incident on a horizontal unit area per unit time and per unit
+        incident on a unit area per unit time and per unit
         wavelength. As with broadband irradiance, global spectral irradiance
         is composed of direct and diffuse components.
     

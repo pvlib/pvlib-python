@@ -129,7 +129,7 @@ def fit_desoto(v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc, cells_in_series,
     datasheets of PV modules.
 
     The solution is found using :py:func:`scipy.optimize.root`,
-    with the  default solver method 'hybr'.
+    with the default solver method 'hybr'.
     No restriction is put on the fit variables, e.g. series
     or shunt resistance could go negative. Nevertheless, if it happens,
     check carefully the inputs and their units. For example, ``alpha_sc`` and
@@ -165,7 +165,7 @@ def fit_desoto(v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc, cells_in_series,
     temp_ref: float, default 25
         Reference temperature condition [C]
     irrad_ref: float, default 1000
-        Reference irradiance condition [W/m2]
+        Reference irradiance condition [Wm⁻²]
     init_guess: dict, optional
         Initial values for optimization, must have keys `'Rsh_0'`, `'a_0'`,
         `'IL_0'`, `'Io_0'`, `'Rs_0'`.

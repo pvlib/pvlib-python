@@ -225,7 +225,7 @@ def fit_desoto(v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc, cells_in_series,
     init['IL_0'] = i_sc
     init['a_0'] = 1.5*k*Tref*cells_in_series
     init['Io_0'] = i_sc * np.exp(-v_oc/init['a_0'])
-    init['Rs_0'] = (init['a_0']*np.log1p((init['IL_0'] - i_mp)/init['Io_0']) \
+    init['Rs_0'] = (init['a_0']*np.log1p((init['IL_0'] - i_mp)/init['Io_0'])
                     - v_mp) / i_mp
     init['Rsh_0'] = 100.0
     # overwrite if optional init_guess is provided

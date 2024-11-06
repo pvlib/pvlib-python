@@ -220,8 +220,8 @@ def fit_desoto(v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc, cells_in_series,
 
     # initial guesses of variables for computing convergence:
     # Default values are taken from [2], p753
-    init = {}
     init_guess_keys = ['IL_0', 'Io_0', 'Rs_0', 'Rsh_0', 'a_0']  # order matters
+    init = {key: None for key in init_guess_keys}
     init['IL_0'] = i_sc
     init['a_0'] = 1.5*k*Tref*cells_in_series
     init['Io_0'] = i_sc * np.exp(-v_oc/init['a_0'])
@@ -229,11 +229,11 @@ def fit_desoto(v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc, cells_in_series,
                     - v_mp) / i_mp
     init['Rsh_0'] = 100.0
     # overwrite if optional init_guess is provided
-    for k in init_guess:
-        if k in init_guess_keys:
-            init[k] = init_guess[k]
+    for key in init_guess:
+        if key in init_guess_keys:
+            init[key] = init_guess[key]
 
-    # params_i : initial values vector, specific order
+    # params_i : initial values vector
     params_i = np.array([init[k] for k in init_guess_keys])
 
     # specs of module

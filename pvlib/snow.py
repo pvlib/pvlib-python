@@ -24,7 +24,7 @@ def fully_covered_nrel(snowfall, snow_depth=None, threshold_snowfall=1.):
         Accumulated snowfall in each time period. [cm]
     snow_depth: Series, optional
         Snow depth on the ground at the beginning of each time period.
-        Must have the same index as `snowfall`. [cm]
+        Must have the same index as ``snowfall``. [cm]
     threshold_snowfall: float, default 1.0
         Hourly snowfall above which snow coverage is set to the row's slant
         height. [cm/hr]
@@ -39,7 +39,7 @@ def fully_covered_nrel(snowfall, snow_depth=None, threshold_snowfall=1.):
     -----
     Implements the model described in [1]_ with minor improvements in [2]_.
 
-    `snow_depth` is used to set coverage=0 when no snow is present on the
+    ``snow_depth`` is used to set coverage=0 when no snow is present on the
     ground. This check is described in [2]_ as needed for systems with
     low tilt angle.
 
@@ -94,7 +94,7 @@ def coverage_nrel(snowfall, poa_irradiance, temp_air, surface_tilt,
         surface facing horizon = 90. [degrees]
     snow_depth : Series, optional
         Snow depth on the ground at the beginning of each time period.
-        Must have the same index as `snowfall`. [cm]
+        Must have the same index as ``snowfall``. [cm]
     initial_coverage : float, default 0
         Fraction of row's slant height that is covered with snow at the
         beginning of the simulation. [unitless]
@@ -116,10 +116,10 @@ def coverage_nrel(snowfall, poa_irradiance, temp_air, surface_tilt,
 
     Notes
     -----
-    In [1]_, `can_slide_coefficient` is termed `m`, and the value of
-    `slide_amount_coefficient` is given in tenths of a module's slant height.
+    In [1]_, ``can_slide_coefficient`` is termed `m`, and the value of
+    ``slide_amount_coefficient`` is given in tenths of a module's slant height.
 
-    `snow_depth` is used to set coverage=0 when no snow is present on the
+    ``snow_depth`` is used to set coverage=0 when no snow is present on the
     ground. This check is described in [2]_ as needed for systems with
     low tilt angle.
 

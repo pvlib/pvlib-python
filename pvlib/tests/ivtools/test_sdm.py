@@ -1,12 +1,12 @@
 import numpy as np
 import pandas as pd
+from scipy import optimize
 
 import pytest
 from numpy.testing import assert_allclose
 
 from pvlib.ivtools import sdm
 from pvlib import pvsystem
-from pvlib._deprecation import pvlibDeprecationWarning
 
 from pvlib.tests.conftest import requires_pysam, requires_statsmodels
 
@@ -80,24 +80,16 @@ def test_fit_desoto():
                        rtol=1e-4)
 
 
-def test_fit_desoto_init_guess():
-    init_guess = {'IL_0': 9.43, 'Io_0': 6.04e-7, 'Rs_0': 0.155, 'Rsh_0': 100.,
-                  'a_0': 2.312}
+def test_fit_desoto_init_guess(mocker):
+    init_guess = {'IL_0': 9.4, 'Io_0': 6.0e-7, 'Rs_0': 0.15, 'Rsh_0': 100.,
+                  'a_0': 2.3}
+    init_guess_array = np.array([9.4, 6.0e-7, 0.15, 100., 2.3])
+    mocker.spy(optimize.root)
     result, _ = sdm.fit_desoto(v_mp=31.0, i_mp=8.71, v_oc=38.3, i_sc=9.43,
                                alpha_sc=0.005658, beta_voc=-0.13788,
                                cells_in_series=60, init_guess=init_guess)
-    result_expected = {'I_L_ref': 9.45232,
-                       'I_o_ref': 3.22460e-10,
-                       'R_s': 0.297814,
-                       'R_sh_ref': 125.798,
-                       'a_ref': 1.59128,
-                       'alpha_sc': 0.005658,
-                       'EgRef': 1.121,
-                       'dEgdT': -0.0002677,
-                       'irrad_ref': 1000,
-                       'temp_ref': 25}
-    assert np.allclose(pd.Series(result), pd.Series(result_expected),
-                       rtol=1e-4)
+    optimize.root.assert_called_once_with(x0=init_guess_array)
+
 
 
 def test_fit_desoto_failure():

@@ -219,7 +219,7 @@ def fit_desoto(v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc, cells_in_series,
     Tref = temp_ref + 273.15  # [K]
 
     # initial guesses of variables for computing convergence:
-    # Default values are taken from [2], p753
+    # Default values are taken from [1], p753
     init_guess_keys = ['IL_0', 'Io_0', 'Rs_0', 'Rsh_0', 'a_0']  # order matters
     init = {key: None for key in init_guess_keys}
     init['IL_0'] = i_sc

@@ -163,7 +163,7 @@ def coverage_nrel(snowfall, poa_irradiance, temp_air, surface_tilt,
     if snow_depth is not None:
         # no coverage when there's no snow on the ground
         # described in [2] to avoid non-sliding snow for low-tilt systems.
-        snow_coverage[snow_depth<=0] = 0.
+        snow_coverage[snow_depth <= 0] = 0.
     # clean up periods where row is completely uncovered
     return snow_coverage.clip(lower=0)
 

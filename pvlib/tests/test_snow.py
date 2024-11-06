@@ -67,7 +67,7 @@ def test_coverage_nrel_hourly_with_snow_depth():
     slide_amt = slide_amount_coefficient * sind(surface_tilt)
     covered = 1.0 - slide_amt * np.array([0, 1, 2, 3, 4, 5, 6, 7])
     expected = pd.Series(covered, index=dt)
-    expected[snow_depth<=0] = 0
+    expected[snow_depth <= 0] = 0
     assert_series_equal(expected, snow_coverage)
 
 

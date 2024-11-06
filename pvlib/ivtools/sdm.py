@@ -120,7 +120,7 @@ def fit_cec_sam(celltype, v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
 
 def fit_desoto(v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc, cells_in_series,
                EgRef=1.121, dEgdT=-0.0002677, temp_ref=25, irrad_ref=1000,
-               init_guess=None, root_kwargs={}):
+               init_guess={}, root_kwargs={}):
     """
     Calculates the parameters for the De Soto single diode model.
 
@@ -167,7 +167,7 @@ def fit_desoto(v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc, cells_in_series,
     irrad_ref: float, default 1000
         Reference irradiance condition [Wm⁻²]
     init_guess: dict, optional
-        Initial values for optimization, must have keys `'Rsh_0'`, `'a_0'`,
+        Initial values for optimization. Keys can be `'Rsh_0'`, `'a_0'`,
         `'IL_0'`, `'Io_0'`, `'Rs_0'`.
     root_kwargs : dictionary, optional
         Dictionary of arguments to pass onto scipy.optimize.root()
@@ -218,23 +218,23 @@ def fit_desoto(v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc, cells_in_series,
     k = constants.value('Boltzmann constant in eV/K')  # in eV/K
     Tref = temp_ref + 273.15  # [K]
 
-    if init_guess is None:
-        # initial guesses of variables for computing convergence:
-        # Values are taken from [2], p753
-        IL_0 = i_sc
-        a_0 = 1.5*k*Tref*cells_in_series
-        Io_0 = i_sc * np.exp(-v_oc/a_0)
-        Rs_0 = (a_0*np.log1p((IL_0-i_mp)/Io_0) - v_mp)/i_mp
-        Rsh_0 = 100.0
-    else:
-        IL_0 = init_guess['IL_0']
-        Io_0 = init_guess['Io_0']
-        Rs_0 = init_guess['Rs_0']
-        Rsh_0 = init_guess['Rsh_0']
-        a_0 = init_guess['a_0']
+    # initial guesses of variables for computing convergence:
+    # Default values are taken from [2], p753
+    init = {}
+    init_guess_keys = ['IL_0', 'Io_0', 'Rs_0', 'Rsh_0', 'a_0']
+    init['IL_0'] = i_sc
+    init['a_0'] = 1.5*k*Tref*cells_in_series
+    init['Io_0'] = i_sc * np.exp(-v_oc/init['a_0'])
+    init['Rs_0'] = (init['a_0']*np.log1p((init['IL_0'] - i_mp)/init['Io_0']) \
+                    - v_mp) / i_mp
+    init['Rsh_0'] = 100.0
+    # overwrite if optional init_guess is provided
+    for k in init_guess:
+        if k in init_guess_keys:
+            init[k] = init_guess[k]
 
     # params_i : initial values vector
-    params_i = np.array([IL_0, Io_0, Rs_0, Rsh_0, a_0])
+    params_i = np.array([init_guess[k] for k in init_guess_keys])
 
     # specs of module
     specs = (i_sc, v_oc, i_mp, v_mp, beta_voc, alpha_sc, EgRef, dEgdT,

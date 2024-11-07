@@ -86,7 +86,7 @@ def test_fit_desoto_init_guess(mocker):
         ['IL_0', 'Io_0', 'Rs_0', 'Rsh_0', 'a_0'], init_guess_array)}
     mocker.spy(optimize, 'root')
     specs = (9.43, 38.3, 8.71, 31.0, -0.13788, 0.005658, 1.121, -0.0002677,
-             298.15, constants.Boltzmann)  # for test
+             298.15, constants.value('Boltzmann constant in eV/K'))  # for test
     root_args = {}  # to fill out call for test
     result, _ = sdm.fit_desoto(v_mp=31.0, i_mp=8.71, v_oc=38.3, i_sc=9.43,
                                alpha_sc=0.005658, beta_voc=-0.13788,

@@ -82,8 +82,8 @@ def test_fit_desoto():
 
 def test_fit_desoto_init_guess(mocker):
     init_guess_array = np.array([9.4, 3.0e-9, 0.3, 125., 1.5])
-    init_guess = {k: v for k, v in zip(['IL_0', 'Io_0', 'Rs_0', 'Rsh_0'],
-                                       init_guess_array)}
+    init_guess = {k: v for k, v in zip(
+        ['IL_0', 'Io_0', 'Rs_0', 'Rsh_0', 'a_0'], init_guess_array)}
     mocker.spy(optimize, 'root')
     result, _ = sdm.fit_desoto(v_mp=31.0, i_mp=8.71, v_oc=38.3, i_sc=9.43,
                                alpha_sc=0.005658, beta_voc=-0.13788,

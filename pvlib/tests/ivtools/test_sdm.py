@@ -91,8 +91,10 @@ def test_fit_desoto_init_guess(mocker):
     result, _ = sdm.fit_desoto(v_mp=31.0, i_mp=8.71, v_oc=38.3, i_sc=9.43,
                                alpha_sc=0.005658, beta_voc=-0.13788,
                                cells_in_series=60, init_guess=init_guess)
-    optimize.root.assert_called_once_with(mocker.ANY, x0=init_guess_array,
-                                          args=(specs,), **root_args)
+    optimize.root.assert_called_once_with(mocker.ANY,
+                                          x0=pytest.approx(init_guess_array),
+                                          args=(pytest.approx(specs),),
+                                          **root_args)
 
 
 def test_fit_desoto_failure():

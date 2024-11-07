@@ -91,7 +91,7 @@ def test_fit_desoto_init_guess(mocker):
                                cells_in_series=60, init_guess=init_guess)
     optimize.root.assert_called_once_with(mocker.ANY,
                                           x0=pytest.approx(init_guess_array),
-                                          args=(mocker.ANY,),
+                                          args=mocker.ANY,
                                           **root_args)
 
 

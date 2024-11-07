@@ -92,7 +92,7 @@ def test_fit_desoto_init_guess(mocker):
                                alpha_sc=0.005658, beta_voc=-0.13788,
                                cells_in_series=60, init_guess=init_guess)
     optimize.root.assert_called_once_with(mocker.ANY, x0=init_guess_array,
-                                          args=(mocker.ANY,), **root_args)
+                                          args=(specs,), **root_args)
 
 
 def test_fit_desoto_failure():

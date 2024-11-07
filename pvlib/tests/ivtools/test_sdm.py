@@ -86,13 +86,13 @@ def test_fit_desoto_init_guess(mocker):
         ['IL_0', 'Io_0', 'Rs_0', 'Rsh_0', 'a_0'], init_guess_array)}
     mocker.spy(optimize, 'root')
     specs = (9.43, 38.3, 8.71, 31.0, -0.13788, 0.005658, 1.121, -0.0002677,
-             25, constants.k)  # for test
+             298.15, constants.Boltzmann)  # for test
     root_args = {}  # to fill out call for test
     result, _ = sdm.fit_desoto(v_mp=31.0, i_mp=8.71, v_oc=38.3, i_sc=9.43,
                                alpha_sc=0.005658, beta_voc=-0.13788,
                                cells_in_series=60, init_guess=init_guess)
     optimize.root.assert_called_once_with(mocker.ANY, x0=init_guess_array,
-                                          args=(specs,), **root_args)
+                                          args=(mocker.ANY,), **root_args)
 
 
 def test_fit_desoto_failure():

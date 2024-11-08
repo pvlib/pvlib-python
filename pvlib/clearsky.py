@@ -695,7 +695,7 @@ def detect_clearsky(measured, clearsky, times=None, infer_limits=False,
     Statistics are calculated using a sliding time window (e.g., 10
     minutes). An iterative algorithm identifies clear periods, uses the
     identified periods to estimate bias in the clearsky data, scales the
-    clearsky data and repeats
+    clearsky data and repeats.
 
     Clear times are identified by meeting five criteria. Default values for
     these thresholds are appropriate for 10 minute windows of 1 minute
@@ -750,17 +750,17 @@ def detect_clearsky(measured, clearsky, times=None, infer_limits=False,
 
     components : OrderedDict, optional
         Dict of arrays of whether or not the given time window is clear
-        for each condition. Only provided if return_components is True.
+        for each condition. Only provided if ``return_components`` is True.
 
     alpha : scalar, optional
-        Scaling factor applied to the ``clearsky_ghi`` to obtain the
-        detected clear_samples. Only provided if return_components is
+        Scaling factor applied to ``clearsky`` to obtain the
+        detected ``clear_samples``. Only provided if ``return_components`` is
         True.
 
     Raises
     ------
     ValueError
-        If measured is not a Series and times is not provided.
+        If ``measured`` is not a Series and times is not provided.
     ValueError
         If a window contains less than three data points.
     ValueError

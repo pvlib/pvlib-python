@@ -232,7 +232,9 @@ def fit_desoto(v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc, cells_in_series,
     for key in init_guess:
         if key in init_guess_keys:
             init[key] = init_guess[key]
-
+        else:
+            raise ValueError(f"'{key}' is not a valid name; "
+                             f"allowed values are {init_guess_keys}")
     # params_i : initial values vector
     params_i = np.array([init[k] for k in init_guess_keys])
 

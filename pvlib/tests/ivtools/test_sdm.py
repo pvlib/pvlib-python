@@ -84,15 +84,11 @@ def test_fit_desoto_init_guess(mocker):
     init_guess_array = np.array([9.4, 3.0e-10, 0.3, 125., 1.6])
     init_guess = {k: v for k, v in zip(
         ['IL_0', 'Io_0', 'Rs_0', 'Rsh_0', 'a_0'], init_guess_array)}
-    mocker.spy(optimize, 'root')
-    root_args = {}  # to fill out call for test
+    spy = mocker.spy(optimize, 'root')
     result, _ = sdm.fit_desoto(v_mp=31.0, i_mp=8.71, v_oc=38.3, i_sc=9.43,
                                alpha_sc=0.005658, beta_voc=-0.13788,
                                cells_in_series=60, init_guess=init_guess)
-    optimize.root.assert_called_once_with(mocker.ANY,
-                                          x0=pytest.approx(init_guess_array),
-                                          args=mocker.ANY,
-                                          **root_args)
+    np.testing.assert_array_equal(init_guess_array, spy.call_args[1]['x0'])
 
 
 def test_fit_desoto_failure():

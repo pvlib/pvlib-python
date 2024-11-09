@@ -63,6 +63,7 @@ mathjax3_config = {'chtml': {'displayAlign': 'left',
                              'displayIndent': '2em'}}
 
 # Enable hover tooltips
+hoverxref_auto_ref = True
 hoverxref_roles = [
     'term',
     'ref',

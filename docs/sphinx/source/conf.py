@@ -66,9 +66,9 @@ mathjax3_config = {'chtml': {'displayAlign': 'left',
 hoverxref_roles = [
     'term',
     'ref',
-    'func',
-    'class',
-    'meth',
+    'py:func',
+    'py:class',
+    'py:meth',
 ]
 
 napoleon_use_rtype = False  # group rtype on same line together with return

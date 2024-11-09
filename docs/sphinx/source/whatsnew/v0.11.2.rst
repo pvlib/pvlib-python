@@ -33,6 +33,10 @@ Documentation
   page, using the sphinx glossary directive. (:issue:`1421`, :pull:`2234`)
 * Explained how to write docstrings for new functions in :ref:`example-docstring`
   (:discussion:`2081`, :pull:`2254`)
+* Added the following variables to the :ref:`nomenclature` page:
+
+  - `spectra` and `spectra_components` (:issue:`2150`, :pull:`2264`)
+
 
 Testing
 ~~~~~~~

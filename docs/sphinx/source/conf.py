@@ -62,11 +62,14 @@ extensions = [
 mathjax3_config = {'chtml': {'displayAlign': 'left',
                              'displayIndent': '2em'}}
 
-# # Enable hover tooltips for glossary terms
-# hoverxref_roles = [
-#     'term',
-# ]
-hoverxref_auto_ref = True  # enable hoverxref for all roles
+# Enable hover tooltips
+hoverxref_roles = [
+    'term',
+    'ref',
+    'func',
+    'class',
+    'meth',
+]
 
 napoleon_use_rtype = False  # group rtype on same line together with return
 

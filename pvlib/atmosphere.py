@@ -356,16 +356,11 @@ def rh_from_tdew(temperature, dewpoint, coeff=(6.112, 17.62, 243.12)):
     Returns
     -------
     pd.Series
-        Relative humidity as percentage (0-100)
-
-    Notes
-    -----
-    Uses the AEKR coefficients which minimize errors between -40 and
-    50 degrees C according to reference [1].
+        Relative humidity as percentage (0.0-100.0)
 
     References
     ----------
-    .. [1] https://www.osti.gov/servlets/purl/548871-PjpxAP/webviewable/
+    .. [1] https://library.wmo.int/viewer/68695/?offset=3#page=220&viewer=picture&o=bookmark&n=0&q=
     .. [2] https://www.schweizerbart.de//papers/metz/detail/3/89544/Advancements_in_the_field_of_hygrometry?af=crossref
     """
 
@@ -383,9 +378,8 @@ def tdew_from_rh(
     temperature, relative_humidity, coeff=(6.112, 17.62, 243.12)
 ):
     """
-    Calculate dewpoint temperature using Magnus equation with
-    AEKR coefficients.  This is just a reversal of the calculation
-    in calculate_relative_humidity.
+    Calculate dewpoint temperature using Magnus equation.
+    This is just a reversal of the calculation in calculate_relative_humidity.
 
     Parameters
     ----------
@@ -399,15 +393,9 @@ def tdew_from_rh(
     pd.Series
         Dewpoint temperature in degrees Celsius
 
-    Notes
-    -----
-    Derived by solving the Magnus equation for dewpoint given
-    relative humidity.
-    Valid for temperatures between -40 and 50 degrees C.
-
     References
     ----------
-    .. [1] https://www.osti.gov/servlets/purl/548871-PjpxAP/webviewable/
+    .. [1] https://library.wmo.int/viewer/68695/?offset=3#page=220&viewer=picture&o=bookmark&n=0&q=
     """
     # Calculate the term inside the log
     # From RH = 100 * (es/e), we get es = (RH/100) * e

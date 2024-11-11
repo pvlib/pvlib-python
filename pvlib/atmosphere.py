@@ -347,7 +347,7 @@ def rh_from_tdew(temperature, dewpoint, coeff=(6.112, 17.62, 243.12)):
     Parameters
     ----------
     temperature : numeric
-        Air temperature in degrees Celsius
+        Air temperature (dry-bulb temperature) in degrees Celsius
     dewpoint : numeric
         Dewpoint temperature in degrees Celsius
     coeff: tuple
@@ -384,7 +384,7 @@ def tdew_from_rh(
     Parameters
     ----------
     temperature : numeric
-        Air temperature in degrees Celsius
+        Air temperature (dry-bulb temperature) in degrees Celsius
     relative_humidity : numeric
         Relative humidity as percentage (0-100)
 

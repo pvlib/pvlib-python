@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 
 [project]
-name = "pvlib-branch"
+name = "pvlib"
 description = "A set of functions and classes for simulating the performance of photovoltaic energy systems."
 authors = [
     { name = "pvlib python Developers", email = "pvlib-admin@googlegroups.com" },
@@ -17,7 +17,6 @@ dependencies = [
     'requests',
     'scipy >= 1.6.0',
     'h5py',
-    "flake8>=7.1.1",
 ]
 license = { text = "BSD-3-Clause" }
 classifiers = [

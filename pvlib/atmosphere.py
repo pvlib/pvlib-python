@@ -337,6 +337,94 @@ def gueymard94_pw(temp_air, relative_humidity):
     return pw
 
 
+def rh_from_tdew(temperature, dewpoint, coeff=(6.112, 17.62, 243.12)):
+    """
+    Calculate relative humidity from dewpoint temperatureusing Magnus equation.
+    This function was used by First Solar in creating their spectral model
+    and is therefore relevant to the first solar spectral model in pvlib.
+    Default magnus equation coefficients are from [2].
+
+    Parameters
+    ----------
+    temperature : numeric
+        Air temperature in degrees Celsius
+    dewpoint : numeric
+        Dewpoint temperature in degrees Celsius
+    coeff: tuple
+        Magnus equation coefficient (A, B, C)
+
+    Returns
+    -------
+    pd.Series
+        Relative humidity as percentage (0-100)
+
+    Notes
+    -----
+    Uses the AEKR coefficients which minimize errors between -40 and
+    50 degrees C according to reference [1].
+
+    References
+    ----------
+    .. [1] https://www.osti.gov/servlets/purl/548871-PjpxAP/webviewable/
+    .. [2] https://www.schweizerbart.de//papers/metz/detail/3/89544/Advancements_in_the_field_of_hygrometry?af=crossref
+    """
+
+    # Calculate vapor pressure (e) and saturation vapor pressure (es)
+    e = coeff[0] * np.exp((coeff[1] * temperature) / (coeff[2] + temperature))
+    es = coeff[0] * np.exp((coeff[1] * dewpoint) / (coeff[2] + dewpoint))
+
+    # Calculate relative humidity as percentage
+    relative_humidity = 100 * (es / e)
+
+    return relative_humidity
+
+
+def tdew_from_rh(
+    temperature, relative_humidity, coeff=(6.112, 17.62, 243.12)
+):
+    """
+    Calculate dewpoint temperature using Magnus equation with
+    AEKR coefficients.  This is just a reversal of the calculation
+    in calculate_relative_humidity.
+
+    Parameters
+    ----------
+    temperature : numeric
+        Air temperature in degrees Celsius
+    relative_humidity : numeric
+        Relative humidity as percentage (0-100)
+
+    Returns
+    -------
+    pd.Series
+        Dewpoint temperature in degrees Celsius
+
+    Notes
+    -----
+    Derived by solving the Magnus equation for dewpoint given
+    relative humidity.
+    Valid for temperatures between -40 and 50 degrees C.
+
+    References
+    ----------
+    .. [1] https://www.osti.gov/servlets/purl/548871-PjpxAP/webviewable/
+    """
+    # Calculate the term inside the log
+    # From RH = 100 * (es/e), we get es = (RH/100) * e
+    # Substituting the Magnus equation and solving for dewpoint
+
+    # First calculate ln(es/A)
+    ln_term = (
+        (coeff[1] * temperature) / (coeff[2] + temperature)
+        + np.log(relative_humidity/100)
+    )
+
+    # Then solve for dewpoint
+    dewpoint = coeff[2] * ln_term / (coeff[1] - ln_term)
+
+    return dewpoint
+
+
 first_solar_spectral_correction = deprecated(
     since='0.10.0',
     alternative='pvlib.spectrum.spectral_factor_firstsolar'

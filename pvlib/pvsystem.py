@@ -173,7 +173,7 @@ class PVSystem:
     racking_model : string, optional
         Valid strings are ``'open_rack'``, ``'close_mount'``, and
         ``'insulated_back'``. Used to identify a parameter set for the SAPM
-        cell temperature model. See :py:func:`pvlib.temperature.sapm_module`
+        cell temperature model. See :py:func:`~pvlib.temperature.sapm_module`
         for definitions.
 
     losses_parameters : dict or Series, optional
@@ -1399,7 +1399,7 @@ class FixedMount(AbstractMount):
     racking_model : str, optional
         Valid strings are ``'open_rack'``, ``'close_mount'``, and
         ``'insulated_back'``. Used to identify a parameter set for the SAPM
-        cell temperature model. See :py:func:`pvlib.temperature.sapm_module`
+        cell temperature model. See :py:func:`~pvlib.temperature.sapm_module`
         for definitions.
 
     module_height : float, optional
@@ -1479,8 +1479,8 @@ class SingleAxisTrackerMount(AbstractMount):
         Valid strings are ``'open_rack'``, ``'close_mount'``, and
         ``'insulated_back'`. Used to identify a parameter set for the SAPM
         cell temperature model. ``'open_rack'`` should be used for systems
-        with single-axis trackers. See :py:func:`pvlib.temperature.sapm_module`
-        for definitions.
+        with single-axis trackers.
+        See :py:func:`~pvlib.temperature.sapm_module` for definitions.
 
     module_height : float, optional
        The height above ground of the center of the module [m]. Used for

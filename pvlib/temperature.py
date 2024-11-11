@@ -127,7 +127,7 @@ def sapm_cell(poa_global, temp_air, wind_speed, a, b, deltaT,
 
     Mounting cases can be described in terms of air flow across and around the
     rear-facing surface of the module:
-        
+
     * "open rack" refers to mounting that allows relatively free air flow.
       This case is typical of ground-mounted systems on fixed racking or
       single axis trackers.
@@ -220,7 +220,7 @@ def sapm_module(poa_global, temp_air, wind_speed, a, b):
 
     Mounting cases can be described in terms of air flow across and around the
     rear-facing surface of the module:
-        
+
     * "open rack" refers to mounting that allows relatively free air flow.
       This case is typical of ground-mounted systems on fixed racking or
       single axis trackers.

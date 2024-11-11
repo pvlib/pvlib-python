@@ -125,6 +125,18 @@ def sapm_cell(poa_global, temp_air, wind_speed, a, b, deltaT,
     | glass/polymer | insulated back | -2.81 | -0.0455 | 0                   |
     +---------------+----------------+-------+---------+---------------------+
 
+    Mounting cases can be described in terms of air flow across and around the
+    rear-facing surface of the module:
+        
+    * "open rack" refers to mounting that allows relatively free air flow.
+      This case is typical of ground-mounted systems on fixed racking or
+      single axis trackers.
+    * "close roof" refers to limited or restricted air flow. This case is
+      typical of roof-mounted systems with some gap behind the module.
+    * "insulated back" refers to systems with no air flow contacting the rear
+      surface of the module. This case is typical of building-integrated PV
+      systems, or systems laid flat on a ground surface.
+
     References
     ----------
     .. [1] King, D. et al, 2004, "Sandia Photovoltaic Array Performance
@@ -205,6 +217,18 @@ def sapm_module(poa_global, temp_air, wind_speed, a, b):
     +---------------+----------------+-------+---------+---------------------+
     | glass/polymer | insulated back | -2.81 | -0.0455 | 0                   |
     +---------------+----------------+-------+---------+---------------------+
+
+    Mounting cases can be described in terms of air flow across and around the
+    rear-facing surface of the module:
+        
+    * "open rack" refers to mounting that allows relatively free air flow.
+      This case is typical of ground-mounted systems on fixed racking or
+      single axis trackers.
+    * "close roof" refers to limited or restricted air flow. This case is
+      typical of roof-mounted systems with some gap behind the module.
+    * "insulated back" refers to systems with no air flow contacting the rear
+      surface of the module. This case is typical of building-integrated PV
+      systems, or systems laid flat on a ground surface.
 
     References
     ----------

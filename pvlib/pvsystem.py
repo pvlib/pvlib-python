@@ -170,9 +170,11 @@ class PVSystem:
     inverter_parameters : dict or Series, optional
         Inverter parameters as defined by the SAPM, CEC, or other.
 
-    racking_model : string, default 'open_rack'
-        Valid strings are 'open_rack', 'close_mount', and 'insulated_back'.
-        Used to identify a parameter set for the SAPM cell temperature model.
+    racking_model : string, optional
+        Valid strings are ``'open_rack'``, ``'close_mount'``, and
+        ``'insulated_back'``. Used to identify a parameter set for the SAPM
+        cell temperature model. See :py:func:`pvlib.temperature.sapm_module`
+        for definitions.
 
     losses_parameters : dict or Series, optional
         Losses parameters as defined by PVWatts or other.
@@ -1395,8 +1397,10 @@ class FixedMount(AbstractMount):
         West=270. [degrees]
 
     racking_model : str, optional
-        Valid strings are 'open_rack', 'close_mount', and 'insulated_back'.
-        Used to identify a parameter set for the SAPM cell temperature model.
+        Valid strings are ``'open_rack'``, ``'close_mount'``, and
+        ``'insulated_back'``. Used to identify a parameter set for the SAPM
+        cell temperature model. See :py:func:`pvlib.temperature.sapm_module`
+        for definitions.
 
     module_height : float, optional
        The height above ground of the center of the module [m]. Used for
@@ -1472,8 +1476,11 @@ class SingleAxisTrackerMount(AbstractMount):
         `cross_axis_tilt`. [degrees]
 
     racking_model : str, optional
-        Valid strings are 'open_rack', 'close_mount', and 'insulated_back'.
-        Used to identify a parameter set for the SAPM cell temperature model.
+        Valid strings are ``'open_rack'``, ``'close_mount'``, and
+        ``'insulated_back'`. Used to identify a parameter set for the SAPM
+        cell temperature model. ``'open_rack'`` should be used for systems
+        with single-axis trackers. See :py:func:`pvlib.temperature.sapm_module`
+        for definitions.
 
     module_height : float, optional
        The height above ground of the center of the module [m]. Used for

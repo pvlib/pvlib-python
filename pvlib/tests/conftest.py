@@ -477,18 +477,18 @@ def sapm_module_params():
 
 
 @pytest.fixture(scope='function')
-def spectrum_temperature():
+def tdew_rh_conversion_temperature():
     temperature = pd.Series([20.0, 25.0, 30.0, 15.0, 10.0])
     return temperature
 
 
 @pytest.fixture(scope='function')
-def spectrum_dewpoint():
+def tdew_rh_conversion_dewpoint():
     dewpoint = pd.Series([15.0, 20.0, 25.0, 12.0, 8.0])
     return dewpoint
 
 @pytest.fixture(scope='function')
-def spectrum_relative_humidity():
+def tdew_rh_conversion_relative_humidity():
     relative_humidity = pd.Series([
         72.938767, 73.802512, 74.628205, 82.261353, 87.383237
     ])

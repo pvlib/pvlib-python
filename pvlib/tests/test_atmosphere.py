@@ -87,6 +87,43 @@ def test_gueymard94_pw():
 
     assert_allclose(pws, expected, atol=0.01)
 
+# Unit tests
+def test_rh_from_tdew(
+    tdew_rh_conversion_temperature, tdew_rh_conversion_dewpoint,
+    tdew_rh_conversion_relative_humidity
+):
+
+    # Calculate relative humidity
+    rh = atmosphere.rh_from_tdew(
+        temperature=tdew_rh_conversion_temperature,
+        dewpoint=tdew_rh_conversion_dewpoint
+    )
+
+    # test
+    pd.testing.assert_series_equal(
+        rh,
+        tdew_rh_conversion_relative_humidity,
+        check_names=False
+    )
+
+
+# Unit tests
+def test_tdew_from_rh(
+    tdew_rh_conversion_temperature, tdew_rh_conversion_dewpoint,
+    tdew_rh_conversion_relative_humidity
+):
+
+    # Calculate relative humidity
+    dewpoint = atmosphere.tdew_from_rh(
+        temperature=tdew_rh_conversion_temperature,
+        relative_humidity=tdew_rh_conversion_relative_humidity
+    )
+
+    # test
+    pd.testing.assert_series_equal(
+        dewpoint, spectrum_dewpoint, check_names=False
+    )
+
 
 def test_first_solar_spectral_correction_deprecated():
     with pytest.warns(pvlibDeprecationWarning,

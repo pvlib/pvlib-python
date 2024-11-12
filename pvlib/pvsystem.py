@@ -169,7 +169,7 @@ class PVSystem:
 
     racking_model : string, optional
         Valid strings are 'open_rack', 'close_mount', 'freestanding',
-        `insulated`, or 'insulated_back'.
+        'insulated', or 'insulated_back'.
         Used to identify a parameter set for the cell temperature model.
 
     losses_parameters : dict or Series, optional
@@ -1373,7 +1373,7 @@ class FixedMount(AbstractMount):
 
     racking_model : str, optional
         Valid strings are 'open_rack', 'close_mount', 'freestanding',
-        `insulated`, or 'insulated_back'.
+        'insulated', or 'insulated_back'.
         Used to identify a parameter set for the cell temperature model.
 
     module_height : float, optional

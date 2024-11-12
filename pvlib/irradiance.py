@@ -734,16 +734,14 @@ def haydavies(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
     The Hay and Davies model determines the diffuse irradiance from
     the sky (ground reflected irradiance is not included in this
     algorithm) on a tilted surface using the surface tilt angle, surface
-    azimuth angle, diffuse horizontal irradiance, direct normal
-    irradiance, extraterrestrial irradiance, sun zenith angle, and sun
-    azimuth angle.
+    azimuth angle, diffuse horizontal irradiance, direct normal irradiance,
+    extraterrestrial irradiance, sun zenith angle, and sun azimuth angle.
 
     Parameters
     ----------
     surface_tilt : numeric
-        Surface tilt angles in decimal degrees. The tilt angle is
-        defined as degrees from horizontal (e.g. surface facing up = 0,
-        surface facing horizon = 90)
+        Panel tilt from the horizontal, in decimal degrees, see
+        :term:`surface_tilt`.
 
     surface_azimuth : numeric
         Surface azimuth angles in decimal degrees. The azimuth
@@ -754,7 +752,7 @@ def haydavies(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
         Diffuse horizontal irradiance. [Wm⁻²]
 
     dni : numeric
-        Direct normal irradiance. [Wm⁻²]
+        Direct normal irradiance, see :term:`dni`. [Wm⁻²]
 
     dni_extra : numeric
         Extraterrestrial normal irradiance. [Wm⁻²]

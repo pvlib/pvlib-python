@@ -16,11 +16,10 @@ Documentation
 ~~~~~~~~~~~~~
 * Edited docstrings for :py:func:`~pvlib.pvsystem.dc_ohms_from_percent` and
   :py:func:`~pvlib.pvsystem.dc_ohmic_losses` for clarity. (:issue:`1601`, :pull:`2229`)
-* Corrected the default values for module height and racking model to None in
-  the :py:class:`~pvlib.pvsystem.PVSystem` and
-  :py:class:`~pvlib.pvsystem.FixedMount` docstrings, added the freestanding
-  racking model option, and various formatting edits for clarity.
-  (:issue:`1942`, :pull:`2232`)
+* Added 'freestanding' and 'insulated' `racking_model` options for cell
+  temperature calculation in :py:class:`~pvlib.pvsystem.PVSystem` and
+  :py:class:`~pvlib.pvsystem.FixedMount` docstrings. Various formatting edits
+  for clarity. (:issue:`1942`, :pull:`2232`)
 * Updated :py:func:`~pvlib.irradiance.reindl` to include definitions of terms
   and a new "notes" section (:issue:`2183`, :pull:`2193`)
 

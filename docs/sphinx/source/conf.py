@@ -67,6 +67,8 @@ hoverxref_auto_ref = True
 hoverxref_roles = [
     'term',
     'ref',
+]
+hoverxref_domains = [
     'func',
     'class',
     'meth',

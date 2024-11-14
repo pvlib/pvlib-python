@@ -69,9 +69,9 @@ hoverxref_roles = [
     'ref',
 ]
 hoverxref_domains = [
-    'py:func',
-    'py:class',
-    'py:meth',
+    'func',
+    'class',
+    'meth',
 ]
 
 napoleon_use_rtype = False  # group rtype on same line together with return

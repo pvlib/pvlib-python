@@ -57,16 +57,28 @@ extensions = [
     'sphinx_toggleprompt',
     'sphinx_favicon',
     'hoverxref.extension',
+    'sphinx.ext.intersphinx',
 ]
 
 mathjax3_config = {'chtml': {'displayAlign': 'left',
                              'displayIndent': '2em'}}
+
+# used with hoverxref to link to other projects' documentation not hosted by
+# readthedocs
+intersphinx_mapping = {
+    "python": ("https://docs.python.org/3/", None),
+    "sphinx": ("https://www.sphinx-doc.org/en/master/", None),
+    "numpy": ("https://numpy.org/doc/stable", None),
+    "scipy": ("https://docs.scipy.org/doc/scipy", None),
+    "matplotlib": ("https://matplotlib.org/stable/", None),
+}
 
 # Enable hover tooltips
 hoverxref_auto_ref = True
 hoverxref_roles = ["class", "meth", "func", "ref", "term"]
 hoverxref_role_types = dict.fromkeys(hoverxref_roles, "tooltip")
 hoverxref_domains = ["py"]
+hoverxref_intersphinx = list(intersphinx_mapping.keys())
 
 napoleon_use_rtype = False  # group rtype on same line together with return
 

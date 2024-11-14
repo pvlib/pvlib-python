@@ -64,15 +64,9 @@ mathjax3_config = {'chtml': {'displayAlign': 'left',
 
 # Enable hover tooltips
 hoverxref_auto_ref = True
-hoverxref_roles = [
-    'term',
-    'ref',
-]
-hoverxref_domains = [
-    'func',
-    'class',
-    'meth',
-]
+hoverxref_roles = ["class", "meth", "func", "ref", "term"]
+hoverxref_role_types = dict.fromkeys(hoverxref_roles, "tooltip")
+hoverxref_domains = ["py"]
 
 napoleon_use_rtype = False  # group rtype on same line together with return
 

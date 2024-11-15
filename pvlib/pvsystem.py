@@ -17,7 +17,7 @@ from dataclasses import dataclass
 from abc import ABC, abstractmethod
 from typing import Optional, Union
 
-from pvlib._deprecation import deprecated, warn_deprecated
+from pvlib._deprecation import deprecated
 
 import pvlib  # used to avoid albedo name collision in the Array class
 from pvlib import (atmosphere, iam, inverter, irradiance,
@@ -104,22 +104,22 @@ class PVSystem:
     ----------
     arrays : Array or iterable of Array, optional
         An Array or list of arrays that are part of the system. If not
-        specified a single array is created from the other parameters (e.g.
+        specified, a single array is created from the other parameters (e.g.
         `surface_tilt`, `surface_azimuth`). If specified as a list, the list
         must contain at least one Array;
         if length of arrays is 0 a ValueError is raised. If `arrays` is
         specified the following PVSystem parameters are ignored:
 
-        - `surface_tilt`
-        - `surface_azimuth`
-        - `albedo`
-        - `surface_type`
-        - `module`
-        - `module_type`
-        - `module_parameters`
-        - `temperature_model_parameters`
-        - `modules_per_string`
-        - `strings_per_inverter`
+        - ``surface_tilt``
+        - ``surface_azimuth``
+        - ``albedo``
+        - ``surface_type``
+        - ``module``
+        - ``module_type``
+        - ``module_parameters``
+        - ``temperature_model_parameters``
+        - ``modules_per_string``
+        - ``strings_per_inverter``
 
     surface_tilt: float or array-like, default 0
         Surface tilt angles in decimal degrees.
@@ -127,7 +127,7 @@ class PVSystem:
         (e.g. surface facing up = 0, surface facing horizon = 90)
 
     surface_azimuth: float or array-like, default 180
-        Azimuth angle of the module surface.
+        Azimuth angle of the module surface in decimal degrees.
         North=0, East=90, South=180, West=270.
 
     albedo : float, optional
@@ -142,8 +142,6 @@ class PVSystem:
 
     module : string, optional
         The model name of the modules.
-        May be used to look up the module_parameters dictionary
-        via some other method.
 
     module_type : string, default 'glass_polymer'
          Describes the module's construction. Valid strings are 'glass_polymer'
@@ -154,7 +152,8 @@ class PVSystem:
 
     temperature_model_parameters : dict or Series, optional
         Temperature model parameters as required by one of the models in
-        pvlib.temperature (excluding poa_global, temp_air and wind_speed).
+        :py:mod:`pvlib.temperature` (excluding ``poa_global``, ``temp_air`` and
+        ``wind_speed``).
 
     modules_per_string: int or float, default 1
         See system topology discussion above.
@@ -164,15 +163,14 @@ class PVSystem:
 
     inverter : string, optional
         The model name of the inverters.
-        May be used to look up the inverter_parameters dictionary
-        via some other method.
 
     inverter_parameters : dict or Series, optional
         Inverter parameters as defined by the SAPM, CEC, or other.
 
-    racking_model : string, default 'open_rack'
-        Valid strings are 'open_rack', 'close_mount', and 'insulated_back'.
-        Used to identify a parameter set for the SAPM cell temperature model.
+    racking_model : string, optional
+        Valid strings are 'open_rack', 'close_mount', 'freestanding',
+        'insulated', or 'insulated_back'.
+        Used to identify a parameter set for the cell temperature model.
 
     losses_parameters : dict or Series, optional
         Losses parameters as defined by PVWatts or other.
@@ -186,7 +184,7 @@ class PVSystem:
     Raises
     ------
     ValueError
-        If `arrays` is not None and has length 0.
+        If ``arrays`` is not None and has length 0.
 
     See also
     --------
@@ -1395,8 +1393,9 @@ class FixedMount(AbstractMount):
         West=270. [degrees]
 
     racking_model : str, optional
-        Valid strings are 'open_rack', 'close_mount', and 'insulated_back'.
-        Used to identify a parameter set for the SAPM cell temperature model.
+        Valid strings are 'open_rack', 'close_mount', 'freestanding',
+        'insulated', or 'insulated_back'.
+        Used to identify a parameter set for the cell temperature model.
 
     module_height : float, optional
        The height above ground of the center of the module [m]. Used for
@@ -1472,8 +1471,9 @@ class SingleAxisTrackerMount(AbstractMount):
         `cross_axis_tilt`. [degrees]
 
     racking_model : str, optional
-        Valid strings are 'open_rack', 'close_mount', and 'insulated_back'.
-        Used to identify a parameter set for the SAPM cell temperature model.
+        Valid strings are 'open_rack', 'close_mount', 'freestanding',
+        'insulated', or 'insulated_back'.
+        Used to identify a parameter set for the cell temperature model.
 
     module_height : float, optional
        The height above ground of the center of the module [m]. Used for

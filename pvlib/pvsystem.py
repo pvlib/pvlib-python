@@ -1471,8 +1471,9 @@ class SingleAxisTrackerMount(AbstractMount):
         `cross_axis_tilt`. [degrees]
 
     racking_model : str, optional
-        Valid strings are 'open_rack', 'close_mount', and 'insulated_back'.
-        Used to identify a parameter set for the SAPM cell temperature model.
+        Valid strings are 'open_rack', 'close_mount', 'freestanding',
+        'insulated', or 'insulated_back'.
+        Used to identify a parameter set for the cell temperature model.
 
     module_height : float, optional
        The height above ground of the center of the module [m]. Used for

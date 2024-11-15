@@ -26,7 +26,8 @@ Documentation
 * Edited docstrings for :py:func:`~pvlib.pvsystem.dc_ohms_from_percent` and
   :py:func:`~pvlib.pvsystem.dc_ohmic_losses` for clarity. (:issue:`1601`, :pull:`2229`)
 * Added 'freestanding' and 'insulated' `racking_model` options for cell
-  temperature calculation in :py:class:`~pvlib.pvsystem.PVSystem` and
+  temperature calculation in :py:class:`~pvlib.pvsystem.PVSystem`
+  :py:class:`~pvlib.pvsystem.SingleAxisTrackerMount`, and
   :py:class:`~pvlib.pvsystem.FixedMount` docstrings. Various formatting edits
   for clarity. (:issue:`1942`, :pull:`2232`)
 * Added a new citation style guide (:ref:`references`) to the contributing

@@ -340,8 +340,6 @@ def gueymard94_pw(temp_air, relative_humidity):
 def rh_from_tdew(temperature, dewpoint, coeff=(6.112, 17.62, 243.12)):
     """
     Calculate relative humidity from dewpoint temperatureusing Magnus equation.
-    This function was used by First Solar in creating their spectral model
-    and is therefore relevant to the first solar spectral model in pvlib.
     Default magnus equation coefficients are from [2].
 
     Parameters

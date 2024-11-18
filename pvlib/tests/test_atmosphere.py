@@ -33,7 +33,7 @@ def zeniths():
                          [['simple', [nan, 572.958,   5.759,   1.000]],
                           ['kasten1966', [nan, 35.365,  5.580,  0.999]],
                           ['youngirvine1967', [
-                                 nan, -2.251358367165932e+05, 5.5365, 1.0000]],
+                            nan, -2.251358367165932e+05, 5.5365, 1.0000]],
                           ['kastenyoung1989', [nan, 36.467,  5.586,  1.000]],
                           ['gueymard1993', [nan, 36.431,  5.581,  1.000]],
                           ['young1994', [nan, 30.733,  5.541,  1.000]],
@@ -82,10 +82,11 @@ def test_gueymard94_pw():
     pws = atmosphere.gueymard94_pw(temps_humids[:, 0], temps_humids[:, 1])
 
     expected = np.array(
-        [  0.1       ,   0.33702061,   1.12340202,   0.1       ,
+        [0.1       ,   0.33702061,   1.12340202,   0.1       ,
          1.12040963,   3.73469877,   0.1       ,   3.44859767,  11.49532557])
 
     assert_allclose(pws, expected, atol=0.01)
+
 
 # Unit tests
 def test_rh_from_tdew(
@@ -121,7 +122,7 @@ def test_tdew_from_rh(
 
     # test
     pd.testing.assert_series_equal(
-        dewpoint, spectrum_dewpoint, check_names=False
+        dewpoint, dewpoint, check_names=False
     )
 
 

@@ -358,8 +358,14 @@ def rh_from_tdew(temperature, dewpoint, coeff=(6.112, 17.62, 243.12)):
 
     References
     ----------
-    .. [1] https://library.wmo.int/viewer/68695/?offset=3#page=220&viewer=picture&o=bookmark&n=0&q=
-    .. [2] https://www.schweizerbart.de//papers/metz/detail/3/89544/Advancements_in_the_field_of_hygrometry?af=crossref
+    .. [1] (
+        https://library.wmo.int/viewer/68695/
+        ?offset=3#page=220&viewer=picture&o=bookmark&n=0&q=
+        )
+    .. [2] (
+        https://www.schweizerbart.de//papers/metz/detail/3/89544/
+        Advancements_in_the_field_of_hygrometry?af=crossref
+        )
     """
 
     # Calculate vapor pressure (e) and saturation vapor pressure (es)
@@ -393,7 +399,10 @@ def tdew_from_rh(
 
     References
     ----------
-    .. [1] https://library.wmo.int/viewer/68695/?offset=3#page=220&viewer=picture&o=bookmark&n=0&q=
+    .. [1] (
+        https://library.wmo.int/viewer/68695/
+        ?offset=3#page=220&viewer=picture&o=bookmark&n=0&q=
+        )
     """
     # Calculate the term inside the log
     # From RH = 100 * (es/e), we get es = (RH/100) * e

@@ -24,7 +24,7 @@ diode model equation.
 
 .. math::
 
-   I = I_L - I_0 \left(\exp \left(\frac{V + I R_s}{n Ns V_{th}} \right) - 1 \right)
+   I = I_L - I_0 \left(\exp \left(\frac{V + I R_s}{n N_s V_{th}} \right) - 1 \right)
        - \frac{V + I R_s}{R_{sh}}
 
 Lambert W-function is the inverse of the function
@@ -36,8 +36,8 @@ a form that can be expressed as a Lambert W-function.
 
 .. math::
 
-   z = \frac{R_s I_0}{n Ns V_{th} \left(1 + \frac{R_s}{R_{sh}} \right)} \exp \left(
-       \frac{R_s \left( I_L + I_0 \right) + V}{n Ns V_{th} \left(1 + \frac{R_s}{R_{sh}}\right)}
+   z = \frac{R_s I_0}{n N_s V_{th} \left(1 + \frac{R_s}{R_{sh}} \right)} \exp \left(
+       \frac{R_s \left( I_L + I_0 \right) + V}{n N_s V_{th} \left(1 + \frac{R_s}{R_{sh}}\right)}
        \right)
 
 Then the module current can be solved using the Lambert W-function,
@@ -46,7 +46,7 @@ Then the module current can be solved using the Lambert W-function,
 .. math::
 
    I = \frac{I_L + I_0 - \frac{V}{R_{sh}}}{1 + \frac{R_s}{R_{sh}}}
-       - \frac{n Ns V_{th}}{R_s} W \left(z \right)
+       - \frac{n N_s V_{th}}{R_s} W \left(z \right)
 
 
 Bishop's Algorithm
@@ -60,7 +60,7 @@ by a zero diode voltage and an estimate of open circuit voltage given by
 
 .. math::
 
-   V_{oc, est} = n Ns V_{th} \log \left( \frac{I_L}{I_0} + 1 \right)
+   V_{oc, est} = n N_s V_{th} \log \left( \frac{I_L}{I_0} + 1 \right)
 
 We know that :math:`V_d = 0` corresponds to a voltage less than zero, and
 we can also show that when :math:`V_d = V_{oc, est}`, the resulting
@@ -73,24 +73,24 @@ between 0 and :math:`V_{oc, est}` will always find any desired condition in the
 
 .. math::
 
-   I = I_L - I_0 \left(\exp \left(\frac{V_{oc, est}}{n Ns V_{th}} \right) - 1 \right)
+   I = I_L - I_0 \left(\exp \left(\frac{V_{oc, est}}{n N_s V_{th}} \right) - 1 \right)
        - \frac{V_{oc, est}}{R_{sh}} \newline
 
-   I = I_L - I_0 \left(\exp \left(\frac{n Ns V_{th} \log \left(\frac{I_L}{I_0} + 1 \right)}{n Ns V_{th}} \right) - 1 \right)
-       - \frac{n Ns V_{th} \log \left(\frac{I_L}{I_0} + 1 \right)}{R_{sh}} \newline
+   I = I_L - I_0 \left(\exp \left(\frac{n N_s V_{th} \log \left(\frac{I_L}{I_0} + 1 \right)}{n N_s V_{th}} \right) - 1 \right)
+       - \frac{n N_s V_{th} \log \left(\frac{I_L}{I_0} + 1 \right)}{R_{sh}} \newline
 
    I = I_L - I_0 \left(\exp \left(\log \left(\frac{I_L}{I_0} + 1 \right) \right)  - 1 \right)
-       - \frac{n Ns V_{th} \log \left(\frac{I_L}{I_0} + 1 \right)}{R_{sh}} \newline
+       - \frac{n N_s V_{th} \log \left(\frac{I_L}{I_0} + 1 \right)}{R_{sh}} \newline
 
    I = I_L - I_0 \left(\frac{I_L}{I_0} + 1  - 1 \right)
-       - \frac{n Ns V_{th} \log \left(\frac{I_L}{I_0} + 1 \right)}{R_{sh}} \newline
+       - \frac{n N_s V_{th} \log \left(\frac{I_L}{I_0} + 1 \right)}{R_{sh}} \newline
 
    I = I_L - I_0 \left(\frac{I_L}{I_0} \right)
-       - \frac{n Ns V_{th} \log \left(\frac{I_L}{I_0} + 1 \right)}{R_{sh}} \newline
+       - \frac{n N_s V_{th} \log \left(\frac{I_L}{I_0} + 1 \right)}{R_{sh}} \newline
 
-   I = I_L - I_L - \frac{n Ns V_{th} \log \left( \frac{I_L}{I_0} + 1 \right)}{R_{sh}} \newline
+   I = I_L - I_L - \frac{n N_s V_{th} \log \left( \frac{I_L}{I_0} + 1 \right)}{R_{sh}} \newline
 
-   I = - \frac{n Ns V_{th} \log \left( \frac{I_L}{I_0} + 1 \right)}{R_{sh}}
+   I = - \frac{n N_s V_{th} \log \left( \frac{I_L}{I_0} + 1 \right)}{R_{sh}}
 
 References
 ----------

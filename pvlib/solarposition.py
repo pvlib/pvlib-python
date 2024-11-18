@@ -856,8 +856,8 @@ def ephemeris(time, latitude, longitude, pressure=101325.0, temperature=12.0):
 
 
 def calc_time(lower_bound, upper_bound, latitude, longitude, attribute, value,
-              altitude=0.0, pressure=101325.0, temperature=12.0, horizon='+0:00',
-              xtol=1.0e-12):
+              altitude=0.0, pressure=101325.0, temperature=12.0,
+              horizon='+0:00', xtol=1.0e-12):
     """
     Calculate the time between lower_bound and upper_bound
     where the attribute is equal to value. Uses PyEphem for

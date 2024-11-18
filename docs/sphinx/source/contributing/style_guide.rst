@@ -70,7 +70,7 @@ the ``docs/readthedocs.org:pvlib-python`` link within the checks
 status box at the bottom of the pull request.
 
 
-.. _references:
+.. _reference_style:
 
 References
 ----------

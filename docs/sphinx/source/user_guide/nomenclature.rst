@@ -163,8 +163,9 @@ There is a convention on consistent variable names throughout the library:
         Temperature of the module
 
     transposition_factor
-        The ratio of the irradiance incident on an inclined plane compared with
-        a horizontal plane, :math:`\frac{poa\_global}{ghi}`
+        The ratio of the irradiance incident on an inclined plane to the
+        the iradiance incident on a horizontal plane,
+        :math:`\frac{poa\_global}{ghi}`
 
     tz
         Timezone

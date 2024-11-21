@@ -164,7 +164,7 @@ There is a convention on consistent variable names throughout the library:
 
     transposition_factor
         The ratio of the irradiance incident on an inclined plane to the
-        the iradiance incident on a horizontal plane,
+        the irradiance incident on a horizontal plane,
         :math:`\frac{poa\_global}{ghi}`
 
     tz

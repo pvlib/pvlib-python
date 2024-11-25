@@ -109,7 +109,7 @@ There is a convention on consistent variable names throughout the library:
         Direct/beam irradiance in plane [Wm⁻²].
 
     poa_global
-        Global irradiance in plane. sum of diffuse and beam projection [Wm⁻²].
+        Global irradiance in plane.  Sum of diffuse and beam projection [Wm⁻²].
 
     poa_ground_diffuse
         In plane ground reflected irradiance [Wm⁻²].

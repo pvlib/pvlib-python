@@ -1619,7 +1619,7 @@ def ghi_from_poa_driesse_2023(surface_tilt, surface_azimuth,
     old_param_name='clearsky_ghi',
     new_param_name='ghi_clear',
     removal="12.0")
-def clearsky_index(ghi, clearsky_ghi, max_clearsky_index=2.0):
+def clearsky_index(ghi, ghi_clear, max_clearsky_index=2.0):
     """
     Calculate the clearsky index.
 
@@ -2161,7 +2161,7 @@ def _dirint_bins(times, kt_prime, zenith, w, delta_kt_prime):
     old_param_name='ghi_clearsky',
     new_param_name='ghi_clear',
     removal="12.0")
-def dirindex(ghi, ghi_clearsky, dni_clearsky, zenith, times, pressure=101325.,
+def dirindex(ghi, ghi_clear, dni_clearsky, zenith, times, pressure=101325.,
              use_delta_kt_prime=True, temp_dew=None, min_cos_zenith=0.065,
              max_zenith=87):
     """

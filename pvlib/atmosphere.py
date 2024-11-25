@@ -393,10 +393,9 @@ def tdew_from_rh(
 
     References
     ----------
-    .. [1] (
-        https://library.wmo.int/viewer/68695/
-        ?offset=3#page=220&viewer=picture&o=bookmark&n=0&q=
-        )
+    .. [1] "Guide to Instruments and Methods of Observation",
+       World Meteorological Organization, WMO-No. 8, 2023.
+       https://library.wmo.int/idurl/4/68695
     """
     # Calculate the term inside the log
     # From RH = 100 * (es/e), we get es = (RH/100) * e

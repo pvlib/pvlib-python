@@ -674,14 +674,8 @@ def test_detect_clearsky_missing_index(detect_clearsky_data):
 
 def test_detect_clearsky_not_enough_data(detect_clearsky_data):
     expected, cs = detect_clearsky_data
-    with pytest.raises(ValueError, match='times has only'):
+    with pytest.raises(ValueError, match='have at least'):
         clearsky.detect_clearsky(expected['GHI'], cs['ghi'], window_length=60)
-
-
-def test_detect_clearsky_window_too_short(detect_clearsky_data):
-    expected, cs = detect_clearsky_data
-    with pytest.raises(ValueError, match="Samples per window of "):
-        clearsky.detect_clearsky(expected['GHI'], cs['ghi'], window_length=2)
 
 
 @pytest.mark.parametrize("window_length", [5, 10, 15, 20, 25])

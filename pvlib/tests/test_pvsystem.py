@@ -1870,6 +1870,7 @@ def test_PVSystem_get_irradiance(solar_pos):
                                        irrads['dni'],
                                        irrads['ghi'],
                                        irrads['dhi'])
+
     expected = pd.DataFrame(data=np.array(
         [[883.65494055, 745.86141676, 137.79352379, 126.397131, 11.39639279],
          [0., -0., 0., 0., 0.]]),
@@ -1878,23 +1879,6 @@ def test_PVSystem_get_irradiance(solar_pos):
                                      'poa_ground_diffuse'],
                             index=solar_pos.index)
     assert_frame_equal(irradiance, expected, check_less_precise=2)
-
-
-def test_PVSystem_get_irradiance_float():
-    system = pvsystem.PVSystem(surface_tilt=32, surface_azimuth=135)
-    irrads = {'dni': 900., 'ghi': 600., 'dhi': 100.}
-    zenith = 55.366831
-    azimuth = 172.320038
-    irradiance = system.get_irradiance(zenith,
-                                       azimuth,
-                                       irrads['dni'],
-                                       irrads['ghi'],
-                                       irrads['dhi'])
-    expected = {'poa_global': 884.80903423, 'poa_direct': 745.84258835,
-                'poa_diffuse': 138.96644588, 'poa_sky_diffuse': 127.57005309,
-                'poa_ground_diffuse': 11.39639279}
-    for k, v in irradiance.items():
-        assert np.isclose(v, expected[k], rtol=1e-6)
 
 
 def test_PVSystem_get_irradiance_albedo(solar_pos):

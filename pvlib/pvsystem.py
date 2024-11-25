@@ -17,7 +17,7 @@ from dataclasses import dataclass
 from abc import ABC, abstractmethod
 from typing import Optional, Union
 
-from pvlib._deprecation import deprecated
+from pvlib._deprecation import deprecated, warn_deprecated
 
 import pvlib  # used to avoid albedo name collision in the Array class
 from pvlib import (atmosphere, iam, inverter, irradiance,
@@ -104,22 +104,22 @@ class PVSystem:
     ----------
     arrays : Array or iterable of Array, optional
         An Array or list of arrays that are part of the system. If not
-        specified, a single array is created from the other parameters (e.g.
+        specified a single array is created from the other parameters (e.g.
         `surface_tilt`, `surface_azimuth`). If specified as a list, the list
         must contain at least one Array;
         if length of arrays is 0 a ValueError is raised. If `arrays` is
         specified the following PVSystem parameters are ignored:
 
-        - ``surface_tilt``
-        - ``surface_azimuth``
-        - ``albedo``
-        - ``surface_type``
-        - ``module``
-        - ``module_type``
-        - ``module_parameters``
-        - ``temperature_model_parameters``
-        - ``modules_per_string``
-        - ``strings_per_inverter``
+        - `surface_tilt`
+        - `surface_azimuth`
+        - `albedo`
+        - `surface_type`
+        - `module`
+        - `module_type`
+        - `module_parameters`
+        - `temperature_model_parameters`
+        - `modules_per_string`
+        - `strings_per_inverter`
 
     surface_tilt: float or array-like, default 0
         Surface tilt angles in decimal degrees.
@@ -127,7 +127,7 @@ class PVSystem:
         (e.g. surface facing up = 0, surface facing horizon = 90)
 
     surface_azimuth: float or array-like, default 180
-        Azimuth angle of the module surface in decimal degrees.
+        Azimuth angle of the module surface.
         North=0, East=90, South=180, West=270.
 
     albedo : float, optional
@@ -142,6 +142,8 @@ class PVSystem:
 
     module : string, optional
         The model name of the modules.
+        May be used to look up the module_parameters dictionary
+        via some other method.
 
     module_type : string, default 'glass_polymer'
          Describes the module's construction. Valid strings are 'glass_polymer'
@@ -152,8 +154,7 @@ class PVSystem:
 
     temperature_model_parameters : dict or Series, optional
         Temperature model parameters as required by one of the models in
-        :py:mod:`pvlib.temperature` (excluding ``poa_global``, ``temp_air`` and
-        ``wind_speed``).
+        pvlib.temperature (excluding poa_global, temp_air and wind_speed).
 
     modules_per_string: int or float, default 1
         See system topology discussion above.
@@ -163,14 +164,15 @@ class PVSystem:
 
     inverter : string, optional
         The model name of the inverters.
+        May be used to look up the inverter_parameters dictionary
+        via some other method.
 
     inverter_parameters : dict or Series, optional
         Inverter parameters as defined by the SAPM, CEC, or other.
 
-    racking_model : string, optional
-        Valid strings are 'open_rack', 'close_mount', 'freestanding',
-        'insulated', or 'insulated_back'.
-        Used to identify a parameter set for the cell temperature model.
+    racking_model : string, default 'open_rack'
+        Valid strings are 'open_rack', 'close_mount', and 'insulated_back'.
+        Used to identify a parameter set for the SAPM cell temperature model.
 
     losses_parameters : dict or Series, optional
         Losses parameters as defined by PVWatts or other.
@@ -184,7 +186,7 @@ class PVSystem:
     Raises
     ------
     ValueError
-        If ``arrays`` is not None and has length 0.
+        If `arrays` is not None and has length 0.
 
     See also
     --------
@@ -310,7 +312,7 @@ class PVSystem:
                        dni_extra=None, airmass=None, albedo=None,
                        model='haydavies', **kwargs):
         """
-        Uses :py:func:`pvlib.irradiance.get_total_irradiance` to
+        Uses the :py:func:`irradiance.get_total_irradiance` function to
         calculate the plane of array irradiance components on the tilted
         surfaces defined by each array's ``surface_tilt`` and
         ``surface_azimuth``.
@@ -321,11 +323,11 @@ class PVSystem:
             Solar zenith angle.
         solar_azimuth : float or Series
             Solar azimuth angle.
-        dni : float, Series, or tuple of float or Series
+        dni : float or Series or tuple of float or Series
             Direct Normal Irradiance. [W/m2]
-        ghi : float, Series, or tuple of float or Series
+        ghi : float or Series or tuple of float or Series
             Global horizontal irradiance. [W/m2]
-        dhi : float, Series, or tuple of float or Series
+        dhi : float or Series or tuple of float or Series
             Diffuse horizontal irradiance. [W/m2]
         dni_extra : float, Series or tuple of float or Series, optional
             Extraterrestrial direct normal irradiance. [W/m2]
@@ -337,22 +339,15 @@ class PVSystem:
             Irradiance model.
 
         kwargs
-            Extra parameters passed to
-            :py:func:`pvlib.irradiance.get_total_irradiance`.
+            Extra parameters passed to :func:`irradiance.get_total_irradiance`.
 
         Notes
         -----
-        Each of ``dni``, ``ghi``, and ``dni`` may be passed as a float, Series,
-        or tuple of float or Series. If passed as a float or Series, these
-        values are used for all Arrays. If passed as a tuple, the tuple length
-        must be the same as the number of Arrays. The first tuple element is
-        used for the first Array, the second tuple element for the second
-        Array, and so forth.
-
-        Some sky irradiance models require ``dni_extra``. For these models,
-        if ``dni_extra`` is not provided and ``solar_zenith`` has a
-        ``DatetimeIndex``, then ``dni_extra`` is calculated.
-        Otherwise, ``dni_extra=1367`` is assumed.
+        Each of `dni`, `ghi`, and `dni` parameters may be passed as a tuple
+        to provide different irradiance for each array in the system. If not
+        passed as a tuple then the same value is used for input to each Array.
+        If passed as a tuple the length must be the same as the number of
+        Arrays.
 
         Returns
         -------
@@ -1082,7 +1077,7 @@ class Array:
         """
         Get plane of array irradiance components.
 
-        Uses :py:func:`pvlib.irradiance.get_total_irradiance` to
+        Uses the :py:func:`pvlib.irradiance.get_total_irradiance` function to
         calculate the plane of array irradiance components for a surface
         defined by ``self.surface_tilt`` and ``self.surface_azimuth``.
 
@@ -1117,13 +1112,6 @@ class Array:
             Column names are: ``'poa_global', 'poa_direct', 'poa_diffuse',
             'poa_sky_diffuse', 'poa_ground_diffuse'``.
 
-        Notes
-        -----
-        Some sky irradiance models require ``dni_extra``. For these models,
-        if ``dni_extra`` is not provided and ``solar_zenith`` has a
-        ``DatetimeIndex``, then ``dni_extra`` is calculated.
-        Otherwise, ``dni_extra=1367`` is assumed.
-
         See also
         --------
         :py:func:`pvlib.irradiance.get_total_irradiance`
@@ -1131,16 +1119,9 @@ class Array:
         if albedo is None:
             albedo = self.albedo
 
-        # dni_extra is not needed for all models, but this is easier
+        # not needed for all models, but this is easier
         if dni_extra is None:
-            if (hasattr(solar_zenith, 'index') and
-                    isinstance(solar_zenith.index, pd.DatetimeIndex)):
-                # calculate extraterrestrial irradiance
-                dni_extra = irradiance.get_extra_radiation(
-                    solar_zenith.index)
-            else:
-                # use the solar constant
-                dni_extra = 1367.0
+            dni_extra = irradiance.get_extra_radiation(solar_zenith.index)
 
         if airmass is None:
             airmass = atmosphere.get_relative_airmass(solar_zenith)
@@ -1393,9 +1374,8 @@ class FixedMount(AbstractMount):
         West=270. [degrees]
 
     racking_model : str, optional
-        Valid strings are 'open_rack', 'close_mount', 'freestanding',
-        'insulated', or 'insulated_back'.
-        Used to identify a parameter set for the cell temperature model.
+        Valid strings are 'open_rack', 'close_mount', and 'insulated_back'.
+        Used to identify a parameter set for the SAPM cell temperature model.
 
     module_height : float, optional
        The height above ground of the center of the module [m]. Used for
@@ -1471,9 +1451,8 @@ class SingleAxisTrackerMount(AbstractMount):
         `cross_axis_tilt`. [degrees]
 
     racking_model : str, optional
-        Valid strings are 'open_rack', 'close_mount', 'freestanding',
-        'insulated', or 'insulated_back'.
-        Used to identify a parameter set for the cell temperature model.
+        Valid strings are 'open_rack', 'close_mount', and 'insulated_back'.
+        Used to identify a parameter set for the SAPM cell temperature model.
 
     module_height : float, optional
        The height above ground of the center of the module [m]. Used for
@@ -2973,7 +2952,7 @@ def dc_ohmic_losses(resistance, current):
 
     .. math::
 
-        L = I^2 \times R
+        L = I \times R^2
 
     where :math:`I` is the current (A) and :math:`R` is the resistance of the
     conductor (ohms).

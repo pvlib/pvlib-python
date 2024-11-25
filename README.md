@@ -81,7 +81,7 @@ Contributing
 ============
 
 We need your help to make pvlib-python a great tool!
-Please see the [Contributing page](https://pvlib-python.readthedocs.io/en/stable/contributing/index.html) for more on how you can contribute.
+Please see the [Contributing page](http://pvlib-python.readthedocs.io/en/stable/contributing.html) for more on how you can contribute.
 The long-term success of pvlib-python requires substantial community support.
 
 

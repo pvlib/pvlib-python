@@ -1,7 +1,7 @@
 .. _testing:
 
-Testing and benchmarking
-========================
+Testing
+=======
 
 .. _overview:
 

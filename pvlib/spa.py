@@ -413,10 +413,8 @@ def julian_day_dt(year, month, day, hour, minute, second, microsecond):
     frac_of_day = (microsecond / 1e6 + (second + minute * 60 + hour * 3600)
                    ) * 1.0 / (3600*24)
     d = day + frac_of_day
-    jd = int(365.25 * (year + 4716)) + int(30.6001 * (month + 1)) + d - 1524.5
-    if jd > 2299160.0:
-        jd += b
-
+    jd = (int(365.25 * (year + 4716)) + int(30.6001 * (month + 1)) + d +
+          b - 1524.5)
     return jd
 
 

@@ -26,7 +26,7 @@ pvlib python
 that-use-pvlib-python>`_ page for inspiration and listing of your
 application.
 
-There is a :ref:`variable naming convention <nomenclature>` to
+There is a :ref:`variable naming convention <variables_style_rules>` to
 ensure consistency throughout the library.
 
 

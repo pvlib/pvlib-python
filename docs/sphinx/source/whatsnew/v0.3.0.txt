@@ -47,7 +47,7 @@ Enhancements
     * :ref:`installation` (:issue:`135`)
     * :ref:`contributing` (:issue:`46`)
     * :ref:`timetimezones` (:issue:`47`)
-    * Variables and Symbols (:issue:`102`)
+    * :ref:`variables_style_rules` (:issue:`102`)
     * Classes (:issue:`93`) (Moved to :ref:`api` in :issue:`258`)
 
 * Adds support for Appveyor, a Windows continuous integration service.

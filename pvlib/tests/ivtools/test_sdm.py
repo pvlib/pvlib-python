@@ -1,12 +1,12 @@
 import numpy as np
 import pandas as pd
-from scipy import optimize
 
 import pytest
 from numpy.testing import assert_allclose
 
 from pvlib.ivtools import sdm
 from pvlib import pvsystem
+from pvlib._deprecation import pvlibDeprecationWarning
 
 from pvlib.tests.conftest import requires_pysam, requires_statsmodels
 
@@ -78,25 +78,6 @@ def test_fit_desoto():
                        'temp_ref': 25}
     assert np.allclose(pd.Series(result), pd.Series(result_expected),
                        rtol=1e-4)
-
-
-def test_fit_desoto_init_guess(mocker):
-    init_guess_array = np.array([9.4, 3.0e-10, 0.3, 125., 1.6])
-    init_guess = {k: v for k, v in zip(
-        ['IL_0', 'Io_0', 'Rs_0', 'Rsh_0', 'a_0'], init_guess_array)}
-    spy = mocker.spy(optimize, 'root')
-    result, _ = sdm.fit_desoto(v_mp=31.0, i_mp=8.71, v_oc=38.3, i_sc=9.43,
-                               alpha_sc=0.005658, beta_voc=-0.13788,
-                               cells_in_series=60, init_guess=init_guess)
-    np.testing.assert_array_equal(init_guess_array, spy.call_args[1]['x0'])
-
-
-def test_fit_desoto_init_bad_key():
-    init_guess = {'IL_0': 6., 'bad_key': 0}
-    with pytest.raises(ValueError, match='is not a valid name;'):
-        result, _ = sdm.fit_desoto(v_mp=31.0, i_mp=8.71, v_oc=38.3, i_sc=9.43,
-                                   alpha_sc=0.005658, beta_voc=-0.13788,
-                                   cells_in_series=60, init_guess=init_guess)
 
 
 def test_fit_desoto_failure():

@@ -19,6 +19,7 @@ from pvlib._deprecation import renamed_kwarg_warning
 renamed_kwarg_warning('11.2', 'clearsky_ghi', 'ghi_clear', removal="12.0")
 renamed_kwarg_warning('11.2', 'clearsky', 'ghi_clear', removal="12.0")
 
+
 def ineichen(apparent_zenith, airmass_absolute, linke_turbidity,
              altitude=0, dni_extra=1364., perez_enhancement=False):
     '''
@@ -671,9 +672,11 @@ def _clearsky_get_threshold(sample_interval):
     window_length = np.interp(sample_interval, data_freq, [50, 60, 90, 120])
     mean_diff = np.interp(sample_interval, data_freq, [75, 75, 75, 75])
     max_diff = np.interp(sample_interval, data_freq, [60, 65, 75, 90])
-    lower_line_length = np.interp(sample_interval, data_freq, [-45,-45,-45,-45])
+    lower_line_length = np.interp(sample_interval, data_freq, [-45, -45, -45,
+                                                               -45])
     upper_line_length = np.interp(sample_interval, data_freq, [80, 80, 80, 80])
-    var_diff = np.interp(sample_interval, data_freq, [0.005, 0.01, 0.032, 0.07])
+    var_diff = np.interp(sample_interval, data_freq, [0.005, 0.01, 0.032,
+                                                      0.07])
     slope_dev = np.interp(sample_interval, data_freq, [50, 60, 75, 96])
 
     return (window_length, mean_diff, max_diff, lower_line_length,

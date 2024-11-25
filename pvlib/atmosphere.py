@@ -388,7 +388,7 @@ def tdew_from_rh(
 
     Returns
     -------
-    pd.Series
+    numeric
         Dewpoint temperature in degrees Celsius
 
     References

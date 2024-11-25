@@ -377,7 +377,7 @@ def tdew_from_rh(
 ):
     """
     Calculate dewpoint temperature using Magnus equation.
-    This is just a reversal of the calculation in calculate_relative_humidity.
+    This is a reversal of the calculation in :py:func:`rh_from_tdew`.
 
     Parameters
     ----------

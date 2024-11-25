@@ -1235,6 +1235,12 @@ def test_clearsky_index():
     assert_series_equal(out, expected)
 
 
+def test_clearsky_index_renaming():
+    with pytest.warns(pvlibDeprecationWarning, match='ghi_clear'):
+        ghi, clearsky_ghi = 200, 300
+        irradiance.clearsky_index(ghi, clearsky_ghi)
+
+
 def test_clearness_index():
     ghi = np.array([-1, 0, 1, 1000])
     solar_zenith = np.array([180, 90, 89.999, 0])

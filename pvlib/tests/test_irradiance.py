@@ -1059,7 +1059,7 @@ def test_erbs_all_scalar():
 
 def test_dirindex(times):
     ghi = pd.Series([0, 0, 1038.62, 254.53], index=times)
-    ghi_clear = pd.Series(
+    ghi_clearsky = pd.Series(
         np.array([0., 79.73860422, 1042.48031487, 257.20751138]),
         index=times
     )
@@ -1073,7 +1073,7 @@ def test_dirindex(times):
     )
     pressure = 93193.
     tdew = 10.
-    out = irradiance.dirindex(ghi, ghi_clear, dni_clearsky,
+    out = irradiance.dirindex(ghi, ghi_clearsky, dni_clearsky,
                               zenith, times, pressure=pressure,
                               temp_dew=tdew)
     dirint_close_values = irradiance.dirint(ghi, zenith, times,
@@ -1100,26 +1100,26 @@ def test_dirindex_min_cos_zenith_max_zenith():
     # times don't have any physical relevance
     times = pd.DatetimeIndex(['2014-06-24T12-0700', '2014-06-24T18-0700'])
     ghi = pd.Series([0, 1], index=times)
-    ghi_clear = pd.Series([0, 1], index=times)
+    ghi_clearsky = pd.Series([0, 1], index=times)
     dni_clearsky = pd.Series([0, 5], index=times)
     solar_zenith = pd.Series([90, 89.99], index=times)
 
-    out = irradiance.dirindex(ghi, ghi_clear, dni_clearsky, solar_zenith,
+    out = irradiance.dirindex(ghi, ghi_clearsky, dni_clearsky, solar_zenith,
                               times)
     expected = pd.Series([nan, nan], index=times)
     assert_series_equal(out, expected)
 
-    out = irradiance.dirindex(ghi, ghi_clear, dni_clearsky, solar_zenith,
+    out = irradiance.dirindex(ghi, ghi_clearsky, dni_clearsky, solar_zenith,
                               times, min_cos_zenith=0)
     expected = pd.Series([nan, nan], index=times)
     assert_series_equal(out, expected)
 
-    out = irradiance.dirindex(ghi, ghi_clear, dni_clearsky, solar_zenith,
+    out = irradiance.dirindex(ghi, ghi_clearsky, dni_clearsky, solar_zenith,
                               times, max_zenith=90)
     expected = pd.Series([nan, nan], index=times)
     assert_series_equal(out, expected)
 
-    out = irradiance.dirindex(ghi, ghi_clear, dni_clearsky, solar_zenith,
+    out = irradiance.dirindex(ghi, ghi_clearsky, dni_clearsky, solar_zenith,
                               times, min_cos_zenith=0, max_zenith=100)
     expected = pd.Series([nan, 5.], index=times)
     assert_series_equal(out, expected)

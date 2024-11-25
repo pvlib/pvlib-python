@@ -677,7 +677,7 @@ def _clearsky_get_threshold(sample_interval):
             upper_line_length, var_diff, slope_dev)
 
 
-def detect_clearsky(measured, ghi_clear, times=None, infer_limits=False,
+def detect_clearsky(measured, clearsky, times=None, infer_limits=False,
                     window_length=10, mean_diff=75, max_diff=75,
                     lower_line_length=-5, upper_line_length=10,
                     var_diff=0.005, slope_dev=8, max_iterations=20,
@@ -703,9 +703,9 @@ def detect_clearsky(measured, ghi_clear, times=None, infer_limits=False,
     Parameters
     ----------
     measured : array or Series
-        Time series of measured GHI. [Wm⁻²]
-    ghi_clear : array or Series
-        Time series of the expected clearsky GHI. [Wm⁻²]
+        Time series of measured GHI. [W/m2]
+    clearsky : array or Series
+        Time series of the expected clearsky GHI. [W/m2]
     times : DatetimeIndex, optional
         Times of measured and clearsky values. If not specified, the index of
         ``measured`` will be used.
@@ -717,10 +717,10 @@ def detect_clearsky(measured, ghi_clear, times=None, infer_limits=False,
         periods.
     mean_diff : float, default 75
         Threshold value for agreement between mean values of measured
-        and clearsky in each interval, see Eq. 6 in [1]. [Wm⁻²]
+        and clearsky in each interval, see Eq. 6 in [1]. [W/m2]
     max_diff : float, default 75
         Threshold value for agreement between maxima of measured and
-        clearsky values in each interval, see Eq. 7 in [1]. [Wm⁻²]
+        clearsky values in each interval, see Eq. 7 in [1]. [W/m2]
     lower_line_length : float, default -5
         Lower limit of line length criterion from Eq. 8 in [1].
         Criterion satisfied when lower_line_length < line length difference
@@ -751,7 +751,7 @@ def detect_clearsky(measured, ghi_clear, times=None, infer_limits=False,
         for each condition. Only provided if return_components is True.
 
     alpha : scalar, optional
-        Scaling factor applied to the ``ghi_clear`` to obtain the
+        Scaling factor applied to the ghi_clear to obtain the
         detected clear_samples. Only provided if return_components is
         True.
 
@@ -804,10 +804,10 @@ def detect_clearsky(measured, ghi_clear, times=None, infer_limits=False,
     else:
         meas = measured
 
-    if not isinstance(ghi_clear, pd.Series):
-        clear = pd.Series(ghi_clear, index=times)
+    if not isinstance(clearsky, pd.Series):
+        clear = pd.Series(clearsky, index=times)
     else:
-        clear = ghi_clear
+        clear = clearsky
 
     sample_interval, samples_per_window = \
         tools._get_sample_intervals(times, window_length)
@@ -816,7 +816,7 @@ def detect_clearsky(measured, ghi_clear, times=None, infer_limits=False,
     if infer_limits:
         window_length, mean_diff, max_diff, lower_line_length, \
             upper_line_length, var_diff, slope_dev = \
-            _clearsky_get_threshold(sample_interval)
+                _clearsky_get_threshold(sample_interval)
 
         # recalculate samples_per_window using returned window_length
         _, samples_per_window = \

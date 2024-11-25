@@ -2140,7 +2140,7 @@ def _dirint_bins(times, kt_prime, zenith, w, delta_kt_prime):
     return kt_prime_bin, zenith_bin, w_bin, delta_kt_prime_bin
 
 
-def dirindex(ghi, ghi_clear, dni_clearsky, zenith, times, pressure=101325.,
+def dirindex(ghi, ghi_clearsky, dni_clearsky, zenith, times, pressure=101325.,
              use_delta_kt_prime=True, temp_dew=None, min_cos_zenith=0.065,
              max_zenith=87):
     """
@@ -2148,7 +2148,7 @@ def dirindex(ghi, ghi_clear, dni_clearsky, zenith, times, pressure=101325.,
 
     The DIRINDEX model [1]_ modifies the DIRINT model implemented in
     :py:func:`pvlib.irradiance.dirint` by taking into account information
-    from a clear sky model. It is recommended that ``ghi_clear`` be
+    from a clear sky model. It is recommended that ``ghi_clearsky`` be
     calculated using the Ineichen clear sky model
     :py:func:`pvlib.clearsky.ineichen` with ``perez_enhancement=True``.
 
@@ -2159,7 +2159,7 @@ def dirindex(ghi, ghi_clear, dni_clearsky, zenith, times, pressure=101325.,
     ghi : array-like
         Global horizontal irradiance. [Wm⁻²]
 
-    ghi_clear : array-like
+    ghi_clearsky : array-like
         Global horizontal irradiance from clear sky model. [Wm⁻²]
 
     dni_clearsky : array-like
@@ -2221,7 +2221,7 @@ def dirindex(ghi, ghi_clear, dni_clearsky, zenith, times, pressure=101325.,
                         temp_dew=temp_dew, min_cos_zenith=min_cos_zenith,
                         max_zenith=max_zenith)
 
-    dni_dirint_clearsky = dirint(ghi_clear, zenith, times,
+    dni_dirint_clearsky = dirint(ghi_clearsky, zenith, times,
                                  pressure=pressure,
                                  use_delta_kt_prime=use_delta_kt_prime,
                                  temp_dew=temp_dew,

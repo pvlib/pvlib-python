@@ -327,13 +327,13 @@ def haurwitz(apparent_zenith):
     '''
 
     cos_zenith = tools.cosd(apparent_zenith.values)
-    ghi_clear = np.zeros_like(apparent_zenith.values)
+    clearsky_ghi = np.zeros_like(apparent_zenith.values)
     cos_zen_gte_0 = cos_zenith > 0
-    ghi_clear[cos_zen_gte_0] = (1098.0 * cos_zenith[cos_zen_gte_0] *
-                                np.exp(-0.059/cos_zenith[cos_zen_gte_0]))
+    clearsky_ghi[cos_zen_gte_0] = (1098.0 * cos_zenith[cos_zen_gte_0] *
+                                   np.exp(-0.059/cos_zenith[cos_zen_gte_0]))
 
     df_out = pd.DataFrame(index=apparent_zenith.index,
-                          data=ghi_clear,
+                          data=clearsky_ghi,
                           columns=['ghi'])
 
     return df_out
@@ -751,7 +751,7 @@ def detect_clearsky(measured, clearsky, times=None, infer_limits=False,
         for each condition. Only provided if return_components is True.
 
     alpha : scalar, optional
-        Scaling factor applied to the ghi_clear to obtain the
+        Scaling factor applied to the clearsky_ghi to obtain the
         detected clear_samples. Only provided if return_components is
         True.
 

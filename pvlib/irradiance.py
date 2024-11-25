@@ -22,7 +22,6 @@ import warnings
 renamed_kwarg_warning('11.2', 'clearsky_ghi', 'ghi_clear', removal="12.0")
 renamed_kwarg_warning('11.2', 'ghi_clearsky', 'ghi_clear', removal="12.0")
 
-
 # Deprecation warning based on https://peps.python.org/pep-0562/
 def __getattr__(attr):
     if attr == 'SURFACE_ALBEDOS':

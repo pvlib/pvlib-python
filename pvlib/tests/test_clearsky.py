@@ -15,7 +15,6 @@ from pvlib import clearsky
 from pvlib import solarposition
 from pvlib import atmosphere
 from pvlib import irradiance
-from pvlib._deprecation import pvlibDeprecationWarning
 
 from .conftest import DATA_DIR
 

@@ -339,8 +339,7 @@ def gueymard94_pw(temp_air, relative_humidity):
 
 def rh_from_tdew(temperature, dewpoint, coeff=(6.112, 17.62, 243.12)):
     """
-    Calculate relative humidity from dewpoint temperatureusing Magnus equation.
-    Default magnus equation coefficients are from [2].
+    Calculate relative humidity from dewpoint temperature using the Magnus equation.
 
     Parameters
     ----------

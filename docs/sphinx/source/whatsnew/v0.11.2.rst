@@ -10,12 +10,41 @@ Deprecations
 
 Enhancements
 ~~~~~~~~~~~~
+* :py:func:`~pvlib.ivtools.sdm.fit_desoto` now allows input of initial
+  parameter guesses. (:issue:`1014`, :pull:`2291`)
 
+Bug Fixes
+~~~~~~~~~
+* :py:meth:`~pvlib.pvsystem.PVSystem.get_irradiance` accepts float inputs.
+  (:issue:`1338`, :pull:`2227`)
+
+Bug fixes
+~~~~~~~~~
+* :py:func:`~pvlib.spa.julian_day_dt` now accounts for the 10 day difference
+  between Julian and Gregorian calendars prior to the year 1582. (:issue:`2077`, :pull:`2249`)
 
 Documentation
 ~~~~~~~~~~~~~
 * Edited docstrings for :py:func:`~pvlib.pvsystem.dc_ohms_from_percent` and
-  :py:func:`~pvlib.pvsystem.dc_ohmic_loss` for clarity. (:issue:`1601`, :pull:`2229`)
+  :py:func:`~pvlib.pvsystem.dc_ohmic_losses` for clarity. (:issue:`1601`, :pull:`2229`)
+* Added 'freestanding' and 'insulated' `racking_model` options for cell
+  temperature calculation in :py:class:`~pvlib.pvsystem.PVSystem`
+  :py:class:`~pvlib.pvsystem.SingleAxisTrackerMount`, and
+  :py:class:`~pvlib.pvsystem.FixedMount` docstrings. Various formatting edits
+  for clarity. (:issue:`1942`, :pull:`2232`)
+* Added a new citation style guide (:ref:`reference_style`) to the contributing
+  page. (:issue:`2202`, :pull:`2226`)
+* Updated :py:func:`~pvlib.irradiance.reindl` to include definitions of terms
+  and a new "notes" section (:issue:`2183`, :pull:`2193`)
+* Clarified the error message in :py:func:`~pvlib.clearsky.detect_clearsky` when
+  windows contain fewer than three data points (:issue:`2005`, :pull:`2281`)
+* Added a new :ref:`nomenclature` page, in place of the Variables and Symbols
+  page, using the sphinx glossary directive. (:issue:`1421`, :pull:`2234`)
+* Explained how to write docstrings for new functions in :ref:`example-docstring`
+  (:discussion:`2081`, :pull:`2254`)
+* Added the following variables to the :ref:`nomenclature` page:
+
+  - `spectra` and `spectra_components` (:issue:`2150`, :pull:`2264`)
 
 
 Testing
@@ -26,7 +55,18 @@ Requirements
 ~~~~~~~~~~~~
 
 
+Maintenance
+~~~~~~~~~~~
+* Added a decorator to deprecate renamed keyword arguments in functions,
+  :py:func:`pvlib._deprecation.renamed_kwarg_warning`. (:pull:`2237`)
+
+
 Contributors
 ~~~~~~~~~~~~
 * Cliff Hansen (:ghuser:`cwhanse`)
-
+* Rajiv Daxini (:ghuser:`RDaxini`)
+* Dave Pitts (:ghuser:`dgapitts`)
+* Kurt Rhee (:ghuser:`kurt-rhee`)
+* Mark Mikofski (:ghuser:`mikofski`)
+* matsuobasho (:ghuser:`matsuobasho`)
+* Echedey Luis (:ghuser:`echedey-ls`)

@@ -1631,7 +1631,7 @@ def clearsky_index(ghi, ghi_clear, max_clearsky_index=2.0):
     ghi : numeric
         Global horizontal irradiance. [Wm⁻²]
 
-    clearsky_ghi : numeric
+    ghi_clear : numeric
         Modeled clearsky GHI
 
     max_clearsky_index : numeric, default 2.0
@@ -1643,12 +1643,12 @@ def clearsky_index(ghi, ghi_clear, max_clearsky_index=2.0):
     clearsky_index : numeric
         Clearsky index
     """
-    clearsky_index = ghi / clearsky_ghi
+    clearsky_index = ghi / ghi_clear
     # set +inf, -inf, and nans to zero
     clearsky_index = np.where(~np.isfinite(clearsky_index), 0,
                               clearsky_index)
     # but preserve nans in the input arrays
-    input_is_nan = ~np.isfinite(ghi) | ~np.isfinite(clearsky_ghi)
+    input_is_nan = ~np.isfinite(ghi) | ~np.isfinite(ghi_clear)
     clearsky_index = np.where(input_is_nan, np.nan, clearsky_index)
 
     clearsky_index = np.maximum(clearsky_index, 0)
@@ -2169,7 +2169,7 @@ def dirindex(ghi, ghi_clear, dni_clearsky, zenith, times, pressure=101325.,
 
     The DIRINDEX model [1]_ modifies the DIRINT model implemented in
     :py:func:`pvlib.irradiance.dirint` by taking into account information
-    from a clear sky model. It is recommended that ``ghi_clearsky`` be
+    from a clear sky model. It is recommended that ``ghi_clear`` be
     calculated using the Ineichen clear sky model
     :py:func:`pvlib.clearsky.ineichen` with ``perez_enhancement=True``.
 
@@ -2180,7 +2180,7 @@ def dirindex(ghi, ghi_clear, dni_clearsky, zenith, times, pressure=101325.,
     ghi : array-like
         Global horizontal irradiance. [Wm⁻²]
 
-    ghi_clearsky : array-like
+    ghi_clear : array-like
         Global horizontal irradiance from clear sky model. [Wm⁻²]
 
     dni_clearsky : array-like
@@ -2242,7 +2242,7 @@ def dirindex(ghi, ghi_clear, dni_clearsky, zenith, times, pressure=101325.,
                         temp_dew=temp_dew, min_cos_zenith=min_cos_zenith,
                         max_zenith=max_zenith)
 
-    dni_dirint_clearsky = dirint(ghi_clearsky, zenith, times,
+    dni_dirint_clearsky = dirint(ghi_clear, zenith, times,
                                  pressure=pressure,
                                  use_delta_kt_prime=use_delta_kt_prime,
                                  temp_dew=temp_dew,

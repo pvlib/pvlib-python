@@ -12,8 +12,9 @@ import pandas as pd
 from scipy.linalg import hankel
 import h5py
 
-from pvlib import atmosphere, tools, renamed_kwarg_warning
+from pvlib import atmosphere, tools
 from pvlib.tools import _degrees_to_index
+from pvlib._deprecation import renamed_kwarg_warning
 
 renamed_kwarg_warning('11.2', 'clearsky_ghi', 'ghi_clear', removal="12.0")
 renamed_kwarg_warning('11.2', 'clearsky', 'ghi_clear', removal="12.0")

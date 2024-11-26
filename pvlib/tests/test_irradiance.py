@@ -18,7 +18,7 @@ from .conftest import (
     requires_numba
 )
 
-from pvlib._deprecation import pvlibDeprecationWarning
+from pvlib._deprecation import pvlibDeprecationWarning, fail_on_pvlib_version
 
 # fixtures create realistic test input data
 # test input data generated at Location(32.2, -111, 'US/Arizona', 700)
@@ -1094,6 +1094,7 @@ def test_dirindex(times):
         equal_nan=True)
 
 
+@fail_on_pvlib_version("0.12")
 def test_dirindex_ghi_clearsky_deprecation():
     with pytest.warns(pvlibDeprecationWarning, match='ghi_clear'):
         times = pd.DatetimeIndex(['2014-06-24T18-1200'])

@@ -15,10 +15,11 @@ from .conftest import (
     assert_frame_equal,
     assert_series_equal,
     requires_ephem,
-    requires_numba
+    requires_numba,
+    fail_on_pvlib_version
 )
 
-from pvlib._deprecation import pvlibDeprecationWarning, fail_on_pvlib_version
+from pvlib._deprecation import pvlibDeprecationWarning
 
 # fixtures create realistic test input data
 # test input data generated at Location(32.2, -111, 'US/Arizona', 700)

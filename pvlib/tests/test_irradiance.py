@@ -18,7 +18,7 @@ from .conftest import (
     requires_numba
 )
 
-from pvlib._deprecation import pvlibDeprecationWarning
+from pvlib._deprecation import pvlibDeprecationWarning, fail_on_pvlib_version
 
 # fixtures create realistic test input data
 # test input data generated at Location(32.2, -111, 'US/Arizona', 700)
@@ -1143,6 +1143,7 @@ def test_dni():
                                    146.190220008, 573.685662283]))
 
 
+@fail_on_pvlib_version("0.12")
 def test_dni_dni_clearsky_deprecation():
     ghi = pd.Series([90, 100, 100, 100, 100])
     dhi = pd.Series([100, 90, 50, 50, 50])

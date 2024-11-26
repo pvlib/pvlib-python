@@ -1257,6 +1257,7 @@ def test_clearsky_index():
     assert_series_equal(out, expected)
 
 
+@fail_on_pvlib_version("0.12")
 def test_clearsky_index_clearsky_ghi_deprecation():
     with pytest.warns(pvlibDeprecationWarning, match='ghi_clear'):
         ghi, clearsky_ghi = 200, 300

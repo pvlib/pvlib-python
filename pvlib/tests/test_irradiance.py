@@ -1238,7 +1238,7 @@ def test_clearsky_index():
 def test_clearsky_index_renaming():
     with pytest.warns(pvlibDeprecationWarning, match='ghi_clear'):
         ghi, clearsky_ghi = 200, 300
-        irradiance.clearsky_index(ghi, clearsky_ghi)
+        irradiance.clearsky_index(ghi, clearsky_ghi=clearsky_ghi)
 
 
 def test_clearness_index():

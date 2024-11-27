@@ -6,9 +6,6 @@ speed at different heights.
 
 import numpy as np
 import pandas as pd
-import pvlib
-
-from pvlib._deprecation import deprecated
 
 APPARENT_ZENITH_MODELS = ('simple', 'kasten1966', 'kastenyoung1989',
                           'gueymard1993', 'pickering2002')
@@ -335,12 +332,6 @@ def gueymard94_pw(temp_air, relative_humidity):
     pw = np.maximum(pw, 0.1)
 
     return pw
-
-
-first_solar_spectral_correction = deprecated(
-    since='0.10.0',
-    alternative='pvlib.spectrum.spectral_factor_firstsolar'
-)(pvlib.spectrum.spectral_factor_firstsolar)
 
 
 def bird_hulstrom80_aod_bb(aod380, aod500):

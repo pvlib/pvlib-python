@@ -304,7 +304,7 @@ def test_read_pvgis_hourly_empty_file():
 # PVGIS TMY tests
 @pytest.fixture
 def expected():
-    return pd.read_csv(DATA_DIR / 'pvgis_tmy_test.dat', index_col='time(UTC)')
+    return pd.read_csv(DATA_DIR / 'pvgis_tmy_test.csv', index_col='time(UTC)')
 
 
 @pytest.fixture
@@ -315,7 +315,7 @@ def userhorizon_expected():
 @pytest.fixture
 def month_year_expected():
     return [
-        2014, 2011, 2008, 2011, 2009, 2011, 2020, 2006, 2006, 2013, 2007, 2018]
+        2018, 2007, 2009, 2013, 2008, 2006, 2011, 2010, 2020, 2006, 2007, 2016]
 
 
 @pytest.fixture
@@ -323,10 +323,10 @@ def inputs_expected():
     return {
         'location': {'latitude': 45.0, 'longitude': 8.0, 'elevation': 250.0},
         'meteo_data': {
-            'radiation_db': 'PVGIS-SARAH2',
+            'radiation_db': 'PVGIS-SARAH3',
             'meteo_db': 'ERA5',
             'year_min': 2005,
-            'year_max': 2020,
+            'year_max': 2023,
             'use_horizon': True,
             'horizon_db': 'DEM-calculated'}}
 
@@ -564,14 +564,14 @@ def test_read_pvgis_horizon_invalid_coords():
 
 
 def test_read_pvgis_tmy_map_variables(pvgis_tmy_mapped_columns):
-    fn = DATA_DIR / 'tmy_45.000_8.000_2005_2020.json'
+    fn = DATA_DIR / 'tmy_45.000_8.000_2005_2023.json'
     actual, _, _, _ = read_pvgis_tmy(fn, map_variables=True)
     assert all(c in pvgis_tmy_mapped_columns for c in actual.columns)
 
 
 def test_read_pvgis_tmy_json(expected, month_year_expected, inputs_expected,
                              meta_expected):
-    fn = DATA_DIR / 'tmy_45.000_8.000_2005_2020.json'
+    fn = DATA_DIR / 'tmy_45.000_8.000_2005_2023.json'
     # infer outputformat from file extensions
     pvgis_data = read_pvgis_tmy(fn, map_variables=False)
     _compare_pvgis_tmy_json(expected, month_year_expected, inputs_expected,
@@ -588,7 +588,7 @@ def test_read_pvgis_tmy_json(expected, month_year_expected, inputs_expected,
 
 
 def test_read_pvgis_tmy_epw(expected, epw_meta):
-    fn = DATA_DIR / 'tmy_45.000_8.000_2005_2020.epw'
+    fn = DATA_DIR / 'tmy_45.000_8.000_2005_2023.epw'
     # infer outputformat from file extensions
     pvgis_data = read_pvgis_tmy(fn, map_variables=False)
     _compare_pvgis_tmy_epw(expected, epw_meta, pvgis_data)
@@ -603,7 +603,7 @@ def test_read_pvgis_tmy_epw(expected, epw_meta):
 
 def test_read_pvgis_tmy_csv(expected, month_year_expected, inputs_expected,
                             meta_expected, csv_meta):
-    fn = DATA_DIR / 'tmy_45.000_8.000_2005_2020.csv'
+    fn = DATA_DIR / 'tmy_45.000_8.000_2005_2023.csv'
     # infer outputformat from file extensions
     pvgis_data = read_pvgis_tmy(fn, map_variables=False)
     _compare_pvgis_tmy_csv(expected, month_year_expected, inputs_expected,
@@ -620,7 +620,7 @@ def test_read_pvgis_tmy_csv(expected, month_year_expected, inputs_expected,
 
 
 def test_read_pvgis_tmy_basic(expected, meta_expected):
-    fn = DATA_DIR / 'tmy_45.000_8.000_2005_2020.txt'
+    fn = DATA_DIR / 'tmy_45.000_8.000_2005_2023.txt'
     # XXX: can't infer outputformat from file extensions for basic
     with pytest.raises(ValueError, match="pvgis format 'txt' was unknown"):
         read_pvgis_tmy(fn, map_variables=False)

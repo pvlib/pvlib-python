@@ -49,6 +49,7 @@ Documentation
 
 Testing
 ~~~~~~~
+* Updated test files to track new PVGIS 5.3 data. (:pull:`2305`)
 
 
 Requirements
@@ -70,3 +71,4 @@ Contributors
 * Mark Mikofski (:ghuser:`mikofski`)
 * matsuobasho (:ghuser:`matsuobasho`)
 * Echedey Luis (:ghuser:`echedey-ls`)
+* Kevin Anderson (:ghuser:`kandersolar`)

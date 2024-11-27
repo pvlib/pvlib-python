@@ -41,7 +41,7 @@ def get_extra_radiation(datetime_or_doy, solar_constant=1366.1,
         Day of year, array of days of year, or datetime-like object
 
     solar_constant : float, default 1366.1
-        The solar constant.
+        The solar constant. [Wm⁻²]
 
     method : string, default 'spencer'
         The method by which the ET radiation should be calculated.
@@ -61,7 +61,7 @@ def get_extra_radiation(datetime_or_doy, solar_constant=1366.1,
         The extraterrestrial radiation present in watts per square meter
         on a surface which is normal to the sun. Pandas Timestamp and
         DatetimeIndex inputs will yield a Pandas TimeSeries. All other
-        inputs will yield a float or an array of floats.
+        inputs will yield a float or an array of floats. See :term:`dni_extra`.
 
     References
     ----------
@@ -162,18 +162,19 @@ def aoi_projection(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth):
     Parameters
     ----------
     surface_tilt : numeric
-        Panel tilt from horizontal.
+        Panel tilt from horizontal [°]. See :term:`surface_tilt`.
     surface_azimuth : numeric
-        Panel azimuth from north.
+        Panel azimuth from north [°]. See :term:`surface_azimuth`.
     solar_zenith : numeric
-        Solar zenith angle.
+        Solar zenith angle. See :term:`solar_zenith`.
     solar_azimuth : numeric
-        Solar azimuth angle.
+        Solar azimuth angle. See :term:`solar_azimuth`.
 
     Returns
     -------
     projection : numeric
         Dot product of panel normal and solar angle.
+        See :term:`aoi_projection`.
     """
 
     projection = (
@@ -202,18 +203,18 @@ def aoi(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth):
     Parameters
     ----------
     surface_tilt : numeric
-        Panel tilt from horizontal.
+        Panel tilt from horizontal [°]. See :term:`surface_tilt`.
     surface_azimuth : numeric
-        Panel azimuth from north.
+        Panel azimuth from north [°]. See :term:`surface_azimuth`.
     solar_zenith : numeric
-        Solar zenith angle.
+        Solar zenith angle [°]. See :term:`solar_zenith`.
     solar_azimuth : numeric
-        Solar azimuth angle.
+        Solar azimuth angle [°]. See :term:`solar_azimuth`.
 
     Returns
     -------
     aoi : numeric
-        Angle of incidence in degrees.
+        Angle of incidence [°]. See :term:`aoi`.
     """
 
     projection = aoi_projection(surface_tilt, surface_azimuth,
@@ -236,20 +237,20 @@ def beam_component(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
     Parameters
     ----------
     surface_tilt : numeric
-        Panel tilt from horizontal.
+        Panel tilt from horizontal [°]. See :term:`surface_tilt`.
     surface_azimuth : numeric
-        Panel azimuth from north.
+        Panel azimuth from north [°]. See :term:`surface_azimuth`.
     solar_zenith : numeric
-        Solar zenith angle.
+        Solar zenith angle [°]. See :term:`solar_zenith`.
     solar_azimuth : numeric
-        Solar azimuth angle.
+        Solar azimuth angle [°]. See :term:`solar_azimuth`.
     dni : numeric
-        Direct normal irradiance, see :term:`dni`. [Wm⁻²]
+        Direct normal irradiance [Wm⁻²]. See :term:`dni`.
 
     Returns
     -------
     beam : numeric
-        Beam component
+        Beam component [Wm⁻²].
     """
     beam = dni * aoi_projection(surface_tilt, surface_azimuth,
                                 solar_zenith, solar_azimuth)
@@ -284,21 +285,21 @@ def get_total_irradiance(surface_tilt, surface_azimuth,
     Parameters
     ----------
     surface_tilt : numeric
-        Panel tilt from horizontal. [degree]
+        Panel tilt from horizontal [°]. See :term:`surface_tilt`.
     surface_azimuth : numeric
-        Panel azimuth from north. [degree]
+        Panel azimuth from north [°]. See :term:`surface_azimuth`.
     solar_zenith : numeric
-        Solar zenith angle. [degree]
+        Solar zenith angle [°]. See :term:`solar_zenith`.
     solar_azimuth : numeric
-        Solar azimuth angle. [degree]
+        Solar azimuth angle [°]. See :term:`solar_azimuth`.
     dni : numeric
-        Direct Normal Irradiance. [W/m2]
+        Direct normal irradiance [Wm⁻²]. See :term:`dni`. 
     ghi : numeric
-        Global horizontal irradiance. [W/m2]
+        Global horizontal irradiance. [Wm⁻²]
     dhi : numeric
-        Diffuse horizontal irradiance. [W/m2]
+        Diffuse horizontal irradiance. [Wm⁻²]
     dni_extra : numeric, optional
-        Extraterrestrial direct normal irradiance. [W/m2]
+        Extraterrestrial direct normal irradiance. [Wm⁻²]
     airmass : numeric, optional
         Relative airmass (not adjusted for pressure). [unitless]
     albedo : numeric, default 0.25
@@ -371,13 +372,13 @@ def get_sky_diffuse(surface_tilt, surface_azimuth,
     solar_azimuth : numeric
         Solar azimuth angle. [degree]
     dni : numeric
-        Direct Normal Irradiance. [W/m2]
+        Direct Normal Irradiance. [Wm⁻²]
     ghi : numeric
-        Global horizontal irradiance. [W/m2]
+        Global horizontal irradiance. [Wm⁻²]
     dhi : numeric
-        Diffuse horizontal irradiance. [W/m2]
+        Diffuse horizontal irradiance. [Wm⁻²]
     dni_extra : numeric, optional
-        Extraterrestrial direct normal irradiance. [W/m2]
+        Extraterrestrial direct normal irradiance. [Wm⁻²]
     airmass : numeric, optional
         Relative airmass (not adjusted for pressure). [unitless]
     model : str, default 'isotropic'
@@ -390,7 +391,7 @@ def get_sky_diffuse(surface_tilt, surface_azimuth,
     Returns
     -------
     poa_sky_diffuse : numeric
-        Sky diffuse irradiance in the plane of array. [W/m2]
+        Sky diffuse irradiance in the plane of array. [Wm⁻²]
 
     Raises
     ------
@@ -2823,7 +2824,7 @@ def orgill_hollands(ghi, zenith, datetime_or_doy, dni_extra=None,
         Day of year or array of days of year e.g.
         pd.DatetimeIndex.dayofyear, or pd.DatetimeIndex.
     dni_extra : numeric, optional
-        Extraterrestrial direct normal irradiance. [W/m2]
+        Extraterrestrial direct normal irradiance. [Wm⁻²]
     min_cos_zenith : numeric, default 0.065
         Minimum value of cos(zenith) to allow when calculating global
         clearness index `kt`. Equivalent to zenith = 86.273 degrees.

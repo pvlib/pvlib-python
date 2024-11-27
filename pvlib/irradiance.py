@@ -244,7 +244,7 @@ def beam_component(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
     solar_azimuth : numeric
         Solar azimuth angle.
     dni : numeric
-        Direct Normal Irradiance
+        Direct normal irradiance, see :term:`dni`. [Wm⁻²]
 
     Returns
     -------
@@ -734,16 +734,14 @@ def haydavies(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
     The Hay and Davies model determines the diffuse irradiance from
     the sky (ground reflected irradiance is not included in this
     algorithm) on a tilted surface using the surface tilt angle, surface
-    azimuth angle, diffuse horizontal irradiance, direct normal
-    irradiance, extraterrestrial irradiance, sun zenith angle, and sun
-    azimuth angle.
+    azimuth angle, diffuse horizontal irradiance, direct normal irradiance,
+    extraterrestrial irradiance, sun zenith angle, and sun azimuth angle.
 
     Parameters
     ----------
     surface_tilt : numeric
-        Surface tilt angles in decimal degrees. The tilt angle is
-        defined as degrees from horizontal (e.g. surface facing up = 0,
-        surface facing horizon = 90)
+        Panel tilt from the horizontal, in decimal degrees, see
+        :term:`surface_tilt`.
 
     surface_azimuth : numeric
         Surface azimuth angles in decimal degrees. The azimuth
@@ -754,7 +752,7 @@ def haydavies(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
         Diffuse horizontal irradiance. [Wm⁻²]
 
     dni : numeric
-        Direct normal irradiance. [Wm⁻²]
+        Direct normal irradiance, see :term:`dni`. [Wm⁻²]
 
     dni_extra : numeric
         Extraterrestrial normal irradiance. [Wm⁻²]
@@ -871,19 +869,14 @@ def haydavies(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
 def reindl(surface_tilt, surface_azimuth, dhi, dni, ghi, dni_extra,
            solar_zenith, solar_azimuth):
     r'''
-    Determine diffuse irradiance from the sky on a tilted surface using
-    Reindl's 1990 model
+    Determine the diffuse irradiance from the sky on a tilted surface using
+    the Reindl (1990) model.
 
-    .. math::
-
-       I_{d} = DHI \left(A R_b + (1 - A) \left(\frac{1 + \cos\beta}{2}\right)
-       \left(1 + \sqrt{\frac{I_{hb}}{I_h}} \sin^3(\beta/2)\right) \right)
-
-    Reindl's 1990 model determines the diffuse irradiance from the sky
-    (ground reflected irradiance is not included in this algorithm) on a
-    tilted surface using the surface tilt angle, surface azimuth angle,
+    The Reindl (1990) model [1]_ [2]_ determines the diffuse irradiance from
+    the sky on
+    a tilted surface using the surface tilt angle, surface azimuth angle,
     diffuse horizontal irradiance, direct normal irradiance, global
-    horizontal irradiance, extraterrestrial irradiance, sun zenith
+    horizontal irradiance, extraterrestrial normal irradiance, sun zenith
     angle, and sun azimuth angle.
 
     Parameters
@@ -905,7 +898,7 @@ def reindl(surface_tilt, surface_azimuth, dhi, dni, ghi, dni_extra,
         direct normal irradiance. [Wm⁻²]
 
     ghi: numeric
-        Global irradiance. [Wm⁻²]
+        Global horizontal irradiance. [Wm⁻²]
 
     dni_extra : numeric
         Extraterrestrial normal irradiance. [Wm⁻²]
@@ -925,23 +918,41 @@ def reindl(surface_tilt, surface_azimuth, dhi, dni, ghi, dni_extra,
 
     Notes
     -----
-    The poa_sky_diffuse calculation is generated from the Loutzenhiser et al.
-    (2007) paper, equation 8. Note that I have removed the beam and ground
-    reflectance portion of the equation and this generates ONLY the diffuse
-    radiation from the sky and circumsolar, so the form of the equation
-    varies slightly from equation 8.
+    The Reindl (1990) model  for the sky diffuse irradiance,
+    :math:`I_d`, is as follows:
+
+    .. math::
+
+       I_{d} = DHI \left(A \cdot R_b + (1 - A)
+                         \left(\frac{1 + \cos\beta}{2}\right)
+       \left(1 + \sqrt{\frac{BHI}{GHI}} \sin^3(\beta/2)\right) \right).
+
+    :math:`DHI`, :math:`BHI`, and :math:`GHI` are the diffuse horizontal, beam
+    (direct) horizontal and global horizontal irradiances, respectively.
+    :math:`A` is the anisotropy index, which is the ratio of the direct normal
+    irradiance to the direct extraterrestrial irradiation, :math:`R_b` is the
+    projection ratio, which is defined as the ratio of the cosine of the angle
+    of incidence (AOI) to the cosine of the zenith angle, and :math:`\beta`
+    is the tilt angle of the array.
+
+    Implementation is based on Loutzenhiser et al.
+    (2007) [3]_, Equation 8. The beam and ground reflectance portion of the
+    equation have been removed, therefore the model described here generates
+    ONLY the diffuse radiation from the sky and circumsolar, so the form of the
+    equation varies slightly from Equation 8 in [3]_.
 
     References
     ----------
-    .. [1] Loutzenhiser P.G. et. al. "Empirical validation of models to
-       compute solar irradiance on inclined surfaces for building energy
-       simulation" 2007, Solar Energy vol. 81. pp. 254-267
-
-    .. [2] Reindl, D.T., Beckmann, W.A., Duffie, J.A., 1990a. Diffuse
+    .. [1] Reindl, D. T., Beckmann, W. A., Duffie, J. A., 1990a. Diffuse
        fraction correlations. Solar Energy 45(1), 1-7.
-
-    .. [3] Reindl, D.T., Beckmann, W.A., Duffie, J.A., 1990b. Evaluation of
+       :doi:`10.1016/0038-092X(90)90060-P`
+    .. [2] Reindl, D. T., Beckmann, W. A., Duffie, J. A., 1990b. Evaluation of
        hourly tilted surface radiation models. Solar Energy 45(1), 9-17.
+       :doi:`10.1016/0038-092X(90)90061-G`
+    .. [3] Loutzenhiser P. G. et. al., 2007. Empirical validation of models to
+       compute solar irradiance on inclined surfaces for building energy
+       simulation. Solar Energy 81(2), 254-267
+       :doi:`10.1016/j.solener.2006.03.009`
     '''
 
     cos_tt = aoi_projection(surface_tilt, surface_azimuth,

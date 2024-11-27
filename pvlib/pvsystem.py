@@ -2029,6 +2029,11 @@ def retrieve_sam(name=None, path=None):
     KeyError
         If the provided ``name`` is not a valid database name.
 
+    Notes
+    -----
+    Files available at
+    https://github.com/NREL/SAM/tree/develop/deploy/libraries
+
     Examples
     --------
 

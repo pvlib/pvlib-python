@@ -77,7 +77,7 @@ Parameter names and units
 
 When specifying parameters and their units, please follow these guidelines:
 
-- Use the recommended parameter name and units by :ref:`variables_style_rules` where possible.
+- Use the recommended parameter name and units by :ref:`nomenclature` where possible.
 - Enclose units in square brackets, e.g. ``[W]``.
 - Use unicode superscripts symbols for exponents, e.g. ``m²``.
 

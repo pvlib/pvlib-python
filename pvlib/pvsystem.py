@@ -2032,7 +2032,7 @@ def retrieve_sam(name=None, path=None):
     Notes
     -----
     Files available at
-    https://github.com/NREL/SAM/tree/develop/deploy/libraries
+        https://github.com/NREL/SAM/tree/develop/deploy/libraries
 
     Examples
     --------

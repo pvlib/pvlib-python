@@ -16,7 +16,7 @@ from .conftest import (
     assert_series_equal,
     requires_ephem,
     requires_numba,
-    fail_on_pvlib_version
+    fail_on_pvlib_version,
 )
 
 from pvlib._deprecation import pvlibDeprecationWarning

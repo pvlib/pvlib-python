@@ -83,7 +83,7 @@ When specifying parameters and their units, please follow these guidelines:
   - Numbers: ``⁰``, ``¹``, ``²``, ``³``, ``⁴``, ``⁵``, ``⁶``, ``⁷``, ``⁸``, ``⁹``
   - Negative exponent: ``⁻``
   - Degree symbol: ``°``
-- Link to a brief description in the :ref:`variables_style_rules` section if it exists, via the sphinx role ``:term:`glossary_term```. For example, to document ``dni`` use:
+- Link to a brief description in the :ref:`nomenclature` section if it exists, via the sphinx role ``:term:`glossary_term```. For example, to document ``dni`` use:
 
   .. code-block:: rst
 

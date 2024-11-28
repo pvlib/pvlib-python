@@ -78,11 +78,11 @@ Parameter names and units
 When specifying parameters and their units, please follow these guidelines:
 
 - Use the recommended parameter name and units listed in the :ref:`nomenclature` where applicable.
-- Enclose units in square brackets, e.g. ``[W]``.
-- Use unicode superscripts symbols for exponents, e.g. ``m²``.
-
-  These superscripts characters are ``⁰``, ``¹``, ``²``, ``³``, ``⁴``, ``⁵``, ``⁶``, ``⁷``, ``⁸``, ``⁹``, ``⁻``. Degree symbol is ``°``.
-
+- Enclose units in square brackets after the parameter description, e.g., ``Air temperature. [°C]``.
+- Use unicode superscripts symbols for exponents, e.g. ``m⁻²``.
+  - Numbers: ``⁰``, ``¹``, ``²``, ``³``, ``⁴``, ``⁵``, ``⁶``, ``⁷``, ``⁸``, ``⁹``
+  - Negative exponent: ``⁻``
+  - Degree symbol: ``°``
 - Link to a brief description in the :ref:`variables_style_rules` section if it exists, via the sphinx role ``:term:`glossary_term```. For example, to document ``dni`` use:
 
   .. code-block:: rst

@@ -82,7 +82,7 @@ def test_gueymard94_pw():
     pws = atmosphere.gueymard94_pw(temps_humids[:, 0], temps_humids[:, 1])
 
     expected = np.array(
-        [0.1       ,   0.33702061,   1.12340202,   0.1       ,
+        [  0.1       ,   0.33702061,   1.12340202,   0.1       ,
          1.12040963,   3.73469877,   0.1       ,   3.44859767,  11.49532557])
 
     assert_allclose(pws, expected, atol=0.01)
@@ -90,39 +90,113 @@ def test_gueymard94_pw():
 
 # Unit tests
 def test_rh_from_tdew(
-    tdew_rh_conversion_temperature, tdew_rh_conversion_dewpoint,
-    tdew_rh_conversion_relative_humidity
+    tdew_from_rh_tamb, tdew_from_rh_tdew,
+    tdew_from_rh_tdew_aekr, tdew_from_rh_rh,
+    tdew_from_rh_rh_aekr
 ):
 
-    # Calculate relative humidity
-    rh = atmosphere.rh_from_tdew(
-        temperature=tdew_rh_conversion_temperature,
-        dewpoint=tdew_rh_conversion_dewpoint
+    # Calculate relative humidity using pandas series as input
+    rh_series = atmosphere.rh_from_tdew(
+        temperature=tdew_from_rh_tamb,
+        dewpoint=tdew_from_rh_tdew
+    )
+
+    # Calulate relative humidity using pandas series as input
+    # with AEKR coefficients
+    rh_series_aekr = atmosphere.rh_from_tdew(
+        temperature=tdew_from_rh_tamb,
+        dewpoint=tdew_from_rh_tdew,
+        coeff=(6.1094, 17.625, 243.04)
+    )
+
+    # Calculate relative humidity using array as input
+    rh_array = atmosphere.rh_from_tdew(
+        temperature=tdew_from_rh_tamb.to_numpy(),
+        dewpoint=tdew_from_rh_tdew.to_numpy()
+    )
+
+    # Calculate relative humidity using float as input
+    rh_float = atmosphere.rh_from_tdew(
+        temperature=tdew_from_rh_tamb.iloc[0],
+        dewpoint=tdew_from_rh_tdew.iloc[0]
     )
 
     # test
     pd.testing.assert_series_equal(
-        rh,
-        tdew_rh_conversion_relative_humidity,
+        rh_series,
+        tdew_from_rh_rh,
         check_names=False
+    )
+
+    pd.testing.assert_series_equal(
+        rh_series_aekr,
+        tdew_from_rh_rh_aekr,
+        check_names=False
+    )
+
+    np.testing.assert_allclose(
+        rh_array,
+        tdew_from_rh_rh.to_numpy(),
+        atol=0.001
+    )
+
+    assert np.isclose(
+        rh_float,
+        tdew_from_rh_rh.iloc[0]
     )
 
 
 # Unit tests
 def test_tdew_from_rh(
-    tdew_rh_conversion_temperature, tdew_rh_conversion_dewpoint,
-    tdew_rh_conversion_relative_humidity
+    tdew_from_rh_tamb, tdew_from_rh_tdew,
+    tdew_from_rh_rh, tdew_from_rh_rh_aekr,
+    tdew_from_rh_tdew_aekr
 ):
 
-    # Calculate relative humidity
-    dewpoint = atmosphere.tdew_from_rh(
-        temperature=tdew_rh_conversion_temperature,
-        relative_humidity=tdew_rh_conversion_relative_humidity
+    # test as series
+    dewpoint_series = atmosphere.tdew_from_rh(
+        temperature=tdew_from_rh_tamb,
+        relative_humidity=tdew_from_rh_rh
+    )
+
+    # test as series with AEKR coefficients
+    dewpoint_series_aekr = atmosphere.tdew_from_rh(
+        temperature=tdew_from_rh_tamb,
+        relative_humidity=tdew_from_rh_rh,
+        coeff=(6.1094, 17.625, 243.04)
+    )
+
+    # test as numpy array
+    dewpoint_array = atmosphere.tdew_from_rh(
+        temperature=tdew_from_rh_tamb.to_numpy(),
+        relative_humidity=tdew_from_rh_rh.to_numpy()
+    )
+
+    # test as float
+    dewpoint_float = atmosphere.tdew_from_rh(
+        temperature=tdew_from_rh_tamb.iloc[0],
+        relative_humidity=tdew_from_rh_rh.iloc[0]
     )
 
     # test
     pd.testing.assert_series_equal(
-        dewpoint, dewpoint, check_names=False
+        dewpoint_series, tdew_from_rh_tdew, check_names=False
+    )
+
+    pd.testing.assert_series_equal(
+        dewpoint_series_aekr, tdew_from_rh_tdew_aekr,
+        check_names=False
+    )
+
+    np.testing.assert_allclose(
+        dewpoint_array,
+        tdew_from_rh_tdew.to_numpy(),
+        atol=0.001
+    )
+
+    assert np.isclose(
+        dewpoint_float,
+        tdew_from_rh_tdew.iloc[0]
     )
 
 

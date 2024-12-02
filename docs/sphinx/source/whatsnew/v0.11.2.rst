@@ -10,6 +10,8 @@ Deprecations
 
 Enhancements
 ~~~~~~~~~~~~
+* ``pvlib.ivtools.sdm`` is now a subpackage. (:issue:`2252`, :pull:`2256`)
+
 * :py:func:`~pvlib.ivtools.sdm.fit_desoto` now allows input of initial
   parameter guesses. (:issue:`1014`, :pull:`2291`)
 

@@ -1986,10 +1986,10 @@ def retrieve_sam(name=None, path=None):
 
     This function will retrieve either:
 
-        * CEC module database
-        * Sandia Module database
-        * CEC Inverter database
-        * Anton Driesse Inverter database
+    * CEC module database
+    * Sandia Module database
+    * CEC Inverter database
+    * Anton Driesse Inverter database
 
     and return it as a pandas DataFrame.
 

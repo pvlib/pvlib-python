@@ -1135,7 +1135,7 @@ def test_dirindex_dni_clearsky_deprecation():
     solar_zenith = pd.Series([90, 89.99], index=times)
     with pytest.warns(pvlibDeprecationWarning, match='dni_clear'):
         irradiance.dirindex(ghi, ghi_clearsky, dni_clearsky=dni_clear,
-                            zenith = solar_zenith, times = times,
+                            zenith=solar_zenith, times=times,
                             min_cos_zenith=0)
 
 

@@ -562,7 +562,7 @@ def fit_desoto_sandia(ivcurves, specs, const=None, maxiter=5, eps1=1.e-3):
     -------
     dict
         I_L_ref : float
-            light current at STC [A]
+            Light current at STC [A]
         I_o_ref : float
             Dark current at STC [A]
         EgRef : float

@@ -1052,9 +1052,7 @@ def equation_of_time_spencer71(dayofyear):
     Myers [4]_ and printed in both the Fourier paper from the Sundial
     Mailing List and R. Hulstrom's [5]_ book.
 
-    .. `Fourier paper:
-        <http://www.mail-archive.com/
-        sundial@uni-koeln.de/msg01050.html>`_
+    .. _Fourier paper: http://www.mail-archive.com/sundial@uni-koeln.de/msg01050.html
 
     Parameters
     ----------
@@ -1102,8 +1100,7 @@ def equation_of_time_pvcdrom(dayofyear):
     `PVCDROM`_ is a website by Solar Power Lab at Arizona State
     University (ASU)
 
-    .. `PVCDROM: <http://www.pveducation.org/
-    pvcdrom/2-properties-sunlight/solar-time>`_
+    .. _PVCDROM: http://www.pveducation.org/pvcdrom/2-properties-sunlight/solar-time
 
     Parameters
     ----------

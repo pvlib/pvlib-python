@@ -564,25 +564,36 @@ def fit_desoto_sandia(ivcurves, specs, const=None, maxiter=5, eps1=1.e-3):
         I_L_ref : float
             light current at STC [A]
         I_o_ref : float
-            dark current at STC [A]
+            Dark current at STC [A]
         EgRef : float
-            effective band gap at STC [eV]
+            Effective band gap at STC [eV]
         R_s : float
-            series resistance at STC [ohm]
+            Series resistance at STC [ohm]
         R_sh_ref : float
-            shunt resistance at STC [ohm]
+            Shunt resistance at STC [ohm]
         cells_in_series : int
-            number of cells in series
+            Number of cells in series
         iph : array
-            light current for each IV curve [A]
+            Light current for each IV curve [A]
         io : array
-            dark current for each IV curve [A]
+            Dark current for each IV curve [A]
         rs : array
-            series resistance for each IV curve [ohm]
+            Series resistance for each IV curve [ohm]
         rsh : array
-            shunt resistance for each IV curve [ohm]
+            Shunt resistance for each IV curve [ohm]
+        a_ref : float
+            The product of the usual diode ideality factor (n, unitless),
+            number of cells in series (Ns), and cell thermal voltage at
+            reference conditions, in units of V.
+        dEgdT : float
+            The temperature dependence of the energy bandgap (Eg) at reference
+            conditions in units of 1/K. May be either a scalar value
+            (e.g. -0.0002677 as in _[1]) or a DataFrame (this may be useful if
+            dEgdT is a modeled as a function of temperature). For parameters
+            from the SAM CEC module database, dEgdT=-0.0002677 is implicit for
+            all cell types in the parameter estimation algorithm used by NREL.
         u : array
-            boolean for each IV curve indicating that the parameter values
+            Boolean for each IV curve indicating that the parameter values
             are deemed reasonable by the private function ``_filter_params``
 
     Notes

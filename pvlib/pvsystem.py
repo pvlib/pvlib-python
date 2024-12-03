@@ -2062,7 +2062,8 @@ def retrieve_sam(name=None, path=None):
     Name: AE_Solar_Energy__AE6_0__277V_, dtype: object
 
     # using the latest CEC Inverter database, via URL
-    >>> inv_db = pvsystem.retrieve_sam(path="https://raw.githubusercontent.com/NREL/SAM/refs/heads/develop/deploy/libraries/CEC%20Inverters.csv")
+    >>> url = "https://raw.githubusercontent.com/NREL/SAM/refs/heads/develop/deploy/libraries/CEC%20Inverters.csv"
+    >>> inv_db = pvsystem.retrieve_sam(path=url)
     >>> inv_db.keys()
     Index(['ABB__PVI_3_0_OUTD_S_US_A__208V_', 'ABB__PVI_3_0_OUTD_S_US_A__240V_', ...],
           dtype='object', length=...)

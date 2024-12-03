@@ -2015,7 +2015,7 @@ def retrieve_sam(name=None, path=None):
 
     Returns
     -------
-    samfile : DataFrame
+    DataFrame
         A DataFrame containing all the elements of the desired database.
         Each column represents a module or inverter, and a specific
         dataset can be retrieved by the command

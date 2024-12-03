@@ -2033,8 +2033,6 @@ def retrieve_sam(name=None, path=None):
     -----
     Files available at
         https://github.com/NREL/SAM/tree/develop/deploy/libraries
-    Documentation for module and inverter data sets:
-        https://sam.nrel.gov/photovoltaic/pv-sub-page-2.html
 
     Examples
     --------

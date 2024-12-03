@@ -6,6 +6,8 @@ v0.11.2 (Anticipated December, 2024)
 
 Deprecations
 ~~~~~~~~~~~~
+* Deprecated terms `dni_clearsky` and `clearsky_dni`, replaced with `dni_clear`
+  (:issue:`2272`, :pull:`2274`)
 
 
 Enhancements

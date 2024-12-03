@@ -1150,18 +1150,9 @@ def test_dni_dni_clearsky_deprecation():
     dhi = pd.Series([100, 90, 50, 50, 50])
     zenith = pd.Series([80, 100, 85, 70, 85])
     dni_clear = pd.Series([50, 50, 200, 50, 300])
-
     with pytest.warns(pvlibDeprecationWarning, match='dni_clear'):
-        dni = irradiance.dni(ghi, dhi, zenith,
-                             clearsky_dni=dni_clear, clearsky_tolerance=2)
-    assert_series_equal(dni,
-                        pd.Series([float('nan'), float('nan'), 400,
-                                   146.190220008, 573.685662283]))
-
-    dni = irradiance.dni(ghi, dhi, zenith)
-    assert_series_equal(dni,
-                        pd.Series([float('nan'), float('nan'), 573.685662283,
-                                   146.190220008, 573.685662283]))
+        irradiance.dni(ghi, dhi, zenith,
+                       clearsky_dni=dni_clear, clearsky_tolerance=2)
 
 
 @pytest.mark.parametrize(

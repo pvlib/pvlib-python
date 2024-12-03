@@ -587,8 +587,8 @@ def fit_desoto_sandia(ivcurves, specs, const=None, maxiter=5, eps1=1.e-3):
             reference conditions, in units of V.
         dEgdT : float
             The temperature dependence of the energy bandgap (Eg) at reference
-            conditions in units of 1/K. May be either a scalar value
-            (e.g. -0.0002677 as in _[1]) or a DataFrame (this may be useful if
+            conditions [eV/K]. May be either a scalar value
+            (e.g. -0.0002677 as in [1]_) or a DataFrame (this may be useful if
             dEgdT is a modeled as a function of temperature). For parameters
             from the SAM CEC module database, dEgdT=-0.0002677 is implicit for
             all cell types in the parameter estimation algorithm used by NREL.

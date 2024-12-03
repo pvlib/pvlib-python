@@ -1128,13 +1128,15 @@ def test_dirindex_min_cos_zenith_max_zenith():
 
 @fail_on_pvlib_version("0.12")
 def test_dirindex_dni_clearsky_deprecation():
+    times = pd.DatetimeIndex(['2014-06-24T12-0700', '2014-06-24T18-0700'])
     ghi = pd.Series([0, 1], index=times)
     ghi_clearsky = pd.Series([0, 1], index=times)
     dni_clear = pd.Series([0, 5], index=times)
     solar_zenith = pd.Series([90, 89.99], index=times)
     with pytest.warns(pvlibDeprecationWarning, match='dni_clear'):
-        irradiance.dirindex(ghi, ghi_clearsky, dni_clear, solar_zenith,
-                            times, min_cos_zenith=0)
+        irradiance.dirindex(ghi, ghi_clearsky, dni_clearsky=dni_clear,
+                            zenith = solar_zenith, times = times,
+                            min_cos_zenith=0)
 
 
 def test_dni():

@@ -7,12 +7,9 @@ from pvlib import iam, modelchain, pvsystem, temperature, inverter
 from pvlib.modelchain import ModelChain
 from pvlib.pvsystem import PVSystem
 from pvlib.location import Location
-from pvlib._deprecation import pvlibDeprecationWarning
 
 from .conftest import assert_series_equal, assert_frame_equal
 import pytest
-
-from .conftest import fail_on_pvlib_version
 
 
 @pytest.fixture(scope='function')
@@ -1268,6 +1265,28 @@ def test_infer_spectral_model(location, sapm_dc_snl_ac_system,
                   'cec_native': cec_dc_native_snl_ac_system}
     system = dc_systems[dc_model]
     mc = ModelChain(system, location, aoi_model='physical')
+    assert isinstance(mc, ModelChain)
+
+
+def test_infer_spectral_model_with_weather(location, sapm_dc_snl_ac_system,
+                                           cec_dc_snl_ac_system, weather):
+    # instantiate example ModelChain to get the default spectral model
+    # inferred without weather available by default
+    # - should resolve to sapm
+    mc = ModelChain(sapm_dc_snl_ac_system, location, aoi_model='physical')
+    assert mc.spectral_model == mc.sapm_spectral_loss
+    # - should resolve to no loss
+    mc = ModelChain(cec_dc_snl_ac_system, location, aoi_model='physical')
+    assert mc.spectral_model == mc.no_spectral_loss
+
+    # infer spectral model from weather
+    # - without precipitable water in it, should resolve to no loss
+    mc.spectral_model = mc.infer_spectral_model(weather=weather)
+    assert mc.spectral_model == mc.no_spectral_loss
+    # - with precipitable water in it, should resolve to first solar
+    weather['precipitable_water'] = 1.42
+    mc.spectral_model = mc.infer_spectral_model(weather=weather)
+    assert mc.spectral_model == mc.first_solar_spectral_loss
     assert isinstance(mc, ModelChain)
 
 

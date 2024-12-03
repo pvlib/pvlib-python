@@ -253,7 +253,7 @@ class ModelChainResult:
         def _head(obj):
             try:
                 return obj[:3]
-            except:
+            except Exception:
                 return obj
 
         if type(self.dc) is tuple:
@@ -269,7 +269,7 @@ class ModelChainResult:
                  '\n')
         lines = []
         for attr in mc_attrs:
-            if not (attr.startswith('_') or attr=='times'):
+            if not (attr.startswith('_') or attr == 'times'):
                 lines.append(f' {attr}: ' + _mcr_repr(getattr(self, attr)))
         desc4 = '\n'.join(lines)
         return (desc1 + desc2 + desc3 + desc4)
@@ -330,12 +330,20 @@ class ModelChain:
         'interp' and 'no_loss'. The ModelChain instance will be passed as the
         first argument to a user-defined function.
 
-    spectral_model : str, or function, optional
-        If not specified, the model will be inferred from the parameters that
-        are common to all of system.arrays[i].module_parameters.
-        Valid strings are 'sapm', 'first_solar', 'no_loss'.
+    spectral_model : str or function, optional
+        Valid strings are:
+
+        - ``'sapm'``
+        - ``'first_solar'``
+        - ``'no_loss'``
+
         The ModelChain instance will be passed as the first argument to
         a user-defined function.
+
+        By default, it will be inferred from the system attributes only.
+
+        See :py:func:`~pvlib.modelchain.ModelChain.infer_spectral_model` to
+        infer the spectral model from system and weather information.
 
     temperature_model : str or function, optional
         Valid strings are: 'sapm', 'pvsyst', 'faiman', 'fuentes', 'noct_sam'.
@@ -385,7 +393,6 @@ class ModelChain:
         self.losses_model = losses_model
 
         self.results = ModelChainResult()
-
 
     @classmethod
     def with_pvwatts(cls, system, location,
@@ -855,9 +862,7 @@ class ModelChain:
 
     @spectral_model.setter
     def spectral_model(self, model):
-        if model is None:
-            self._spectral_model = self.infer_spectral_model()
-        elif isinstance(model, str):
+        if isinstance(model, str):
             model = model.lower()
             if model == 'first_solar':
                 self._spectral_model = self.first_solar_spectral_loss
@@ -867,29 +872,55 @@ class ModelChain:
                 self._spectral_model = self.no_spectral_loss
             else:
                 raise ValueError(model + ' is not a valid spectral loss model')
-        else:
+        elif model is None:
+            # uses recursive setter to infer model, which returns a string
+            self.spectral_model = self.infer_spectral_model(weather=None)
+        else:  # assume model is a callable
             self._spectral_model = partial(model, self)
 
-    def infer_spectral_model(self):
-        """Infer spectral model from system attributes."""
+    def infer_spectral_model(self, weather=None):
+        """
+        Infer spectral model from system attributes, and optionally from
+        the input weather dataframe, and set it to the ``ModelChain`` instance.
+
+        Parameters
+        ----------
+        weather : pd.DataFrame or collection of str, optional
+            An object with columns of available input data to help infer
+            the spectral model. If ``None``, the spectral model will be
+            inferred from the system attributes only.
+
+        Returns
+        -------
+        Inferred spectral correction model : string key for model setter
+
+        Examples
+        --------
+        >>> mc = ModelChain(system, location)
+        >>> mc.spectral_model = mc.infer_spectral_model(weather=weather)
+        """
         module_parameters = tuple(
-            array.module_parameters for array in self.system.arrays)
+            array.module_parameters for array in self.system.arrays
+        )
         params = _common_keys(module_parameters)
-        if {'A4', 'A3', 'A2', 'A1', 'A0'} <= params:
-            return self.sapm_spectral_loss
-        elif ((('Technology' in params or
-                'Material' in params) and
-               (self.system._infer_cell_type() is not None)) or
-              'first_solar_spectral_coefficients' in params):
-            return self.first_solar_spectral_loss
-        else:
-            raise ValueError('could not infer spectral model from '
-                             'system.arrays[i].module_parameters. Check that '
-                             'the module_parameters for all Arrays in '
-                             'system.arrays contain valid '
-                             'first_solar_spectral_coefficients, a valid '
-                             'Material or Technology value, or set '
-                             'spectral_model="no_loss".')
+        if {"A4", "A3", "A2", "A1", "A0"} <= params:
+            return "sapm"
+        elif "first_solar_spectral_coefficients" in params:
+            # user explicitly sets spectral coefficients
+            return "first_solar"
+        elif (
+            # cell type is known or can be inferred
+            ("Technology" in params or "Material" in params)
+            and (self.system._infer_cell_type() is not None)
+        ):
+            # This suggests models that provide default parameters per cell
+            # type can be used. However, some models depend on other weather
+            # parameters, so we need to check if they are available.
+            if weather is not None:  # weather is available
+                if "precipitable_water" in weather:
+                    return "first_solar"
+
+        return "no_loss"
 
     def first_solar_spectral_loss(self):
         self.results.spectral_modifier = self.system.first_solar_spectral_loss(
@@ -1570,7 +1601,7 @@ class ModelChain:
         ----------
         data : DataFrame
             May contain columns ``'cell_temperature'`` or
-            ``'module_temperaure'``.
+            ``'module_temperature'``.
 
         Returns
         -------
@@ -1679,6 +1710,7 @@ class ModelChain:
         self.prepare_inputs(weather)
         self.aoi_model()
         self.spectral_model()
+
         self.effective_irradiance_model()
 
         self._run_from_effective_irrad(weather)

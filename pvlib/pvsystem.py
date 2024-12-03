@@ -1986,10 +1986,10 @@ def retrieve_sam(name=None, path=None):
 
     This function will retrieve either:
 
-        * CEC module database
-        * Sandia Module database
-        * CEC Inverter database
-        * Anton Driesse Inverter database
+    * CEC module database
+    * Sandia Module database
+    * CEC Inverter database
+    * Anton Driesse Inverter database
 
     and return it as a pandas DataFrame.
 
@@ -2002,20 +2002,20 @@ def retrieve_sam(name=None, path=None):
         Use one of the following strings to retrieve a database bundled with
         pvlib:
 
-        * 'CECMod' - returns the CEC module database
-        * 'CECInverter' - returns the CEC Inverter database
-        * 'SandiaInverter' - returns the CEC Inverter database
+        * ``'CECMod'`` - returns the CEC module database
+        * ``'CECInverter'`` - returns the CEC Inverter database
+        * ``'SandiaInverter'`` - returns the CEC Inverter database
           (CEC is only current inverter db available; tag kept for
           backwards compatibility)
-        * 'SandiaMod' - returns the Sandia Module database
-        * 'ADRInverter' - returns the ADR Inverter database
+        * ``'SandiaMod'`` - returns the Sandia Module database
+        * ``'ADRInverter'`` - returns the ADR Inverter database
 
     path : string, optional
         Path to a CSV file or a URL.
 
     Returns
     -------
-    samfile : DataFrame
+    DataFrame
         A DataFrame containing all the elements of the desired database.
         Each column represents a module or inverter, and a specific
         dataset can be retrieved by the command
@@ -2036,9 +2036,10 @@ def retrieve_sam(name=None, path=None):
 
     Examples
     --------
+    Using a database bundled with pvlib:
 
     >>> from pvlib import pvsystem
-    >>> invdb = pvsystem.retrieve_sam('CECInverter')
+    >>> invdb = pvsystem.retrieve_sam(name='CECInverter')
     >>> inverter = invdb.AE_Solar_Energy__AE6_0__277V_
     >>> inverter
     Vac                          277
@@ -2058,7 +2059,15 @@ def retrieve_sam(name=None, path=None):
     CEC_Date                     NaN
     CEC_Type     Utility Interactive
     Name: AE_Solar_Energy__AE6_0__277V_, dtype: object
-    """
+
+    Using a remote database, via URL:
+
+    >>> url = "https://raw.githubusercontent.com/NREL/SAM/refs/heads/develop/deploy/libraries/CEC%20Inverters.csv"
+    >>> inv_db = pvsystem.retrieve_sam(path=url)
+    >>> inv_db.keys()
+    Index(['ABB__PVI_3_0_OUTD_S_US_A__208V_', 'ABB__PVI_3_0_OUTD_S_US_A__240V_', ...],
+          dtype='object', length=...)
+    """  # noqa: E501
     # error: path was previously silently ignored if name was given GH#2018
     if name is not None and path is not None:
         raise ValueError("Please provide either 'name' or 'path', not both.")

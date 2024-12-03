@@ -1126,6 +1126,17 @@ def test_dirindex_min_cos_zenith_max_zenith():
     assert_series_equal(out, expected)
 
 
+@fail_on_pvlib_version("0.12")
+def test_dirindex_dni_clearsky_deprecation():
+    ghi = pd.Series([0, 1], index=times)
+    ghi_clearsky = pd.Series([0, 1], index=times)
+    dni_clear = pd.Series([0, 5], index=times)
+    solar_zenith = pd.Series([90, 89.99], index=times)
+    with pytest.warns(pvlibDeprecationWarning, match='dni_clear'):
+        irradiance.dirindex(ghi, ghi_clearsky, dni_clear, solar_zenith,
+                            times, min_cos_zenith=0)
+
+
 def test_dni():
     ghi = pd.Series([90, 100, 100, 100, 100])
     dhi = pd.Series([100, 90, 50, 50, 50])

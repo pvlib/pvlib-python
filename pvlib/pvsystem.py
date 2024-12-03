@@ -2041,7 +2041,7 @@ def retrieve_sam(name=None, path=None):
     Using a database bundled with pvlib:
 
     >>> from pvlib import pvsystem
-    >>> invdb = pvsystem.retrieve_sam('CECInverter')
+    >>> invdb = pvsystem.retrieve_sam(name='CECInverter')
     >>> inverter = invdb.AE_Solar_Energy__AE6_0__277V_
     >>> inverter
     Vac                          277

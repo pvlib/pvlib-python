@@ -3692,11 +3692,6 @@ def dni(ghi, dhi, zenith, dni_clear=None, clearsky_tolerance=1.1,
     return dni
 
 
-@renamed_kwarg_warning(
-    since='0.11.2',
-    old_param_name='clearsky_dni',
-    new_param_name='dni_clear',
-    removal="0.12.0")
 def complete_irradiance(solar_zenith,
                         ghi=None,
                         dhi=None,

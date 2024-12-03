@@ -2038,6 +2038,7 @@ def retrieve_sam(name=None, path=None):
 
     Examples
     --------
+    Using a database bundled with pvlib:
 
     >>> from pvlib import pvsystem
     >>> invdb = pvsystem.retrieve_sam('CECInverter')
@@ -2061,7 +2062,8 @@ def retrieve_sam(name=None, path=None):
     CEC_Type     Utility Interactive
     Name: AE_Solar_Energy__AE6_0__277V_, dtype: object
 
-    # using the latest CEC Inverter database, via URL
+    Using a remote database, via URL:
+
     >>> url = "https://raw.githubusercontent.com/NREL/SAM/refs/heads/develop/deploy/libraries/CEC%20Inverters.csv"
     >>> inv_db = pvsystem.retrieve_sam(path=url)
     >>> inv_db.keys()

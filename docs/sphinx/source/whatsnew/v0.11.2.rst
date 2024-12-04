@@ -17,6 +17,8 @@ Bug Fixes
 ~~~~~~~~~
 * :py:meth:`~pvlib.pvsystem.PVSystem.get_irradiance` accepts float inputs.
   (:issue:`1338`, :pull:`2227`)
+* Handle DST transitions that happen at midnight in :py:func:`pvlib.solarposition.hour_angle`
+  (:issue:`2132` :pull:`2133`)
 
 Bug fixes
 ~~~~~~~~~
@@ -74,3 +76,4 @@ Contributors
 * matsuobasho (:ghuser:`matsuobasho`)
 * Echedey Luis (:ghuser:`echedey-ls`)
 * Kevin Anderson (:ghuser:`kandersolar`)
+* Scott Nelson (:ghuser:`scttnlsn`)

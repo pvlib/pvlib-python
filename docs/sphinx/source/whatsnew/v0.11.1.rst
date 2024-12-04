@@ -37,8 +37,6 @@ Enhancements
 
 Bug fixes
 ~~~~~~~~~
-* Handle DST transitions that happen at midnight in :py:func:`pvlib.solarposition.hour_angle`
-  (:issue:`2132` :pull:`2133`)
 * To prevent simulation output from differing slightly based on the time zone
   of the time stamps, models that use day of year for sun position and
   irradiance calculations now determine the day of year according to the UTC
@@ -93,7 +91,6 @@ Contributors
 * Ioannis Sifnaios (:ghuser:`IoannisSifnaios`)
 * Leonardo Micheli (:ghuser:`lmicheli`)
 * Rajiv Daxini (:ghuser:`RDaxini`)
-* Scott Nelson (:ghuser:`scttnlsn`)
 * Mark A. Mikofski (:ghuser:`mikofski`)
 * Ben Pierce (:ghuser:`bgpierc`)
 * Jose Meza (:ghuser:`JoseMezaMendieta`)

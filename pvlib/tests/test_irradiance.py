@@ -15,7 +15,8 @@ from .conftest import (
     assert_frame_equal,
     assert_series_equal,
     requires_ephem,
-    requires_numba
+    requires_numba,
+    fail_on_pvlib_version
 )
 
 from pvlib._deprecation import pvlibDeprecationWarning
@@ -1094,6 +1095,29 @@ def test_dirindex(times):
         equal_nan=True)
 
 
+@fail_on_pvlib_version("0.12")
+def test_dirindex_ghi_clearsky_deprecation():
+    with pytest.warns(pvlibDeprecationWarning, match='ghi_clear'):
+        times = pd.DatetimeIndex(['2014-06-24T18-1200'])
+        ghi = pd.Series([1038.62], index=times)
+        ghi_clearsky = pd.Series(
+            np.array([1042.48031487]),
+            index=times
+        )
+        dni_clearsky = pd.Series(
+            np.array([939.95469881]),
+            index=times
+        )
+        zenith = pd.Series(
+            np.array([10.56413562]),
+            index=times
+        )
+        pressure, tdew = 93193, 10
+        irradiance.dirindex(
+            ghi=ghi, ghi_clearsky=ghi_clearsky, dni_clearsky=dni_clearsky,
+            zenith=zenith, times=times, pressure=pressure, temp_dew=tdew)
+
+
 def test_dirindex_min_cos_zenith_max_zenith():
     # map out behavior under difficult conditions with various
     # limiting kwargs settings
@@ -1233,6 +1257,13 @@ def test_clearsky_index():
     out = irradiance.clearsky_index(ghi_measured, ghi_modeled)
     expected = pd.Series([0.2, 0.5], index=times)
     assert_series_equal(out, expected)
+
+
+@fail_on_pvlib_version("0.12")
+def test_clearsky_index_clearsky_ghi_deprecation():
+    with pytest.warns(pvlibDeprecationWarning, match='ghi_clear'):
+        ghi, clearsky_ghi = 200, 300
+        irradiance.clearsky_index(ghi, clearsky_ghi=clearsky_ghi)
 
 
 def test_clearness_index():

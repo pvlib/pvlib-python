@@ -327,13 +327,13 @@ def haurwitz(apparent_zenith):
     '''
 
     cos_zenith = tools.cosd(apparent_zenith.values)
-    clearsky_ghi = np.zeros_like(apparent_zenith.values)
+    ghi_clear = np.zeros_like(apparent_zenith.values)
     cos_zen_gte_0 = cos_zenith > 0
-    clearsky_ghi[cos_zen_gte_0] = (1098.0 * cos_zenith[cos_zen_gte_0] *
-                                   np.exp(-0.059/cos_zenith[cos_zen_gte_0]))
+    ghi_clear[cos_zen_gte_0] = (1098.0 * cos_zenith[cos_zen_gte_0] *
+                                np.exp(-0.059/cos_zenith[cos_zen_gte_0]))
 
     df_out = pd.DataFrame(index=apparent_zenith.index,
-                          data=clearsky_ghi,
+                          data=ghi_clear,
                           columns=['ghi'])
 
     return df_out

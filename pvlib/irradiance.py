@@ -2155,7 +2155,7 @@ def _dirint_bins(times, kt_prime, zenith, w, delta_kt_prime):
     since='0.11.2',
     old_param_name='dni_clearsky',
     new_param_name='dni_clear',
-    removal="0.12.0")
+    removal="0.13.0")
 def dirindex(ghi, ghi_clearsky, dni_clear, zenith, times, pressure=101325.,
              use_delta_kt_prime=True, temp_dew=None, min_cos_zenith=0.065,
              max_zenith=87):
@@ -3620,7 +3620,7 @@ def _get_dirint_coeffs():
     since='0.11.2',
     old_param_name='clearsky_dni',
     new_param_name='dni_clear',
-    removal="0.12.0")
+    removal="0.13.0")
 def dni(ghi, dhi, zenith, dni_clear=None, clearsky_tolerance=1.1,
         zenith_threshold_for_zero_dni=88.0,
         zenith_threshold_for_clearsky_limit=80.0):

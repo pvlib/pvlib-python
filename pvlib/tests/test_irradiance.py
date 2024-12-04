@@ -1126,7 +1126,7 @@ def test_dirindex_min_cos_zenith_max_zenith():
     assert_series_equal(out, expected)
 
 
-@fail_on_pvlib_version("0.12")
+@fail_on_pvlib_version("0.13")
 def test_dirindex_dni_clearsky_deprecation():
     times = pd.DatetimeIndex(['2014-06-24T12-0700', '2014-06-24T18-0700'])
     ghi = pd.Series([0, 1], index=times)
@@ -1157,7 +1157,7 @@ def test_dni():
                                    146.190220008, 573.685662283]))
 
 
-@fail_on_pvlib_version("0.12")
+@fail_on_pvlib_version("0.13")
 def test_dni_dni_clearsky_deprecation():
     ghi = pd.Series([90, 100, 100, 100, 100])
     dhi = pd.Series([100, 90, 50, 50, 50])

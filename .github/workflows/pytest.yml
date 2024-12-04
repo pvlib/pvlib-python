@@ -12,12 +12,12 @@ jobs:
       fail-fast: false  # don't cancel other matrix jobs when one fails
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        python-version: [3.8, 3.9, "3.10", "3.11", "3.12"]
+        python-version: [3.9, "3.10", "3.11", "3.12"]
         environment-type: [conda, bare]
         suffix: ['']  # placeholder as an alternative to "-min"
         include:
           - os: ubuntu-latest
-            python-version: 3.8
+            python-version: 3.9
             environment-type: conda
             suffix: -min
         exclude:
@@ -31,7 +31,7 @@ jobs:
     steps:
       # We check out only a limited depth and then pull tags to save time
       - name: Checkout source
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 100
 
@@ -60,7 +60,7 @@ jobs:
 
       - name: Install bare Python ${{ matrix.python-version }}${{ matrix.suffix }}
         if: matrix.environment-type == 'bare'
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
 
@@ -82,7 +82,7 @@ jobs:
           pytest pvlib --cov=./ --cov-report=xml --ignore=pvlib/tests/iotools
 
       - name: Upload coverage to Codecov
-        if: matrix.python-version == 3.8 && matrix.suffix == '' && matrix.os == 'ubuntu-latest' && matrix.environment-type == 'conda'
+        if: matrix.python-version == 3.9 && matrix.suffix == '' && matrix.os == 'ubuntu-latest' && matrix.environment-type == 'conda'
         uses: codecov/codecov-action@v4
         with:
           fail_ci_if_error: true

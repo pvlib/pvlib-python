@@ -632,7 +632,7 @@ def _shape_of_max_size(*args):
 def _prepare_newton_inputs(x0, args, method_kwargs):
     """
     Make inputs compatible with Scipy's newton by:
-    - converting all arugments (`x0` and `args`) into numpy.ndarrays if any
+    - converting all arguments (`x0` and `args`) into numpy.ndarrays if any
       argument is not a scalar.
     - broadcasting the initial guess `x0` to the shape of the argument with
       the greatest size.

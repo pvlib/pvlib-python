@@ -1349,11 +1349,12 @@ def hour_angle(times, longitude, equation_of_time):
     times : :class:`pandas.DatetimeIndex`
         Corresponding timestamps, must be localized to the timezone for the
         ``longitude``.
-        
+
         A `pytz.exceptions.AmbiguousTimeError` will be raised if any of the
-        given times are on a day when the local daylight savings transition happens
-        at midnight.  If you're working with such a timezone, consider converting to
-        a non-DST timezone (i.e. GMT-4) before calling this function.
+        given times are on a day when the local daylight savings transition
+        happens at midnight.  If you're working with such a timezone,
+        consider converting to a non-DST timezone (e.g. GMT-4) before
+        calling this function.
     longitude : numeric
         Longitude in degrees
     equation_of_time : numeric

@@ -1349,6 +1349,12 @@ def hour_angle(times, longitude, equation_of_time):
     times : :class:`pandas.DatetimeIndex`
         Corresponding timestamps, must be localized to the timezone for the
         ``longitude``.
+
+        A `pytz.exceptions.AmbiguousTimeError` will be raised if any of the
+        given times are on a day when the local daylight savings transition
+        happens at midnight.  If you're working with such a timezone,
+        consider converting to a non-DST timezone (e.g. GMT-4) before
+        calling this function.
     longitude : numeric
         Longitude in degrees
     equation_of_time : numeric
@@ -1421,7 +1427,17 @@ def _times_to_hours_after_local_midnight(times):
     if not times.tz:
         raise ValueError('times must be localized')
 
-    hrs = (times - times.normalize()) / pd.Timedelta('1h')
+    # Some timezones have a DST shift at midnight:
+    #   11:59pm -> 1:00am - results in a nonexistent midnight
+    #   12:59am -> 12:00am - results in an ambiguous midnight
+    # We remove the timezone before normalizing for this reason.
+    naive_normalized_times = times.tz_localize(None).normalize()
+
+    # Use Pandas functionality for shifting nonexistent times forward
+    normalized_times = naive_normalized_times.tz_localize(
+        times.tz, nonexistent='shift_forward', ambiguous='raise')
+
+    hrs = (times - normalized_times) / pd.Timedelta('1h')
 
     # ensure array return instead of a version-dependent pandas <T>Index
     return np.array(hrs)

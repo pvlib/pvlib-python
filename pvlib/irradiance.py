@@ -3649,7 +3649,7 @@ def dni(ghi, dhi, zenith, dni_clear=None, clearsky_tolerance=1.1,
         Clearsky direct normal irradiance.
 
     clearsky_tolerance : float, default 1.1
-        If `dni_clear` is given this parameter can be used to allow a
+        If ``dni_clear`` is given this parameter can be used to allow a
         tolerance by how much the calculated DNI value can be greater than
         the clearsky value before it is identified as an unreasonable value.
 
@@ -3662,7 +3662,7 @@ def dni(ghi, dhi, zenith, dni_clear=None, clearsky_tolerance=1.1,
         'zenith_threshold_for_clearsky_limit' and smaller the
         'zenith_threshold_for_zero_dni' that are greater than the clearsky DNI
         (times allowed tolerance) will be corrected. Only applies if
-        `dni_clear` is not None.
+        ``dni_clear`` is not None.
 
     Returns
     -------

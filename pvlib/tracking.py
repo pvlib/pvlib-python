@@ -8,7 +8,8 @@ from pvlib import shading
 
 def singleaxis(apparent_zenith, apparent_azimuth,
                axis_tilt=0, axis_azimuth=0, max_angle=90,
-               backtrack=True, gcr=2.0/7.0, cross_axis_tilt=0):
+               backtrack=True, gcr=2.0/7.0, cross_axis_tilt=0
+               offset=0):
     """
     Determine the rotation angle of a single-axis tracker when given particular
     solar zenith and azimuth angles.
@@ -84,6 +85,11 @@ def singleaxis(apparent_zenith, apparent_azimuth,
         positive cross-axis tilt if the tracker axes plane slopes down to the
         west. Use :func:`~pvlib.tracking.calc_cross_axis_tilt` to calculate
         ``cross_axis_tilt``. [degrees]
+    offset : float, default 0.0
+      is an additional angle that causes a delay/advance of the tracking 
+      position over the the ideal true tracker_theta angle before 
+      .calc_surface_orientation
+      ``offset``. [degrees]
 
     Returns
     -------
@@ -143,7 +149,7 @@ def singleaxis(apparent_zenith, apparent_azimuth,
         axis_azimuth=axis_azimuth,
         solar_zenith=apparent_zenith,
         solar_azimuth=apparent_azimuth,
-    )
+    ) + offset
 
     # filter for sun above panel horizon
     zen_gt_90 = apparent_zenith > 90

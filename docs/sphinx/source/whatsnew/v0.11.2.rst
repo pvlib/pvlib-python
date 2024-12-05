@@ -10,7 +10,8 @@ Deprecations
 
 Enhancements
 ~~~~~~~~~~~~
-
+* :py:func: `~pvlib.atmosphere.rh_from_tdew` and `~pvlib.atmosphere.tdew_from_rh`
+  added. (:issue:`1744`, :pull:`2286`)
 
 Bug fixes
 ~~~~~~~~~

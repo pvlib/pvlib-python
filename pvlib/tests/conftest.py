@@ -474,39 +474,3 @@ def sapm_module_params():
                   'IXXO': 3.18803,
                   'FD': 1}
     return parameters
-
-
-@pytest.fixture(scope='function')
-def tdew_from_rh_tamb():
-    temperature = pd.Series([20.0, 25.0, 30.0, 15.0, 10.0])
-    return temperature
-
-
-@pytest.fixture(scope='function')
-def tdew_from_rh_tdew():
-    dewpoint = pd.Series([15.0, 20.0, 25.0, 12.0, 8.0])
-    return dewpoint
-
-@pytest.fixture(scope='function')
-def tdew_from_rh_tdew_aekr():
-    dewpoint = pd.Series([
-        15.002788636614607, 20.00273293813965, 25.002679259728964,
-        12.001714029144065, 8.0011690397714
-    ])
-    return dewpoint
-
-@pytest.fixture(scope='function')
-def tdew_from_rh_rh():
-    relative_humidity = pd.Series([
-        72.95185312581116, 73.81500029087906, 74.6401272083123,
-        82.27063889868842, 87.39018119185337
-    ])
-    return relative_humidity
-
-@pytest.fixture(scope='function')
-def tdew_from_rh_rh_aekr():
-   relative_humidity = pd.Series([
-       72.93876680928582, 73.8025121880607, 74.62820502423823,
-        82.26135295757305, 87.38323744820416
-   ])
-   return relative_humidity

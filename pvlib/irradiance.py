@@ -2181,6 +2181,9 @@ def dirindex(ghi, ghi_clearsky, dni_clear, zenith, times, pressure=101325.,
     dni_clear : array-like
         Direct normal irradiance from clear sky model. [Wm⁻²]
 
+        .. versionchanged:: 0.11.2
+            Renamed from ``dni_clearsky`` to ``dni_clear``.
+
     zenith : array-like
         True (not refraction-corrected) zenith angles in decimal
         degrees. If Z is a vector it must be of the same size as all
@@ -3646,7 +3649,10 @@ def dni(ghi, dhi, zenith, dni_clear=None, clearsky_tolerance=1.1,
         degrees. Angles must be >=0 and <=180.
 
     dni_clear : Series, optional
-        Clearsky direct normal irradiance.
+        Clearsky direct normal irradiance. [Wm⁻²]
+
+        .. versionchanged:: 0.11.2
+            Renamed from ``clearsky_dni`` to ``dni_clear``.
 
     clearsky_tolerance : float, default 1.1
         If ``dni_clear`` is given this parameter can be used to allow a
@@ -3726,8 +3732,8 @@ def complete_irradiance(solar_zenith,
         Pandas series of dni data, with datetime index. Must have the same
         datetime index as ghi, dhi, and zenith series, when available.
     dni_clear : Series, optional
-        Pandas series of clearsky dni data. Must have the same datetime index
-        as ghi, dhi, dni, and zenith series, when available. See
+        Pandas series of clearsky dni data [Wm⁻²]. Must have the same datetime
+        index as ghi, dhi, dni, and zenith series, when available. See
         :py:func:`dni` for details.
 
     Returns

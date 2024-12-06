@@ -465,18 +465,18 @@ def poa_components(aoi, dni, poa_sky_diffuse, poa_ground_diffuse):
     ----------
     aoi : numeric
         Angle of incidence of solar rays with respect to the module
-        surface, from :func:`aoi`.
+        surface, from :func:`aoi` [°]. See :term:`aoi`.
 
     dni : numeric
-        Direct normal irradiance (Wm⁻²), as measured from a TMY file or
-        calculated with a clearsky model.
+        Direct normal irradiance [Wm⁻²], as measured from a TMY file or
+        calculated with a clearsky model. See :term:`dni`.
 
     poa_sky_diffuse : numeric
-        Diffuse irradiance (Wm⁻²) in the plane of the modules, as
-        calculated by a diffuse irradiance translation function
+        Diffuse irradiance [Wm⁻²] in the plane of the modules, as
+        calculated by a diffuse irradiance translation function.
 
     poa_ground_diffuse : numeric
-        Ground reflected irradiance (Wm⁻²) in the plane of the modules,
+        Ground reflected irradiance [Wm⁻²] in the plane of the modules,
         as calculated by an albedo model (eg. :func:`grounddiffuse`)
 
     Returns
@@ -484,12 +484,12 @@ def poa_components(aoi, dni, poa_sky_diffuse, poa_ground_diffuse):
     irrads : OrderedDict or DataFrame
         Contains the following keys:
 
-        * ``poa_global`` : Total in-plane irradiance (Wm⁻²)
-        * ``poa_direct`` : Total in-plane beam irradiance (Wm⁻²)
-        * ``poa_diffuse`` : Total in-plane diffuse irradiance (Wm⁻²)
-        * ``poa_sky_diffuse`` : In-plane diffuse irradiance from sky (Wm⁻²)
+        * ``poa_global`` : Total in-plane irradiance [Wm⁻²]
+        * ``poa_direct`` : Total in-plane beam irradiance [Wm⁻²]
+        * ``poa_diffuse`` : Total in-plane diffuse irradiance [Wm⁻²]
+        * ``poa_sky_diffuse`` : In-plane diffuse irradiance from sky [Wm⁻²]
         * ``poa_ground_diffuse`` : In-plane diffuse irradiance from ground
-          (Wm⁻²)
+          [Wm⁻²]
 
     Notes
     ------
@@ -1545,13 +1545,13 @@ def ghi_from_poa_driesse_2023(surface_tilt, surface_azimuth,
     Parameters
     ----------
     surface_tilt : numeric
-        Panel tilt from horizontal. [degree]
+        Panel tilt from horizontal. [°]
     surface_azimuth : numeric
-        Panel azimuth from north. [degree]
+        Panel azimuth from north. [°]
     solar_zenith : numeric
-        Solar zenith angle. [degree]
+        Solar zenith angle. [°]
     solar_azimuth : numeric
-        Solar azimuth angle. [degree]
+        Solar azimuth angle. [°]
     poa_global : numeric
         Plane-of-array global irradiance, aka global tilted irradiance [Wm⁻²].
     dni_extra : numeric, optional
@@ -3707,24 +3707,35 @@ def complete_irradiance(solar_zenith,
 
     Parameters
     ----------
-    solar_zenith : Series
-        Zenith angles in decimal degrees, with datetime index.
+    solar_zenith : series
+        Solar zenith angle [°], with datetime index.
         Angles must be >=0 and <=180. Must have the same datetime index
-        as ghi, dhi, and dni series, when available.
+        as ghi, dhi, and dni series, when available. See :term:`solar_zenith`.
     ghi : Series, optional
-        Pandas series of dni data, with datetime index. Must have the same
-        datetime index as dni, dhi, and zenith series, when available.
+        Pandas series of dni data [Wm⁻²], with datetime index. Must have the
+        same datetime index as dni, dhi, and zenith series, when available.
+        See :term:`ghi`.
     dhi : Series, optional
-        Pandas series of dni data, with datetime index. Must have the same
-        datetime index as ghi, dni, and zenith series, when available.
+        Pandas series of dni data [Wm⁻²], with datetime index. Must have the
+        same datetime index as ghi, dni, and zenith series, when available.
+        See :term:`dhi`.
     dni : Series, optional
-        Pandas series of dni data, with datetime index. Must have the same
-        datetime index as ghi, dhi, and zenith series, when available.
+        Pandas series of dni data [Wm⁻²], with datetime index. Must have the
+        same datetime index as ghi, dhi, and zenith series, when available.
+        See :term:`dni`.
     dni_clear : Series, optional
-        Pandas series of clearsky dni data. Must have the same datetime index
-        as ghi, dhi, dni, and zenith series, when available. See
-        :py:func:`dni` for details.
+        Pandas series of clearsky dni data [Wm⁻²]. Must have the same datetime
+        index as ghi, dhi, dni, and zenith series, when available. See
+        :py:func:`dni` for details. See :term:`dni_clear` for glossary
+        definition.
 
+
+solar_azimuth : numeric
+    Solar azimuth angle. [°]
+poa_global : numeric
+    Plane-of-array global irradiance, aka global tilted irradiance .
+dni_extra : numeric, optional
+    Extraterrestrial direct normal irradiance [Wm⁻²].
     Returns
     -------
     component_sum_df : Dataframe
@@ -3758,11 +3769,11 @@ def louche(ghi, solar_zenith, datetime_or_doy, max_zenith=90):
     Parameters
     ----------
     ghi : numeric
-        Global horizontal irradiance [Wm⁻²].
+        Global horizontal irradiance [Wm⁻²]. See :term:`ghi`.
 
     solar_zenith : numeric
-        True (not refraction-corrected) zenith angles in decimal
-        degrees. Angles must be >=0 and <=90.
+        True (not refraction-corrected) zenith angles [°].
+        Angles must be >=0° and <=90°. See :term:`solar_zenith`.
 
     datetime_or_doy : numeric, pandas.DatetimeIndex
         Day of year or array of days of year e.g.
@@ -3773,11 +3784,11 @@ def louche(ghi, solar_zenith, datetime_or_doy, max_zenith=90):
     data: OrderedDict or DataFrame
         Contains the following keys/columns:
 
-        * ``dni``: the modeled direct normal irradiance [Wm⁻²].
-        * ``dhi``: the modeled diffuse horizontal irradiance in
-          Wm⁻².
-        * ``kt``: Ratio of global to extraterrestrial irradiance
-          on a horizontal plane.
+        * ``dni``: the modeled direct normal irradiance [Wm⁻²]. See :term:`dni`
+        * ``dhi``: the modeled diffuse horizontal irradiance [Wm⁻²].
+            See :term:`dhi`
+        * ``kt``: Clearness index [unitless], ratio of global to
+            extraterrestrial irradiance on a horizontal plane.
 
     References
     -------
@@ -3822,12 +3833,12 @@ def diffuse_par_spitters(daily_solar_zenith, global_diffuse_fraction):
 
     .. note::
        The diffuse fraction is defined as the ratio of
-       diffuse to global daily insolation, in J m⁻² day⁻¹ or equivalent.
+       diffuse to global daily insolation, in Jm⁻² day⁻¹ or equivalent.
 
     Parameters
     ----------
     daily_solar_zenith : numeric
-        Average daily solar zenith angle. In degrees [°].
+        Average daily solar zenith angle [°].
 
     global_diffuse_fraction : numeric
         Fraction of daily global broadband insolation that is diffuse.

@@ -346,7 +346,7 @@ def rh_from_tdew(temperature, dewpoint, coeff=(6.112, 17.62, 243.12)):
     temperature : numeric
         Air temperature (dry-bulb temperature) in degrees Celsius
     dewpoint : numeric
-        Dewpoint temperature in degrees Celsius
+        Dew-point temperature in degrees Celsius
     coeff: tuple
         Magnus equation coefficient (A, B, C)
 

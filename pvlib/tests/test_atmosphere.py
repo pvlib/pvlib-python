@@ -150,7 +150,6 @@ def test_rh_from_tdew():
     np.testing.assert_allclose(
         rh_array,
         relative_humidity_who.to_numpy(),
-        atol=0.001
     )
 
     assert np.isclose(

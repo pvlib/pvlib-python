@@ -151,17 +151,17 @@ def fit_desoto(v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc, cells_in_series,
     i_sc: float
         Short-circuit current at reference conditions. [A]
     alpha_sc: float
-        The short-circuit current (i_sc) temperature coefficient of the
+        The short-circuit current (``i_sc``) temperature coefficient of the
         module. [A/K]
     beta_voc: float
-        The open-circuit voltage (v_oc) temperature coefficient of the
+        The open-circuit voltage (``v_oc``) temperature coefficient of the
         module. [V/K]
     cells_in_series: integer
         Number of cell in the module.
     EgRef: float, default 1.121 eV - value for silicon
         Energy of bandgap of semi-conductor used. [eV]
     dEgdT: float, default -0.0002677 - value for silicon
-        Variation of bandgap according to temperature. [eV/K]
+        Variation of bandgap according to temperature. [1/K]
     temp_ref: float, default 25
         Reference temperature condition. [C]
     irrad_ref: float, default 1000
@@ -194,7 +194,7 @@ def fit_desoto(v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc, cells_in_series,
         EgRef: float
             Energy of bandgap of semi-conductor used. [eV]
         dEgdT: float
-            Variation of bandgap according to temperature. [eV/K]
+            Variation of bandgap according to temperature. [1/K]
         irrad_ref: float
             Reference irradiance condition. [Wm⁻²]
         temp_ref: float

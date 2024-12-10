@@ -393,7 +393,7 @@ def tdew_from_rh(
     Returns
     -------
     numeric
-        Dewpoint temperature in degrees Celsius
+        Dewpoint temperature.. [°C]
 
     References
     ----------

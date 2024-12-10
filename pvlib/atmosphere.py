@@ -354,7 +354,7 @@ def rh_from_tdew(temperature, dewpoint, coeff=(6.112, 17.62, 243.12)):
     Returns
     -------
     numeric
-        Relative humidity as percentage (0.0-100.0)
+        Relative humidity (0.0-100.0). [%]
 
     References
     ----------

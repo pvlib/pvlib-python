@@ -383,9 +383,9 @@ def tdew_from_rh(
     Parameters
     ----------
     temperature : numeric
-        Air temperature (dry-bulb temperature) in degrees Celsius
+        Air temperature (dry-bulb temperature). [°C]
     relative_humidity : numeric
-        Relative humidity as percentage (0-100)
+        Relative humidity (0-100). [%]
     coeff: tuple, default (6.112, 17.62, 243.12)
         Magnus equation coefficients (A, B, C).  The default values are those
         recommended by the WMO [1]_.

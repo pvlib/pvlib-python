@@ -51,6 +51,8 @@ Documentation
 
   - `spectra` and `spectra_components` (:issue:`2150`, :pull:`2264`)
 
+* Added a section in the style guide for parameter naming and units best practices.
+  See :ref:`documentation-units`. (:issue:`2205`, :pull:`2248`)
 * Added a example to :py:func:`~pvlib.pvsystem.retrieve_sam` docstring to
   demonstrate how to retrieve a database from the SAM repo. (:pull:`2313`)
 

@@ -344,9 +344,9 @@ def rh_from_tdew(temperature, dewpoint, coeff=(6.112, 17.62, 243.12)):
     Parameters
     ----------
     temperature : numeric
-        Air temperature (dry-bulb temperature) in degrees Celsius
+        Air temperature (dry-bulb temperature). [°C]
     dewpoint : numeric
-        Dew-point temperature in degrees Celsius
+        Dew-point temperature. [°C]
     coeff : tuple, default (6.112, 17.62, 243.12)
         Magnus equation coefficients (A, B, C).  The default values are those
         recommended by the WMO [1]_.

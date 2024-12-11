@@ -169,7 +169,7 @@ class PVSystem:
 
     racking_model : string, optional
         Valid strings are ``'open_rack'``, ``'close_mount'``,
-        ``'insulated_back'`, ``'freestanding'`` and ``'insulated'``.
+        ``'insulated_back'``, ``'freestanding'`` and ``'insulated'``.
         Used to identify a parameter set for the SAPM or PVsyst cell
         temperature model.
         See :py:func:`~pvlib.temperature.sapm_module` and
@@ -1397,7 +1397,7 @@ class FixedMount(AbstractMount):
 
     racking_model : str, optional
         Valid strings are ``'open_rack'``, ``'close_mount'``,
-        ``'insulated_back'`, ``'freestanding'`` and ``'insulated'``.
+        ``'insulated_back'``, ``'freestanding'`` and ``'insulated'``.
         Used to identify a parameter set for the SAPM or PVsyst cell
         temperature model.
         See :py:func:`~pvlib.temperature.sapm_module`  and
@@ -1478,7 +1478,7 @@ class SingleAxisTrackerMount(AbstractMount):
 
     racking_model : str, optional
         Valid strings are ``'open_rack'``, ``'close_mount'``,
-        ``'insulated_back'`, ``'freestanding'`` and ``'insulated'``.
+        ``'insulated_back'``, ``'freestanding'`` and ``'insulated'``.
         Used to identify a parameter set for the SAPM or PVsyst cell
         temperature model. ``'open_rack'`` or ``'freestanding'`` should
         be used for systems with single-axis trackers.

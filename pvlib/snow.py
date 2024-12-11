@@ -15,8 +15,7 @@ def _time_delta_in_hours(times):
 
 def fully_covered_nrel(snowfall, snow_depth=None, threshold_snowfall=1.):
     '''
-    Calculates the timesteps when the row's slant height is fully covered
-    by snow.
+    Calculates the timesteps when modules are fully covered by snow.
 
     Parameters
     ----------
@@ -26,22 +25,22 @@ def fully_covered_nrel(snowfall, snow_depth=None, threshold_snowfall=1.):
         Snow depth on the ground at the beginning of each time period.
         Must have the same index as ``snowfall``. [cm]
     threshold_snowfall: float, default 1.0
-        Hourly snowfall above which snow coverage is set to the row's slant
-        height. [cm/hr]
+        Hourly snowfall above which the row is fully covered for that hour.
+        [cm/hr]
 
     Returns
     ----------
-    Series
-        True where the snowfall exceeds the defined threshold to fully cover
-        the panel.
+    covered: Series
+        A Series of boolean, True where the snowfall exceeds the defined
+        threshold to fully cover the panel.
 
     Notes
     -----
     Implements the model described in [1]_ with minor improvements in [2]_.
 
-    ``snow_depth`` is used to set coverage=0 when no snow is present on the
-    ground. This check is described in [2]_ as needed for systems with
-    low tilt angle.
+    ``snow_depth`` is used to return `False` (not fully covered) when no snow
+    is present on the ground. This check is described in [2]_ as needed for
+    systems with low tilt angle.
 
     References
     ----------
@@ -73,8 +72,8 @@ def coverage_nrel(snowfall, poa_irradiance, temp_air, surface_tilt,
                   snow_depth=None, initial_coverage=0, threshold_snowfall=1.,
                   can_slide_coefficient=-80., slide_amount_coefficient=0.197):
     '''
-    Calculates the fraction of the slant height of a row of modules covered by
-    snow at every time step.
+    Calculates the fraction of the slant height of a row of modules that is
+    covered by snow at every time step.
 
     Implements the model described in [1]_ with minor improvements in [2]_,
     with the change that the output is in fraction of the row's slant height
@@ -119,9 +118,9 @@ def coverage_nrel(snowfall, poa_irradiance, temp_air, surface_tilt,
     In [1]_, ``can_slide_coefficient`` is termed `m`, and the value of
     ``slide_amount_coefficient`` is given in tenths of a module's slant height.
 
-    ``snow_depth`` is used to set coverage=0 when no snow is present on the
-    ground. This check is described in [2]_ as needed for systems with
-    low tilt angle.
+    ``snow_depth`` is used to set ``snow_coverage`` to 0 when no snow is
+    present on the ground. This check is described in [2]_ as needed for
+    systems with low tilt angle.
 
     References
     ----------

@@ -22,6 +22,9 @@ Bug Fixes
   (:issue:`1338`, :pull:`2227`)
 * Handle DST transitions that happen at midnight in :py:func:`pvlib.solarposition.hour_angle`
   (:issue:`2132` :pull:`2133`)
+* Add a check to :py:func:`~pvlib.snow.fully_covered_nrel` and
+  :py:func:`~pvlib.snow.coverage_nrel`. The check uses snow depth on the ground
+  to improve modeling for systems with shallow tilt angles. (:issue:`1171`, :pull:`2292`)
 
 Bug fixes
 ~~~~~~~~~

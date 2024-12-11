@@ -70,7 +70,30 @@ the ``docs/readthedocs.org:pvlib-python`` link within the checks
 status box at the bottom of the pull request.
 
 
-.. _references:
+.. _documentation-units:
+
+Parameter names and units
+-------------------------
+
+When specifying parameters and their units, please follow these guidelines:
+
+- Use the recommended parameter name and units listed in the :ref:`nomenclature` where applicable.
+- Enclose units in square brackets after the parameter description, e.g., ``Air temperature. [°C]``.
+- Use unicode superscripts symbols for exponents, e.g. ``m⁻²``.
+
+  - Numbers: ``⁰``, ``¹``, ``²``, ``³``, ``⁴``, ``⁵``, ``⁶``, ``⁷``, ``⁸``, ``⁹``
+  - Negative exponent: ``⁻``
+  - Degree symbol: ``°``
+
+- Link to a brief description in the :ref:`nomenclature` section if it exists, via the sphinx role ``:term:`glossary_term```. For example, to document ``dni`` use:
+
+  .. code-block:: rst
+
+      dni : numeric
+          Direct normal irradiance, see :term:`dni`. [Wm⁻²]
+
+
+.. _reference_style:
 
 References
 ----------

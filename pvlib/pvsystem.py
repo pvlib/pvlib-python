@@ -1480,8 +1480,8 @@ class SingleAxisTrackerMount(AbstractMount):
         Valid strings are ``'open_rack'``, ``'close_mount'``,
         ``'insulated_back'`, ``'freestanding'`` and ``'insulated'``.
         Used to identify a parameter set for the SAPM or PVsyst cell
-        temperature model. ``'open_rack'`` should be used for systems with
-        single-axis trackers.
+        temperature model. ``'open_rack'`` or ``'freestanding'`` should
+        be used for systems with single-axis trackers.
         See :py:func:`~pvlib.temperature.sapm_module` and
         :py:func:`~pvlib.temperature.pvsyst_cell` for definitions.
 

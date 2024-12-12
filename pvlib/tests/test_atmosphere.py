@@ -118,7 +118,6 @@ def test_tdew_to_rh_to_tdew():
 
 def test_rh_from_tdew():
 
-    # dewpoint temp calculated with wmo and aekr coefficients
     dewpoint = pd.Series([
         15.0, 20.0, 25.0, 12.0, 8.0
     ])
@@ -141,6 +140,12 @@ def test_rh_from_tdew():
         temp_dew=dewpoint
     )
 
+    pd.testing.assert_series_equal(
+        rh_series,
+        relative_humidity_wmo,
+        check_names=False
+    )
+
     # Calulate relative humidity using pandas series as input
     # with AEKR coefficients
     rh_series_aekr = atmosphere.rh_from_tdew(
@@ -149,29 +154,19 @@ def test_rh_from_tdew():
         coeff=(6.1094, 17.625, 243.04)
     )
 
-    # Calculate relative humidity using array as input
-    rh_array = atmosphere.rh_from_tdew(
-        temp_air=temperature_ambient.to_numpy(),
-        temp_dew=dewpoint.to_numpy()
-    )
-
-    # test
-    pd.testing.assert_series_equal(
-        rh_series,
-        relative_humidity_wmo,
-        check_names=False
-    )
-
     pd.testing.assert_series_equal(
         rh_series_aekr,
         relative_humidity_aekr,
         check_names=False
     )
 
-    np.testing.assert_allclose(
-        rh_array,
-        relative_humidity_wmo.to_numpy(),
+    # Calculate relative humidity using array as input
+    rh_array = atmosphere.rh_from_tdew(
+        temp_air=temperature_ambient.to_numpy(),
+        temp_dew=dewpoint.to_numpy()
     )
+
+    np.testing.assert_allclose(rh_array, relative_humidity_wmo.to_numpy())
 
     # Calculate relative humidity using float as input
     rh_float = atmosphere.rh_from_tdew(
@@ -179,16 +174,12 @@ def test_rh_from_tdew():
         temp_dew=dewpoint.iloc[0]
     )
 
-    assert np.isclose(
-        rh_float,
-        relative_humidity_wmo.iloc[0]
-    )
+    assert np.isclose(rh_float, relative_humidity_wmo.iloc[0])
 
 
 # Unit tests
 def test_tdew_from_rh():
 
-    # dewpoint temp calculated with wmo and aekr coefficients
     dewpoint = pd.Series([
         15.0, 20.0, 25.0, 12.0, 8.0
     ])
@@ -211,11 +202,20 @@ def test_tdew_from_rh():
         relative_humidity=relative_humidity_wmo
     )
 
+    pd.testing.assert_series_equal(
+        dewpoint_series, dewpoint, check_names=False
+    )
+
     # test as series with AEKR coefficients
     dewpoint_series_aekr = atmosphere.tdew_from_rh(
         temp_air=temperature_ambient,
         relative_humidity=relative_humidity_aekr,
         coeff=(6.1094, 17.625, 243.04)
+    )
+
+    pd.testing.assert_series_equal(
+        dewpoint_series_aekr, dewpoint,
+        check_names=False
     )
 
     # test as numpy array
@@ -224,31 +224,15 @@ def test_tdew_from_rh():
         relative_humidity=relative_humidity_wmo.to_numpy()
     )
 
+    np.testing.assert_allclose(dewpoint_array, dewpoint.to_numpy())
+
     # test as float
     dewpoint_float = atmosphere.tdew_from_rh(
         temp_air=temperature_ambient.iloc[0],
         relative_humidity=relative_humidity_wmo.iloc[0]
     )
 
-    # test
-    pd.testing.assert_series_equal(
-        dewpoint_series, dewpoint, check_names=False
-    )
-
-    pd.testing.assert_series_equal(
-        dewpoint_series_aekr, dewpoint,
-        check_names=False
-    )
-
-    np.testing.assert_allclose(
-        dewpoint_array,
-        dewpoint.to_numpy(),
-    )
-
-    assert np.isclose(
-        dewpoint_float,
-        dewpoint.iloc[0]
-    )
+    assert np.isclose(dewpoint_float, dewpoint.iloc[0])
 
 
 def test_first_solar_spectral_correction_deprecated():

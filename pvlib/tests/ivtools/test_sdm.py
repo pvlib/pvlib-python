@@ -138,8 +138,8 @@ def test_fit_desoto_sandia(cec_params_cansol_cs5p_220p):
     modeled['R_s'] = result['R_s']
     modeled['R_sh_ref'] = result['R_sh_ref']
     expected = pd.Series(params)
-    assert np.allclose(modeled[params.keys()].values,
-                       expected[params.keys()].values, rtol=5e-2)
+    assert_allclose(modeled[params.keys()].values,
+                    expected[params.keys()].values, rtol=5e-2)
 
 
 def _read_iv_curves_for_test(datafile, npts):

@@ -13,6 +13,8 @@ Deprecations
 
 Enhancements
 ~~~~~~~~~~~~
+* :py:func:`~pvlib.atmosphere.rh_from_tdew` and :py:func:`~pvlib.atmosphere.tdew_from_rh`
+  added. (:issue:`1744`, :pull:`2286`)
 * :py:func:`~pvlib.ivtools.sdm.fit_desoto` now allows input of initial
   parameter guesses. (:issue:`1014`, :pull:`2291`)
 
@@ -24,6 +26,7 @@ Bug Fixes
   (:issue:`2132` :pull:`2133`)
 * Changed ``dni_extra`` to a required parameter in :py:func:`pvlib.irradiance.ghi_from_poa_driesse_2023`
   (:issue:`2279` :pull:`2331`)
+
 
 Bug fixes
 ~~~~~~~~~

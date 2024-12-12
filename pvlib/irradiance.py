@@ -1528,7 +1528,7 @@ def _ghi_from_poa(surface_tilt, surface_azimuth,
 def ghi_from_poa_driesse_2023(surface_tilt, surface_azimuth,
                               solar_zenith, solar_azimuth,
                               poa_global,
-                              dni_extra=None, airmass=None, albedo=0.25,
+                              dni_extra, airmass=None, albedo=0.25,
                               xtol=0.01,
                               full_output=False):
     '''
@@ -1549,7 +1549,7 @@ def ghi_from_poa_driesse_2023(surface_tilt, surface_azimuth,
         Solar azimuth angle. [degree]
     poa_global : numeric
         Plane-of-array global irradiance, aka global tilted irradiance. [Wm⁻²]
-    dni_extra : numeric, optional
+    dni_extra : numeric
         Extraterrestrial direct normal irradiance. [Wm⁻²]
     airmass : numeric, optional
         Relative airmass (not adjusted for pressure). [unitless]

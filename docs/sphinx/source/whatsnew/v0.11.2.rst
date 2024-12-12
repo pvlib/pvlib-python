@@ -22,6 +22,8 @@ Bug Fixes
   (:issue:`1338`, :pull:`2227`)
 * Handle DST transitions that happen at midnight in :py:func:`pvlib.solarposition.hour_angle`
   (:issue:`2132` :pull:`2133`)
+* Chnaged `dni_extra` to a required parameter in :py:func:`pvlib.irradiance.ghi_from_poa_driesse_2023`
+  (:issue:`2279` :pull:`2331`)
 
 Bug fixes
 ~~~~~~~~~
@@ -85,3 +87,4 @@ Contributors
 * Echedey Luis (:ghuser:`echedey-ls`)
 * Kevin Anderson (:ghuser:`kandersolar`)
 * Scott Nelson (:ghuser:`scttnlsn`)
+* Ioannis Sifnaios (:ghuser:`IoannisSifnaios`)

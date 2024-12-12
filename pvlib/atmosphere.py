@@ -339,7 +339,8 @@ def gueymard94_pw(temp_air, relative_humidity):
 
 def rh_from_tdew(temp_air, temp_dew, coeff=(6.112, 17.62, 243.12)):
     """
-    Calculate relative humidity from dewpoint temperature using the Magnus equation.
+    Calculate relative humidity from dewpoint temperature using the Magnus
+    equation.
 
     Parameters
     ----------
@@ -373,11 +374,9 @@ def rh_from_tdew(temp_air, temp_dew, coeff=(6.112, 17.62, 243.12)):
     return relative_humidity
 
 
-def tdew_from_rh(
-    temp_air, relative_humidity, coeff=(6.112, 17.62, 243.12)
-):
+def tdew_from_rh(temp_air, relative_humidity, coeff=(6.112, 17.62, 243.12)):
     """
-    Calculate dewpoint temperature using Magnus equation.
+    Calculate dewpoint temperature using the Magnus equation.
     This is a reversal of the calculation in :py:func:`rh_from_tdew`.
 
     Parameters

@@ -90,7 +90,7 @@ def test_gueymard94_pw():
 
 def test_tdew_to_rh_to_tdew():
 
-    # dewpoint temp calculated with who and aekr coefficients
+    # dewpoint temp calculated with wmo and aekr coefficients
     dewpoint_original = pd.Series([
         15.0, 20.0, 25.0, 12.0, 8.0
     ])
@@ -118,13 +118,13 @@ def test_tdew_to_rh_to_tdew():
 
 def test_rh_from_tdew():
 
-    # dewpoint temp calculated with who and aekr coefficients
+    # dewpoint temp calculated with wmo and aekr coefficients
     dewpoint = pd.Series([
         15.0, 20.0, 25.0, 12.0, 8.0
     ])
 
-    # relative humidity calculated with who and aekr coefficients
-    relative_humidity_who = pd.Series([
+    # relative humidity calculated with wmo and aekr coefficients
+    relative_humidity_wmo = pd.Series([
         72.95185312581116, 73.81500029087906, 74.6401272083123,
         82.27063889868842, 87.39018119185337
     ])
@@ -158,7 +158,7 @@ def test_rh_from_tdew():
     # test
     pd.testing.assert_series_equal(
         rh_series,
-        relative_humidity_who,
+        relative_humidity_wmo,
         check_names=False
     )
 
@@ -170,7 +170,7 @@ def test_rh_from_tdew():
 
     np.testing.assert_allclose(
         rh_array,
-        relative_humidity_who.to_numpy(),
+        relative_humidity_wmo.to_numpy(),
     )
 
     # Calculate relative humidity using float as input
@@ -181,20 +181,20 @@ def test_rh_from_tdew():
 
     assert np.isclose(
         rh_float,
-        relative_humidity_who.iloc[0]
+        relative_humidity_wmo.iloc[0]
     )
 
 
 # Unit tests
 def test_tdew_from_rh():
 
-    # dewpoint temp calculated with who and aekr coefficients
+    # dewpoint temp calculated with wmo and aekr coefficients
     dewpoint = pd.Series([
         15.0, 20.0, 25.0, 12.0, 8.0
     ])
 
-    # relative humidity calculated with who and aekr coefficients
-    relative_humidity_who = pd.Series([
+    # relative humidity calculated with wmo and aekr coefficients
+    relative_humidity_wmo = pd.Series([
         72.95185312581116, 73.81500029087906, 74.6401272083123,
         82.27063889868842, 87.39018119185337
     ])
@@ -208,7 +208,7 @@ def test_tdew_from_rh():
     # test as series
     dewpoint_series = atmosphere.tdew_from_rh(
         temp_air=temperature_ambient,
-        relative_humidity=relative_humidity_who
+        relative_humidity=relative_humidity_wmo
     )
 
     # test as series with AEKR coefficients
@@ -221,13 +221,13 @@ def test_tdew_from_rh():
     # test as numpy array
     dewpoint_array = atmosphere.tdew_from_rh(
         temp_air=temperature_ambient.to_numpy(),
-        relative_humidity=relative_humidity_who.to_numpy()
+        relative_humidity=relative_humidity_wmo.to_numpy()
     )
 
     # test as float
     dewpoint_float = atmosphere.tdew_from_rh(
         temp_air=temperature_ambient.iloc[0],
-        relative_humidity=relative_humidity_who.iloc[0]
+        relative_humidity=relative_humidity_wmo.iloc[0]
     )
 
     # test

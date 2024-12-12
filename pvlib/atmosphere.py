@@ -337,15 +337,15 @@ def gueymard94_pw(temp_air, relative_humidity):
     return pw
 
 
-def rh_from_tdew(temperature, dewpoint, coeff=(6.112, 17.62, 243.12)):
+def rh_from_tdew(temp_air, temp_dew, coeff=(6.112, 17.62, 243.12)):
     """
     Calculate relative humidity from dewpoint temperature using the Magnus equation.
 
     Parameters
     ----------
-    temperature : numeric
+    temp_air : numeric
         Air temperature (dry-bulb temperature). [°C]
-    dewpoint : numeric
+    temp_dew : numeric
         Dew-point temperature. [°C]
     coeff : tuple, default (6.112, 17.62, 243.12)
         Magnus equation coefficients (A, B, C).  The default values are those
@@ -364,8 +364,8 @@ def rh_from_tdew(temperature, dewpoint, coeff=(6.112, 17.62, 243.12)):
     """
 
     # Calculate vapor pressure (e) and saturation vapor pressure (es)
-    e = coeff[0] * np.exp((coeff[1] * temperature) / (coeff[2] + temperature))
-    es = coeff[0] * np.exp((coeff[1] * dewpoint) / (coeff[2] + dewpoint))
+    e = coeff[0] * np.exp((coeff[1] * temp_air) / (coeff[2] + temp_air))
+    es = coeff[0] * np.exp((coeff[1] * temp_dew) / (coeff[2] + temp_dew))
 
     # Calculate relative humidity as percentage
     relative_humidity = 100 * (es / e)
@@ -374,7 +374,7 @@ def rh_from_tdew(temperature, dewpoint, coeff=(6.112, 17.62, 243.12)):
 
 
 def tdew_from_rh(
-    temperature, relative_humidity, coeff=(6.112, 17.62, 243.12)
+    temp_air, relative_humidity, coeff=(6.112, 17.62, 243.12)
 ):
     """
     Calculate dewpoint temperature using Magnus equation.
@@ -382,7 +382,7 @@ def tdew_from_rh(
 
     Parameters
     ----------
-    temperature : numeric
+    temp_air : numeric
         Air temperature (dry-bulb temperature). [°C]
     relative_humidity : numeric
         Relative humidity (0-100). [%]
@@ -407,7 +407,7 @@ def tdew_from_rh(
 
     # First calculate ln(es/A)
     ln_term = (
-        (coeff[1] * temperature) / (coeff[2] + temperature)
+        (coeff[1] * temp_air) / (coeff[2] + temp_air)
         + np.log(relative_humidity/100)
     )
 

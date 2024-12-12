@@ -99,12 +99,12 @@ def test_tdew_to_rh_to_tdew():
 
     # Calculate relative humidity using pandas series as input
     relative_humidity = atmosphere.rh_from_tdew(
-        temperature=temperature_ambient,
-        dewpoint=dewpoint_original
+        temp_air=temperature_ambient,
+        temp_dew=dewpoint_original
     )
 
     dewpoint_calculated = atmosphere.tdew_from_rh(
-        temperature=temperature_ambient,
+        temp_air=temperature_ambient,
         relative_humidity=relative_humidity
     )
 
@@ -137,22 +137,22 @@ def test_rh_from_tdew():
 
     # Calculate relative humidity using pandas series as input
     rh_series = atmosphere.rh_from_tdew(
-        temperature=temperature_ambient,
-        dewpoint=dewpoint
+        temp_air=temperature_ambient,
+        temp_dew=dewpoint
     )
 
     # Calulate relative humidity using pandas series as input
     # with AEKR coefficients
     rh_series_aekr = atmosphere.rh_from_tdew(
-        temperature=temperature_ambient,
-        dewpoint=dewpoint,
+        temp_air=temperature_ambient,
+        temp_dew=dewpoint,
         coeff=(6.1094, 17.625, 243.04)
     )
 
     # Calculate relative humidity using array as input
     rh_array = atmosphere.rh_from_tdew(
-        temperature=temperature_ambient.to_numpy(),
-        dewpoint=dewpoint.to_numpy()
+        temp_air=temperature_ambient.to_numpy(),
+        temp_dew=dewpoint.to_numpy()
     )
 
     # test
@@ -175,8 +175,8 @@ def test_rh_from_tdew():
 
     # Calculate relative humidity using float as input
     rh_float = atmosphere.rh_from_tdew(
-        temperature=temperature_ambient.iloc[0],
-        dewpoint=dewpoint.iloc[0]
+        temp_air=temperature_ambient.iloc[0],
+        temp_dew=dewpoint.iloc[0]
     )
 
     assert np.isclose(
@@ -207,26 +207,26 @@ def test_tdew_from_rh():
 
     # test as series
     dewpoint_series = atmosphere.tdew_from_rh(
-        temperature=temperature_ambient,
+        temp_air=temperature_ambient,
         relative_humidity=relative_humidity_who
     )
 
     # test as series with AEKR coefficients
     dewpoint_series_aekr = atmosphere.tdew_from_rh(
-        temperature=temperature_ambient,
+        temp_air=temperature_ambient,
         relative_humidity=relative_humidity_aekr,
         coeff=(6.1094, 17.625, 243.04)
     )
 
     # test as numpy array
     dewpoint_array = atmosphere.tdew_from_rh(
-        temperature=temperature_ambient.to_numpy(),
+        temp_air=temperature_ambient.to_numpy(),
         relative_humidity=relative_humidity_who.to_numpy()
     )
 
     # test as float
     dewpoint_float = atmosphere.tdew_from_rh(
-        temperature=temperature_ambient.iloc[0],
+        temp_air=temperature_ambient.iloc[0],
         relative_humidity=relative_humidity_who.iloc[0]
     )
 

@@ -6,10 +6,15 @@ v0.11.2 (Anticipated December, 2024)
 
 Deprecations
 ~~~~~~~~~~~~
+* Deprecated terms ``dni_clearsky`` and ``clearsky_dni``, replaced with ``dni_clear``.
+  Affected functions are :py:func:`~pvlib.irradiance.dirindex` and :py:func:`~pvlib.irradiance.dni`.
+  (:issue:`2272`, :pull:`2274`)
 
 
 Enhancements
 ~~~~~~~~~~~~
+* :py:func:`~pvlib.atmosphere.rh_from_tdew` and :py:func:`~pvlib.atmosphere.tdew_from_rh`
+  added. (:issue:`1744`, :pull:`2286`)
 * :py:func:`~pvlib.ivtools.sdm.fit_desoto` now allows input of initial
   parameter guesses. (:issue:`1014`, :pull:`2291`)
 
@@ -17,11 +22,18 @@ Bug Fixes
 ~~~~~~~~~
 * :py:meth:`~pvlib.pvsystem.PVSystem.get_irradiance` accepts float inputs.
   (:issue:`1338`, :pull:`2227`)
+* Handle DST transitions that happen at midnight in :py:func:`pvlib.solarposition.hour_angle`
+  (:issue:`2132` :pull:`2133`)
+* Changed ``dni_extra`` to a required parameter in :py:func:`pvlib.irradiance.ghi_from_poa_driesse_2023`
+  (:issue:`2279` :pull:`2331`)
+
 
 Bug fixes
 ~~~~~~~~~
 * :py:func:`~pvlib.spa.julian_day_dt` now accounts for the 10 day difference
   between Julian and Gregorian calendars prior to the year 1582. (:issue:`2077`, :pull:`2249`)
+* Corrected sign of temperature coefficient ``dEgdT`` in :py:func:`~pvlib.pvsystem.fit_desoto_sandia`.
+  Results may differ slightly from previous versions. (:issue:`2311`, :pull:`2322`)
 
 Documentation
 ~~~~~~~~~~~~~
@@ -42,13 +54,21 @@ Documentation
   page, using the sphinx glossary directive. (:issue:`1421`, :pull:`2234`)
 * Explained how to write docstrings for new functions in :ref:`example-docstring`
   (:discussion:`2081`, :pull:`2254`)
+* Clarify mounting cases for parameters for :py:func:`~pvlib.temperature.sapm_module`,
+  :py:func:`~pvlib.temperature.sapm_cell` and :py:func:`~pvlib.temperature.pvsyst_cell`.
+  (:issue:`1323`, :pull:`2293`)
 * Added the following variables to the :ref:`nomenclature` page:
 
   - `spectra` and `spectra_components` (:issue:`2150`, :pull:`2264`)
 
+* Added a section in the style guide for parameter naming and units best practices.
+  See :ref:`documentation-units`. (:issue:`2205`, :pull:`2248`)
+* Added a example to :py:func:`~pvlib.pvsystem.retrieve_sam` docstring to
+  demonstrate how to retrieve a database from the SAM repo. (:pull:`2313`)
 
 Testing
 ~~~~~~~
+* Updated test files to track new PVGIS 5.3 data. (:pull:`2305`)
 
 
 Requirements
@@ -70,3 +90,6 @@ Contributors
 * Mark Mikofski (:ghuser:`mikofski`)
 * matsuobasho (:ghuser:`matsuobasho`)
 * Echedey Luis (:ghuser:`echedey-ls`)
+* Kevin Anderson (:ghuser:`kandersolar`)
+* Scott Nelson (:ghuser:`scttnlsn`)
+* Ioannis Sifnaios (:ghuser:`IoannisSifnaios`)

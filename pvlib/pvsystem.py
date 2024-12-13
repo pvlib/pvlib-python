@@ -168,9 +168,12 @@ class PVSystem:
         Inverter parameters as defined by the SAPM, CEC, or other.
 
     racking_model : string, optional
-        Valid strings are 'open_rack', 'close_mount', 'freestanding',
-        'insulated', or 'insulated_back'.
-        Used to identify a parameter set for the cell temperature model.
+        Valid strings are ``'open_rack'``, ``'close_mount'``,
+        ``'insulated_back'``, ``'freestanding'`` and ``'insulated'``.
+        Used to identify a parameter set for the SAPM or PVsyst cell
+        temperature model.
+        See :py:func:`~pvlib.temperature.sapm_module` and
+        :py:func:`~pvlib.temperature.pvsyst_cell` for definitions.
 
     losses_parameters : dict or Series, optional
         Losses parameters as defined by PVWatts or other.
@@ -1393,9 +1396,12 @@ class FixedMount(AbstractMount):
         West=270. [degrees]
 
     racking_model : str, optional
-        Valid strings are 'open_rack', 'close_mount', 'freestanding',
-        'insulated', or 'insulated_back'.
-        Used to identify a parameter set for the cell temperature model.
+        Valid strings are ``'open_rack'``, ``'close_mount'``,
+        ``'insulated_back'``, ``'freestanding'`` and ``'insulated'``.
+        Used to identify a parameter set for the SAPM or PVsyst cell
+        temperature model.
+        See :py:func:`~pvlib.temperature.sapm_module`  and
+        :py:func:`~pvlib.temperature.pvsyst_cell` for definitions.
 
     module_height : float, optional
        The height above ground of the center of the module [m]. Used for
@@ -1471,9 +1477,13 @@ class SingleAxisTrackerMount(AbstractMount):
         `cross_axis_tilt`. [degrees]
 
     racking_model : str, optional
-        Valid strings are 'open_rack', 'close_mount', 'freestanding',
-        'insulated', or 'insulated_back'.
-        Used to identify a parameter set for the cell temperature model.
+        Valid strings are ``'open_rack'``, ``'close_mount'``,
+        ``'insulated_back'``, ``'freestanding'`` and ``'insulated'``.
+        Used to identify a parameter set for the SAPM or PVsyst cell
+        temperature model. ``'open_rack'`` or ``'freestanding'`` should
+        be used for systems with single-axis trackers.
+        See :py:func:`~pvlib.temperature.sapm_module` and
+        :py:func:`~pvlib.temperature.pvsyst_cell` for definitions.
 
     module_height : float, optional
        The height above ground of the center of the module [m]. Used for
@@ -1986,10 +1996,10 @@ def retrieve_sam(name=None, path=None):
 
     This function will retrieve either:
 
-        * CEC module database
-        * Sandia Module database
-        * CEC Inverter database
-        * Anton Driesse Inverter database
+    * CEC module database
+    * Sandia Module database
+    * CEC Inverter database
+    * Anton Driesse Inverter database
 
     and return it as a pandas DataFrame.
 
@@ -2002,20 +2012,20 @@ def retrieve_sam(name=None, path=None):
         Use one of the following strings to retrieve a database bundled with
         pvlib:
 
-        * 'CECMod' - returns the CEC module database
-        * 'CECInverter' - returns the CEC Inverter database
-        * 'SandiaInverter' - returns the CEC Inverter database
+        * ``'CECMod'`` - returns the CEC module database
+        * ``'CECInverter'`` - returns the CEC Inverter database
+        * ``'SandiaInverter'`` - returns the CEC Inverter database
           (CEC is only current inverter db available; tag kept for
           backwards compatibility)
-        * 'SandiaMod' - returns the Sandia Module database
-        * 'ADRInverter' - returns the ADR Inverter database
+        * ``'SandiaMod'`` - returns the Sandia Module database
+        * ``'ADRInverter'`` - returns the ADR Inverter database
 
     path : string, optional
         Path to a CSV file or a URL.
 
     Returns
     -------
-    samfile : DataFrame
+    DataFrame
         A DataFrame containing all the elements of the desired database.
         Each column represents a module or inverter, and a specific
         dataset can be retrieved by the command
@@ -2033,14 +2043,13 @@ def retrieve_sam(name=None, path=None):
     -----
     Files available at
         https://github.com/NREL/SAM/tree/develop/deploy/libraries
-    Documentation for module and inverter data sets:
-        https://sam.nrel.gov/photovoltaic/pv-sub-page-2.html
 
     Examples
     --------
+    Using a database bundled with pvlib:
 
     >>> from pvlib import pvsystem
-    >>> invdb = pvsystem.retrieve_sam('CECInverter')
+    >>> invdb = pvsystem.retrieve_sam(name='CECInverter')
     >>> inverter = invdb.AE_Solar_Energy__AE6_0__277V_
     >>> inverter
     Vac                          277
@@ -2060,7 +2069,15 @@ def retrieve_sam(name=None, path=None):
     CEC_Date                     NaN
     CEC_Type     Utility Interactive
     Name: AE_Solar_Energy__AE6_0__277V_, dtype: object
-    """
+
+    Using a remote database, via URL:
+
+    >>> url = "https://raw.githubusercontent.com/NREL/SAM/refs/heads/develop/deploy/libraries/CEC%20Inverters.csv"
+    >>> inv_db = pvsystem.retrieve_sam(path=url)
+    >>> inv_db.keys()
+    Index(['ABB__PVI_3_0_OUTD_S_US_A__208V_', 'ABB__PVI_3_0_OUTD_S_US_A__240V_', ...],
+          dtype='object', length=...)
+    """  # noqa: E501
     # error: path was previously silently ignored if name was given GH#2018
     if name is not None and path is not None:
         raise ValueError("Please provide either 'name' or 'path', not both.")

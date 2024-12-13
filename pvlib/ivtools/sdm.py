@@ -878,7 +878,7 @@ def _extract_sdm_params(ee, tc, iph, io, rs, rsh, n, u, specs, const,
         params['R_sh_exp'] = R_sh_exp
 
     elif model == 'desoto':
-        dEgdT = 0.0002677
+        dEgdT = -0.0002677
         x_for_io = const['q'] / const['k'] * (
             1. / tok - 1. / tck[u] + dEgdT * (tc[u] - const['T0']) / tck[u])
 

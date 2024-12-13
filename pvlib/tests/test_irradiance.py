@@ -1095,7 +1095,7 @@ def test_dirindex(times):
         equal_nan=True)
 
 
-@fail_on_pvlib_version("0.12")
+@fail_on_pvlib_version("0.13")
 def test_dirindex_ghi_clearsky_deprecation():
     with pytest.warns(pvlibDeprecationWarning, match='ghi_clear'):
         times = pd.DatetimeIndex(['2014-06-24T18-1200'])
@@ -1283,7 +1283,7 @@ def test_clearsky_index():
     assert_series_equal(out, expected)
 
 
-@fail_on_pvlib_version("0.12")
+@fail_on_pvlib_version("0.13")
 def test_clearsky_index_clearsky_ghi_deprecation():
     with pytest.warns(pvlibDeprecationWarning, match='ghi_clear'):
         ghi, clearsky_ghi = 200, 300

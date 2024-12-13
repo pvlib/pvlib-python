@@ -1618,7 +1618,7 @@ def ghi_from_poa_driesse_2023(surface_tilt, surface_azimuth,
     since='0.11.2',
     old_param_name='clearsky_ghi',
     new_param_name='ghi_clear',
-    removal="0.12.0")
+    removal="0.13.0")
 def clearsky_index(ghi, ghi_clear, max_clearsky_index=2.0):
     """
     Calculate the clearsky index.
@@ -2158,10 +2158,15 @@ def _dirint_bins(times, kt_prime, zenith, w, delta_kt_prime):
 
 @renamed_kwarg_warning(
     since='0.11.2',
+    old_param_name='ghi_clearsky',
+    new_param_name='ghi_clear',
+    removal="0.13.0")
+@renamed_kwarg_warning(
+    since='0.11.2',
     old_param_name='dni_clearsky',
     new_param_name='dni_clear',
     removal="0.13.0")
-def dirindex(ghi, ghi_clearsky, dni_clear, zenith, times, pressure=101325.,
+def dirindex(ghi, ghi_clear, dni_clear, zenith, times, pressure=101325.,
              use_delta_kt_prime=True, temp_dew=None, min_cos_zenith=0.065,
              max_zenith=87):
     """
@@ -2182,6 +2187,9 @@ def dirindex(ghi, ghi_clearsky, dni_clear, zenith, times, pressure=101325.,
 
     ghi_clear : array-like
         Global horizontal irradiance from clear sky model. [Wm⁻²]
+
+    .. versionchanged:: 0.11.2
+                Renamed from ``ghi_clearsky`` to ``ghi_clear``.
 
     dni_clear : array-like
         Direct normal irradiance from clear sky model. [Wm⁻²]

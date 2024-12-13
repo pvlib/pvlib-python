@@ -22,6 +22,8 @@ Bug fixes
 ~~~~~~~~~
 * :py:func:`~pvlib.spa.julian_day_dt` now accounts for the 10 day difference
   between Julian and Gregorian calendars prior to the year 1582. (:issue:`2077`, :pull:`2249`)
+* Corrected sign of temperature coefficient ``dEgdT`` in :py:func:`~pvlib.pvsystem.fit_desoto_sandia`.
+  Results may differ slightly from previous versions. (:issue:`2311`, :pull:`2322`)
 
 Documentation
 ~~~~~~~~~~~~~

@@ -567,6 +567,8 @@ def fit_desoto_sandia(ivcurves, specs, const=None, maxiter=5, eps1=1.e-3):
             dark current at STC [A]
         EgRef : float
             effective band gap at STC [eV]
+        dEgdT : float
+            temperature coefficient of Eg [1/K]
         R_s : float
             series resistance at STC [ohm]
         R_sh_ref : float

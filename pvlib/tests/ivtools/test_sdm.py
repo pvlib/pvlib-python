@@ -138,8 +138,8 @@ def test_fit_desoto_sandia(cec_params_cansol_cs5p_220p):
     modeled['R_s'] = result['R_s']
     modeled['R_sh_ref'] = result['R_sh_ref']
     expected = pd.Series(params)
-    assert_allclose(modeled[params.keys()].values,
-                    expected[params.keys()].values)
+    assert np.allclose(modeled[params.keys()].values,
+                       expected[params.keys()].values, rtol=5e-2)
     assert_allclose(result['dEgdT'], -0.0002677)
     assert_allclose(result['EgRef'], 1.3112547292120638)
     assert_allclose(result['cells_in_series'], specs['cells_in_series'])

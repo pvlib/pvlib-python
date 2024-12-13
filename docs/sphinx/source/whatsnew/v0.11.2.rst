@@ -9,6 +9,9 @@ Deprecations
 * Deprecated terms ``dni_clearsky`` and ``clearsky_dni``, replaced with ``dni_clear``.
   Affected functions are :py:func:`~pvlib.irradiance.dirindex` and :py:func:`~pvlib.irradiance.dni`.
   (:issue:`2272`, :pull:`2274`)
+* Deprecated term ``ghi_clearsky``, replaced with ``ghi_clear``.
+  Affected functions are :py:func:`~pvlib.irradiance.dirindex` and :py:func:`~pvlib.irradiance.clearsky_index`.
+  (:issue:`2272`, :pull:`2306`)
 
 
 Enhancements

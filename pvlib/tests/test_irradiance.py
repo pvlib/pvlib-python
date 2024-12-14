@@ -1114,7 +1114,7 @@ def test_dirindex_ghi_clearsky_deprecation():
         )
         pressure, tdew = 93193, 10
         irradiance.dirindex(
-            ghi=ghi, ghi_clearsky=ghi_clearsky, dni_clearsky=dni_clearsky,
+            ghi=ghi, ghi_clearsky=ghi_clearsky, dni_clear=dni_clearsky,
             zenith=zenith, times=times, pressure=pressure, temp_dew=tdew)
 
 

@@ -51,7 +51,7 @@ Documentation
 * Add a new citation style guide (:ref:`reference_style`) to the contributing
   page. (:issue:`2202`, :pull:`2226`)
 * Explain how to write docstrings for new functions in :ref:`example-docstring`
-  (:discussion:`2081`, :pull:`2254`)
+  (:discuss:`2081`, :pull:`2254`)
 * Add a section in the style guide for parameter naming and units best practices.
   See :ref:`documentation-units`. (:issue:`2205`, :pull:`2248`)
 * Add a new :ref:`nomenclature` page, in place of the Variables and Symbols

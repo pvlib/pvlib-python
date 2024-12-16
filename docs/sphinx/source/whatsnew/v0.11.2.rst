@@ -78,7 +78,7 @@ Contributors
 * Dave Pitts (:ghuser:`dgapitts`)
 * Kurt Rhee (:ghuser:`kurt-rhee`)
 * Mark Mikofski (:ghuser:`mikofski`)
-* matsuobasho (:ghuser:`matsuobasho`)
+* Roma Koulikov (:ghuser:`matsuobasho`)
 * Echedey Luis (:ghuser:`echedey-ls`)
 * Kevin Anderson (:ghuser:`kandersolar`)
 * Scott Nelson (:ghuser:`scttnlsn`)
@@ -97,4 +97,3 @@ Contributors
 * Will Hobbs (:ghuser:`williamhobbs`)
 * Todd Karin (:ghuser:`toddkarin`)
 * Lucas Schneeberger (:ghuser:`lucasschn`)
-* Roma Koulikov (:ghuser:`matsuobasho`)

@@ -2189,13 +2189,13 @@ def dirindex(ghi, ghi_clear, dni_clear, zenith, times, pressure=101325.,
         Global horizontal irradiance from clear sky model. [Wm⁻²]
 
     .. versionchanged:: 0.11.2
-                Renamed from ``ghi_clearsky`` to ``ghi_clear``.
+        Renamed from ``ghi_clearsky`` to ``ghi_clear``.
 
     dni_clear : array-like
         Direct normal irradiance from clear sky model. [Wm⁻²]
 
-        .. versionchanged:: 0.11.2
-            Renamed from ``dni_clearsky`` to ``dni_clear``.
+    .. versionchanged:: 0.11.2
+        Renamed from ``dni_clearsky`` to ``dni_clear``.
 
     zenith : array-like
         True (not refraction-corrected) zenith angles in decimal

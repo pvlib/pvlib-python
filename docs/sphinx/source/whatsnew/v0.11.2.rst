@@ -29,10 +29,6 @@ Bug Fixes
   (:issue:`2132` :pull:`2133`)
 * Changed ``dni_extra`` to a required parameter in :py:func:`pvlib.irradiance.ghi_from_poa_driesse_2023`
   (:issue:`2279` :pull:`2331`)
-
-
-Bug fixes
-~~~~~~~~~
 * :py:func:`~pvlib.spa.julian_day_dt` now accounts for the 10 day difference
   between Julian and Gregorian calendars prior to the year 1582. (:issue:`2077`, :pull:`2249`)
 * Corrected sign of temperature coefficient ``dEgdT`` in :py:func:`~pvlib.pvsystem.fit_desoto_sandia`.
@@ -72,11 +68,6 @@ Documentation
 Testing
 ~~~~~~~
 * Updated test files to track new PVGIS 5.3 data. (:pull:`2305`)
-
-
-Requirements
-~~~~~~~~~~~~
-
 
 Maintenance
 ~~~~~~~~~~~

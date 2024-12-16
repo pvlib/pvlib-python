@@ -1097,22 +1097,13 @@ def test_dirindex(times):
 
 @fail_on_pvlib_version("0.13")
 def test_dirindex_ghi_clearsky_deprecation():
+    times = pd.DatetimeIndex(['2014-06-24T18-1200'])
+    ghi = pd.Series([1038.62], index=times)
+    ghi_clearsky = pd.Series([1042.48031487], index=times)
+    dni_clearsky = pd.Series([939.95469881], index=times)
+    zenith = pd.Series([10.56413562], index=times)
+    pressure, tdew = 93193, 10
     with pytest.warns(pvlibDeprecationWarning, match='ghi_clear'):
-        times = pd.DatetimeIndex(['2014-06-24T18-1200'])
-        ghi = pd.Series([1038.62], index=times)
-        ghi_clearsky = pd.Series(
-            np.array([1042.48031487]),
-            index=times
-        )
-        dni_clearsky = pd.Series(
-            np.array([939.95469881]),
-            index=times
-        )
-        zenith = pd.Series(
-            np.array([10.56413562]),
-            index=times
-        )
-        pressure, tdew = 93193, 10
         irradiance.dirindex(
             ghi=ghi, ghi_clearsky=ghi_clearsky, dni_clear=dni_clearsky,
             zenith=zenith, times=times, pressure=pressure, temp_dew=tdew)

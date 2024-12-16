@@ -1634,8 +1634,8 @@ def clearsky_index(ghi, ghi_clear, max_clearsky_index=2.0):
     ghi_clear : numeric
         Modeled clearsky GHI
 
-    .. versionchanged:: 0.11.2
-        Renamed from ``ghi_clearsky`` to ``ghi_clear``.
+        .. versionchanged:: 0.11.2
+            Renamed from ``ghi_clearsky`` to ``ghi_clear``.
 
     max_clearsky_index : numeric, default 2.0
         Maximum value of the clearsky index. The default, 2.0, allows
@@ -2191,14 +2191,14 @@ def dirindex(ghi, ghi_clear, dni_clear, zenith, times, pressure=101325.,
     ghi_clear : array-like
         Global horizontal irradiance from clear sky model. [Wm⁻²]
 
-    .. versionchanged:: 0.11.2
-        Renamed from ``ghi_clearsky`` to ``ghi_clear``.
+        .. versionchanged:: 0.11.2
+            Renamed from ``ghi_clearsky`` to ``ghi_clear``.
 
     dni_clear : array-like
         Direct normal irradiance from clear sky model. [Wm⁻²]
 
-    .. versionchanged:: 0.11.2
-        Renamed from ``dni_clearsky`` to ``dni_clear``.
+        .. versionchanged:: 0.11.2
+            Renamed from ``dni_clearsky`` to ``dni_clear``.
 
     zenith : array-like
         True (not refraction-corrected) zenith angles in decimal

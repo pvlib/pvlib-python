@@ -27,7 +27,7 @@ Bug Fixes
   (:issue:`2279` :pull:`2331`)
 * :py:func:`~pvlib.spa.julian_day_dt` now accounts for the 10 day difference
   between Julian and Gregorian calendars prior to the year 1582. (:issue:`2077`, :pull:`2249`)
-* Correct sign of temperature coefficient ``dEgdT`` in :py:func:`~pvlib.pvsystem.fit_desoto_sandia`.
+* Correct sign of temperature coefficient ``dEgdT`` in :py:func:`~pvlib.ivtools.sdm.fit_desoto_sandia`.
   Results may differ slightly from previous versions. (:issue:`2311`, :pull:`2322`)
 
 Documentation
@@ -35,7 +35,7 @@ Documentation
 * Edit docstrings for :py:func:`~pvlib.pvsystem.dc_ohms_from_percent` and
   :py:func:`~pvlib.pvsystem.dc_ohmic_losses` for clarity. (:issue:`1601`, :pull:`2229`)
 * Add 'freestanding' and 'insulated' `racking_model` options for cell
-  temperature calculation in :py:class:`~pvlib.pvsystem.PVSystem`
+  temperature calculation in :py:class:`~pvlib.pvsystem.PVSystem`,
   :py:class:`~pvlib.pvsystem.SingleAxisTrackerMount`, and
   :py:class:`~pvlib.pvsystem.FixedMount` docstrings. Various formatting edits
   for clarity. (:issue:`1942`, :pull:`2232`)

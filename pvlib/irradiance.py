@@ -1634,6 +1634,9 @@ def clearsky_index(ghi, ghi_clear, max_clearsky_index=2.0):
     ghi_clear : numeric
         Modeled clearsky GHI
 
+    .. versionchanged:: 0.11.2
+        Renamed from ``ghi_clearsky`` to ``ghi_clear``.
+
     max_clearsky_index : numeric, default 2.0
         Maximum value of the clearsky index. The default, 2.0, allows
         for over-irradiance events typically seen in sub-hourly data.

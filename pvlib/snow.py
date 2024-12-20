@@ -169,6 +169,9 @@ def coverage_nrel(snowfall, poa_irradiance, temp_air, surface_tilt,
     if snow_depth is not None:
         # no coverage when there's no snow on the ground
         # described in [2] to avoid non-sliding snow for low-tilt systems.
+        # default threshold_depth of 1cm is from SAM's implementation and
+        # is different than the value of 0cm implied in [2].
+        # https://github.com.mcas-gov.ms/NREL/ssc/issues/1265
         snow_coverage[snow_depth < threshold_depth] = 0.
     # clean up periods where row is completely uncovered
     return snow_coverage.clip(lower=0)

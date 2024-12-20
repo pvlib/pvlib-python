@@ -27,7 +27,8 @@ def test_fully_covered_nrel_with_snow_depth():
     expected = pd.Series([False, True, False, True, False, False, False],
                          index=dt)
     fully_covered = snow.fully_covered_nrel(snowfall_data,
-                                            snow_depth=snow_depth)
+                                            snow_depth=snow_depth,
+                                            threshold_depth=0.)
     assert_series_equal(expected, fully_covered)
 
 
@@ -53,6 +54,7 @@ def test_coverage_nrel_hourly():
 def test_coverage_nrel_hourly_with_snow_depth():
     surface_tilt = 45
     slide_amount_coefficient = 0.197
+    threshold_depth = 0.5
     dt = pd.date_range(start="2019-1-1 10:00:00", end="2019-1-1 17:00:00",
                        freq='1h')
     poa_irradiance = pd.Series([400, 200, 100, 1234, 134, 982, 100, 100],
@@ -62,12 +64,13 @@ def test_coverage_nrel_hourly_with_snow_depth():
     snow_depth = pd.Series([1, 1, 1, 1, 0, 1, 0, .1], index=dt)
     snow_coverage = snow.coverage_nrel(
         snowfall_data, poa_irradiance, temp_air, surface_tilt,
-        snow_depth=snow_depth, threshold_snowfall=0.6)
+        snow_depth=snow_depth, threshold_snowfall=0.6,
+        threshold_depth=threshold_depth)
 
     slide_amt = slide_amount_coefficient * sind(surface_tilt)
     covered = 1.0 - slide_amt * np.array([0, 1, 2, 3, 4, 5, 6, 7])
     expected = pd.Series(covered, index=dt)
-    expected[snow_depth <= 0] = 0
+    expected[snow_depth < threshold_depth] = 0
     assert_series_equal(expected, snow_coverage)
 
 

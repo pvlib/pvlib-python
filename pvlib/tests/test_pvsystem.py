@@ -43,11 +43,7 @@ def test_PVSystem_get_iam(mocker, iam_model, model_params):
     system = pvsystem.PVSystem(module_parameters=model_params)
     thetas = 45
     iam = system.get_iam(thetas, iam_model=iam_model)
-    if iam_model == "sapm":
-        # sapm has exceptional interface.
-        m.assert_called_with(thetas, model_params)
-    else:
-        m.assert_called_with(thetas, **model_params)
+    m.assert_called_with(thetas, **model_params)
     assert 0 < iam < 1
 
 
@@ -102,7 +98,15 @@ def test_PVSystem_get_iam_sapm(sapm_module_params, mocker):
     mocker.spy(_iam, 'sapm')
     aoi = 0
     out = system.get_iam(aoi, 'sapm')
-    _iam.sapm.assert_called_once_with(aoi, sapm_module_params)
+    _iam.sapm.assert_called_once_with(
+        aoi,
+        sapm_module_params["B0"],
+        sapm_module_params["B1"],
+        sapm_module_params["B2"],
+        sapm_module_params["B3"],
+        sapm_module_params["B4"],
+        sapm_module_params["B5"],
+    )
     assert_allclose(out, 1.0, atol=0.01)
 
 

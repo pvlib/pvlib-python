@@ -6,18 +6,17 @@ Created on Wed Oct  2 10:14:16 2019
 import inspect
 
 import numpy as np
-import pandas as pd
-
-import pytest
-from .conftest import assert_series_equal
 from numpy.testing import assert_allclose
+import pandas as pd
+import pytest
 import scipy.interpolate
 
 from pvlib import iam as _iam
+from pvlib.tests.conftest import assert_series_equal
 
 
 def test_get_builtin_models():
-    builtin_models = _iam.get_builtin_models()
+    builtin_models = _iam._get_builtin_models()
 
     models = set(builtin_models.keys())
     models_expected = {
@@ -28,26 +27,14 @@ def test_get_builtin_models():
     for model in models:
         builtin_model = builtin_models[model]
 
-        if model == "sapm":
-            # sapm has exceptional interface requiring module_parameters.
-            params_required_expected = set(
-                k for k, v in inspect.signature(
-                    builtin_model["func"]
-                ).parameters.items() if v.default is inspect.Parameter.empty
-            )
-            assert {"aoi", "module"} == params_required_expected, model
-
-            assert builtin_model["params_required"] == \
-                {'B0', 'B1', 'B2', 'B3', 'B4', 'B5'}, model
-        else:
-            params_required_expected = set(
-                k for k, v in inspect.signature(
-                    builtin_model["func"]
-                ).parameters.items() if v.default is inspect.Parameter.empty
-            )
-            assert builtin_model["params_required"].union(
-                {"aoi"}
-            ) == params_required_expected, model
+        params_required_expected = set(
+            k for k, v in inspect.signature(
+                builtin_model["func"]
+            ).parameters.items() if v.default is inspect.Parameter.empty
+        )
+        assert builtin_model["params_required"].union(
+            {"aoi"}
+        ) == params_required_expected, model
 
         params_optional_expected = set(
             k for k, v in inspect.signature(
@@ -266,7 +253,15 @@ def test_iam_interp():
 ])
 def test_sapm(sapm_module_params, aoi, expected):
 
-    out = _iam.sapm(aoi, sapm_module_params)
+    out = _iam.sapm(
+        aoi,
+        sapm_module_params["B0"],
+        sapm_module_params["B1"],
+        sapm_module_params["B2"],
+        sapm_module_params["B3"],
+        sapm_module_params["B4"],
+        sapm_module_params["B5"],
+    )
 
     if isinstance(aoi, pd.Series):
         assert_series_equal(out, expected, check_less_precise=4)
@@ -276,13 +271,38 @@ def test_sapm(sapm_module_params, aoi, expected):
 
 def test_sapm_limits():
     module_parameters = {'B0': 5, 'B1': 0, 'B2': 0, 'B3': 0, 'B4': 0, 'B5': 0}
-    assert _iam.sapm(1, module_parameters) == 5
+    assert _iam.sapm(
+        1,
+        module_parameters["B0"],
+        module_parameters["B1"],
+        module_parameters["B2"],
+        module_parameters["B3"],
+        module_parameters["B4"],
+        module_parameters["B5"],
+    ) == 5
 
     module_parameters = {'B0': 5, 'B1': 0, 'B2': 0, 'B3': 0, 'B4': 0, 'B5': 0}
-    assert _iam.sapm(1, module_parameters, upper=1) == 1
+    assert _iam.sapm(
+        1,
+        module_parameters["B0"],
+        module_parameters["B1"],
+        module_parameters["B2"],
+        module_parameters["B3"],
+        module_parameters["B4"],
+        module_parameters["B5"],
+        upper=1,
+    ) == 1
 
     module_parameters = {'B0': -5, 'B1': 0, 'B2': 0, 'B3': 0, 'B4': 0, 'B5': 0}
-    assert _iam.sapm(1, module_parameters) == 0
+    assert _iam.sapm(
+        1,
+        module_parameters["B0"],
+        module_parameters["B1"],
+        module_parameters["B2"],
+        module_parameters["B3"],
+        module_parameters["B4"],
+        module_parameters["B5"],
+    ) == 0
 
 
 def test_marion_diffuse_model(mocker):

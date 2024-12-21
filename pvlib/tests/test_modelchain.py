@@ -1500,10 +1500,11 @@ def test_aoi_model_user_func(sapm_dc_snl_ac_system, location, weather, mocker):
 
 
 @pytest.mark.parametrize('aoi_model', [
+    # "schlick" omitted, cannot be distinguished from "no_loss" AOI model.
     'ashrae', 'interp', 'martin_ruiz', 'physical', 'sapm'
 ])
 def test_infer_aoi_model(location, system_no_aoi, aoi_model):
-    builtin_models = iam.get_builtin_models()[aoi_model]
+    builtin_models = iam._get_builtin_models()[aoi_model]
     params = builtin_models["params_required"].union(
         builtin_models["params_optional"]
     )

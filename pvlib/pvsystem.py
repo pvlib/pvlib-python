@@ -1192,7 +1192,7 @@ class Array:
         model = iam_model.lower()
 
         try:
-            model_info = iam.get_builtin_models()[model]
+            model_info = iam._get_builtin_models()[model]
         except KeyError as exc:
             raise ValueError(f'{iam_model} is not a valid iam_model') from exc
 
@@ -1200,18 +1200,12 @@ class Array:
             if param not in self.module_parameters:
                 raise KeyError(f"{param} is missing in module_parameters")
 
-        params_optional = _build_kwargs(
-            model_info["params_optional"], self.module_parameters
-        )
-
-        if model == "sapm":
-            # sapm has exceptional interface requiring module_parameters.
-            return model_info["func"](
-                aoi, self.module_parameters, **params_optional
-            )
-
         params_required = _build_kwargs(
             model_info["params_required"], self.module_parameters
+        )
+
+        params_optional = _build_kwargs(
+            model_info["params_optional"], self.module_parameters
         )
 
         return model_info["func"](
@@ -2397,7 +2391,15 @@ def sapm_effective_irradiance(poa_direct, poa_diffuse, airmass_absolute, aoi,
     """
 
     F1 = spectrum.spectral_factor_sapm(airmass_absolute, module)
-    F2 = iam.sapm(aoi, module)
+    F2 = iam.sapm(
+        aoi,
+        module["B0"],
+        module["B1"],
+        module["B2"],
+        module["B3"],
+        module["B4"],
+        module["B5"],
+    )
 
     Ee = F1 * (poa_direct * F2 + module['FD'] * poa_diffuse)
 

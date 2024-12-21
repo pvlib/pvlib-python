@@ -17,7 +17,7 @@ from scipy.optimize import minimize
 from pvlib.tools import cosd, sind, acosd
 
 
-def get_builtin_models():
+def _get_builtin_models():
     """
     Get builtin IAM models' usage information.
 
@@ -66,8 +66,6 @@ def get_builtin_models():
         },
         'sapm': {
             'func': sapm,
-            # Exceptional interface: Parameters inside params_required must
-            # appear in the required module dictionary parameter.
             'params_required': {'B0', 'B1', 'B2', 'B3', 'B4', 'B5'},
             'params_optional': {'upper'},
         },
@@ -557,7 +555,7 @@ def interp(aoi, theta_ref, iam_ref, method='linear', normalize=True):
     return iam
 
 
-def sapm(aoi, module, upper=None):
+def sapm(aoi, B0, B1, B2, B3, B4, B5, upper=None):
     r"""
     Determine the incidence angle modifier (IAM) using the SAPM model.
 
@@ -567,9 +565,17 @@ def sapm(aoi, module, upper=None):
         Angle of incidence in degrees. Negative input angles will return
         zeros.
 
-    module : dict-like
-        A dict or Series with the SAPM IAM model parameters.
-        See the :py:func:`sapm` notes section for more details.
+    B0 : The coefficient of the degree-0 polynomial term.
+    
+    B1 : The coefficient of the degree-1 polynomial term.
+    
+    B2 : The coefficient of the degree-2 polynomial term.
+    
+    B3 : The coefficient of the degree-3 polynomial term.
+    
+    B4 : The coefficient of the degree-4 polynomial term.
+    
+    B5 : The coefficient of the degree-5 polynomial term.
 
     upper : float, optional
         Upper limit on the results. None means no upper limiting.
@@ -609,10 +615,7 @@ def sapm(aoi, module, upper=None):
     pvlib.iam.schlick
     """
 
-    aoi_coeff = [module['B5'], module['B4'], module['B3'], module['B2'],
-                 module['B1'], module['B0']]
-
-    iam = np.polyval(aoi_coeff, aoi)
+    iam = np.polyval([B5, B4, B3, B2, B1, B0], aoi)
     iam = np.clip(iam, 0, upper)
     # nan tolerant masking
     aoi_lt_0 = np.full_like(aoi, False, dtype='bool')
@@ -665,6 +668,7 @@ def marion_diffuse(model, surface_tilt, **kwargs):
     pvlib.iam.interp
     pvlib.iam.martin_ruiz
     pvlib.iam.physical
+    pvlib.iam.sapm
     pvlib.iam.schlick
     pvlib.iam.martin_ruiz_diffuse
     pvlib.iam.schlick_diffuse
@@ -693,7 +697,7 @@ def marion_diffuse(model, surface_tilt, **kwargs):
         func = model
     else:
         # Check that a builtin IAM function was specified.
-        builtin_models = get_builtin_models()
+        builtin_models = _get_builtin_models()
 
         try:
             model = builtin_models[model]
@@ -1035,7 +1039,7 @@ def _get_fittable_or_convertable_model(builtin_model_name):
 def _check_params(builtin_model_name, params):
     # check that parameters passed in with IAM model belong to the model
     handed_params = set(params.keys())
-    builtin_model = get_builtin_models()[builtin_model_name]
+    builtin_model = _get_builtin_models()[builtin_model_name]
     expected_params = builtin_model["params_required"].union(
         builtin_model["params_optional"]
     )

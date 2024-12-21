@@ -6,12 +6,13 @@ library. With great power comes great responsibility: users should take
 the time to read the source code for the module.
 """
 
+from dataclasses import dataclass, field
 from functools import partial
 import itertools
+from typing import Optional, Tuple, TypeVar, Union
 import warnings
+
 import pandas as pd
-from dataclasses import dataclass, field
-from typing import Union, Tuple, Optional, TypeVar
 
 from pvlib import pvsystem
 import pvlib.irradiance  # avoid name conflict with full import
@@ -794,7 +795,7 @@ class ModelChain:
             array.module_parameters for array in self.system.arrays
         )
         params = _common_keys(module_parameters)
-        builtin_models = pvlib.iam.get_builtin_models()
+        builtin_models = pvlib.iam._get_builtin_models()
 
         if any(
             param in params for

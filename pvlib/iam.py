@@ -566,15 +566,15 @@ def sapm(aoi, B0, B1, B2, B3, B4, B5, upper=None):
         zeros.
 
     B0 : The coefficient of the degree-0 polynomial term.
-    
+
     B1 : The coefficient of the degree-1 polynomial term.
-    
+
     B2 : The coefficient of the degree-2 polynomial term.
-    
+
     B3 : The coefficient of the degree-3 polynomial term.
-    
+
     B4 : The coefficient of the degree-4 polynomial term.
-    
+
     B5 : The coefficient of the degree-5 polynomial term.
 
     upper : float, optional

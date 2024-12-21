@@ -56,28 +56,28 @@ jobs:
     strategy:
       fail-fast: false  # don't cancel other matrix jobs when one fails
       matrix:
-        python-version: [3.8, 3.9, "3.10", "3.11", "3.12"]
+        python-version: [3.9, "3.10", "3.11", "3.12"]
         suffix: ['']  # the alternative to "-min"
         include:
-          - python-version: 3.8
+          - python-version: 3.9
             suffix: -min
 
     runs-on: ubuntu-latest
     if: (github.event_name == 'pull_request_target' && contains(github.event.pull_request.labels.*.name, 'remote-data')) || (github.event_name == 'push')
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         if: github.event_name == 'pull_request_target'
         # pull_request_target runs in the context of the target branch (pvlib/main),
         # but what we need is the hypothetical merge commit from the PR:
         with:
           ref: "refs/pull/${{ github.event.number }}/merge"
 
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         if: github.event_name == 'push'
 
       - name: Set up conda environment
-        uses: conda-incubator/setup-miniconda@v2
+        uses: conda-incubator/setup-miniconda@v3
         with:
           activate-environment: test_env
           environment-file: ${{ env.REQUIREMENTS }}
@@ -103,7 +103,7 @@ jobs:
         run: pytest pvlib/tests/iotools --cov=./ --cov-report=xml --remote-data
 
       - name: Upload coverage to Codecov
-        if: matrix.python-version == 3.8 && matrix.suffix == ''
+        if: matrix.python-version == 3.9 && matrix.suffix == ''
         uses: codecov/codecov-action@v4
         with:
           fail_ci_if_error: true

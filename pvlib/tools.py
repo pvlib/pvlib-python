@@ -206,8 +206,32 @@ def _pandas_to_doy(pd_object):
     Returns
     -------
     dayofyear
+
+    Notes
+    -----
+    Day of year is determined using UTC, since pandas uses local hour
     """
-    return pd_object.dayofyear
+    return _pandas_to_utc(pd_object).dayofyear
+
+
+def _pandas_to_utc(pd_object):
+    """
+    Converts a pandas datetime-like object to UTC, if localized.
+    Otherwise, assume UTC.
+
+    Parameters
+    ----------
+    pd_object : DatetimeIndex or Timestamp
+
+    Returns
+    -------
+    pandas object localized to or assumed to be UTC.
+    """
+    try:
+        pd_object_utc = pd_object.tz_convert('UTC')
+    except TypeError:
+        pd_object_utc = pd_object
+    return pd_object_utc
 
 
 def _doy_to_datetimeindex(doy, epoch_year=2014):
@@ -230,7 +254,7 @@ def _doy_to_datetimeindex(doy, epoch_year=2014):
 
 
 def _datetimelike_scalar_to_doy(time):
-    return pd.DatetimeIndex([pd.Timestamp(time)]).dayofyear
+    return _pandas_to_doy(_datetimelike_scalar_to_datetimeindex(time))
 
 
 def _datetimelike_scalar_to_datetimeindex(time):

@@ -289,12 +289,12 @@ class ModelChain:
     Parameters
     ----------
     system : PVSystem
-        A :py:class:`~pvlib.pvsystem.PVSystem` object that represents
-        the connected set of modules, inverters, etc.
+        A :py:class:`~pvlib.pvsystem.PVSystem` object that represents the
+        connected set of modules, inverters, etc.
 
     location : Location
-        A :py:class:`~pvlib.location.Location` object that represents
-        the physical location at which to evaluate the model.
+        A :py:class:`~pvlib.location.Location` object that represents the
+        physical location at which to evaluate the model.
 
     clearsky_model : str, default 'ineichen'
         Passed to location.get_clearsky. Only used when DNI is not found in
@@ -311,31 +311,29 @@ class ModelChain:
 
     dc_model : str, or function, optional
         If not specified, the model will be inferred from the parameters that
-        are common to all of system.arrays[i].module_parameters.
-        Valid strings are 'sapm', 'desoto', 'cec', 'pvsyst', 'pvwatts'.
-        The ModelChain instance will be passed as the first argument
-        to a user-defined function.
+        are common to all of system.arrays[i].module_parameters. Valid strings
+        are 'sapm', 'desoto', 'cec', 'pvsyst', 'pvwatts'. The ModelChain
+        instance will be passed as the first argument to a user-defined
+        function.
 
     ac_model : str, or function, optional
         If not specified, the model will be inferred from the parameters that
-        are common to all of system.inverter_parameters.
-        Valid strings are 'sandia', 'adr', 'pvwatts'. The
-        ModelChain instance will be passed as the first argument to a
-        user-defined function.
+        are common to all of system.inverter_parameters. Valid strings are
+        'sandia', 'adr', 'pvwatts'. The ModelChain instance will be passed as
+        the first argument to a user-defined function.
 
     aoi_model : str, or function, optional
         If not specified, the model will be inferred from the parameters that
-        are common to all of system.arrays[i].module_parameters.
-        Valid strings are 'ashrae', 'interp', 'martin_ruiz', 'physical',
-        'sapm', 'schlick', 'no_loss'. The ModelChain instance will be passed
-        as the first argument to a user-defined function.
+        are common to all of system.arrays[i].module_parameters. Valid strings
+        are 'ashrae', 'interp', 'martin_ruiz', 'physical', 'sapm', 'schlick',
+        'no_loss'. The ModelChain instance will be passed as the first
+        argument to a user-defined function.
 
     spectral_model : str, or function, optional
         If not specified, the model will be inferred from the parameters that
-        are common to all of system.arrays[i].module_parameters.
-        Valid strings are 'sapm', 'first_solar', 'no_loss'.
-        The ModelChain instance will be passed as the first argument to
-        a user-defined function.
+        are common to all of system.arrays[i].module_parameters. Valid strings
+        are 'sapm', 'first_solar', 'no_loss'. The ModelChain instance will be
+        passed as the first argument to a user-defined function.
 
     temperature_model : str or function, optional
         Valid strings are: 'sapm', 'pvsyst', 'faiman', 'fuentes', 'noct_sam'.

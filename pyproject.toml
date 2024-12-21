@@ -69,6 +69,7 @@ doc = [
     'sphinx-hoverxref',
 ]
 test = [
+    'flake8==5.0.4',  # Should match version in github workflow flake8.yml.
     'pytest',
     'pytest-cov',
     'pytest-mock',

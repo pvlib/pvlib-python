@@ -6,50 +6,65 @@ import numpy as np
 import time
 import json
 
-URL = 'https://service.solaranywhere.com/api/v2'
+URL = "https://service.solaranywhere.com/api/v2"
 
 # Dictionary mapping SolarAnywhere names to standard pvlib names
 # Names with spaces are used in SolarAnywhere files, and names without spaces
 # are used by the SolarAnywhere API
 VARIABLE_MAP = {
-    'Global Horizontal Irradiance (GHI) W/m2': 'ghi',
-    'GlobalHorizontalIrradiance_WattsPerMeterSquared': 'ghi',
-    'DirectNormalIrradiance_WattsPerMeterSquared': 'dni',
-    'Direct Normal Irradiance (DNI) W/m2': 'dni',
-    'Diffuse Horizontal Irradiance (DIF) W/m2': 'dhi',
-    'DiffuseHorizontalIrradiance_WattsPerMeterSquared': 'dhi',
-    'AmbientTemperature (deg C)': 'temp_air',
-    'AmbientTemperature_DegreesC': 'temp_air',
-    'WindSpeed (m/s)': 'wind_speed',
-    'WindSpeed_MetersPerSecond': 'wind_speed',
-    'Relative Humidity (%)': 'relative_humidity',
-    'RelativeHumidity_Percent': 'relative_humidity',
-    'Clear Sky GHI': 'ghi_clear',
-    'ClearSkyGHI_WattsPerMeterSquared': 'ghi_clear',
-    'Clear Sky DNI': 'dni_clear',
-    'ClearSkyDNI_WattsPerMeterSquared': 'dni_clear',
-    'Clear Sky DHI': 'dhi_clear',
-    'ClearSkyDHI_WattsPerMeterSquared': 'dhi_clear',
-    'Albedo': 'albedo',
-    'Albedo_Unitless': 'albedo',
+    "Global Horizontal Irradiance (GHI) W/m2": "ghi",
+    "GlobalHorizontalIrradiance_WattsPerMeterSquared": "ghi",
+    "DirectNormalIrradiance_WattsPerMeterSquared": "dni",
+    "Direct Normal Irradiance (DNI) W/m2": "dni",
+    "Diffuse Horizontal Irradiance (DIF) W/m2": "dhi",
+    "DiffuseHorizontalIrradiance_WattsPerMeterSquared": "dhi",
+    "AmbientTemperature (deg C)": "temp_air",
+    "AmbientTemperature_DegreesC": "temp_air",
+    "WindSpeed (m/s)": "wind_speed",
+    "WindSpeed_MetersPerSecond": "wind_speed",
+    "Relative Humidity (%)": "relative_humidity",
+    "RelativeHumidity_Percent": "relative_humidity",
+    "Clear Sky GHI": "ghi_clear",
+    "ClearSkyGHI_WattsPerMeterSquared": "ghi_clear",
+    "Clear Sky DNI": "dni_clear",
+    "ClearSkyDNI_WattsPerMeterSquared": "dni_clear",
+    "Clear Sky DHI": "dhi_clear",
+    "ClearSkyDHI_WattsPerMeterSquared": "dhi_clear",
+    "Albedo": "albedo",
+    "Albedo_Unitless": "albedo",
 }
 
 DEFAULT_VARIABLES = [
-    'StartTime', 'ObservationTime', 'EndTime',
-    'GlobalHorizontalIrradiance_WattsPerMeterSquared',
-    'DirectNormalIrradiance_WattsPerMeterSquared',
-    'DiffuseHorizontalIrradiance_WattsPerMeterSquared',
-    'AmbientTemperature_DegreesC', 'WindSpeed_MetersPerSecond',
-    'Albedo_Unitless', 'DataVersion'
+    "StartTime",
+    "ObservationTime",
+    "EndTime",
+    "GlobalHorizontalIrradiance_WattsPerMeterSquared",
+    "DirectNormalIrradiance_WattsPerMeterSquared",
+    "DiffuseHorizontalIrradiance_WattsPerMeterSquared",
+    "AmbientTemperature_DegreesC",
+    "WindSpeed_MetersPerSecond",
+    "Albedo_Unitless",
+    "DataVersion",
 ]
 
 
-def get_solaranywhere(latitude, longitude, api_key, start=None, end=None,
-                      source='SolarAnywhereLatest', time_resolution=60,
-                      spatial_resolution=0.01, true_dynamics=False,
-                      probability_of_exceedance=None,
-                      variables=DEFAULT_VARIABLES, missing_data='FillAverage',
-                      url=URL, map_variables=True, timeout=300):
+def get_solaranywhere(
+    latitude,
+    longitude,
+    api_key,
+    start=None,
+    end=None,
+    source="SolarAnywhereLatest",
+    time_resolution=60,
+    spatial_resolution=0.01,
+    true_dynamics=False,
+    probability_of_exceedance=None,
+    variables=DEFAULT_VARIABLES,
+    missing_data="FillAverage",
+    url=URL,
+    map_variables=True,
+    timeout=300,
+):
     """Retrieve historical irradiance time series data from SolarAnywhere.
 
     The SolarAnywhere API is described in [1]_ and [2]_. A detailed list of
@@ -135,15 +150,14 @@ def get_solaranywhere(latitude, longitude, api_key, start=None, end=None,
     .. [4] `SolarAnywhere variable definitions
        <https://www.solaranywhere.com/support/data-fields/definitions/>`_
     """  # noqa: E501
-    headers = {'content-type': "application/json; charset=utf-8",
-               'X-Api-Key': api_key,
-               'Accept': "application/json"}
+    headers = {
+        "content-type": "application/json; charset=utf-8",
+        "X-Api-Key": api_key,
+        "Accept": "application/json",
+    }
 
     payload = {
-        "Sites": [{
-            "Latitude": latitude,
-            "Longitude": longitude
-        }],
+        "Sites": [{"Latitude": latitude, "Longitude": longitude}],
         "Options": {
             "OutputFields": variables,
             "SummaryOutputFields": [],  # Do not request summary/monthly data
@@ -151,17 +165,16 @@ def get_solaranywhere(latitude, longitude, api_key, start=None, end=None,
             "TimeResolution_Minutes": time_resolution,
             "WeatherDataSource": source,
             "MissingDataHandling": missing_data,
-        }
+        },
     }
 
     if true_dynamics:
-        payload['Options']['ApplyTrueDynamics'] = True
+        payload["Options"]["ApplyTrueDynamics"] = True
 
     if probability_of_exceedance is not None:
         if not isinstance(probability_of_exceedance, int):
-            raise ValueError('`probability_of_exceedance` must be an integer')
-        payload['Options']['ProbabilityOfExceedance'] = \
-            probability_of_exceedance
+            raise ValueError("`probability_of_exceedance` must be an integer")
+        payload["Options"]["ProbabilityOfExceedance"] = probability_of_exceedance
 
     # Add start/end time if requesting non-TMY data
     if (start is not None) or (end is not None):
@@ -170,19 +183,19 @@ def get_solaranywhere(latitude, longitude, api_key, start=None, end=None,
         end = pd.to_datetime(end)
         # start/end are required to have an associated time zone
         if start.tz is None:
-            start = start.tz_localize('UTC')
+            start = start.tz_localize("UTC")
         if end.tz is None:
-            end = end.tz_localize('UTC')
-        payload['Options']["StartTime"] = start.isoformat()
-        payload['Options']["EndTime"] = end.isoformat()
+            end = end.tz_localize("UTC")
+        payload["Options"]["StartTime"] = start.isoformat()
+        payload["Options"]["EndTime"] = end.isoformat()
 
     # Convert the payload dictionary to a JSON string (uses double quotes)
     payload = json.dumps(payload)
     # Make data request
-    request = requests.post(url+'/WeatherData', data=payload, headers=headers)
+    request = requests.post(url + "/WeatherData", data=payload, headers=headers)
     # Raise error if request is not OK
     if request.ok is False:
-        raise ValueError(request.json()['Message'])
+        raise ValueError(request.json()["Message"])
     # Retrieve weather request ID
     weather_request_id = request.json()["WeatherRequestId"]
 
@@ -191,35 +204,45 @@ def get_solaranywhere(latitude, longitude, api_key, start=None, end=None,
     start_time = time.time()  # Current time in seconds since the Epoch
     # Attempt to retrieve results until the max response time has been exceeded
     while True:
-        results = requests.get(url+'/WeatherDataResult/'+weather_request_id, headers=headers)  # noqa: E501
+        results = requests.get(
+            url + "/WeatherDataResult/" + weather_request_id, headers=headers
+        )  # noqa: E501
         results_json = results.json()
-        if results_json.get('Status') == 'Done':
-            if results_json['WeatherDataResults'][0]['Status'] == 'Failure':
-                raise RuntimeError(results_json['WeatherDataResults'][0]['ErrorMessages'][0]['Message'])  # noqa: E501
+        if results_json.get("Status") == "Done":
+            if results_json["WeatherDataResults"][0]["Status"] == "Failure":
+                raise RuntimeError(
+                    results_json["WeatherDataResults"][0]["ErrorMessages"][0]["Message"]
+                )  # noqa: E501
             break
-        elif (time.time()-start_time) > timeout:
-            raise TimeoutError('Time exceeded the `timeout`.')
+        elif (time.time() - start_time) > timeout:
+            raise TimeoutError("Time exceeded the `timeout`.")
         time.sleep(5)  # Sleep for 5 seconds before each data retrieval attempt
 
     # Extract time series data
-    data = pd.DataFrame(results_json['WeatherDataResults'][0]['WeatherDataPeriods']['WeatherDataPeriods'])  # noqa: E501
+    data = pd.DataFrame(
+        results_json["WeatherDataResults"][0]["WeatherDataPeriods"][
+            "WeatherDataPeriods"
+        ]
+    )  # noqa: E501
     # Set datetime index
-    data.index = pd.to_datetime(data['ObservationTime'])
+    data.index = pd.to_datetime(data["ObservationTime"])
     if map_variables:
         data = data.rename(columns=VARIABLE_MAP)
 
     # Parse metadata
-    meta = results_json['WeatherDataResults'][0]['WeatherSourceInformation']
-    meta['time_resolution'] = results_json['WeatherDataResults'][0]['WeatherDataPeriods']['TimeResolution_Minutes']  # noqa: E501
-    meta['spatial_resolution'] = spatial_resolution
+    meta = results_json["WeatherDataResults"][0]["WeatherSourceInformation"]
+    meta["time_resolution"] = results_json["WeatherDataResults"][0][
+        "WeatherDataPeriods"
+    ]["TimeResolution_Minutes"]  # noqa: E501
+    meta["spatial_resolution"] = spatial_resolution
     # Rename and convert applicable metadata parameters to floats
-    meta['latitude'] = float(meta.pop('Latitude'))
-    meta['longitude'] = float(meta.pop('Longitude'))
-    meta['altitude'] = float(meta.pop('Elevation_Meters'))
+    meta["latitude"] = float(meta.pop("Latitude"))
+    meta["longitude"] = float(meta.pop("Longitude"))
+    meta["altitude"] = float(meta.pop("Elevation_Meters"))
     return data, meta
 
 
-def read_solaranywhere(filename, map_variables=True, encoding='iso-8859-1'):
+def read_solaranywhere(filename, map_variables=True, encoding="iso-8859-1"):
     """
     Read a SolarAnywhere formatted file into a pandas DataFrame.
 
@@ -254,40 +277,39 @@ def read_solaranywhere(filename, map_variables=True, encoding='iso-8859-1'):
     .. [1] `SolarAnywhere historical data file formats
        <https://www.solaranywhere.com/support/historical-data/file-formats/>`_
     """
-    with open(str(filename), 'r', encoding=encoding) as fbuf:
+    with open(str(filename), "r", encoding=encoding) as fbuf:
         # Extract first line of file which contains the metadata
-        firstline = fbuf.readline().strip().split(',')
+        firstline = fbuf.readline().strip().split(",")
         # Read remaining part of file which contains the time series data
         data = pd.read_csv(fbuf)
 
     # Parse metadata
     meta = {}
-    meta['USAF'] = int(firstline.pop(0))
-    meta['name'] = firstline.pop(0)
-    meta['state'] = firstline.pop(0)
-    meta['TZ'] = float(firstline.pop(0))
-    meta['latitude'] = float(firstline.pop(0))
-    meta['longitude'] = float(firstline.pop(0))
-    meta['altitude'] = float(firstline.pop(0))
+    meta["USAF"] = int(firstline.pop(0))
+    meta["name"] = firstline.pop(0)
+    meta["state"] = firstline.pop(0)
+    meta["TZ"] = float(firstline.pop(0))
+    meta["latitude"] = float(firstline.pop(0))
+    meta["longitude"] = float(firstline.pop(0))
+    meta["altitude"] = float(firstline.pop(0))
 
     # SolarAnywhere files contain additional metadata than the TMY3 format.
     # The additional metadata is specified as key-value pairs, where each entry
     # is separated by a slash, and the key-value pairs are separated by a
     # colon. E.g., 'Data Version: 3.4 / Type: Typical Year / ...'
-    for i in ','.join(firstline).replace('"', '').split('/'):
-        if ':' in i:
-            k, v = i.split(':')
+    for i in ",".join(firstline).replace('"', "").split("/"):
+        if ":" in i:
+            k, v = i.split(":")
             meta[k.strip()] = v.strip()
 
-    meta['LatLon Resolution'] = float(meta['LatLon Resolution'])
+    meta["LatLon Resolution"] = float(meta["LatLon Resolution"])
 
     # Set index
-    data.index = pd.to_datetime(data['ObservationTime(LST)'],
-                                format='%m/%d/%Y %H:%M')
+    data.index = pd.to_datetime(data["ObservationTime(LST)"], format="%m/%d/%Y %H:%M")
     # Set timezone
-    data = data.tz_localize(int(meta['TZ'] * 3600))
+    data = data.tz_localize(int(meta["TZ"] * 3600))
     # Remove notion of LST in case the index is later converted to another tz
-    data.index.name = data.index.name.replace('(LST)', '')
+    data.index.name = data.index.name.replace("(LST)", "")
     # Missing values can be represented as: blanks, 'NaN', or -999
     data = data.replace(-999, np.nan)
 

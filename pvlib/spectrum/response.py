@@ -2,6 +2,7 @@
 The ``response`` module in the ``spectrum`` package provides functions for
 spectral response and quantum efficiency calculations.
 """
+
 from pvlib.tools import normalize_max2one
 import numpy as np
 import pandas as pd
@@ -18,7 +19,7 @@ _PLANCK_BY_LIGHT_SPEED_OVER_ELEMENTAL_CHARGE_BY_BILLION = (
 
 
 def get_example_spectral_response(wavelength=None):
-    '''
+    """
     Generate a generic smooth spectral response (SR) for tests and experiments.
 
     Parameters
@@ -46,38 +47,45 @@ def get_example_spectral_response(wavelength=None):
     .. [1] Driesse, Anton, and Stein, Joshua. "Global Normal Spectral
        Irradiance in Albuquerque: a One-Year Open Dataset for PV Research".
        United States 2020. :doi:`10.2172/1814068`.
-    '''
+    """
     # Contributed by Anton Driesse (@adriesse), PV Performance Labs. Aug. 2022
 
-    SR_DATA = np.array([[290, 0.00],
-                        [350, 0.27],
-                        [400, 0.37],
-                        [500, 0.52],
-                        [650, 0.71],
-                        [800, 0.88],
-                        [900, 0.97],
-                        [950, 1.00],
-                        [1000, 0.93],
-                        [1050, 0.58],
-                        [1100, 0.21],
-                        [1150, 0.05],
-                        [1190, 0.00]]).transpose()
+    SR_DATA = np.array(
+        [
+            [290, 0.00],
+            [350, 0.27],
+            [400, 0.37],
+            [500, 0.52],
+            [650, 0.71],
+            [800, 0.88],
+            [900, 0.97],
+            [950, 1.00],
+            [1000, 0.93],
+            [1050, 0.58],
+            [1100, 0.21],
+            [1150, 0.05],
+            [1190, 0.00],
+        ]
+    ).transpose()
 
     if wavelength is None:
         resolution = 5.0
         wavelength = np.arange(280, 1200 + resolution, resolution)
 
-    interpolator = interp1d(SR_DATA[0], SR_DATA[1],
-                            kind='cubic',
-                            bounds_error=False,
-                            fill_value=0.0,
-                            copy=False,
-                            assume_sorted=True)
+    interpolator = interp1d(
+        SR_DATA[0],
+        SR_DATA[1],
+        kind="cubic",
+        bounds_error=False,
+        fill_value=0.0,
+        copy=False,
+        assume_sorted=True,
+    )
 
     sr = pd.Series(data=interpolator(wavelength), index=wavelength)
 
-    sr.index.name = 'wavelength'
-    sr.name = 'spectral_response'
+    sr.index.name = "wavelength"
+    sr.name = "spectral_response"
 
     return sr
 
@@ -170,9 +178,7 @@ def sr_to_qe(sr, wavelength=None, normalize=False):
                 + " or 'wavelength' must be provided"
             )
     quantum_efficiency = (
-        sr
-        / wavelength
-        * _PLANCK_BY_LIGHT_SPEED_OVER_ELEMENTAL_CHARGE_BY_BILLION
+        sr / wavelength * _PLANCK_BY_LIGHT_SPEED_OVER_ELEMENTAL_CHARGE_BY_BILLION
     )
 
     if normalize:
@@ -269,9 +275,7 @@ def qe_to_sr(qe, wavelength=None, normalize=False):
                 + " or 'wavelength' must be provided"
             )
     spectral_responsivity = (
-        qe
-        * wavelength
-        / _PLANCK_BY_LIGHT_SPEED_OVER_ELEMENTAL_CHARGE_BY_BILLION
+        qe * wavelength / _PLANCK_BY_LIGHT_SPEED_OVER_ELEMENTAL_CHARGE_BY_BILLION
     )
 
     if normalize:

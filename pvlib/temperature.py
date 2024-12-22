@@ -14,14 +14,16 @@ import warnings
 
 
 TEMPERATURE_MODEL_PARAMETERS = {
-    'sapm': {
-        'open_rack_glass_glass': {'a': -3.47, 'b': -.0594, 'deltaT': 3},
-        'close_mount_glass_glass': {'a': -2.98, 'b': -.0471, 'deltaT': 1},
-        'open_rack_glass_polymer': {'a': -3.56, 'b': -.0750, 'deltaT': 3},
-        'insulated_back_glass_polymer': {'a': -2.81, 'b': -.0455, 'deltaT': 0},
+    "sapm": {
+        "open_rack_glass_glass": {"a": -3.47, "b": -0.0594, "deltaT": 3},
+        "close_mount_glass_glass": {"a": -2.98, "b": -0.0471, "deltaT": 1},
+        "open_rack_glass_polymer": {"a": -3.56, "b": -0.0750, "deltaT": 3},
+        "insulated_back_glass_polymer": {"a": -2.81, "b": -0.0455, "deltaT": 0},
     },
-    'pvsyst': {'freestanding': {'u_c': 29.0, 'u_v': 0},
-               'insulated': {'u_c': 15.0, 'u_v': 0}}
+    "pvsyst": {
+        "freestanding": {"u_c": 29.0, "u_v": 0},
+        "insulated": {"u_c": 15.0, "u_v": 0},
+    },
 }
 """Dictionary of temperature parameters organized by model.
 
@@ -47,16 +49,17 @@ def _temperature_model_params(model, parameter_set):
         params = TEMPERATURE_MODEL_PARAMETERS[model]
         return params[parameter_set]
     except KeyError:
-        msg = ('{} is not a named set of parameters for the {} cell'
-               ' temperature model.'
-               ' See pvlib.temperature.TEMPERATURE_MODEL_PARAMETERS'
-               ' for names'.format(parameter_set, model))
+        msg = (
+            "{} is not a named set of parameters for the {} cell"
+            " temperature model."
+            " See pvlib.temperature.TEMPERATURE_MODEL_PARAMETERS"
+            " for names".format(parameter_set, model)
+        )
         raise KeyError(msg)
 
 
-def sapm_cell(poa_global, temp_air, wind_speed, a, b, deltaT,
-              irrad_ref=1000.):
-    r'''
+def sapm_cell(poa_global, temp_air, wind_speed, a, b, deltaT, irrad_ref=1000.0):
+    r"""
     Calculate cell temperature per the Sandia Array Performance Model.
 
     See [1]_ for details on the Sandia Array Performance Model.
@@ -154,15 +157,13 @@ def sapm_cell(poa_global, temp_air, wind_speed, a, b, deltaT,
     >>> params = TEMPERATURE_MODEL_PARAMETERS['sapm']['open_rack_glass_glass']
     >>> sapm_cell(1000, 10, 0, **params)
     44.11703066106086
-    '''
-    module_temperature = sapm_module(poa_global, temp_air, wind_speed,
-                                     a, b)
-    return sapm_cell_from_module(module_temperature, poa_global, deltaT,
-                                 irrad_ref)
+    """
+    module_temperature = sapm_module(poa_global, temp_air, wind_speed, a, b)
+    return sapm_cell_from_module(module_temperature, poa_global, deltaT, irrad_ref)
 
 
 def sapm_module(poa_global, temp_air, wind_speed, a, b):
-    r'''
+    r"""
     Calculate module back surface temperature per the Sandia Array
     Performance Model.
 
@@ -240,13 +241,12 @@ def sapm_module(poa_global, temp_air, wind_speed, a, b):
     --------
     sapm_cell
     sapm_cell_from_module
-    '''
+    """
     return poa_global * np.exp(a + b * wind_speed) + temp_air
 
 
-def sapm_cell_from_module(module_temperature, poa_global, deltaT,
-                          irrad_ref=1000.):
-    r'''
+def sapm_cell_from_module(module_temperature, poa_global, deltaT, irrad_ref=1000.0):
+    r"""
     Calculate cell temperature from module temperature using the Sandia Array
     Performance Model.
 
@@ -322,12 +322,19 @@ def sapm_cell_from_module(module_temperature, poa_global, deltaT,
     --------
     sapm_cell
     sapm_module
-    '''
+    """
     return module_temperature + (poa_global / irrad_ref) * deltaT
 
 
-def pvsyst_cell(poa_global, temp_air, wind_speed=1.0, u_c=29.0, u_v=0.0,
-                module_efficiency=0.1, alpha_absorption=0.9):
+def pvsyst_cell(
+    poa_global,
+    temp_air,
+    wind_speed=1.0,
+    u_c=29.0,
+    u_v=0.0,
+    module_efficiency=0.1,
+    alpha_absorption=0.9,
+):
     r"""
     Calculate cell temperature using an empirical heat loss factor model
     as implemented in PVsyst.
@@ -430,7 +437,7 @@ def pvsyst_cell(poa_global, temp_air, wind_speed=1.0, u_c=29.0, u_v=0.0,
 
 
 def faiman(poa_global, temp_air, wind_speed=1.0, u0=25.0, u1=6.84):
-    r'''
+    r"""
     Calculate cell or module temperature using the Faiman model.
 
     The Faiman model uses an empirical heat loss factor model [1]_ and is
@@ -490,7 +497,7 @@ def faiman(poa_global, temp_air, wind_speed=1.0, u0=25.0, u1=6.84):
     --------
     pvlib.temperature.faiman_rad
 
-    '''  # noQA: E501
+    """  # noQA: E501
 
     # Contributed by Anton Driesse (@adriesse), PV Performance Labs. Dec., 2019
 
@@ -506,9 +513,17 @@ def faiman(poa_global, temp_air, wind_speed=1.0, u0=25.0, u1=6.84):
     return temp_air + temp_difference
 
 
-def faiman_rad(poa_global, temp_air, wind_speed=1.0, ir_down=None,
-               u0=25.0, u1=6.84, sky_view=1.0, emissivity=0.88):
-    r'''
+def faiman_rad(
+    poa_global,
+    temp_air,
+    wind_speed=1.0,
+    ir_down=None,
+    u0=25.0,
+    u1=6.84,
+    sky_view=1.0,
+    emissivity=0.88,
+):
+    r"""
     Calculate cell or module temperature using the Faiman model augmented
     with a radiative loss term.
 
@@ -596,7 +611,7 @@ def faiman_rad(poa_global, temp_air, wind_speed=1.0, ir_down=None,
     --------
     pvlib.temperature.faiman
 
-    '''  # noQA: E501
+    """  # noQA: E501
 
     # Contributed by Anton Driesse (@adriesse), PV Performance Labs. Nov., 2022
 
@@ -606,7 +621,7 @@ def faiman_rad(poa_global, temp_air, wind_speed=1.0, ir_down=None,
     if ir_down is None:
         qrad_sky = 0.0
     else:
-        ir_up = sigma * ((temp_air - abs_zero)**4)
+        ir_up = sigma * ((temp_air - abs_zero) ** 4)
         qrad_sky = emissivity * sky_view * (ir_up - ir_down)
 
     heat_input = poa_global - qrad_sky
@@ -616,7 +631,7 @@ def faiman_rad(poa_global, temp_air, wind_speed=1.0, ir_down=None,
 
 
 def ross(poa_global, temp_air, noct):
-    r'''
+    r"""
     Calculate cell temperature using the Ross model.
 
     The Ross model [1]_ assumes the difference between cell temperature
@@ -657,13 +672,12 @@ def ross(poa_global, temp_air, noct):
     .. [1] Ross, R. G. Jr., (1981). "Design Techniques for Flat-Plate
        Photovoltaic Arrays". 15th IEEE Photovoltaic Specialist Conference,
        Orlando, FL.
-    '''
+    """
     # factor of 0.1 converts irradiance from W/m2 to mW/cm2
-    return temp_air + (noct - 20.) / 80. * poa_global * 0.1
+    return temp_air + (noct - 20.0) / 80.0 * poa_global * 0.1
 
 
-def _fuentes_hconv(tave, windmod, tinoct, temp_delta, xlen, tilt,
-                   check_reynold):
+def _fuentes_hconv(tave, windmod, tinoct, temp_delta, xlen, tilt, check_reynold):
     # Calculate the convective coefficient as in Fuentes 1987 -- a mixture of
     # free, laminar, and turbulent convection.
     densair = 0.003484 * 101325.0 / tave  # density
@@ -682,9 +696,9 @@ def _fuentes_hconv(tave, windmod, tinoct, temp_delta, xlen, tilt,
     # NB: Fuentes hardwires sind(tilt) as 0.5 for tilt=30
     grashof = 9.8 / tave * temp_delta * xlen**3 / visair**2 * sind(tilt)
     # product of Nusselt number and (k/l)
-    hfree = 0.21 * (grashof * 0.71)**0.32 * condair / xlen
+    hfree = 0.21 * (grashof * 0.71) ** 0.32 * condair / xlen
     # combine free and forced components
-    hconv = (hfree**3 + hforce**3)**(1/3)
+    hconv = (hfree**3 + hforce**3) ** (1 / 3)
     return hconv
 
 
@@ -693,9 +707,19 @@ def _hydraulic_diameter(width, height):
     return 2 * (width * height) / (width + height)
 
 
-def fuentes(poa_global, temp_air, wind_speed, noct_installed, module_height=5,
-            wind_height=9.144, emissivity=0.84, absorption=0.83,
-            surface_tilt=30, module_width=0.31579, module_length=1.2):
+def fuentes(
+    poa_global,
+    temp_air,
+    wind_speed,
+    noct_installed,
+    module_height=5,
+    wind_height=9.144,
+    emissivity=0.84,
+    absorption=0.83,
+    surface_tilt=30,
+    module_width=0.31579,
+    module_length=1.2,
+):
     """
     Calculate cell or module temperature using the Fuentes model.
 
@@ -785,8 +809,9 @@ def fuentes(poa_global, temp_air, wind_speed, noct_installed, module_height=5,
     # convective coefficient of top surface of module at NOCT
     windmod = 1.0
     tave = (tinoct + 293.15) / 2
-    hconv = _fuentes_hconv(tave, windmod, tinoct, tinoct - 293.15, xlen,
-                           surface_tilt, False)
+    hconv = _fuentes_hconv(
+        tave, windmod, tinoct, tinoct - 293.15, xlen, surface_tilt, False
+    )
 
     # determine the ground temperature ratio and the ratio of the total
     # convection to the top side convection
@@ -796,12 +821,13 @@ def fuentes(poa_global, temp_air, wind_speed, noct_installed, module_height=5,
         - emiss * boltz * (tinoct**4 - 282.21**4)
         - hconv * (tinoct - 293.15)
     ) / ((hground + hconv) * (tinoct - 293.15))
-    tground = (tinoct**4 - backrat * (tinoct**4 - 293.15**4))**0.25
+    tground = (tinoct**4 - backrat * (tinoct**4 - 293.15**4)) ** 0.25
     tground = np.clip(tground, 293.15, tinoct)
 
     tgrat = (tground - 293.15) / (tinoct - 293.15)
-    convrat = (absorp * 800 - emiss * boltz * (
-        2 * tinoct**4 - 282.21**4 - tground**4)) / (hconv * (tinoct - 293.15))
+    convrat = (
+        absorp * 800 - emiss * boltz * (2 * tinoct**4 - 282.21**4 - tground**4)
+    ) / (hconv * (tinoct - 293.15))
 
     # adjust the capacitance (thermal mass) of the module based on the INOCT.
     # It is a function of INOCT because high INOCT implies thermal coupling
@@ -830,13 +856,12 @@ def fuentes(poa_global, temp_air, wind_speed, noct_installed, module_height=5,
     # wind speed at module height -- Equation 22
     # not sure why the 1e-4 factor is included -- maybe the equations don't
     # behave well if wind == 0?
-    windmod_array = wind_speed * (module_height/wind_height)**0.2 + 1e-4
+    windmod_array = wind_speed * (module_height / wind_height) ** 0.2 + 1e-4
 
     tmod0 = 293.15
     tmod_array = np.zeros_like(poa_global)
 
-    iterator = zip(tamb_array, sun_array, windmod_array, tsky_array,
-                   timedelta_hours)
+    iterator = zip(tamb_array, sun_array, windmod_array, tsky_array, timedelta_hours)
     for i, (tamb, sun, windmod, tsky, dtime) in enumerate(iterator):
         # solve the heat transfer equation, iterating because the heat loss
         # terms depend on tmod. NB Fuentes doesn't show that 10 iterations is
@@ -845,16 +870,16 @@ def fuentes(poa_global, temp_air, wind_speed, noct_installed, module_height=5,
         for j in range(10):
             # overall convective coefficient
             tave = (tmod + tamb) / 2
-            hconv = convrat * _fuentes_hconv(tave, windmod, tinoct,
-                                             abs(tmod-tamb), xlen,
-                                             surface_tilt, True)
+            hconv = convrat * _fuentes_hconv(
+                tave, windmod, tinoct, abs(tmod - tamb), xlen, surface_tilt, True
+            )
             # sky radiation coefficient (Equation 3)
             hsky = emiss * boltz * (tmod**2 + tsky**2) * (tmod + tsky)
             # ground radiation coeffieicient (Equation 4)
             tground = tamb + tgrat * (tmod - tamb)
             hground = emiss * boltz * (tmod**2 + tground**2) * (tmod + tground)
             # thermal lag -- Equation 8
-            eigen = - (hconv + hsky + hground) / cap * dtime * 3600
+            eigen = -(hconv + hsky + hground) / cap * dtime * 3600
             # not sure why this check is done, maybe as a speed optimization?
             if eigen > -10:
                 ex = np.exp(eigen)
@@ -863,35 +888,54 @@ def fuentes(poa_global, temp_air, wind_speed, noct_installed, module_height=5,
             # Equation 7 -- note that `sun` and `sun0` already account for
             # absorption (alpha)
             tmod = tmod0 * ex + (
-                (1 - ex) * (
+                (1 - ex)
+                * (
                     hconv * tamb
                     + hsky * tsky
                     + hground * tground
                     + sun0
                     + (sun - sun0) / eigen
-                ) + sun - sun0
+                )
+                + sun
+                - sun0
             ) / (hconv + hsky + hground)
         tmod_array[i] = tmod
         tmod0 = tmod
         sun0 = sun
 
-    return pd.Series(tmod_array - 273.15, index=poa_global.index, name='tmod')
+    return pd.Series(tmod_array - 273.15, index=poa_global.index, name="tmod")
 
 
 def _adj_for_mounting_standoff(x):
     # supports noct cell temperature function. Except for x > 3.5, the SAM code
     # and documentation aren't clear on the precise intervals. The choice of
     # < or <= here is pvlib's.
-    return np.piecewise(x, [x <= 0, (x > 0) & (x < 0.5),
-                            (x >= 0.5) & (x < 1.5), (x >= 1.5) & (x < 2.5),
-                            (x >= 2.5) & (x <= 3.5), x > 3.5],
-                        [0., 18., 11., 6., 2., 0.])
+    return np.piecewise(
+        x,
+        [
+            x <= 0,
+            (x > 0) & (x < 0.5),
+            (x >= 0.5) & (x < 1.5),
+            (x >= 1.5) & (x < 2.5),
+            (x >= 2.5) & (x <= 3.5),
+            x > 3.5,
+        ],
+        [0.0, 18.0, 11.0, 6.0, 2.0, 0.0],
+    )
 
 
-def noct_sam(poa_global, temp_air, wind_speed, noct, module_efficiency,
-             effective_irradiance=None, transmittance_absorptance=0.9,
-             array_height=1, mount_standoff=4):
-    r'''
+def noct_sam(
+    poa_global,
+    temp_air,
+    wind_speed,
+    noct,
+    module_efficiency,
+    effective_irradiance=None,
+    transmittance_absorptance=0.9,
+    array_height=1,
+    mount_standoff=4,
+):
+    r"""
     Cell temperature model from the System Advisor Model (SAM).
 
     The model is described in [1]_, Section 10.6.
@@ -952,7 +996,7 @@ def noct_sam(poa_global, temp_air, wind_speed, noct, module_efficiency,
            Ryberg, D., 2018, "SAM Photovoltaic Model Technical Reference
            Update", National Renewable Energy Laboratory Report
            NREL/TP-6A20-67399.
-    '''
+    """
     # in [1] the denominator for irr_ratio isn't precisely clear. From
     # reproducing output of the SAM function noct_celltemp_t, we determined
     # that:
@@ -961,7 +1005,7 @@ def noct_sam(poa_global, temp_air, wind_speed, noct, module_efficiency,
     #  - Geff_total (SAM) is POA irradiance after reflections and
     #    adjustment for spectrum. Equivalent to effective_irradiance
     if effective_irradiance is None:
-        irr_ratio = 1.
+        irr_ratio = 1.0
     else:
         irr_ratio = effective_irradiance / poa_global
 
@@ -970,15 +1014,14 @@ def noct_sam(poa_global, temp_air, wind_speed, noct, module_efficiency,
     elif array_height == 2:
         wind_adj = 0.61 * wind_speed
     else:
-        raise ValueError(
-            f'array_height must be 1 or 2, {array_height} was given')
+        raise ValueError(f"array_height must be 1 or 2, {array_height} was given")
 
     noct_adj = noct + _adj_for_mounting_standoff(mount_standoff)
     tau_alpha = transmittance_absorptance * irr_ratio
 
     # [1] Eq. 10.37 isn't clear on exactly what "G" is. SAM SSC code uses
     # poa_global where G appears
-    cell_temp_init = poa_global / 800. * (noct_adj - 20.)
+    cell_temp_init = poa_global / 800.0 * (noct_adj - 20.0)
     heat_loss = 1 - module_efficiency / tau_alpha
     wind_loss = 9.5 / (5.7 + 3.8 * wind_adj)
     return temp_air + cell_temp_init * heat_loss * wind_loss
@@ -1042,14 +1085,17 @@ def prilliman(temp_cell, wind_speed, unit_mass=11.1, coefficients=None):
     """
 
     # `sample_interval` in minutes:
-    sample_interval, samples_per_window = \
-        _get_sample_intervals(times=temp_cell.index, win_length=20)
+    sample_interval, samples_per_window = _get_sample_intervals(
+        times=temp_cell.index, win_length=20
+    )
 
     if sample_interval >= 20:
-        warnings.warn("temperature.prilliman only applies smoothing when "
-                      "the sampling interval is shorter than 20 minutes "
-                      f"(input sampling interval: {sample_interval} minutes);"
-                      " returning input temperature series unchanged")
+        warnings.warn(
+            "temperature.prilliman only applies smoothing when "
+            "the sampling interval is shorter than 20 minutes "
+            f"(input sampling interval: {sample_interval} minutes);"
+            " returning input temperature series unchanged"
+        )
         # too coarsely sampled for smoothing to be relevant
         return temp_cell
 
@@ -1062,9 +1108,10 @@ def prilliman(temp_cell, wind_speed, unit_mass=11.1, coefficients=None):
     temp_cell_prefixed = np.append(prefix, temp_cell.values)
 
     # generate matrix of integers for creating windows with indexing
-    H = scipy.linalg.hankel(np.arange(samples_per_window),
-                            np.arange(samples_per_window - 1,
-                                      len(temp_cell_prefixed) - 1))
+    H = scipy.linalg.hankel(
+        np.arange(samples_per_window),
+        np.arange(samples_per_window - 1, len(temp_cell_prefixed) - 1),
+    )
     # each row of `subsets` is the values in one window
     subsets = temp_cell_prefixed[H].T
 
@@ -1087,7 +1134,7 @@ def prilliman(temp_cell, wind_speed, unit_mass=11.1, coefficients=None):
         a = [0.0046, 0.00046, -0.00023, -1.6e-5]
 
     wind_speed = wind_speed.values
-    p = a[0] + a[1]*wind_speed + a[2]*unit_mass + a[3]*wind_speed*unit_mass
+    p = a[0] + a[1] * wind_speed + a[2] * unit_mass + a[3] * wind_speed * unit_mass
     # calculate the time lag for each sample in the window, paying attention
     # to units (seconds for `timedeltas`, minutes for `sample_interval`)
     timedeltas = np.arange(samples_per_window, 0, -1) * sample_interval * 60
@@ -1138,8 +1185,9 @@ def prilliman(temp_cell, wind_speed, unit_mass=11.1, coefficients=None):
     return smoothed
 
 
-def generic_linear(poa_global, temp_air, wind_speed, u_const, du_wind,
-                   module_efficiency, absorptance):
+def generic_linear(
+    poa_global, temp_air, wind_speed, u_const, du_wind, module_efficiency, absorptance
+):
     """
     Calculate cell temperature using a generic linear heat loss factor model.
 
@@ -1194,8 +1242,8 @@ def generic_linear(poa_global, temp_air, wind_speed, u_const, du_wind,
     return temp_air + temp_difference
 
 
-class GenericLinearModel():
-    '''
+class GenericLinearModel:
+    """
     A class that can both use and convert parameters of linear module
     temperature models: faiman, pvsyst, noct_sam, sapm_module
     and generic_linear.
@@ -1254,11 +1302,11 @@ class GenericLinearModel():
     See also
     --------
     pvlib.temperature.generic_linear
-    '''
+    """
+
     # Contributed by Anton Driesse (@adriesse), PV Performance Labs, Sept. 2022
 
     def __init__(self, module_efficiency, absorptance):
-
         self.u_const = np.nan
         self.du_wind = np.nan
         self.eta = module_efficiency
@@ -1267,12 +1315,10 @@ class GenericLinearModel():
         return None
 
     def __repr__(self):
+        return self.__class__.__name__ + ": " + vars(self).__repr__()
 
-        return self.__class__.__name__ + ': ' + vars(self).__repr__()
-
-    def __call__(self, poa_global, temp_air, wind_speed,
-                 module_efficiency=None):
-        '''
+    def __call__(self, poa_global, temp_air, wind_speed, module_efficiency=None):
+        """
         Calculate module temperature using the generic_linear model and
         previously initialized parameters.
 
@@ -1300,16 +1346,22 @@ class GenericLinearModel():
         --------
         get_generic
         pvlib.temperature.generic_linear
-        '''
+        """
         if module_efficiency is None:
             module_efficiency = self.eta
 
-        return generic_linear(poa_global, temp_air, wind_speed,
-                              self.u_const, self.du_wind,
-                              module_efficiency, self.alpha)
+        return generic_linear(
+            poa_global,
+            temp_air,
+            wind_speed,
+            self.u_const,
+            self.du_wind,
+            module_efficiency,
+            self.alpha,
+        )
 
     def get_generic_linear(self):
-        '''
+        """
         Get the generic linear model parameters to use with the separate
         generic linear module temperature calculation function.
 
@@ -1320,21 +1372,23 @@ class GenericLinearModel():
         See also
         --------
         pvlib.temperature.generic_linear
-        '''
-        return dict(u_const=self.u_const,
-                    du_wind=self.du_wind,
-                    module_efficiency=self.eta,
-                    absorptance=self.alpha)
+        """
+        return dict(
+            u_const=self.u_const,
+            du_wind=self.du_wind,
+            module_efficiency=self.eta,
+            absorptance=self.alpha,
+        )
 
     def use_faiman(self, u0, u1):
-        '''
+        """
         Use the Faiman model parameters to set the generic_model equivalents.
 
         Parameters
         ----------
         u0, u1 : float
             See :py:func:`pvlib.temperature.faiman` for details.
-        '''
+        """
         net_absorptance = self.alpha - self.eta
         self.u_const = u0 * net_absorptance
         self.du_wind = u1 * net_absorptance
@@ -1342,7 +1396,7 @@ class GenericLinearModel():
         return self
 
     def to_faiman(self):
-        '''
+        """
         Convert the generic model parameters to Faiman equivalents.
 
         Returns
@@ -1350,16 +1404,15 @@ class GenericLinearModel():
         model_parameters : dict
             See :py:func:`pvlib.temperature.faiman` for
             model parameter details.
-        '''
+        """
         net_absorptance = self.alpha - self.eta
         u0 = self.u_const / net_absorptance
         u1 = self.du_wind / net_absorptance
 
         return dict(u0=u0, u1=u1)
 
-    def use_pvsyst(self, u_c, u_v, module_efficiency=None,
-                   alpha_absorption=None):
-        '''
+    def use_pvsyst(self, u_c, u_v, module_efficiency=None, alpha_absorption=None):
+        """
         Use the PVsyst model parameters to set the generic_model equivalents.
 
         Parameters
@@ -1374,7 +1427,7 @@ class GenericLinearModel():
         -----
         The optional parameters are primarily for convenient compatibility
         with existing function signatures.
-        '''
+        """
         if module_efficiency is not None:
             self.eta = module_efficiency
 
@@ -1391,7 +1444,7 @@ class GenericLinearModel():
         return self
 
     def to_pvsyst(self):
-        '''
+        """
         Convert the generic model parameters to PVsyst model equivalents.
 
         Returns
@@ -1399,7 +1452,7 @@ class GenericLinearModel():
         model_parameters : dict
             See :py:func:`pvlib.temperature.pvsyst_cell` for
             model parameter details.
-        '''
+        """
         net_absorptance_glm = self.alpha - self.eta
         net_absorptance_pvsyst = self.alpha * (1.0 - self.eta)
         absorptance_ratio = net_absorptance_glm / net_absorptance_pvsyst
@@ -1407,14 +1460,14 @@ class GenericLinearModel():
         u_c = self.u_const / absorptance_ratio
         u_v = self.du_wind / absorptance_ratio
 
-        return dict(u_c=u_c,
-                    u_v=u_v,
-                    module_efficiency=self.eta,
-                    alpha_absorption=self.alpha)
+        return dict(
+            u_c=u_c, u_v=u_v, module_efficiency=self.eta, alpha_absorption=self.alpha
+        )
 
-    def use_noct_sam(self, noct, module_efficiency=None,
-                     transmittance_absorptance=None):
-        '''
+    def use_noct_sam(
+        self, noct, module_efficiency=None, transmittance_absorptance=None
+    ):
+        """
         Use the NOCT SAM model parameters to set the generic_model equivalents.
 
         Parameters
@@ -1429,7 +1482,7 @@ class GenericLinearModel():
         -----
         The optional parameters are primarily for convenient compatibility
         with existing function signatures.
-        '''
+        """
         if module_efficiency is not None:
             self.eta = module_efficiency
 
@@ -1446,7 +1499,7 @@ class GenericLinearModel():
         return self
 
     def to_noct_sam(self):
-        '''
+        """
         Convert the generic model parameters to NOCT SAM model equivalents.
 
         Returns
@@ -1454,19 +1507,19 @@ class GenericLinearModel():
         model_parameters : dict
             See :py:func:`pvlib.temperature.noct_sam` for
             model parameter details.
-        '''
+        """
         # NOCT is determined with wind speed near module height
         # the adjustment reduces the wind coefficient for use with 10m wind
         wind_adj = 0.51
         u_noct = self.u_const + self.du_wind / wind_adj
         noct = 20.0 + (800.0 * self.alpha) / u_noct
 
-        return dict(noct=noct,
-                    module_efficiency=self.eta,
-                    transmittance_absorptance=self.alpha)
+        return dict(
+            noct=noct, module_efficiency=self.eta, transmittance_absorptance=self.alpha
+        )
 
     def use_sapm(self, a, b, wind_fit_low=1.4, wind_fit_high=5.4):
-        '''
+        """
         Use the SAPM model parameters to set the generic_model equivalents.
 
         In the SAPM the heat transfer coefficient increases exponentially
@@ -1494,7 +1547,7 @@ class GenericLinearModel():
         at 10 m height.  Both the SAPM model and the conversion
         functions can work with wind speed data at different heights as
         long as the same height is used consistently throughout.
-        '''
+        """
         u_low = 1.0 / np.exp(a + b * wind_fit_low)
         u_high = 1.0 / np.exp(a + b * wind_fit_high)
 
@@ -1508,7 +1561,7 @@ class GenericLinearModel():
         return self
 
     def to_sapm(self, wind_fit_low=1.4, wind_fit_high=5.4):
-        '''
+        """
         Convert the generic model parameters to SAPM model equivalents.
 
         In the SAPM the heat transfer coefficient increases exponentially
@@ -1539,7 +1592,7 @@ class GenericLinearModel():
         at 10 m height.  Both the SAPM model and the conversion
         functions can work with wind speed data at different heights as
         long as the same height is used consistently throughout.
-        '''
+        """
         net_absorptance = self.alpha - self.eta
         u_const = self.u_const / net_absorptance
         du_wind = self.du_wind / net_absorptance
@@ -1547,8 +1600,7 @@ class GenericLinearModel():
         u_low = u_const + du_wind * wind_fit_low
         u_high = u_const + du_wind * wind_fit_high
 
-        b = - ((np.log(u_high) - np.log(u_low)) /
-               (wind_fit_high - wind_fit_low))
-        a = - (np.log(u_low) + b * wind_fit_low)
+        b = -((np.log(u_high) - np.log(u_low)) / (wind_fit_high - wind_fit_low))
+        a = -(np.log(u_low) + b * wind_fit_low)
 
         return dict(a=a, b=b)

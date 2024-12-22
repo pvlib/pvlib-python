@@ -7,7 +7,7 @@ def _num_type(value):
     """
     Determine if a value is float, int or a string
     """
-    if '.' in value:
+    if "." in value:
         try:  # Detect float
             value_out = float(value)
             return value_out
@@ -17,7 +17,6 @@ def _num_type(value):
             return value_out
 
     else:
-
         try:  # Detect int
             value_out = int(value)
             return value_out
@@ -31,10 +30,10 @@ def _element_type(element):
     """
     Determine if an element is a list then pass to _num_type()
     """
-    if ',' in element:  # Detect a list.
+    if "," in element:  # Detect a list.
         # .pan/.ond don't use ',' to indicate 1000. If that changes,
         # a new method of list detection needs to be found.
-        values = element.split(',')
+        values = element.split(",")
         element_out = []
         for val in values:  # Determine datatype of each value
             element_out.append(_num_type(val))
@@ -67,15 +66,15 @@ def _parse_panond(fbuf):
     lines = fbuf.read().splitlines()
 
     for i in range(0, len(lines) - 1):
-        if lines[i] == '':  # Skipping blank lines
+        if lines[i] == "":  # Skipping blank lines
             continue
         # Reading blank lines. Stopping one short to avoid index error.
         # Last line never contains important data.
         # Creating variables to assist new level in dictionary creation logic
-        indent_lvl_1 = (len(lines[i]) - len(lines[i].lstrip(' '))) // 2
-        indent_lvl_2 = (len(lines[i + 1]) - len(lines[i + 1].lstrip(' '))) // 2
+        indent_lvl_1 = (len(lines[i]) - len(lines[i].lstrip(" "))) // 2
+        indent_lvl_2 = (len(lines[i + 1]) - len(lines[i + 1].lstrip(" "))) // 2
         # Split the line into key/value pair
-        line_data = lines[i].split('=')
+        line_data = lines[i].split("=")
         key = line_data[0].strip()
         # Logical to make sure there is a value to extract
         if len(line_data) > 1:

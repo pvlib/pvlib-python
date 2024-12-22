@@ -26,7 +26,7 @@ from pvlib.pvarray import pvefficiency_adr, fit_pvefficiency_adr
 # Here are some matrix measurements:
 #
 
-iec61853data = '''
+iec61853data = """
     irradiance  temperature     p_mp
 0          100         15.0   30.159
 1          200         15.0   63.057
@@ -50,7 +50,7 @@ iec61853data = '''
 24         800         75.0  218.585
 25        1000         75.0  273.651
 26        1100         75.0  301.013
-'''
+"""
 df = pd.read_csv(StringIO(iec61853data), delim_whitespace=True)
 
 # %%
@@ -61,16 +61,15 @@ df = pd.read_csv(StringIO(iec61853data), delim_whitespace=True)
 # simulate the module operating in a PV system.
 #
 
-P_REF = 322.305   # (W) STC value from the table above
-G_REF = 1000.     # (W/m2)
+P_REF = 322.305  # (W) STC value from the table above
+G_REF = 1000.0  # (W/m2)
 
-df['eta_rel'] = (df['p_mp'] / P_REF) / (df['irradiance'] / G_REF)
+df["eta_rel"] = (df["p_mp"] / P_REF) / (df["irradiance"] / G_REF)
 
-adr_params = fit_pvefficiency_adr(df['irradiance'], df['temperature'],
-                                  df['eta_rel'])
+adr_params = fit_pvefficiency_adr(df["irradiance"], df["temperature"], df["eta_rel"])
 
 for k, v in adr_params.items():
-    print('%-5s = %8.5f' % (k, v))
+    print("%-5s = %8.5f" % (k, v))
 
 # %%
 #
@@ -79,15 +78,14 @@ for k, v in adr_params.items():
 # they are most likely evidence of the limitations of measurement accuracy.
 #
 
-eta_rel_adr = pvefficiency_adr(df['irradiance'],
-                               df['temperature'], **adr_params)
+eta_rel_adr = pvefficiency_adr(df["irradiance"], df["temperature"], **adr_params)
 
 plt.figure()
-plt.plot(df['irradiance'], df['eta_rel'], 'oc', ms=8)
-plt.plot(df['irradiance'], eta_rel_adr, '.k')
-plt.legend(['Lab measurements', 'ADR model fit'], loc='lower right')
-plt.xlabel('Irradiance [W/m²]')
-plt.ylabel('Relative efficiency [-]')
+plt.plot(df["irradiance"], df["eta_rel"], "oc", ms=8)
+plt.plot(df["irradiance"], eta_rel_adr, ".k")
+plt.legend(["Lab measurements", "ADR model fit"], loc="lower right")
+plt.xlabel("Irradiance [W/m²]")
+plt.ylabel("Relative efficiency [-]")
 plt.grid(alpha=0.5)
 plt.xlim(0, 1200)
 plt.ylim(0.7, 1.1)

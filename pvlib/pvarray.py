@@ -13,9 +13,8 @@ from scipy.optimize import curve_fit
 from scipy.special import exp10
 
 
-def pvefficiency_adr(effective_irradiance, temp_cell,
-                     k_a, k_d, tc_d, k_rs, k_rsh):
-    '''
+def pvefficiency_adr(effective_irradiance, temp_cell, k_a, k_d, tc_d, k_rs, k_rsh):
+    """
     Calculate PV module efficiency using the ADR model.
 
     The efficiency varies with irradiance and operating temperature
@@ -103,7 +102,7 @@ def pvefficiency_adr(effective_irradiance, temp_cell,
             k_a=1.0, k_d=-6.0, tc_d=0.02, k_rs=0.05, k_rsh=0.10)
     array([1.        , 0.92797293])
 
-    '''
+    """
     # Contributed by Anton Driesse (@adriesse), PV Performance Labs, Dec. 2022
     # Adapted from https://github.com/adriesse/pvpltools-python
 
@@ -114,20 +113,20 @@ def pvefficiency_adr(effective_irradiance, temp_cell,
     k_rsh = np.array(k_rsh)
 
     # normalize the irradiance
-    G_REF = np.array(1000.)
+    G_REF = np.array(1000.0)
     s = effective_irradiance / G_REF
 
     # obtain the difference from reference temperature
-    T_REF = np.array(25.)
+    T_REF = np.array(25.0)
     dt = temp_cell - T_REF
 
     # equation 29 in JPV
-    s_o     = exp10(k_d + (dt * tc_d))                             # noQA: E221
+    s_o = exp10(k_d + (dt * tc_d))  # noQA: E221
     s_o_ref = exp10(k_d)
 
     # equation 28 and 30 in JPV
     # the constant k_v does not appear here because it cancels out
-    v  = np.log(s / s_o     + 1)                                   # noQA: E221
+    v = np.log(s / s_o + 1)  # noQA: E221
     v /= np.log(1 / s_o_ref + 1)
 
     # equation 25 in JPV
@@ -136,8 +135,9 @@ def pvefficiency_adr(effective_irradiance, temp_cell,
     return eta
 
 
-def fit_pvefficiency_adr(effective_irradiance, temp_cell, eta,
-                         dict_output=True, **kwargs):
+def fit_pvefficiency_adr(
+    effective_irradiance, temp_cell, eta, dict_output=True, **kwargs
+):
     """
     Determine the parameters of the ADR module efficiency model by non-linear
     least-squares fit to lab or field measurements.
@@ -190,33 +190,35 @@ def fit_pvefficiency_adr(effective_irradiance, temp_cell, eta,
 
     eta_max = np.max(eta)
 
-    P_NAMES = ['k_a', 'k_d', 'tc_d', 'k_rs', 'k_rsh']
-    P_MAX   = [+np.inf,   0, +0.1, 1, 1]                           # noQA: E221
-    P_MIN   = [0,       -12, -0.1,  0.0,  0.0]                     # noQA: E221
-    P0      = [eta_max,  -6,  0.0, 1e-3, 1e-3]                     # noQA: E221
-    P_SCALE = [eta_max,  10,  0.1,  1.0,  1.0]
+    P_NAMES = ["k_a", "k_d", "tc_d", "k_rs", "k_rsh"]
+    P_MAX = [+np.inf, 0, +0.1, 1, 1]  # noQA: E221
+    P_MIN = [0, -12, -0.1, 0.0, 0.0]  # noQA: E221
+    P0 = [eta_max, -6, 0.0, 1e-3, 1e-3]  # noQA: E221
+    P_SCALE = [eta_max, 10, 0.1, 1.0, 1.0]
 
     SIGMA = 1 / np.sqrt(irradiance / 1000)
 
-    fit_options = dict(p0=P0,
-                       bounds=[P_MIN, P_MAX],
-                       method='trf',
-                       x_scale=P_SCALE,
-                       loss='soft_l1',
-                       f_scale=eta_max * 0.05,
-                       sigma=SIGMA,
-                       )
+    fit_options = dict(
+        p0=P0,
+        bounds=[P_MIN, P_MAX],
+        method="trf",
+        x_scale=P_SCALE,
+        loss="soft_l1",
+        f_scale=eta_max * 0.05,
+        sigma=SIGMA,
+    )
 
     fit_options.update(kwargs)
 
     def adr_wrapper(xdata, *params):
         return pvefficiency_adr(*xdata, *params)
 
-    result = curve_fit(adr_wrapper,
-                       xdata=[irradiance, temperature],
-                       ydata=eta,
-                       **fit_options,
-                       )
+    result = curve_fit(
+        adr_wrapper,
+        xdata=[irradiance, temperature],
+        ydata=eta,
+        **fit_options,
+    )
     popt = result[0]
 
     if dict_output:
@@ -232,13 +234,12 @@ def _infer_k_huld(cell_type, pdc0):
     # equation that has factored Pdc0 out of the polynomial:
     #  P = G/1000 * Pdc0 * (1 + k1 log(Geff) + ...) so these parameters are
     # multiplied by pdc0
-    huld_params = {'csi': (-0.017237, -0.040465, -0.004702, 0.000149,
-                           0.000170, 0.000005),
-                   'cis': (-0.005554, -0.038724, -0.003723, -0.000905,
-                           -0.001256, 0.000001),
-                   'cdte': (-0.046689, -0.072844, -0.002262, 0.000276,
-                            0.000159, -0.000006)}
-    k = tuple([x*pdc0 for x in huld_params[cell_type.lower()]])
+    huld_params = {
+        "csi": (-0.017237, -0.040465, -0.004702, 0.000149, 0.000170, 0.000005),
+        "cis": (-0.005554, -0.038724, -0.003723, -0.000905, -0.001256, 0.000001),
+        "cdte": (-0.046689, -0.072844, -0.002262, 0.000276, 0.000159, -0.000006),
+    }
+    k = tuple([x * pdc0 for x in huld_params[cell_type.lower()]])
     return k
 
 
@@ -337,16 +338,23 @@ def huld(effective_irradiance, temp_mod, pdc0, k=None, cell_type=None):
         if cell_type is not None:
             k = _infer_k_huld(cell_type, pdc0)
         else:
-            raise ValueError('Either k or cell_type must be specified')
+            raise ValueError("Either k or cell_type must be specified")
 
     gprime = effective_irradiance / 1000
     tprime = temp_mod - 25
     # accomodate gprime<=0
-    with np.errstate(divide='ignore'):
-        logGprime = np.log(gprime, out=np.zeros_like(gprime),
-                           where=np.array(gprime > 0))
+    with np.errstate(divide="ignore"):
+        logGprime = np.log(
+            gprime, out=np.zeros_like(gprime), where=np.array(gprime > 0)
+        )
     # Eq. 1 in [1]
-    pdc = gprime * (pdc0 + k[0] * logGprime + k[1] * logGprime**2 +
-                    k[2] * tprime + k[3] * tprime * logGprime +
-                    k[4] * tprime * logGprime**2 + k[5] * tprime**2)
+    pdc = gprime * (
+        pdc0
+        + k[0] * logGprime
+        + k[1] * logGprime**2
+        + k[2] * tprime
+        + k[3] * tprime * logGprime
+        + k[4] * tprime * logGprime**2
+        + k[5] * tprime**2
+    )
     return pdc

@@ -1,6 +1,7 @@
 """Collection of functions to operate on data from University of Oregon Solar
 Radiation Monitoring Laboratory (SRML) data.
 """
+
 import numpy as np
 import pandas as pd
 import urllib
@@ -13,15 +14,15 @@ import warnings
 # numbers `here. <http://solardata.uoregon.edu/DataElementNumbers.html>`_
 
 VARIABLE_MAP = {
-    '100': 'ghi',
-    '201': 'dni',
-    '300': 'dhi',
-    '920': 'wind_direction',
-    '921': 'wind_speed',
-    '930': 'temp_air',
-    '931': 'temp_dew',
-    '933': 'relative_humidity',
-    '937': 'temp_cell',
+    "100": "ghi",
+    "201": "dni",
+    "300": "dhi",
+    "920": "wind_direction",
+    "921": "wind_speed",
+    "930": "temp_air",
+    "931": "temp_dew",
+    "933": "relative_humidity",
+    "937": "temp_cell",
 }
 
 
@@ -62,7 +63,7 @@ def read_srml(filename, map_variables=True):
     .. [2] `Archival (short interval) data files
        <http://solardata.uoregon.edu/ArchivalFiles.html>`_
     """
-    tsv_data = pd.read_csv(filename, delimiter='\t')
+    tsv_data = pd.read_csv(filename, delimiter="\t")
     data = _format_index(tsv_data)
     # Drop day of year and time columns
     data = data[data.columns[2:]]
@@ -83,13 +84,14 @@ def read_srml(filename, map_variables=True):
     #         '0.2': 'temp_air_2'}
     #
     columns = data.columns
-    flag_label_map = {flag: columns[columns.get_loc(flag) - 1] + '_flag'
-                      for flag in columns[1::2]}
+    flag_label_map = {
+        flag: columns[columns.get_loc(flag) - 1] + "_flag" for flag in columns[1::2]
+    }
     data = data.rename(columns=flag_label_map)
 
     # Mask data marked with quality flag 99 (bad or missing data)
     for col in columns[::2]:
-        missing = data[col + '_flag'] == 99
+        missing = data[col + "_flag"] == 99
         data[col] = data[col].where(~(missing), np.nan)
     return data
 
@@ -108,7 +110,7 @@ def _map_columns(col):
         The pvlib label if it was found in the mapping,
         else the original label.
     """
-    if col.startswith('7'):
+    if col.startswith("7"):
         # spectral data
         try:
             return VARIABLE_MAP[col]
@@ -117,7 +119,7 @@ def _map_columns(col):
     try:
         variable_name = VARIABLE_MAP[col[:3]]
         variable_number = col[3:]
-        return variable_name + '_' + variable_number
+        return variable_name + "_" + variable_number
     except KeyError:
         return col
 
@@ -161,17 +163,22 @@ def _format_index(df):
         # to correct to valid times.
         old_hours = df_time % 100 > 60
         times = df_time.where(~old_hours, df_time - 40)
-    times = times.apply(lambda x: '{:04.0f}'.format(x))
-    doy = df_doy.apply(lambda x: '{:03.0f}'.format(x))
-    dts = pd.to_datetime(str(year) + '-' + doy + '-' + times,
-                         format='%Y-%j-%H%M')
+    times = times.apply(lambda x: "{:04.0f}".format(x))
+    doy = df_doy.apply(lambda x: "{:03.0f}".format(x))
+    dts = pd.to_datetime(str(year) + "-" + doy + "-" + times, format="%Y-%j-%H%M")
     df.index = dts
-    df = df.tz_localize('Etc/GMT+8')
+    df = df.tz_localize("Etc/GMT+8")
     return df
 
 
-def get_srml(station, start, end, filetype='PO', map_variables=True,
-             url="http://solardata.uoregon.edu/download/Archive/"):
+def get_srml(
+    station,
+    start,
+    end,
+    filetype="PO",
+    map_variables=True,
+    url="http://solardata.uoregon.edu/download/Archive/",
+):
     """Request data from UoO SRML and read it into a Dataframe.
 
     The University of Oregon Solar Radiation Monitoring Laboratory (SRML) is
@@ -237,8 +244,9 @@ def get_srml(station, start, end, filetype='PO', map_variables=True,
 
     # Generate list of months
     months = pd.date_range(
-        start, end.replace(day=1) + pd.DateOffset(months=1), freq='1M')
-    months_str = months.strftime('%y%m')
+        start, end.replace(day=1) + pd.DateOffset(months=1), freq="1M"
+    )
+    months_str = months.strftime("%y%m")
 
     # Generate list of filenames
     filenames = [f"{station}{filetype}{m}.txt" for m in months_str]
@@ -251,10 +259,8 @@ def get_srml(station, start, end, filetype='PO', map_variables=True,
         except urllib.error.HTTPError:
             warnings.warn(f"The following file was not found: {f}")
 
-    data = pd.concat(dfs, axis='rows')
+    data = pd.concat(dfs, axis="rows")
 
-    meta = {'filetype': filetype,
-            'station': station,
-            'filenames': filenames}
+    meta = {"filetype": filetype, "station": station, "filenames": filenames}
 
     return data, meta

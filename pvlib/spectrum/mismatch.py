@@ -4,6 +4,7 @@ spectral mismatch calculations. Spectral mismatch models quantify the effect on
 a device's photocurrent (or its short-circuit current) of changes in the solar
 spectrum due to the atmosphere.
 """
+
 import pvlib
 import numpy as np
 import pandas as pd
@@ -87,8 +88,9 @@ def calc_spectral_mismatch_field(sr, e_sun, e_ref=None):
 
     # get the reference spectrum at wavelengths matching the measured spectra
     if e_ref is None:
-        e_ref = pvlib.spectrum.get_reference_spectra(
-            wavelengths=e_sun.T.index)["global"]
+        e_ref = pvlib.spectrum.get_reference_spectra(wavelengths=e_sun.T.index)[
+            "global"
+        ]
 
     # interpolate the sr at the wavelengths of the spectra
     # reference spectrum wavelengths may differ if e_ref is from caller
@@ -112,12 +114,16 @@ def calc_spectral_mismatch_field(sr, e_sun, e_ref=None):
     return smm
 
 
-def spectral_factor_firstsolar(precipitable_water, airmass_absolute,
-                               module_type=None, coefficients=None,
-                               min_precipitable_water=0.1,
-                               max_precipitable_water=8,
-                               min_airmass_absolute=0.58,
-                               max_airmass_absolute=10):
+def spectral_factor_firstsolar(
+    precipitable_water,
+    airmass_absolute,
+    module_type=None,
+    coefficients=None,
+    min_precipitable_water=0.1,
+    max_precipitable_water=8,
+    min_airmass_absolute=0.58,
+    max_airmass_absolute=10,
+):
     r"""
     Spectral mismatch modifier based on precipitable water and absolute
     (pressure-adjusted) air mass.
@@ -238,59 +244,104 @@ def spectral_factor_firstsolar(precipitable_water, airmass_absolute,
        January 2017
     """
     pw = np.atleast_1d(precipitable_water)
-    pw = pw.astype('float64')
+    pw = pw.astype("float64")
     if np.min(pw) < min_precipitable_water:
         pw = np.maximum(pw, min_precipitable_water)
-        warn('Low precipitable water values replaced with '
-             f'{min_precipitable_water} cm in the calculation of spectral '
-             'mismatch.')
+        warn(
+            "Low precipitable water values replaced with "
+            f"{min_precipitable_water} cm in the calculation of spectral "
+            "mismatch."
+        )
 
     if np.max(pw) > max_precipitable_water:
         pw[pw > max_precipitable_water] = np.nan
-        warn('High precipitable water values replaced with np.nan in '
-             'the calculation of spectral mismatch.')
+        warn(
+            "High precipitable water values replaced with np.nan in "
+            "the calculation of spectral mismatch."
+        )
 
     airmass_absolute = np.minimum(airmass_absolute, max_airmass_absolute)
 
     if np.min(airmass_absolute) < min_airmass_absolute:
         airmass_absolute = np.maximum(airmass_absolute, min_airmass_absolute)
-        warn('Low airmass values replaced with 'f'{min_airmass_absolute} in '
-             'the calculation of spectral mismatch.')
+        warn(
+            "Low airmass values replaced with "
+            f"{min_airmass_absolute} in "
+            "the calculation of spectral mismatch."
+        )
         # pvlib.atmosphere.get_absolute_airmass(1,
         # pvlib.atmosphere.alt2pres(4340)) = 0.58 Elevation of
         # Mina Pirquita, Argentian = 4340 m. Highest elevation city with
         # population over 50,000.
 
     _coefficients = {}
-    _coefficients['cdte'] = (
-        0.86273, -0.038948, -0.012506, 0.098871, 0.084658, -0.0042948)
-    _coefficients['monosi'] = (
-        0.85914, -0.020880, -0.0058853, 0.12029, 0.026814, -0.0017810)
-    _coefficients['xsi'] = _coefficients['monosi']
-    _coefficients['polysi'] = (
-        0.84090, -0.027539, -0.0079224, 0.13570, 0.038024, -0.0021218)
-    _coefficients['multisi'] = _coefficients['polysi']
-    _coefficients['cigs'] = (
-        0.85252, -0.022314, -0.0047216, 0.13666, 0.013342, -0.0008945)
-    _coefficients['asi'] = (
-        1.12094, -0.047620, -0.0083627, -0.10443, 0.098382, -0.0033818)
+    _coefficients["cdte"] = (
+        0.86273,
+        -0.038948,
+        -0.012506,
+        0.098871,
+        0.084658,
+        -0.0042948,
+    )
+    _coefficients["monosi"] = (
+        0.85914,
+        -0.020880,
+        -0.0058853,
+        0.12029,
+        0.026814,
+        -0.0017810,
+    )
+    _coefficients["xsi"] = _coefficients["monosi"]
+    _coefficients["polysi"] = (
+        0.84090,
+        -0.027539,
+        -0.0079224,
+        0.13570,
+        0.038024,
+        -0.0021218,
+    )
+    _coefficients["multisi"] = _coefficients["polysi"]
+    _coefficients["cigs"] = (
+        0.85252,
+        -0.022314,
+        -0.0047216,
+        0.13666,
+        0.013342,
+        -0.0008945,
+    )
+    _coefficients["asi"] = (
+        1.12094,
+        -0.047620,
+        -0.0083627,
+        -0.10443,
+        0.098382,
+        -0.0033818,
+    )
 
     if module_type is not None and coefficients is None:
         coefficients = _coefficients[module_type.lower()]
     elif module_type is None and coefficients is not None:
         pass
     elif module_type is None and coefficients is None:
-        raise TypeError('No valid input provided, both module_type and ' +
-                        'coefficients are None')
+        raise TypeError(
+            "No valid input provided, both module_type and " + "coefficients are None"
+        )
     else:
-        raise TypeError('Cannot resolve input, must supply only one of ' +
-                        'module_type and coefficients')
+        raise TypeError(
+            "Cannot resolve input, must supply only one of "
+            + "module_type and coefficients"
+        )
 
     coeff = coefficients
     ama = airmass_absolute
     modifier = (
-        coeff[0] + coeff[1]*ama + coeff[2]*pw + coeff[3]*np.sqrt(ama) +
-        coeff[4]*np.sqrt(pw) + coeff[5]*ama/np.sqrt(pw))
+        coeff[0]
+        + coeff[1] * ama
+        + coeff[2] * pw
+        + coeff[3] * np.sqrt(ama)
+        + coeff[4] * np.sqrt(pw)
+        + coeff[5] * ama / np.sqrt(pw)
+    )
 
     return modifier
 
@@ -361,8 +412,7 @@ def spectral_factor_sapm(airmass_absolute, module):
 
     """
 
-    am_coeff = [module['A4'], module['A3'], module['A2'], module['A1'],
-                module['A0']]
+    am_coeff = [module["A4"], module["A3"], module["A2"], module["A1"], module["A0"]]
 
     spectral_loss = np.polyval(am_coeff, airmass_absolute)
 
@@ -376,8 +426,9 @@ def spectral_factor_sapm(airmass_absolute, module):
     return spectral_loss
 
 
-def spectral_factor_caballero(precipitable_water, airmass_absolute, aod500,
-                              module_type=None, coefficients=None):
+def spectral_factor_caballero(
+    precipitable_water, airmass_absolute, aod500, module_type=None, coefficients=None
+):
     r"""
     Estimate a technology-specific spectral mismatch modifier from
     airmass, aerosol optical depth, and atmospheric precipitable water,
@@ -435,33 +486,100 @@ def spectral_factor_caballero(precipitable_water, airmass_absolute, aod500,
     """
 
     if module_type is None and coefficients is None:
-        raise ValueError('Must provide either `module_type` or `coefficients`')
+        raise ValueError("Must provide either `module_type` or `coefficients`")
     if module_type is not None and coefficients is not None:
-        raise ValueError('Only one of `module_type` and `coefficients` should '
-                         'be provided')
+        raise ValueError(
+            "Only one of `module_type` and `coefficients` should " "be provided"
+        )
 
     # Experimental coefficients from [1]_.
     # The extra 0/1 coefficients at the end are used to enable/disable
     # terms to match the different equation forms in Table 1.
     _coefficients = {}
-    _coefficients['cdte'] = (
-        1.0044, 0.0095, -0.0037, 0.0002, 0.0000, -0.0046,
-        -0.0182, 0, 0.0095, 0.0068, 0, 1)
-    _coefficients['monosi'] = (
-        0.9706, 0.0377, -0.0123, 0.0025, -0.0002, 0.0159,
-        -0.0165, 0, -0.0016, -0.0027, 1, 0)
-    _coefficients['multisi'] = (
-        0.9836, 0.0254, -0.0085, 0.0016, -0.0001, 0.0094,
-        -0.0132, 0, -0.0002, -0.0011, 1, 0)
-    _coefficients['cigs'] = (
-        0.9801, 0.0283, -0.0092, 0.0019, -0.0001, 0.0117,
-        -0.0126, 0, -0.0011, -0.0019, 1, 0)
-    _coefficients['asi'] = (
-        1.1060, -0.0848, 0.0302, -0.0076, 0.0006, -0.1283,
-        0.0986, -0.0254, 0.0156, 0.0146, 1, 0)
-    _coefficients['perovskite'] = (
-        1.0637, -0.0491, 0.0180, -0.0047, 0.0004, -0.0773,
-        0.0583, -0.0159, 0.01251, 0.0109, 1, 0)
+    _coefficients["cdte"] = (
+        1.0044,
+        0.0095,
+        -0.0037,
+        0.0002,
+        0.0000,
+        -0.0046,
+        -0.0182,
+        0,
+        0.0095,
+        0.0068,
+        0,
+        1,
+    )
+    _coefficients["monosi"] = (
+        0.9706,
+        0.0377,
+        -0.0123,
+        0.0025,
+        -0.0002,
+        0.0159,
+        -0.0165,
+        0,
+        -0.0016,
+        -0.0027,
+        1,
+        0,
+    )
+    _coefficients["multisi"] = (
+        0.9836,
+        0.0254,
+        -0.0085,
+        0.0016,
+        -0.0001,
+        0.0094,
+        -0.0132,
+        0,
+        -0.0002,
+        -0.0011,
+        1,
+        0,
+    )
+    _coefficients["cigs"] = (
+        0.9801,
+        0.0283,
+        -0.0092,
+        0.0019,
+        -0.0001,
+        0.0117,
+        -0.0126,
+        0,
+        -0.0011,
+        -0.0019,
+        1,
+        0,
+    )
+    _coefficients["asi"] = (
+        1.1060,
+        -0.0848,
+        0.0302,
+        -0.0076,
+        0.0006,
+        -0.1283,
+        0.0986,
+        -0.0254,
+        0.0156,
+        0.0146,
+        1,
+        0,
+    )
+    _coefficients["perovskite"] = (
+        1.0637,
+        -0.0491,
+        0.0180,
+        -0.0047,
+        0.0004,
+        -0.0773,
+        0.0583,
+        -0.0159,
+        0.01251,
+        0.0109,
+        1,
+        0,
+    )
 
     if module_type is not None:
         coeff = _coefficients[module_type]
@@ -488,16 +606,14 @@ def spectral_factor_caballero(precipitable_water, airmass_absolute, aod500,
         + coeff[7] * ama**2
     )
     # Eq 7, with Table 1
-    f_PW = (precipitable_water - pw_ref) * (
-        coeff[8]
-        + coeff[9] * np.log(ama)
-    )
+    f_PW = (precipitable_water - pw_ref) * (coeff[8] + coeff[9] * np.log(ama))
     modifier = f_AM + f_AOD + f_PW  # Eq 5
     return modifier
 
 
-def spectral_factor_pvspec(airmass_absolute, clearsky_index,
-                           module_type=None, coefficients=None):
+def spectral_factor_pvspec(
+    airmass_absolute, clearsky_index, module_type=None, coefficients=None
+):
     r"""
     Estimate a technology-specific spectral mismatch modifier from absolute
     airmass and clear sky index using the PVSPEC model.
@@ -574,36 +690,39 @@ def spectral_factor_pvspec(airmass_absolute, clearsky_index,
     """
 
     _coefficients = {}
-    _coefficients['multisi'] = (0.9847, -0.05237, 0.03034)
-    _coefficients['monosi'] = (0.9845, -0.05169, 0.03034)
-    _coefficients['fs-2'] = (1.002, -0.07108, 0.02465)
-    _coefficients['fs-4'] = (0.9981, -0.05776, 0.02336)
-    _coefficients['cigs'] = (0.9791, -0.03904, 0.03096)
-    _coefficients['asi'] = (1.051, -0.1033, 0.009838)
+    _coefficients["multisi"] = (0.9847, -0.05237, 0.03034)
+    _coefficients["monosi"] = (0.9845, -0.05169, 0.03034)
+    _coefficients["fs-2"] = (1.002, -0.07108, 0.02465)
+    _coefficients["fs-4"] = (0.9981, -0.05776, 0.02336)
+    _coefficients["cigs"] = (0.9791, -0.03904, 0.03096)
+    _coefficients["asi"] = (1.051, -0.1033, 0.009838)
 
     if module_type is not None and coefficients is None:
         coefficients = _coefficients[module_type.lower()]
     elif module_type is None and coefficients is not None:
         pass
     elif module_type is None and coefficients is None:
-        raise ValueError('No valid input provided, both module_type and ' +
-                         'coefficients are None. module_type can be one of ' +
-                         ", ".join(_coefficients.keys()))
+        raise ValueError(
+            "No valid input provided, both module_type and "
+            + "coefficients are None. module_type can be one of "
+            + ", ".join(_coefficients.keys())
+        )
     else:
-        raise ValueError('Cannot resolve input, must supply only one of ' +
-                         'module_type and coefficients. module_type can be ' +
-                         'one of' ", ".join(_coefficients.keys()))
+        raise ValueError(
+            "Cannot resolve input, must supply only one of "
+            + "module_type and coefficients. module_type can be "
+            + "one of" ", ".join(_coefficients.keys())
+        )
 
     coeff = coefficients
     ama = airmass_absolute
     kc = clearsky_index
-    mismatch = coeff[0]*np.power(kc, coeff[1])*np.power(ama, coeff[2])
+    mismatch = coeff[0] * np.power(kc, coeff[1]) * np.power(ama, coeff[2])
 
     return mismatch
 
 
-def spectral_factor_jrc(airmass, clearsky_index, module_type=None,
-                        coefficients=None):
+def spectral_factor_jrc(airmass, clearsky_index, module_type=None, coefficients=None):
     r"""
     Estimate a technology-specific spectral mismatch modifier from
     airmass and clear sky index using the JRC model.
@@ -682,25 +801,29 @@ def spectral_factor_jrc(airmass, clearsky_index, module_type=None,
     """
 
     _coefficients = {}
-    _coefficients['multisi'] = (0.00172, 0.000508, 0.00000357)
-    _coefficients['cdte'] = (0.000643, 0.000130, 0.0000108)
+    _coefficients["multisi"] = (0.00172, 0.000508, 0.00000357)
+    _coefficients["cdte"] = (0.000643, 0.000130, 0.0000108)
     # normalise coefficients by I*sc0, see [1]
     _coefficients = {
-        'multisi': tuple(x / 0.00348 for x in _coefficients['multisi']),
-        'cdte': tuple(x / 0.001150 for x in _coefficients['cdte'])
+        "multisi": tuple(x / 0.00348 for x in _coefficients["multisi"]),
+        "cdte": tuple(x / 0.001150 for x in _coefficients["cdte"]),
     }
     if module_type is not None and coefficients is None:
         coefficients = _coefficients[module_type.lower()]
     elif module_type is None and coefficients is not None:
         pass
     elif module_type is None and coefficients is None:
-        raise ValueError('No valid input provided, both module_type and ' +
-                         'coefficients are None. module_type can be one of ' +
-                         ", ".join(_coefficients.keys()))
+        raise ValueError(
+            "No valid input provided, both module_type and "
+            + "coefficients are None. module_type can be one of "
+            + ", ".join(_coefficients.keys())
+        )
     else:
-        raise ValueError('Cannot resolve input, must supply only one of ' +
-                         'module_type and coefficients. module_type can be ' +
-                         'one of' ", ".join(_coefficients.keys()))
+        raise ValueError(
+            "Cannot resolve input, must supply only one of "
+            + "module_type and coefficients. module_type can be "
+            + "one of" ", ".join(_coefficients.keys())
+        )
 
     coeff = coefficients
     mismatch = (

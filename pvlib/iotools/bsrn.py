@@ -11,44 +11,138 @@ import os
 
 BSRN_FTP_URL = "ftp.bsrn.awi.de"
 
-BSRN_LR0100_COL_SPECS = [(0, 3), (4, 9), (10, 16), (16, 22), (22, 27),
-                         (27, 32), (32, 39), (39, 45), (45, 50), (50, 55),
-                         (55, 64), (64, 70), (70, 75)]
+BSRN_LR0100_COL_SPECS = [
+    (0, 3),
+    (4, 9),
+    (10, 16),
+    (16, 22),
+    (22, 27),
+    (27, 32),
+    (32, 39),
+    (39, 45),
+    (45, 50),
+    (50, 55),
+    (55, 64),
+    (64, 70),
+    (70, 75),
+]
 
-BSRN_LR0300_COL_SPECS = [(1, 3), (4, 9), (10, 16), (16, 22), (22, 27),
-                         (27, 31), (31, 38), (38, 44), (44, 49), (49, 54),
-                         (54, 61), (61, 67), (67, 72), (72, 78)]
+BSRN_LR0300_COL_SPECS = [
+    (1, 3),
+    (4, 9),
+    (10, 16),
+    (16, 22),
+    (22, 27),
+    (27, 31),
+    (31, 38),
+    (38, 44),
+    (44, 49),
+    (49, 54),
+    (54, 61),
+    (61, 67),
+    (67, 72),
+    (72, 78),
+]
 
-BSRN_LR0500_COL_SPECS = [(0, 3), (3, 8), (8, 14), (14, 20), (20, 26), (26, 32),
-                         (32, 38), (38, 44), (44, 50), (50, 56), (56, 62),
-                         (62, 68), (68, 74), (74, 80)]
+BSRN_LR0500_COL_SPECS = [
+    (0, 3),
+    (3, 8),
+    (8, 14),
+    (14, 20),
+    (20, 26),
+    (26, 32),
+    (32, 38),
+    (38, 44),
+    (44, 50),
+    (50, 56),
+    (56, 62),
+    (62, 68),
+    (68, 74),
+    (74, 80),
+]
 
-BSRN_LR0100_COLUMNS = ['day', 'minute',
-                       'ghi', 'ghi_std', 'ghi_min', 'ghi_max',
-                       'dni', 'dni_std', 'dni_min', 'dni_max',
-                       'empty', 'empty', 'empty', 'empty', 'empty',
-                       'dhi', 'dhi_std', 'dhi_min', 'dhi_max',
-                       'lwd', 'lwd_std', 'lwd_min', 'lwd_max',
-                       'temp_air', 'relative_humidity', 'pressure']
+BSRN_LR0100_COLUMNS = [
+    "day",
+    "minute",
+    "ghi",
+    "ghi_std",
+    "ghi_min",
+    "ghi_max",
+    "dni",
+    "dni_std",
+    "dni_min",
+    "dni_max",
+    "empty",
+    "empty",
+    "empty",
+    "empty",
+    "empty",
+    "dhi",
+    "dhi_std",
+    "dhi_min",
+    "dhi_max",
+    "lwd",
+    "lwd_std",
+    "lwd_min",
+    "lwd_max",
+    "temp_air",
+    "relative_humidity",
+    "pressure",
+]
 
-BSRN_LR0300_COLUMNS = ['day', 'minute', 'gri', 'gri_std', 'gri_min', 'gri_max',
-                       'lwu', 'lwu_std', 'lwu_min', 'lwu_max', 'net_radiation',
-                       'net_radiation_std', 'net_radiation_min',
-                       'net_radiation_max']
+BSRN_LR0300_COLUMNS = [
+    "day",
+    "minute",
+    "gri",
+    "gri_std",
+    "gri_min",
+    "gri_max",
+    "lwu",
+    "lwu_std",
+    "lwu_min",
+    "lwu_max",
+    "net_radiation",
+    "net_radiation_std",
+    "net_radiation_min",
+    "net_radiation_max",
+]
 
-BSRN_LR0500_COLUMNS = ['day', 'minute', 'uva_global', 'uva_global_std',
-                       'uva_global_min', 'uva_global_max', 'uvb_direct',
-                       'uvb_direct_std', 'uvb_direct_min', 'uvb_direct_max',
-                       'empty', 'empty', 'empty', 'empty',
-                       'uvb_global', 'uvb_global_std', 'uvb_global_min',
-                       'uvb_global_max', 'uvb_diffuse', 'uvb_diffuse_std',
-                       'uvb_diffuse', 'uvb_diffuse_std',
-                       'uvb_diffuse_min', 'uvb_diffuse_max',
-                       'uvb_reflected', 'uvb_reflected_std',
-                       'uvb_reflected_min', 'uvb_reflected_max']
+BSRN_LR0500_COLUMNS = [
+    "day",
+    "minute",
+    "uva_global",
+    "uva_global_std",
+    "uva_global_min",
+    "uva_global_max",
+    "uvb_direct",
+    "uvb_direct_std",
+    "uvb_direct_min",
+    "uvb_direct_max",
+    "empty",
+    "empty",
+    "empty",
+    "empty",
+    "uvb_global",
+    "uvb_global_std",
+    "uvb_global_min",
+    "uvb_global_max",
+    "uvb_diffuse",
+    "uvb_diffuse_std",
+    "uvb_diffuse",
+    "uvb_diffuse_std",
+    "uvb_diffuse_min",
+    "uvb_diffuse_max",
+    "uvb_reflected",
+    "uvb_reflected_std",
+    "uvb_reflected_min",
+    "uvb_reflected_max",
+]
 
-BSRN_COLUMNS = {'0100': BSRN_LR0100_COLUMNS, '0300': BSRN_LR0300_COLUMNS,
-                '0500': BSRN_LR0500_COLUMNS}
+BSRN_COLUMNS = {
+    "0100": BSRN_LR0100_COLUMNS,
+    "0300": BSRN_LR0300_COLUMNS,
+    "0500": BSRN_LR0500_COLUMNS,
+}
 
 
 def _empty_dataframe_from_logical_records(logical_records):
@@ -57,12 +151,13 @@ def _empty_dataframe_from_logical_records(logical_records):
     columns = []
     for lr in logical_records:
         columns += BSRN_COLUMNS[lr][2:]
-    columns = [c for c in columns if c != 'empty']
+    columns = [c for c in columns if c != "empty"]
     return pd.DataFrame(columns=columns)
 
 
-def get_bsrn(station, start, end, username, password,
-             logical_records=('0100',), save_path=None):
+def get_bsrn(
+    station, start, end, username, password, logical_records=("0100",), save_path=None
+):
     """
     Retrieve ground measured irradiance data from the BSRN FTP server.
 
@@ -159,43 +254,48 @@ def get_bsrn(station, start, end, username, password,
     end = pd.to_datetime(end)
 
     # Generate list files to download based on start/end (SSSMMYY.dat.gz)
-    filenames = pd.date_range(
-        start, end.replace(day=1) + pd.DateOffset(months=1), freq='1M')\
-        .strftime(f"{station}%m%y.dat.gz").tolist()
+    filenames = (
+        pd.date_range(start, end.replace(day=1) + pd.DateOffset(months=1), freq="1M")
+        .strftime(f"{station}%m%y.dat.gz")
+        .tolist()
+    )
 
     # Create FTP connection
     with ftplib.FTP(BSRN_FTP_URL, username, password) as ftp:
         # Change to station sub-directory (checks that the station exists)
         try:
-            ftp.cwd(f'/{station}')
+            ftp.cwd(f"/{station}")
         except ftplib.error_perm as e:
-            raise KeyError('Station sub-directory does not exist. Specified '
-                           'station is probably not a proper three letter '
-                           'station abbreviation.') from e
+            raise KeyError(
+                "Station sub-directory does not exist. Specified "
+                "station is probably not a proper three letter "
+                "station abbreviation."
+            ) from e
         dfs = []  # Initialize list for monthly dataframes
         non_existing_files = []  # Initilize list of files that were not found
         for filename in filenames:
             try:
                 bio = io.BytesIO()  # Initialize BytesIO object
                 # Retrieve binary file from server and write to BytesIO object
-                response = ftp.retrbinary(f'RETR {filename}', bio.write)
+                response = ftp.retrbinary(f"RETR {filename}", bio.write)
                 # Check that transfer was successfull
-                if not response.startswith('226 Transfer complete'):
+                if not response.startswith("226 Transfer complete"):
                     raise ftplib.Error(response)
                 # Save file locally if save_path is specified
                 if save_path is not None:
                     # Create local file
-                    with open(os.path.join(save_path, filename), 'wb') as f:
+                    with open(os.path.join(save_path, filename), "wb") as f:
                         f.write(bio.getbuffer())  # Write local file
                 # Open gzip file and convert to StringIO
                 bio.seek(0)  # reset buffer to start of file
-                gzip_file = io.TextIOWrapper(gzip.GzipFile(fileobj=bio),
-                                             encoding='latin1')
+                gzip_file = io.TextIOWrapper(
+                    gzip.GzipFile(fileobj=bio), encoding="latin1"
+                )
                 dfi, metadata = parse_bsrn(gzip_file, logical_records)
                 dfs.append(dfi)
             # FTP client raises an error if the file does not exist on server
             except ftplib.error_perm as e:
-                if str(e) == '550 Failed to open file.':
+                if str(e) == "550 Failed to open file.":
                     non_existing_files.append(filename)
                 else:
                     raise ftplib.error_perm(e)
@@ -203,13 +303,13 @@ def get_bsrn(station, start, end, username, password,
 
     # Raise user warnings
     if not dfs:  # If no files were found
-        warnings.warn('No files were available for the specified timeframe.')
+        warnings.warn("No files were available for the specified timeframe.")
     elif non_existing_files:  # If only some files were missing
-        warnings.warn(f'The following files were not found: {non_existing_files}')  # noqa: E501
+        warnings.warn(f"The following files were not found: {non_existing_files}")  # noqa: E501
 
     # Concatenate monthly dataframes to one dataframe
     if len(dfs):
-        data = pd.concat(dfs, axis='rows')
+        data = pd.concat(dfs, axis="rows")
     else:  # Return empty dataframe
         data = _empty_dataframe_from_logical_records(logical_records)
         metadata = {}
@@ -217,7 +317,7 @@ def get_bsrn(station, start, end, username, password,
     return data, metadata
 
 
-def parse_bsrn(fbuf, logical_records=('0100',)):
+def parse_bsrn(fbuf, logical_records=("0100",)):
     """
     Parse a file-like buffer of a BSRN station-to-archive file.
 
@@ -246,46 +346,49 @@ def parse_bsrn(fbuf, logical_records=('0100',)):
     # Parse metadata
     fbuf.readline()  # first line should be *U0001, so read it and discard
     date_line = fbuf.readline()  # second line contains important metadata
-    start_date = pd.Timestamp(year=int(date_line[7:11]),
-                              month=int(date_line[3:6]), day=1,
-                              tz='UTC')  # BSRN timestamps are UTC
+    start_date = pd.Timestamp(
+        year=int(date_line[7:11]), month=int(date_line[3:6]), day=1, tz="UTC"
+    )  # BSRN timestamps are UTC
 
     metadata = {}  # Initilize dictionary containing metadata
-    metadata['start date'] = start_date
-    metadata['station identification number'] = int(date_line[:3])
-    metadata['version of data'] = int(date_line.split()[-1])
+    metadata["start date"] = start_date
+    metadata["station identification number"] = int(date_line[:3])
+    metadata["version of data"] = int(date_line.split()[-1])
     for line in fbuf:
-        if line[2:6] == '0004':  # stop once LR0004 has been reached
+        if line[2:6] == "0004":  # stop once LR0004 has been reached
             break
-        elif line == '':
-            raise ValueError('Mandatory record LR0004 not found.')
-    metadata['date when station description changed'] = fbuf.readline().strip()
-    metadata['surface type'] = int(fbuf.readline(3))
-    metadata['topography type'] = int(fbuf.readline())
-    metadata['address'] = fbuf.readline().strip()
-    metadata['telephone no. of station'] = fbuf.readline(20).strip()
-    metadata['FAX no. of station'] = fbuf.readline().strip()
-    metadata['TCP/IP no. of station'] = fbuf.readline(15).strip()
-    metadata['e-mail address of station'] = fbuf.readline().strip()
-    metadata['latitude_bsrn'] = float(fbuf.readline(8))  # BSRN convention
-    metadata['latitude'] = metadata['latitude_bsrn'] - 90  # ISO 19115
-    metadata['longitude_bsrn'] = float(fbuf.readline(8))  # BSRN convention
-    metadata['longitude'] = metadata['longitude_bsrn'] - 180  # ISO 19115
-    metadata['altitude'] = int(fbuf.readline(5))
+        elif line == "":
+            raise ValueError("Mandatory record LR0004 not found.")
+    metadata["date when station description changed"] = fbuf.readline().strip()
+    metadata["surface type"] = int(fbuf.readline(3))
+    metadata["topography type"] = int(fbuf.readline())
+    metadata["address"] = fbuf.readline().strip()
+    metadata["telephone no. of station"] = fbuf.readline(20).strip()
+    metadata["FAX no. of station"] = fbuf.readline().strip()
+    metadata["TCP/IP no. of station"] = fbuf.readline(15).strip()
+    metadata["e-mail address of station"] = fbuf.readline().strip()
+    metadata["latitude_bsrn"] = float(fbuf.readline(8))  # BSRN convention
+    metadata["latitude"] = metadata["latitude_bsrn"] - 90  # ISO 19115
+    metadata["longitude_bsrn"] = float(fbuf.readline(8))  # BSRN convention
+    metadata["longitude"] = metadata["longitude_bsrn"] - 180  # ISO 19115
+    metadata["altitude"] = int(fbuf.readline(5))
     metadata['identification of "SYNOP" station'] = fbuf.readline().strip()
-    metadata['date when horizon changed'] = fbuf.readline().strip()
+    metadata["date when horizon changed"] = fbuf.readline().strip()
     # Pass last section of LR0004 containing the horizon elevation data
     horizon = []  # list for raw horizon elevation data
     while True:
         line = fbuf.readline()
-        if ('*' in line) | (line == ''):
+        if ("*" in line) | (line == ""):
             break
         else:
             horizon += [int(i) for i in line.split()]
-    horizon = pd.Series(horizon[1::2], horizon[::2], name='horizon_elevation',
-                        dtype=int).drop(-1, errors='ignore').sort_index()
-    horizon.index.name = 'azimuth'
-    metadata['horizon'] = horizon
+    horizon = (
+        pd.Series(horizon[1::2], horizon[::2], name="horizon_elevation", dtype=int)
+        .drop(-1, errors="ignore")
+        .sort_index()
+    )
+    horizon.index.name = "azimuth"
+    metadata["horizon"] = horizon
 
     # Read file and store the starting line number and number of lines for
     # each logical record (LR)
@@ -293,7 +396,7 @@ def parse_bsrn(fbuf, logical_records=('0100',)):
     lr_startrow = {}  # Dictionary of starting line number for each LR
     lr_nrows = {}  # Dictionary of end line number for each LR
     for num, line in enumerate(fbuf):
-        if line.startswith('*'):  # Find start of all logical records
+        if line.startswith("*"):  # Find start of all logical records
             if len(lr_startrow) >= 1:
                 lr_nrows[lr] = num - lr_startrow[lr] - 1  # noqa: F821
             lr = line[2:6]  # string of 4 digit LR number
@@ -301,70 +404,91 @@ def parse_bsrn(fbuf, logical_records=('0100',)):
     lr_nrows[lr] = num - lr_startrow[lr]
 
     for lr in logical_records:
-        if lr not in ['0100', '0300', '0500']:
-            raise ValueError(f"Logical record {lr} not in "
-                             "['0100', '0300','0500'].")
+        if lr not in ["0100", "0300", "0500"]:
+            raise ValueError(f"Logical record {lr} not in " "['0100', '0300','0500'].")
     dfs = []  # Initialize empty list for dataframe
 
     # Parse LR0100 - basic measurements including GHI, DNI, DHI and temperature
-    if ('0100' in lr_startrow.keys()) & ('0100' in logical_records):
+    if ("0100" in lr_startrow.keys()) & ("0100" in logical_records):
         fbuf.seek(0)  # reset buffer to start of file
-        LR_0100 = pd.read_fwf(fbuf, skiprows=lr_startrow['0100'] + 1,
-                              nrows=lr_nrows['0100'], header=None,
-                              colspecs=BSRN_LR0100_COL_SPECS,
-                              na_values=[-999.0, -99.9])
+        LR_0100 = pd.read_fwf(
+            fbuf,
+            skiprows=lr_startrow["0100"] + 1,
+            nrows=lr_nrows["0100"],
+            header=None,
+            colspecs=BSRN_LR0100_COL_SPECS,
+            na_values=[-999.0, -99.9],
+        )
         # Create multi-index and unstack, resulting in 1 col for each variable
         LR_0100 = LR_0100.set_index([LR_0100.index // 2, LR_0100.index % 2])
-        LR_0100 = LR_0100.unstack(level=1).swaplevel(i=0, j=1, axis='columns')
+        LR_0100 = LR_0100.unstack(level=1).swaplevel(i=0, j=1, axis="columns")
         # Sort columns to match original order and assign column names
-        LR_0100 = LR_0100.reindex(sorted(LR_0100.columns), axis='columns')
+        LR_0100 = LR_0100.reindex(sorted(LR_0100.columns), axis="columns")
         LR_0100.columns = BSRN_LR0100_COLUMNS
         # Set datetime index
-        LR_0100.index = (start_date+pd.to_timedelta(LR_0100['day']-1, unit='d')
-                         + pd.to_timedelta(LR_0100['minute'], unit='minutes'))
+        LR_0100.index = (
+            start_date
+            + pd.to_timedelta(LR_0100["day"] - 1, unit="d")
+            + pd.to_timedelta(LR_0100["minute"], unit="minutes")
+        )
         # Drop empty, minute, and day columns
-        LR_0100 = LR_0100.drop(columns=['empty', 'day', 'minute'])
+        LR_0100 = LR_0100.drop(columns=["empty", "day", "minute"])
         dfs.append(LR_0100)
 
     # Parse LR0300 - other time series data, including upward and net radiation
-    if ('0300' in lr_startrow.keys()) & ('0300' in logical_records):
+    if ("0300" in lr_startrow.keys()) & ("0300" in logical_records):
         fbuf.seek(0)  # reset buffer to start of file
-        LR_0300 = pd.read_fwf(fbuf, skiprows=lr_startrow['0300']+1,
-                              nrows=lr_nrows['0300'], header=None,
-                              na_values=[-999.0, -99.9],
-                              colspecs=BSRN_LR0300_COL_SPECS,
-                              names=BSRN_LR0300_COLUMNS)
-        LR_0300.index = (start_date+pd.to_timedelta(LR_0300['day']-1, unit='d')
-                         + pd.to_timedelta(LR_0300['minute'], unit='minutes'))
-        LR_0300 = LR_0300.drop(columns=['day', 'minute']).astype(float)
+        LR_0300 = pd.read_fwf(
+            fbuf,
+            skiprows=lr_startrow["0300"] + 1,
+            nrows=lr_nrows["0300"],
+            header=None,
+            na_values=[-999.0, -99.9],
+            colspecs=BSRN_LR0300_COL_SPECS,
+            names=BSRN_LR0300_COLUMNS,
+        )
+        LR_0300.index = (
+            start_date
+            + pd.to_timedelta(LR_0300["day"] - 1, unit="d")
+            + pd.to_timedelta(LR_0300["minute"], unit="minutes")
+        )
+        LR_0300 = LR_0300.drop(columns=["day", "minute"]).astype(float)
         dfs.append(LR_0300)
 
     # Parse LR0500 - UV measurements
-    if ('0500' in lr_startrow.keys()) & ('0500' in logical_records):
+    if ("0500" in lr_startrow.keys()) & ("0500" in logical_records):
         fbuf.seek(0)  # reset buffer to start of file
-        LR_0500 = pd.read_fwf(fbuf, skiprows=lr_startrow['0500']+1,
-                              nrows=lr_nrows['0500'], na_values=[-99.9],
-                              header=None, colspecs=BSRN_LR0500_COL_SPECS)
+        LR_0500 = pd.read_fwf(
+            fbuf,
+            skiprows=lr_startrow["0500"] + 1,
+            nrows=lr_nrows["0500"],
+            na_values=[-99.9],
+            header=None,
+            colspecs=BSRN_LR0500_COL_SPECS,
+        )
         # Create multi-index and unstack, resulting in 1 col for each variable
         LR_0500 = LR_0500.set_index([LR_0500.index // 2, LR_0500.index % 2])
-        LR_0500 = LR_0500.unstack(level=1).swaplevel(i=0, j=1, axis='columns')
+        LR_0500 = LR_0500.unstack(level=1).swaplevel(i=0, j=1, axis="columns")
         # Sort columns to match original order and assign column names
-        LR_0500 = LR_0500.reindex(sorted(LR_0500.columns), axis='columns')
+        LR_0500 = LR_0500.reindex(sorted(LR_0500.columns), axis="columns")
         LR_0500.columns = BSRN_LR0500_COLUMNS
-        LR_0500.index = (start_date+pd.to_timedelta(LR_0500['day']-1, unit='d')
-                         + pd.to_timedelta(LR_0500['minute'], unit='minutes'))
-        LR_0500 = LR_0500.drop(columns=['empty', 'day', 'minute'])
+        LR_0500.index = (
+            start_date
+            + pd.to_timedelta(LR_0500["day"] - 1, unit="d")
+            + pd.to_timedelta(LR_0500["minute"], unit="minutes")
+        )
+        LR_0500 = LR_0500.drop(columns=["empty", "day", "minute"])
         dfs.append(LR_0500)
 
     if len(dfs):
-        data = pd.concat(dfs, axis='columns')
+        data = pd.concat(dfs, axis="columns")
     else:
         data = _empty_dataframe_from_logical_records(logical_records)
         metadata = {}
     return data, metadata
 
 
-def read_bsrn(filename, logical_records=('0100',)):
+def read_bsrn(filename, logical_records=("0100",)):
     """
     Read a BSRN station-to-archive file into a DataFrame.
 
@@ -454,10 +578,10 @@ def read_bsrn(filename, logical_records=('0100',)):
     .. [4] `BSRN Data Release Guidelines
        <https://bsrn.awi.de/data/conditions-of-data-release/>`_
     """  # noqa: E501
-    if str(filename).endswith('.gz'):  # check if file is a gzipped (.gz) file
-        open_func, mode = gzip.open, 'rt'
+    if str(filename).endswith(".gz"):  # check if file is a gzipped (.gz) file
+        open_func, mode = gzip.open, "rt"
     else:
-        open_func, mode = open, 'r'
+        open_func, mode = open, "r"
     with open_func(filename, mode) as f:
         content = parse_bsrn(f, logical_records)
     return content

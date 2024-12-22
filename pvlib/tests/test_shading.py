@@ -144,29 +144,27 @@ def projected_solar_zenith_angle_edge_cases():
     premises_and_result_matrix = pd.DataFrame(
         data=[
             # s_zen | s_azm | ax_tilt | ax_azm | psza
-            [   0,       0,      0,        0,      0],
-            [   0,     180,      0,        0,      0],
-            [   0,       0,      0,      180,      0],
-            [   0,     180,      0,      180,      0],
-            [  45,       0,      0,      180,      0],
-            [  45,      90,      0,      180,    -45],
-            [  45,     270,      0,      180,     45],
-            [  45,      90,     90,      180,    -90],
-            [  45,     270,     90,      180,     90],
-            [  45,      90,     90,        0,     90],
-            [  45,     270,     90,        0,    -90],
-            [  45,      45,     90,      180,   -135],
-            [  45,     315,     90,      180,    135],
+            [0, 0, 0, 0, 0],
+            [0, 180, 0, 0, 0],
+            [0, 0, 0, 180, 0],
+            [0, 180, 0, 180, 0],
+            [45, 0, 0, 180, 0],
+            [45, 90, 0, 180, -45],
+            [45, 270, 0, 180, 45],
+            [45, 90, 90, 180, -90],
+            [45, 270, 90, 180, 90],
+            [45, 90, 90, 0, 90],
+            [45, 270, 90, 0, -90],
+            [45, 45, 90, 180, -135],
+            [45, 315, 90, 180, 135],
         ],
-        columns=["solar_zenith", "solar_azimuth", "axis_tilt", "axis_azimuth",
-                 "psza"],
+        columns=["solar_zenith", "solar_azimuth", "axis_tilt", "axis_azimuth", "psza"],
     )
     return premises_and_result_matrix
 
 
 def test_projected_solar_zenith_angle_numeric(
-    true_tracking_angle_and_inputs_NREL,
-    projected_solar_zenith_angle_edge_cases
+    true_tracking_angle_and_inputs_NREL, projected_solar_zenith_angle_edge_cases
 ):
     psza_func = shading.projected_solar_zenith_angle
     axis_tilt, axis_azimuth, timedata = true_tracking_angle_and_inputs_NREL
@@ -259,8 +257,7 @@ def sf1d_premises_and_expected():
     )  # fmt: skip
 
     test_data["cross_axis_slope"] = atand(
-        (test_data["z_R"] - test_data["z_L"])
-        / (test_data["x_L"] - test_data["x_R"])
+        (test_data["z_R"] - test_data["z_L"]) / (test_data["x_L"] - test_data["x_R"])
     )
     test_data["pitch"] = test_data["x_L"] - test_data["x_R"]
     # switch Left/Right rows if needed to make the right one the shaded
@@ -374,9 +371,7 @@ def direct_martinez_Table2():
     )  # fmt: skip
     test_data["total_blocks"] = 16  # total blocks is 16 for all cases
     test_data["shaded_fraction"] = test_data["F_GS-H"] * test_data["F_GS-V"]
-    test_data["poa_global"] = (
-        test_data["poa_direct"] + test_data["poa_diffuse"]
-    )
+    test_data["poa_global"] = test_data["poa_direct"] + test_data["poa_diffuse"]
     test_data = test_data.drop(columns=["F_GS-H", "F_GS-V", "poa_diffuse"])
     return (
         test_data.drop(columns="power_loss_model"),

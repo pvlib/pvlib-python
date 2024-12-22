@@ -128,45 +128,43 @@ tilt = 30  # degrees
 azimuth = 180  # south-facing
 
 # Datafile found in the pvlib distribution
-data_file = Path(pvlib.__path__[0]).joinpath('data', '723170TYA.CSV')
+data_file = Path(pvlib.__path__[0]).joinpath("data", "723170TYA.CSV")
 
-tmy, metadata = pvlib.iotools.read_tmy3(
-    data_file, coerce_year=2002, map_variables=True
-)
+tmy, metadata = pvlib.iotools.read_tmy3(data_file, coerce_year=2002, map_variables=True)
 tmy = tmy.filter(
-    ['ghi', 'dni', 'dni_extra', 'dhi', 'temp_air', 'wind_speed', 'pressure']
+    ["ghi", "dni", "dni_extra", "dhi", "temp_air", "wind_speed", "pressure"]
 )  # remaining columns are not needed
-tmy = tmy['2002-06-06 00:00':'2002-06-06 23:59']  # select period
+tmy = tmy["2002-06-06 00:00":"2002-06-06 23:59"]  # select period
 
 solar_position = pvlib.solarposition.get_solarposition(
     # TMY timestamp is at end of hour, so shift to center of interval
-    tmy.index.shift(freq='-30T'),
-    latitude=metadata['latitude'],
-    longitude=metadata['longitude'],
-    altitude=metadata['altitude'],
-    pressure=tmy['pressure'] * 100,  # convert from millibar to Pa
-    temperature=tmy['temp_air'],
+    tmy.index.shift(freq="-30T"),
+    latitude=metadata["latitude"],
+    longitude=metadata["longitude"],
+    altitude=metadata["altitude"],
+    pressure=tmy["pressure"] * 100,  # convert from millibar to Pa
+    temperature=tmy["temp_air"],
 )
 solar_position.index = tmy.index  # reset index to end of the hour
 
 # Albedo calculation for inland water bodies
 albedo = pvlib.albedo.inland_water_dvoracek(
-    solar_elevation=solar_position['elevation'],
-    surface_condition='clear_water_no_waves'
+    solar_elevation=solar_position["elevation"],
+    surface_condition="clear_water_no_waves",
 )
 
 # Use transposition model to find plane-of-array irradiance
 irradiance = pvlib.irradiance.get_total_irradiance(
     surface_tilt=tilt,
     surface_azimuth=azimuth,
-    solar_zenith=solar_position['apparent_zenith'],
-    solar_azimuth=solar_position['azimuth'],
-    dni=tmy['dni'],
-    dni_extra=tmy['dni_extra'],
-    ghi=tmy['ghi'],
-    dhi=tmy['dhi'],
+    solar_zenith=solar_position["apparent_zenith"],
+    solar_azimuth=solar_position["azimuth"],
+    dni=tmy["dni"],
+    dni_extra=tmy["dni_extra"],
+    ghi=tmy["ghi"],
+    dhi=tmy["dhi"],
     albedo=albedo,
-    model='haydavies'
+    model="haydavies",
 )
 
 # %%
@@ -178,43 +176,53 @@ irradiance = pvlib.irradiance.get_total_irradiance(
 # Make a dictionary containing all the sets of coefficients presented in the
 # above table.
 heat_loss_coeffs = {
-    'open_structure_small_footprint_tracking_NL': [24.4, 6.5, 'C0', 'solid'],
-    'open_structure_small_footprint_tracking_NL_2': [57, 0, 'C0', 'dashed'],
-    'closed_structure_large_footprint_NL': [25.2, 3.7, 'C1', 'solid'],
-    'closed_structure_large_footprint_NL_2': [37, 0, 'C1', 'dashed'],
-    'closed_structure_large_footprint_SG': [34.8, 0.8, 'C2', 'solid'],
-    'closed_structure_large_footprint_SG_2': [36, 0, 'C2', 'dashed'],
-    'closed_structure_medium_footprint_SG': [18.9, 8.9, 'C3', 'solid'],
-    'closed_structure_medium_footprint_SG_2': [41, 0, 'C3', 'dashed'],
-    'open_structure_free_standing_SG': [35.3, 8.9, 'C4', 'solid'],
-    'open_structure_free_standing_SG_2': [55, 0, 'C4', 'dashed'],
-    'in_contact_with_water_NO': [71, 0, 'C5', 'solid'],
-    'open_structure_free_standing_IT': [31.9, 1.5, 'C6', 'solid'],
-    'open_structure_free_standing_bifacial_IT': [35.2, 1.5, 'C7', 'solid'],
-    'default_PVSyst_coeffs_for_land_systems': [29.0, 0, 'C8', 'solid']
+    "open_structure_small_footprint_tracking_NL": [24.4, 6.5, "C0", "solid"],
+    "open_structure_small_footprint_tracking_NL_2": [57, 0, "C0", "dashed"],
+    "closed_structure_large_footprint_NL": [25.2, 3.7, "C1", "solid"],
+    "closed_structure_large_footprint_NL_2": [37, 0, "C1", "dashed"],
+    "closed_structure_large_footprint_SG": [34.8, 0.8, "C2", "solid"],
+    "closed_structure_large_footprint_SG_2": [36, 0, "C2", "dashed"],
+    "closed_structure_medium_footprint_SG": [18.9, 8.9, "C3", "solid"],
+    "closed_structure_medium_footprint_SG_2": [41, 0, "C3", "dashed"],
+    "open_structure_free_standing_SG": [35.3, 8.9, "C4", "solid"],
+    "open_structure_free_standing_SG_2": [55, 0, "C4", "dashed"],
+    "in_contact_with_water_NO": [71, 0, "C5", "solid"],
+    "open_structure_free_standing_IT": [31.9, 1.5, "C6", "solid"],
+    "open_structure_free_standing_bifacial_IT": [35.2, 1.5, "C7", "solid"],
+    "default_PVSyst_coeffs_for_land_systems": [29.0, 0, "C8", "solid"],
 }
 
 # Plot the cell temperature for each set of the above heat loss coefficients
 for coeffs in heat_loss_coeffs:
     T_cell = pvlib.temperature.pvsyst_cell(
-        poa_global=irradiance['poa_global'],
-        temp_air=tmy['temp_air'],
-        wind_speed=tmy['wind_speed'],
+        poa_global=irradiance["poa_global"],
+        temp_air=tmy["temp_air"],
+        wind_speed=tmy["wind_speed"],
         u_c=heat_loss_coeffs[coeffs][0],
-        u_v=heat_loss_coeffs[coeffs][1]
+        u_v=heat_loss_coeffs[coeffs][1],
     )
     # Convert Dataframe Indexes to Hour format to make plotting easier
     T_cell.index = T_cell.index.strftime("%H")
-    plt.plot(T_cell, label=coeffs, c=heat_loss_coeffs[coeffs][2],
-             ls=heat_loss_coeffs[coeffs][3], alpha=0.8)
+    plt.plot(
+        T_cell,
+        label=coeffs,
+        c=heat_loss_coeffs[coeffs][2],
+        ls=heat_loss_coeffs[coeffs][3],
+        alpha=0.8,
+    )
 
-plt.xlabel('Hour')
-plt.ylabel('PV cell temperature [°C]')
+plt.xlabel("Hour")
+plt.ylabel("PV cell temperature [°C]")
 plt.ylim(10, 45)
-plt.xlim('06', '20')
+plt.xlim("06", "20")
 plt.grid()
-plt.legend(loc='upper left', frameon=False, ncols=2, fontsize='x-small',
-           bbox_to_anchor=(0, -0.2))
+plt.legend(
+    loc="upper left",
+    frameon=False,
+    ncols=2,
+    fontsize="x-small",
+    bbox_to_anchor=(0, -0.2),
+)
 plt.tight_layout()
 plt.show()
 

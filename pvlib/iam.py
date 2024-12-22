@@ -17,11 +17,11 @@ from pvlib.tools import cosd, sind, acosd
 # a dict of required parameter names for each IAM model
 # keys are the function names for the IAM models
 _IAM_MODEL_PARAMS = {
-    'ashrae': {'b'},
-    'physical': {'n', 'K', 'L'},
-    'martin_ruiz': {'a_r'},
-    'sapm': {'B0', 'B1', 'B2', 'B3', 'B4', 'B5'},
-    'interp': {'theta_ref', 'iam_ref'}
+    "ashrae": {"b"},
+    "physical": {"n", "K", "L"},
+    "martin_ruiz": {"a_r"},
+    "sapm": {"B0", "B1", "B2", "B3", "B4", "B5"},
+    "interp": {"theta_ref", "iam_ref"},
 }
 
 
@@ -81,7 +81,7 @@ def ashrae(aoi, b=0.05):
     """
 
     iam = 1 - b * (1 / np.cos(np.radians(aoi)) - 1)
-    aoi_gte_90 = np.full_like(aoi, False, dtype='bool')
+    aoi_gte_90 = np.full_like(aoi, False, dtype="bool")
     np.greater_equal(np.abs(aoi), 90, where=~np.isnan(aoi), out=aoi_gte_90)
     iam = np.where(aoi_gte_90, 0, iam)
     iam = np.maximum(0, iam)
@@ -176,11 +176,9 @@ def physical(aoi, n=1.526, K=4.0, L=0.002, *, n_ar=None):
     n2costheta2 = n2 * costheta
 
     # reflectance of s-, p-polarized, and normal light by the first interface
-    with np.errstate(divide='ignore', invalid='ignore'):
-        rho12_s = \
-            ((n1costheta1 - n2costheta2) / (n1costheta1 + n2costheta2)) ** 2
-        rho12_p = \
-            ((n1costheta2 - n2costheta1) / (n1costheta2 + n2costheta1)) ** 2
+    with np.errstate(divide="ignore", invalid="ignore"):
+        rho12_s = ((n1costheta1 - n2costheta2) / (n1costheta1 + n2costheta2)) ** 2
+        rho12_p = ((n1costheta2 - n2costheta1) / (n1costheta2 + n2costheta1)) ** 2
 
     rho12_0 = ((n1 - n2) / (n1 + n2)) ** 2
 
@@ -198,12 +196,8 @@ def physical(aoi, n=1.526, K=4.0, L=0.002, *, n_ar=None):
         n3costheta3 = n3 * costheta
 
         # reflectance by the second interface
-        rho23_s = (
-            (n2costheta2 - n3costheta3) / (n2costheta2 + n3costheta3)
-        ) ** 2
-        rho23_p = (
-            (n2costheta3 - n3costheta2) / (n2costheta3 + n3costheta2)
-        ) ** 2
+        rho23_s = ((n2costheta2 - n3costheta3) / (n2costheta2 + n3costheta3)) ** 2
+        rho23_p = ((n2costheta3 - n3costheta2) / (n2costheta3 + n3costheta2)) ** 2
         rho23_0 = ((n2 - n3) / (n2 + n3)) ** 2
 
         # transmittance through the coating, including internal reflections
@@ -213,7 +207,7 @@ def physical(aoi, n=1.526, K=4.0, L=0.002, *, n_ar=None):
         tau_0 *= (1 - rho23_0) / (1 - rho23_0 * rho12_0)
 
     # transmittance after absorption in the glass
-    with np.errstate(divide='ignore', invalid='ignore'):
+    with np.errstate(divide="ignore", invalid="ignore"):
         tau_s *= np.exp(-K * L / costheta)
         tau_p *= np.exp(-K * L / costheta)
 
@@ -233,7 +227,7 @@ def physical(aoi, n=1.526, K=4.0, L=0.002, *, n_ar=None):
 
 
 def martin_ruiz(aoi, a_r=0.16):
-    r'''
+    r"""
     Determine the incidence angle modifier (IAM) using the Martin
     and Ruiz incident angle model.
 
@@ -291,7 +285,7 @@ def martin_ruiz(aoi, a_r=0.16):
     pvlib.iam.ashrae
     pvlib.iam.interp
     pvlib.iam.sapm
-    '''
+    """
     # Contributed by Anton Driesse (@adriesse), PV Performance Labs. July, 2019
 
     aoi_input = aoi
@@ -302,7 +296,7 @@ def martin_ruiz(aoi, a_r=0.16):
     if np.any(np.less_equal(a_r, 0)):
         raise ValueError("The parameter 'a_r' cannot be zero or negative.")
 
-    with np.errstate(invalid='ignore'):
+    with np.errstate(invalid="ignore"):
         iam = (1 - np.exp(-cosd(aoi) / a_r)) / (1 - np.exp(-1 / a_r))
         iam = np.where(np.abs(aoi) >= 90.0, 0.0, iam)
 
@@ -313,7 +307,7 @@ def martin_ruiz(aoi, a_r=0.16):
 
 
 def martin_ruiz_diffuse(surface_tilt, a_r=0.16, c1=0.4244, c2=None):
-    '''
+    """
     Determine the incidence angle modifiers (iam) for diffuse sky and
     ground-reflected irradiance using the Martin and Ruiz incident angle model.
 
@@ -377,7 +371,7 @@ def martin_ruiz_diffuse(surface_tilt, a_r=0.16, c1=0.4244, c2=None):
     pvlib.iam.ashrae
     pvlib.iam.interp
     pvlib.iam.sapm
-    '''
+    """
     # Contributed by Anton Driesse (@adriesse), PV Performance Labs. Oct. 2019
 
     if isinstance(surface_tilt, pd.Series):
@@ -403,25 +397,25 @@ def martin_ruiz_diffuse(surface_tilt, a_r=0.16, c1=0.4244, c2=None):
     cos = np.cos
 
     # avoid RuntimeWarnings for <, sin, and cos with nan
-    with np.errstate(invalid='ignore'):
+    with np.errstate(invalid="ignore"):
         # because sin(pi) isn't exactly zero
         sin_beta = np.where(surface_tilt < 90, sin(beta), sin(pi - beta))
 
         trig_term_sky = sin_beta + (pi - beta - sin_beta) / (1 + cos(beta))
-        trig_term_gnd = sin_beta +      (beta - sin_beta) / (1 - cos(beta))  # noqa: E222 E261 E501
+        trig_term_gnd = sin_beta + (beta - sin_beta) / (1 - cos(beta))  # noqa: E222 E261 E501
 
     iam_sky = 1 - np.exp(-(c1 + c2 * trig_term_sky) * trig_term_sky / a_r)
     iam_gnd = 1 - np.exp(-(c1 + c2 * trig_term_gnd) * trig_term_gnd / a_r)
 
     if out_index is not None:
-        iam_sky = pd.Series(iam_sky, index=out_index, name='iam_sky')
-        iam_gnd = pd.Series(iam_gnd, index=out_index, name='iam_ground')
+        iam_sky = pd.Series(iam_sky, index=out_index, name="iam_sky")
+        iam_gnd = pd.Series(iam_gnd, index=out_index, name="iam_ground")
 
     return iam_sky, iam_gnd
 
 
-def interp(aoi, theta_ref, iam_ref, method='linear', normalize=True):
-    r'''
+def interp(aoi, theta_ref, iam_ref, method="linear", normalize=True):
+    r"""
     Determine the incidence angle modifier (IAM) by interpolating a set of
     reference values, which are usually measured values.
 
@@ -467,24 +461,26 @@ def interp(aoi, theta_ref, iam_ref, method='linear', normalize=True):
     pvlib.iam.ashrae
     pvlib.iam.martin_ruiz
     pvlib.iam.sapm
-    '''
+    """
     # Contributed by Anton Driesse (@adriesse), PV Performance Labs. July, 2019
 
     from scipy.interpolate import interp1d
 
     # Scipy doesn't give the clearest feedback, so check number of points here.
-    MIN_REF_VALS = {'linear': 2, 'quadratic': 3, 'cubic': 4, 1: 2, 2: 3, 3: 4}
+    MIN_REF_VALS = {"linear": 2, "quadratic": 3, "cubic": 4, 1: 2, 2: 3, 3: 4}
 
     if len(theta_ref) < MIN_REF_VALS.get(method, 2):
-        raise ValueError("Too few reference points defined "
-                         "for interpolation method '%s'." % method)
+        raise ValueError(
+            "Too few reference points defined "
+            "for interpolation method '%s'." % method
+        )
 
     if np.any(np.less(iam_ref, 0)):
-        raise ValueError("Negative value(s) found in 'iam_ref'. "
-                         "This is not physically possible.")
+        raise ValueError(
+            "Negative value(s) found in 'iam_ref'. " "This is not physically possible."
+        )
 
-    interpolator = interp1d(theta_ref, iam_ref, kind=method,
-                            fill_value='extrapolate')
+    interpolator = interp1d(theta_ref, iam_ref, kind=method, fill_value="extrapolate")
     aoi_input = aoi
 
     aoi = np.asanyarray(aoi)
@@ -552,13 +548,19 @@ def sapm(aoi, module, upper=None):
     pvlib.iam.interp
     """
 
-    aoi_coeff = [module['B5'], module['B4'], module['B3'], module['B2'],
-                 module['B1'], module['B0']]
+    aoi_coeff = [
+        module["B5"],
+        module["B4"],
+        module["B3"],
+        module["B2"],
+        module["B1"],
+        module["B0"],
+    ]
 
     iam = np.polyval(aoi_coeff, aoi)
     iam = np.clip(iam, 0, upper)
     # nan tolerant masking
-    aoi_lt_0 = np.full_like(aoi, False, dtype='bool')
+    aoi_lt_0 = np.full_like(aoi, False, dtype="bool")
     np.less(aoi, 0, where=~np.isnan(aoi), out=aoi_lt_0)
     iam = np.where(aoi_lt_0, 0, iam)
 
@@ -624,21 +626,21 @@ def marion_diffuse(model, surface_tilt, **kwargs):
     """
 
     models = {
-        'physical': physical,
-        'ashrae': ashrae,
-        'sapm': sapm,
-        'martin_ruiz': martin_ruiz,
-        'schlick': schlick,
+        "physical": physical,
+        "ashrae": ashrae,
+        "sapm": sapm,
+        "martin_ruiz": martin_ruiz,
+        "schlick": schlick,
     }
 
     try:
         iam_model = models[model]
     except KeyError:
-        raise ValueError('model must be one of: ' + str(list(models.keys())))
+        raise ValueError("model must be one of: " + str(list(models.keys())))
 
     iam_function = functools.partial(iam_model, **kwargs)
     iam = {}
-    for region in ['sky', 'horizon', 'ground']:
+    for region in ["sky", "horizon", "ground"]:
         iam[region] = marion_integrate(iam_function, surface_tilt, region)
 
     return iam
@@ -709,34 +711,34 @@ def marion_integrate(function, surface_tilt, region, num=None):
     """
 
     if num is None:
-        if region in ['sky', 'ground']:
+        if region in ["sky", "ground"]:
             num = 180
-        elif region == 'horizon':
+        elif region == "horizon":
             num = 1800
         else:
-            raise ValueError(f'Invalid region: {region}')
+            raise ValueError(f"Invalid region: {region}")
 
     beta = np.radians(surface_tilt)
     if isinstance(beta, pd.Series):
         # convert Series to np array for broadcasting later
         beta = beta.values
-    ai = np.pi/num  # angular increment
+    ai = np.pi / num  # angular increment
 
     phi_range = np.linspace(0, np.pi, num, endpoint=False)
-    psi_range = np.linspace(0, 2*np.pi, 2*num, endpoint=False)
+    psi_range = np.linspace(0, 2 * np.pi, 2 * num, endpoint=False)
 
     # the pseudocode in [1] do these checks at the end, but it's
     # faster to do this criteria check up front instead of later.
-    if region == 'sky':
-        mask = phi_range + ai <= np.pi/2
-    elif region == 'horizon':
-        lo = 89.5 * np.pi/180
-        hi = np.pi/2
+    if region == "sky":
+        mask = phi_range + ai <= np.pi / 2
+    elif region == "horizon":
+        lo = 89.5 * np.pi / 180
+        hi = np.pi / 2
         mask = (lo <= phi_range) & (phi_range + ai <= hi)
-    elif region == 'ground':
-        mask = (phi_range >= np.pi/2)
+    elif region == "ground":
+        mask = phi_range >= np.pi / 2
     else:
-        raise ValueError(f'Invalid region: {region}')
+        raise ValueError(f"Invalid region: {region}")
     phi_range = phi_range[mask]
 
     # fast Cartesian product of phi and psi
@@ -747,8 +749,8 @@ def marion_integrate(function, surface_tilt, region, num=None):
     psi_1 = angles[:, [1]]
     phi_2 = phi_1 + ai
     # psi_2 = psi_1 + ai  # not needed
-    phi_avg = phi_1 + 0.5*ai
-    psi_avg = psi_1 + 0.5*ai
+    phi_avg = phi_1 + 0.5 * ai
+    psi_avg = psi_1 + 0.5 * ai
     term_1 = np.cos(beta) * np.cos(phi_avg)
     # The AOI formula includes a term based on the difference between
     # panel azimuth and the photon azimuth, but because we assume each class
@@ -765,18 +767,18 @@ def marion_integrate(function, surface_tilt, region, num=None):
     dAs = ai * (np.cos(phi_1) - np.cos(phi_2))
     cosaoi_dAs = cosaoi * dAs
     # apply the final AOI check, zeroing out non-passing points
-    mask = aoi < np.pi/2
+    mask = aoi < np.pi / 2
     cosaoi_dAs = np.where(mask, cosaoi_dAs, 0)
     numerator = np.sum(function(np.degrees(aoi)) * cosaoi_dAs, axis=0)
     denominator = np.sum(cosaoi_dAs, axis=0)
 
-    with np.errstate(invalid='ignore'):
+    with np.errstate(invalid="ignore"):
         # in some cases, no points pass the criteria
         # (e.g. region='ground', surface_tilt=0), so we override the division
         # by zero to set Fd=0.  Also, preserve nans in beta.
-        Fd = np.where((denominator != 0) | ~np.isfinite(beta),
-                      numerator / denominator,
-                      0)
+        Fd = np.where(
+            (denominator != 0) | ~np.isfinite(beta), numerator / denominator, 0
+        )
 
     # preserve input type
     if np.isscalar(surface_tilt):
@@ -921,13 +923,18 @@ def schlick_diffuse(surface_tilt):
     cosB = cosd(surface_tilt)
     sinB = sind(surface_tilt)
     cuk = (2 / (np.pi * (1 + cosB))) * (
-        (30/7)*np.pi - (160/21)*np.radians(surface_tilt) - (10/3)*np.pi*cosB
-        + (160/21)*cosB*sinB - (5/3)*np.pi*cosB*sinB**2 + (20/7)*cosB*sinB**3
-        - (5/16)*np.pi*cosB*sinB**4 + (16/105)*cosB*sinB**5
+        (30 / 7) * np.pi
+        - (160 / 21) * np.radians(surface_tilt)
+        - (10 / 3) * np.pi * cosB
+        + (160 / 21) * cosB * sinB
+        - (5 / 3) * np.pi * cosB * sinB**2
+        + (20 / 7) * cosB * sinB**3
+        - (5 / 16) * np.pi * cosB * sinB**4
+        + (16 / 105) * cosB * sinB**5
     )  # Eq 4 in [2]
 
     # relative transmittance of ground-reflected radiation by PV cover:
-    with np.errstate(divide='ignore', invalid='ignore'):  # Eq 6 in [2]
+    with np.errstate(divide="ignore", invalid="ignore"):  # Eq 6 in [2]
         cug = 40 / (21 * (1 - cosB)) - (1 + cosB) / (1 - cosB) * cuk
 
     cug = np.where(surface_tilt < 1e-6, 0, cug)
@@ -945,13 +952,11 @@ def schlick_diffuse(surface_tilt):
 
 def _get_model(model_name):
     # check that model is implemented
-    model_dict = {'ashrae': ashrae, 'martin_ruiz': martin_ruiz,
-                  'physical': physical}
+    model_dict = {"ashrae": ashrae, "martin_ruiz": martin_ruiz, "physical": physical}
     try:
         model = model_dict[model_name]
     except KeyError:
-        raise NotImplementedError(f"The {model_name} model has not been "
-                                  "implemented")
+        raise NotImplementedError(f"The {model_name} model has not been " "implemented")
 
     return model
 
@@ -961,17 +966,18 @@ def _check_params(model_name, params):
     # belong to the model
     exp_params = _IAM_MODEL_PARAMS[model_name]
     if set(params.keys()) != exp_params:
-        raise ValueError(f"The {model_name} model was expecting to be passed "
-                         "{', '.join(list(exp_params))}, but "
-                         "was handed {', '.join(list(params.keys()))}")
+        raise ValueError(
+            f"The {model_name} model was expecting to be passed "
+            "{', '.join(list(exp_params))}, but "
+            "was handed {', '.join(list(params.keys()))}"
+        )
 
 
 def _sin_weight(aoi):
     return 1 - sind(aoi)
 
 
-def _residual(aoi, source_iam, target, target_params,
-              weight=_sin_weight):
+def _residual(aoi, source_iam, target, target_params, weight=_sin_weight):
     # computes a sum of weighted differences between the source model
     # and target model, using the provided weight function
 
@@ -1054,17 +1060,17 @@ def _martin_ruiz_to_physical(aoi, martin_ruiz_iam, weight, a_r):
 
 def _minimize(residual_function, guess, bounds, xtol):
     if xtol is not None:
-        options = {'xtol': xtol}
+        options = {"xtol": xtol}
     else:
         options = None
-    with np.errstate(invalid='ignore'):
-        optimize_result = minimize(residual_function, guess, method="powell",
-                                   bounds=bounds, options=options)
+    with np.errstate(invalid="ignore"):
+        optimize_result = minimize(
+            residual_function, guess, method="powell", bounds=bounds, options=options
+        )
 
     if not optimize_result.success:
         try:
-            message = "Optimizer exited unsuccessfully:" \
-                      + optimize_result.message
+            message = "Optimizer exited unsuccessfully:" + optimize_result.message
         except AttributeError:
             message = "Optimizer exited unsuccessfully: \
                        No message explaining the failure was returned. \
@@ -1078,23 +1084,24 @@ def _minimize(residual_function, guess, bounds, xtol):
 
 def _process_return(target_name, optimize_result):
     if target_name == "ashrae":
-        target_params = {'b': optimize_result.x.item()}
+        target_params = {"b": optimize_result.x.item()}
 
     elif target_name == "martin_ruiz":
-        target_params = {'a_r': optimize_result.x.item()}
+        target_params = {"a_r": optimize_result.x.item()}
 
     elif target_name == "physical":
         L, n = optimize_result.x
         # have to unpack order because search order may be different
         if L > n:
             L, n = n, L
-        target_params = {'n': n, 'K': 4, 'L': L}
+        target_params = {"n": n, "K": 4, "L": L}
 
     return target_params
 
 
-def convert(source_name, source_params, target_name, weight=_sin_weight,
-            fix_n=True, xtol=None):
+def convert(
+    source_name, source_params, target_name, weight=_sin_weight, fix_n=True, xtol=None
+):
     """
     Convert a source IAM model to a target IAM model.
 
@@ -1190,13 +1197,13 @@ def convert(source_name, source_params, target_name, weight=_sin_weight,
         # we can do some special set-up to improve the fit when the
         # target model is physical
         if source_name == "ashrae":
-            residual_function, guess, bounds = \
-                _ashrae_to_physical(aoi, source_iam, weight, fix_n,
-                                    source_params['b'])
+            residual_function, guess, bounds = _ashrae_to_physical(
+                aoi, source_iam, weight, fix_n, source_params["b"]
+            )
         elif source_name == "martin_ruiz":
-            residual_function, guess, bounds = \
-                _martin_ruiz_to_physical(aoi, source_iam, weight,
-                                         source_params['a_r'])
+            residual_function, guess, bounds = _martin_ruiz_to_physical(
+                aoi, source_iam, weight, source_params["a_r"]
+            )
 
     else:
         # otherwise, target model is ashrae or martin_ruiz, and scipy
@@ -1207,8 +1214,7 @@ def convert(source_name, source_params, target_name, weight=_sin_weight,
         def residual_function(target_param):
             return _residual(aoi, source_iam, target, target_param, weight)
 
-    optimize_result = _minimize(residual_function, guess, bounds,
-                                xtol=xtol)
+    optimize_result = _minimize(residual_function, guess, bounds, xtol=xtol)
 
     return _process_return(target_name, optimize_result)
 
@@ -1281,12 +1287,11 @@ def fit(measured_aoi, measured_iam, model_name, weight=_sin_weight, xtol=None):
 
     if model_name == "physical":
         bounds = [(0, 0.08), (1, 2)]
-        guess = [0.002, 1+1e-08]
+        guess = [0.002, 1 + 1e-08]
 
         def residual_function(target_params):
             L, n = target_params
-            return _residual(measured_aoi, measured_iam, target, [n, 4, L],
-                             weight)
+            return _residual(measured_aoi, measured_iam, target, [n, 4, L], weight)
 
     # otherwise, target_name is martin_ruiz or ashrae
     else:
@@ -1294,8 +1299,7 @@ def fit(measured_aoi, measured_iam, model_name, weight=_sin_weight, xtol=None):
         guess = [0.05]
 
         def residual_function(target_param):
-            return _residual(measured_aoi, measured_iam, target,
-                             target_param, weight)
+            return _residual(measured_aoi, measured_iam, target, target_param, weight)
 
     optimize_result = _minimize(residual_function, guess, bounds, xtol)
 

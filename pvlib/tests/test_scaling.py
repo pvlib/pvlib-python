@@ -40,13 +40,13 @@ def time(clear_sky_index):
 @pytest.fixture
 def time_60s(clear_sky_index):
     # Sample time vector 60s resolution
-    return np.arange(0, len(clear_sky_index))*60
+    return np.arange(0, len(clear_sky_index)) * 60
 
 
 @pytest.fixture
 def time_500ms(clear_sky_index):
     # Sample time vector 0.5s resolution
-    return np.arange(0, len(clear_sky_index))*0.5
+    return np.arange(0, len(clear_sky_index)) * 0.5
 
 
 @pytest.fixture
@@ -80,8 +80,8 @@ def expect_wavelet():
     # Expected wavelet for indices 5000:5004 for clear_sky_index above (Matlab)
     e = np.zeros([13, 5])
     e[0, :] = np.array([0, -0.05, 0.1, -0.05, 0])
-    e[1, :] = np.array([-0.025, 0.05, 0., -0.05, 0.025])
-    e[2, :] = np.array([0.025, 0., 0., 0., -0.025])
+    e[1, :] = np.array([-0.025, 0.05, 0.0, -0.05, 0.025])
+    e[2, :] = np.array([0.025, 0.0, 0.0, 0.0, -0.025])
     e[-1, :] = np.array([1, 1, 1, 1, 1])
     return e
 
@@ -89,14 +89,29 @@ def expect_wavelet():
 @pytest.fixture
 def expect_cs_smooth():
     # Expected smoothed clear sky index for indices 5000:5004 (Matlab)
-    return np.array([1., 1., 1.05774, 0.94226, 1.])
+    return np.array([1.0, 1.0, 1.05774, 0.94226, 1.0])
 
 
 @pytest.fixture
 def expect_vr():
     # Expected VR for expecttmscale
-    return np.array([3., 3., 3., 3., 3., 3., 2.9997844, 2.9708118, 2.6806291,
-                     2.0726611, 1.5653324, 1.2812714, 1.1389995])
+    return np.array(
+        [
+            3.0,
+            3.0,
+            3.0,
+            3.0,
+            3.0,
+            3.0,
+            2.9997844,
+            2.9708118,
+            2.6806291,
+            2.0726611,
+            1.5653324,
+            1.2812714,
+            1.1389995,
+        ]
+    )
 
 
 def test_latlon_to_xy_zero():
@@ -123,44 +138,46 @@ def test_latlon_to_xy_list(coordinates, positions):
     assert_almost_equal(pos, positions, decimal=1)
 
 
-def test_compute_wavelet_series(clear_sky_index, time,
-                                expect_tmscale, expect_wavelet):
+def test_compute_wavelet_series(clear_sky_index, time, expect_tmscale, expect_wavelet):
     csi_series = pd.Series(clear_sky_index, index=time)
     wavelet, tmscale = scaling._compute_wavelet(csi_series)
     assert_almost_equal(tmscale, expect_tmscale)
     assert_almost_equal(wavelet[:, 5000:5005], expect_wavelet)
 
 
-def test_compute_wavelet_series_numindex(clear_sky_index, time,
-                                         expect_tmscale, expect_wavelet):
-    dtindex = pd.to_datetime(time, unit='s')
+def test_compute_wavelet_series_numindex(
+    clear_sky_index, time, expect_tmscale, expect_wavelet
+):
+    dtindex = pd.to_datetime(time, unit="s")
     csi_series = pd.Series(clear_sky_index, index=dtindex)
     wavelet, tmscale = scaling._compute_wavelet(csi_series)
     assert_almost_equal(tmscale, expect_tmscale)
     assert_almost_equal(wavelet[:, 5000:5005], expect_wavelet)
 
 
-def test_compute_wavelet_series_highres(clear_sky_index, time_500ms,
-                                        expect_tmscale_500ms, expect_wavelet):
-    dtindex = pd.to_datetime(time_500ms, unit='s')
+def test_compute_wavelet_series_highres(
+    clear_sky_index, time_500ms, expect_tmscale_500ms, expect_wavelet
+):
+    dtindex = pd.to_datetime(time_500ms, unit="s")
     csi_series = pd.Series(clear_sky_index, index=dtindex)
     wavelet, tmscale = scaling._compute_wavelet(csi_series)
     assert_almost_equal(tmscale, expect_tmscale_500ms)
     assert_almost_equal(wavelet[:, 5000:5005].shape, (14, 5))
 
 
-def test_compute_wavelet_series_minuteres(clear_sky_index, time_60s,
-                                          expect_tmscale_1min, expect_wavelet):
-    dtindex = pd.to_datetime(time_60s, unit='s')
+def test_compute_wavelet_series_minuteres(
+    clear_sky_index, time_60s, expect_tmscale_1min, expect_wavelet
+):
+    dtindex = pd.to_datetime(time_60s, unit="s")
     csi_series = pd.Series(clear_sky_index, index=dtindex)
     wavelet, tmscale = scaling._compute_wavelet(csi_series)
     assert_almost_equal(tmscale, expect_tmscale_1min)
-    assert_almost_equal(wavelet[:, 5000:5005].shape,
-                        expect_wavelet[0:len(tmscale), :].shape)
+    assert_almost_equal(
+        wavelet[:, 5000:5005].shape, expect_wavelet[0 : len(tmscale), :].shape
+    )
 
 
-def test_compute_wavelet_array(clear_sky_index,
-                               expect_tmscale, expect_wavelet):
+def test_compute_wavelet_array(clear_sky_index, expect_tmscale, expect_wavelet):
     wavelet, tmscale = scaling._compute_wavelet(clear_sky_index, dt)
     assert_almost_equal(tmscale, expect_tmscale)
     assert_almost_equal(wavelet[:, 5000:5005], expect_wavelet)
@@ -171,8 +188,9 @@ def test_compute_wavelet_array_invalid(clear_sky_index):
         scaling._compute_wavelet(clear_sky_index)
 
 
-def test_compute_wavelet_dwttheory(clear_sky_index, time,
-                                   expect_tmscale, expect_wavelet):
+def test_compute_wavelet_dwttheory(
+    clear_sky_index, time, expect_tmscale, expect_wavelet
+):
     # Confirm detail coeffs sum to original signal
     csi_series = pd.Series(clear_sky_index, index=time)
     wavelet, tmscale = scaling._compute_wavelet(csi_series)
@@ -195,8 +213,7 @@ def test_wvm_array(clear_sky_index, positions, expect_cs_smooth):
     assert_almost_equal(cs_sm[5000:5005], expect_cs_smooth, decimal=4)
 
 
-def test_wvm_series_xyaslist(clear_sky_index, time, positions,
-                             expect_cs_smooth):
+def test_wvm_series_xyaslist(clear_sky_index, time, positions, expect_cs_smooth):
     csi_series = pd.Series(clear_sky_index, index=time)
     cs_sm, _, _ = scaling.wvm(csi_series, positions.tolist(), cloud_speed)
     assert_almost_equal(cs_sm[5000:5005], expect_cs_smooth, decimal=4)

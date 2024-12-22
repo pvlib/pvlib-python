@@ -47,11 +47,12 @@ import matplotlib.pyplot as plt
 
 import pvlib
 from pvlib import iotools, location
-from pvlib.irradiance import (get_extra_radiation,
-                              get_total_irradiance,
-                              ghi_from_poa_driesse_2023,
-                              aoi,
-                              )
+from pvlib.irradiance import (
+    get_extra_radiation,
+    get_total_irradiance,
+    ghi_from_poa_driesse_2023,
+    aoi,
+)
 
 # %%
 #
@@ -59,15 +60,19 @@ from pvlib.irradiance import (get_extra_radiation,
 #
 
 PVLIB_DIR = pvlib.__path__[0]
-DATA_FILE = os.path.join(PVLIB_DIR, 'data', '723170TYA.CSV')
+DATA_FILE = os.path.join(PVLIB_DIR, "data", "723170TYA.CSV")
 
-tmy, metadata = iotools.read_tmy3(DATA_FILE, coerce_year=1990,
-                                  map_variables=True)
+tmy, metadata = iotools.read_tmy3(DATA_FILE, coerce_year=1990, map_variables=True)
 
-df = pd.DataFrame({'ghi': tmy['ghi'], 'dhi': tmy['dhi'], 'dni': tmy['dni'],
-                   'temp_air': tmy['temp_air'],
-                   'wind_speed': tmy['wind_speed'],
-                   })
+df = pd.DataFrame(
+    {
+        "ghi": tmy["ghi"],
+        "dhi": tmy["dhi"],
+        "dni": tmy["dni"],
+        "temp_air": tmy["temp_air"],
+        "wind_speed": tmy["wind_speed"],
+    }
+)
 
 # %%
 #
@@ -88,17 +93,22 @@ solpos = loc.get_solarposition(df.index)
 TILT = 30
 ORIENT = 150
 
-df['dni_extra'] = get_extra_radiation(df.index)
+df["dni_extra"] = get_extra_radiation(df.index)
 
-total_irrad = get_total_irradiance(TILT, ORIENT,
-                                   solpos.apparent_zenith,
-                                   solpos.azimuth,
-                                   df.dni, df.ghi, df.dhi,
-                                   dni_extra=df.dni_extra,
-                                   model='perez-driesse')
+total_irrad = get_total_irradiance(
+    TILT,
+    ORIENT,
+    solpos.apparent_zenith,
+    solpos.azimuth,
+    df.dni,
+    df.ghi,
+    df.dhi,
+    dni_extra=df.dni_extra,
+    model="perez-driesse",
+)
 
-df['poa_global'] = total_irrad.poa_global
-df['aoi'] = aoi(TILT, ORIENT, solpos.apparent_zenith, solpos.azimuth)
+df["poa_global"] = total_irrad.poa_global
+df["aoi"] = aoi(TILT, ORIENT, solpos.apparent_zenith, solpos.azimuth)
 
 # %%
 #
@@ -114,14 +124,17 @@ solpos = solpos.reindex(df.index)
 
 start = time.process_time()
 
-df['ghi_rev'] = ghi_from_poa_driesse_2023(TILT, ORIENT,
-                                          solpos.apparent_zenith,
-                                          solpos.azimuth,
-                                          df.poa_global,
-                                          dni_extra=df.dni_extra)
+df["ghi_rev"] = ghi_from_poa_driesse_2023(
+    TILT,
+    ORIENT,
+    solpos.apparent_zenith,
+    solpos.azimuth,
+    df.poa_global,
+    dni_extra=df.dni_extra,
+)
 finish = time.process_time()
 
-print('Elapsed time for reverse transposition: %.1f s' % (finish - start))
+print("Elapsed time for reverse transposition: %.1f s" % (finish - start))
 
 # %%
 #
@@ -137,16 +150,17 @@ print('Elapsed time for reverse transposition: %.1f s' % (finish - start))
 # because errors from forward and reverse transposition will both be present.
 #
 
-df = df.sort_values('aoi')
+df = df.sort_values("aoi")
 
 plt.figure()
-plt.gca().grid(True, alpha=.5)
-pc = plt.scatter(df['ghi'], df['ghi_rev'], c=df['aoi'], s=15,
-                 cmap='jet', vmin=60, vmax=120)
-plt.colorbar(label='AOI [°]')
+plt.gca().grid(True, alpha=0.5)
+pc = plt.scatter(
+    df["ghi"], df["ghi_rev"], c=df["aoi"], s=15, cmap="jet", vmin=60, vmax=120
+)
+plt.colorbar(label="AOI [°]")
 pc.set_alpha(0.5)
 
-plt.xlabel('GHI original [W/m²]')
-plt.ylabel('GHI from POA [W/m²]')
+plt.xlabel("GHI original [W/m²]")
+plt.ylabel("GHI from POA [W/m²]")
 
 plt.show()

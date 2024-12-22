@@ -34,10 +34,11 @@ import pandas as pd
 import pvlib
 from pvlib import location
 
-DATA_DIR = pathlib.Path(pvlib.__file__).parent / 'data'
-meteo, metadata = pvlib.iotools.read_tmy3(DATA_DIR / '723170TYA.CSV',
-                                          coerce_year=2001, map_variables=True)
-meteo = meteo.loc['2001-08-01':'2001-08-07']
+DATA_DIR = pathlib.Path(pvlib.__file__).parent / "data"
+meteo, metadata = pvlib.iotools.read_tmy3(
+    DATA_DIR / "723170TYA.CSV", coerce_year=2001, map_variables=True
+)
+meteo = meteo.loc["2001-08-01":"2001-08-07"]
 
 # %%
 # Spectral Factor Functions
@@ -62,22 +63,25 @@ meteo = meteo.loc['2001-08-01':'2001-08-07']
 # of the interval.
 
 # Create a location object
-lat, lon = metadata['latitude'], metadata['longitude']
-alt = altitude = metadata['altitude']
-tz = 'Etc/GMT+5'
-loc = location.Location(lat, lon, tz=tz, name='Greensboro, NC')
+lat, lon = metadata["latitude"], metadata["longitude"]
+alt = altitude = metadata["altitude"]
+tz = "Etc/GMT+5"
+loc = location.Location(lat, lon, tz=tz, name="Greensboro, NC")
 
 # Calculate solar position parameters
 solpos = loc.get_solarposition(
     meteo.index.shift(freq="-30min"),
-    pressure=meteo.pressure*100,  # convert from millibar to Pa
-    temperature=meteo.temp_air)
+    pressure=meteo.pressure * 100,  # convert from millibar to Pa
+    temperature=meteo.temp_air,
+)
 solpos.index = meteo.index  # reset index to end of the hour
 
 airmass_relative = pvlib.atmosphere.get_relative_airmass(
-    solpos.apparent_zenith).dropna()
-airmass_absolute = pvlib.atmosphere.get_absolute_airmass(airmass_relative,
-                                                         meteo.pressure*100)
+    solpos.apparent_zenith
+).dropna()
+airmass_absolute = pvlib.atmosphere.get_absolute_airmass(
+    airmass_relative, meteo.pressure * 100
+)
 # %%
 # Now we calculate the clearsky index, :math:`k_c`, which is the ratio of GHI
 # to clearsky GHI.
@@ -101,17 +105,15 @@ w = meteo.precipitable_water
 # built-in coefficients.
 
 # Import some for a mc-Si module from the SAPM module database.
-module = pvlib.pvsystem.retrieve_sam('SandiaMod')['LG_LG290N1C_G3__2013_']
+module = pvlib.pvsystem.retrieve_sam("SandiaMod")["LG_LG290N1C_G3__2013_"]
 #
 # Calculate M using the three models for an mc-Si PV module.
 m_sapm = pvlib.spectrum.spectral_factor_sapm(airmass_absolute, module)
-m_pvspec = pvlib.spectrum.spectral_factor_pvspec(airmass_absolute, kc,
-                                                 'multisi')
-m_fs = pvlib.spectrum.spectral_factor_firstsolar(w, airmass_absolute,
-                                                 'multisi')
+m_pvspec = pvlib.spectrum.spectral_factor_pvspec(airmass_absolute, kc, "multisi")
+m_fs = pvlib.spectrum.spectral_factor_firstsolar(w, airmass_absolute, "multisi")
 
 df_results = pd.concat([m_sapm, m_pvspec, m_fs], axis=1)
-df_results.columns = ['SAPM', 'PVSPEC', 'FS']
+df_results.columns = ["SAPM", "PVSPEC", "FS"]
 # %%
 # Comparison Plots
 # ----------------
@@ -122,16 +124,15 @@ df_results.columns = ['SAPM', 'PVSPEC', 'FS']
 # Plot M
 fig1, (ax1, ax2) = plt.subplots(2, 1)
 df_results.plot(ax=ax1, legend=False)
-ax1.set_xlabel('Day')
-ax1.set_ylabel('Spectral mismatch (-)')
+ax1.set_xlabel("Day")
+ax1.set_ylabel("Spectral mismatch (-)")
 ax1.set_ylim(0.85, 1.15)
-ax1.legend(loc='upper center', frameon=False, ncols=3,
-           bbox_to_anchor=(0.5, 1.3))
+ax1.legend(loc="upper center", frameon=False, ncols=3, bbox_to_anchor=(0.5, 1.3))
 
 # We can also zoom in one one day, for example August 2nd.
-df_results.loc['2001-08-02'].plot(ax=ax2, legend=False)
-ax2.set_xlabel('Time')
-ax2.set_ylabel('Spectral mismatch (-)')
+df_results.loc["2001-08-02"].plot(ax=ax2, legend=False)
+ax2.set_xlabel("Time")
+ax2.set_ylabel("Spectral mismatch (-)")
 ax2.set_ylim(0.85, 1.15)
 
 plt.tight_layout()

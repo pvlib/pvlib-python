@@ -22,10 +22,16 @@ from pvlib import atmosphere, tools
 from pvlib.tools import datetime_to_djd, djd_to_datetime
 
 
-def get_solarposition(time, latitude, longitude,
-                      altitude=None, pressure=None,
-                      method='nrel_numpy',
-                      temperature=12.0, **kwargs):
+def get_solarposition(
+    time,
+    latitude,
+    longitude,
+    altitude=None,
+    pressure=None,
+    method="nrel_numpy",
+    temperature=12.0,
+    **kwargs,
+):
     """
     A convenience wrapper for the solar position calculators.
 
@@ -84,8 +90,8 @@ def get_solarposition(time, latitude, longitude,
     """
 
     if altitude is None and pressure is None:
-        altitude = 0.
-        pressure = 101325.
+        altitude = 0.0
+        pressure = 101325.0
     elif altitude is None:
         altitude = atmosphere.pres2alt(pressure)
     elif pressure is None:
@@ -93,36 +99,64 @@ def get_solarposition(time, latitude, longitude,
 
     method = method.lower()
     if isinstance(time, dt.datetime):
-        time = pd.DatetimeIndex([time, ])
+        time = pd.DatetimeIndex(
+            [
+                time,
+            ]
+        )
 
-    if method == 'nrel_c':
-        ephem_df = spa_c(time, latitude, longitude, pressure, temperature,
-                         **kwargs)
-    elif method == 'nrel_numba':
-        ephem_df = spa_python(time, latitude, longitude, altitude,
-                              pressure, temperature,
-                              how='numba', **kwargs)
-    elif method == 'nrel_numpy':
-        ephem_df = spa_python(time, latitude, longitude, altitude,
-                              pressure, temperature,
-                              how='numpy', **kwargs)
-    elif method == 'pyephem':
-        ephem_df = pyephem(time, latitude, longitude,
-                           altitude=altitude,
-                           pressure=pressure,
-                           temperature=temperature, **kwargs)
-    elif method == 'ephemeris':
-        ephem_df = ephemeris(time, latitude, longitude, pressure, temperature,
-                             **kwargs)
+    if method == "nrel_c":
+        ephem_df = spa_c(time, latitude, longitude, pressure, temperature, **kwargs)
+    elif method == "nrel_numba":
+        ephem_df = spa_python(
+            time,
+            latitude,
+            longitude,
+            altitude,
+            pressure,
+            temperature,
+            how="numba",
+            **kwargs,
+        )
+    elif method == "nrel_numpy":
+        ephem_df = spa_python(
+            time,
+            latitude,
+            longitude,
+            altitude,
+            pressure,
+            temperature,
+            how="numpy",
+            **kwargs,
+        )
+    elif method == "pyephem":
+        ephem_df = pyephem(
+            time,
+            latitude,
+            longitude,
+            altitude=altitude,
+            pressure=pressure,
+            temperature=temperature,
+            **kwargs,
+        )
+    elif method == "ephemeris":
+        ephem_df = ephemeris(time, latitude, longitude, pressure, temperature, **kwargs)
     else:
-        raise ValueError('Invalid solar position method')
+        raise ValueError("Invalid solar position method")
 
     return ephem_df
 
 
-def spa_c(time, latitude, longitude, pressure=101325., altitude=0.,
-          temperature=12., delta_t=67.0,
-          raw_spa_output=False):
+def spa_c(
+    time,
+    latitude,
+    longitude,
+    pressure=101325.0,
+    altitude=0.0,
+    temperature=12.0,
+    delta_t=67.0,
+    raw_spa_output=False,
+):
     r"""
     Calculate the solar position using the C implementation of the NREL
     SPA code.
@@ -201,33 +235,40 @@ def spa_c(time, latitude, longitude, pressure=101325., altitude=0.,
     spa_out = []
 
     for date in time_utc:
-        spa_out.append(spa_calc(year=date.year,
-                                month=date.month,
-                                day=date.day,
-                                hour=date.hour,
-                                minute=date.minute,
-                                second=date.second,
-                                time_zone=0,  # date uses utc time
-                                latitude=latitude,
-                                longitude=longitude,
-                                elevation=altitude,
-                                pressure=pressure / 100,
-                                temperature=temperature,
-                                delta_t=delta_t
-                                ))
+        spa_out.append(
+            spa_calc(
+                year=date.year,
+                month=date.month,
+                day=date.day,
+                hour=date.hour,
+                minute=date.minute,
+                second=date.second,
+                time_zone=0,  # date uses utc time
+                latitude=latitude,
+                longitude=longitude,
+                elevation=altitude,
+                pressure=pressure / 100,
+                temperature=temperature,
+                delta_t=delta_t,
+            )
+        )
 
     spa_df = pd.DataFrame(spa_out, index=time)
 
     if raw_spa_output:
         # rename "time_zone" from raw output from spa_c_files.spa_py.spa_calc()
         # to "timezone" to match the API of pvlib.solarposition.spa_c()
-        return spa_df.rename(columns={'time_zone': 'timezone'})
+        return spa_df.rename(columns={"time_zone": "timezone"})
     else:
-        dfout = pd.DataFrame({'azimuth': spa_df['azimuth'],
-                              'apparent_zenith': spa_df['zenith'],
-                              'apparent_elevation': spa_df['e'],
-                              'elevation': spa_df['e0'],
-                              'zenith': 90 - spa_df['e0']})
+        dfout = pd.DataFrame(
+            {
+                "azimuth": spa_df["azimuth"],
+                "apparent_zenith": spa_df["zenith"],
+                "apparent_elevation": spa_df["e"],
+                "elevation": spa_df["e0"],
+                "zenith": 90 - spa_df["e0"],
+            }
+        )
 
         return dfout
 
@@ -240,23 +281,23 @@ def _spa_python_import(how):
     # check to see if the spa module was compiled with numba
     using_numba = spa.USE_NUMBA
 
-    if how == 'numpy' and using_numba:
+    if how == "numpy" and using_numba:
         # the spa module was compiled to numba code, so we need to
         # reload the module without compiling
         # the PVLIB_USE_NUMBA env variable is used to tell the module
         # to not compile with numba
-        warnings.warn('Reloading spa to use numpy')
-        os.environ['PVLIB_USE_NUMBA'] = '0'
+        warnings.warn("Reloading spa to use numpy")
+        os.environ["PVLIB_USE_NUMBA"] = "0"
         spa = reload(spa)
-        del os.environ['PVLIB_USE_NUMBA']
-    elif how == 'numba' and not using_numba:
+        del os.environ["PVLIB_USE_NUMBA"]
+    elif how == "numba" and not using_numba:
         # The spa module was not compiled to numba code, so set
         # PVLIB_USE_NUMBA so it does compile to numba on reload.
-        warnings.warn('Reloading spa to use numba')
-        os.environ['PVLIB_USE_NUMBA'] = '1'
+        warnings.warn("Reloading spa to use numba")
+        os.environ["PVLIB_USE_NUMBA"] = "1"
         spa = reload(spa)
-        del os.environ['PVLIB_USE_NUMBA']
-    elif how != 'numba' and how != 'numpy':
+        del os.environ["PVLIB_USE_NUMBA"]
+    elif how != "numba" and how != "numpy":
         raise ValueError("how must be either 'numba' or 'numpy'")
 
     return spa
@@ -275,9 +316,18 @@ def _datetime_to_unixtime(dtindex):
     return np.array((dtindex - epoch) / pd.Timedelta("1s"))
 
 
-def spa_python(time, latitude, longitude,
-               altitude=0., pressure=101325., temperature=12., delta_t=67.0,
-               atmos_refract=None, how='numpy', numthreads=4):
+def spa_python(
+    time,
+    latitude,
+    longitude,
+    altitude=0.0,
+    pressure=101325.0,
+    temperature=12.0,
+    delta_t=67.0,
+    atmos_refract=None,
+    how="numpy",
+    numthreads=4,
+):
     """
     Calculate the solar position using a python implementation of the
     NREL SPA algorithm.
@@ -363,7 +413,11 @@ def spa_python(time, latitude, longitude,
         try:
             time = pd.DatetimeIndex(time)
         except (TypeError, ValueError):
-            time = pd.DatetimeIndex([time, ])
+            time = pd.DatetimeIndex(
+                [
+                    time,
+                ]
+            )
 
     unixtime = _datetime_to_unixtime(time)
 
@@ -373,21 +427,36 @@ def spa_python(time, latitude, longitude,
         time_utc = tools._pandas_to_utc(time)
         delta_t = spa.calculate_deltat(time_utc.year, time_utc.month)
 
-    app_zenith, zenith, app_elevation, elevation, azimuth, eot = \
-        spa.solar_position(unixtime, lat, lon, elev, pressure, temperature,
-                           delta_t, atmos_refract, numthreads)
+    app_zenith, zenith, app_elevation, elevation, azimuth, eot = spa.solar_position(
+        unixtime,
+        lat,
+        lon,
+        elev,
+        pressure,
+        temperature,
+        delta_t,
+        atmos_refract,
+        numthreads,
+    )
 
-    result = pd.DataFrame({'apparent_zenith': app_zenith, 'zenith': zenith,
-                           'apparent_elevation': app_elevation,
-                           'elevation': elevation, 'azimuth': azimuth,
-                           'equation_of_time': eot},
-                          index=time)
+    result = pd.DataFrame(
+        {
+            "apparent_zenith": app_zenith,
+            "zenith": zenith,
+            "apparent_elevation": app_elevation,
+            "elevation": elevation,
+            "azimuth": azimuth,
+            "equation_of_time": eot,
+        },
+        index=time,
+    )
 
     return result
 
 
-def sun_rise_set_transit_spa(times, latitude, longitude, how='numpy',
-                             delta_t=67.0, numthreads=4):
+def sun_rise_set_transit_spa(
+    times, latitude, longitude, how="numpy", delta_t=67.0, numthreads=4
+):
     """
     Calculate the sunrise, sunset, and sun transit times using the
     NREL SPA algorithm.
@@ -440,10 +509,10 @@ def sun_rise_set_transit_spa(times, latitude, longitude, how='numpy',
     if times.tz:
         tzinfo = times.tz
     else:
-        raise ValueError('times must be localized')
+        raise ValueError("times must be localized")
 
     # must convert to midnight UTC on day of interest
-    times_utc = times.tz_convert('UTC')
+    times_utc = times.tz_convert("UTC")
     unixtime = _datetime_to_unixtime(times_utc.normalize())
 
     spa = _spa_python_import(how)
@@ -452,19 +521,23 @@ def sun_rise_set_transit_spa(times, latitude, longitude, how='numpy',
         delta_t = spa.calculate_deltat(times_utc.year, times_utc.month)
 
     transit, sunrise, sunset = spa.transit_sunrise_sunset(
-        unixtime, lat, lon, delta_t, numthreads)
+        unixtime, lat, lon, delta_t, numthreads
+    )
 
     # arrays are in seconds since epoch format, need to conver to timestamps
-    transit = pd.to_datetime(transit*1e9, unit='ns', utc=True).tz_convert(
-        tzinfo).tolist()
-    sunrise = pd.to_datetime(sunrise*1e9, unit='ns', utc=True).tz_convert(
-        tzinfo).tolist()
-    sunset = pd.to_datetime(sunset*1e9, unit='ns', utc=True).tz_convert(
-        tzinfo).tolist()
+    transit = (
+        pd.to_datetime(transit * 1e9, unit="ns", utc=True).tz_convert(tzinfo).tolist()
+    )
+    sunrise = (
+        pd.to_datetime(sunrise * 1e9, unit="ns", utc=True).tz_convert(tzinfo).tolist()
+    )
+    sunset = (
+        pd.to_datetime(sunset * 1e9, unit="ns", utc=True).tz_convert(tzinfo).tolist()
+    )
 
-    return pd.DataFrame(index=times, data={'sunrise': sunrise,
-                                           'sunset': sunset,
-                                           'transit': transit})
+    return pd.DataFrame(
+        index=times, data={"sunrise": sunrise, "sunset": sunset, "transit": transit}
+    )
 
 
 def _ephem_convert_to_seconds_and_microseconds(date):
@@ -478,23 +551,20 @@ def _ephem_convert_to_seconds_and_microseconds(date):
 
 def _ephem_to_timezone(date, tzinfo):
     # utility from unreleased PyEphem 3.6.7.1
-    """"Convert a PyEphem Date into a timezone aware python datetime"""
+    """ "Convert a PyEphem Date into a timezone aware python datetime"""
     seconds, microseconds = _ephem_convert_to_seconds_and_microseconds(date)
     date = dt.datetime.fromtimestamp(seconds, tzinfo)
     date = date.replace(microsecond=microseconds)
     return date
 
 
-def _ephem_setup(latitude, longitude, altitude, pressure, temperature,
-                 horizon):
-    
-
+def _ephem_setup(latitude, longitude, altitude, pressure, temperature, horizon):
     # initialize a PyEphem observer
     obs = ephem.Observer()
     obs.lat = str(latitude)
     obs.lon = str(longitude)
     obs.elevation = altitude
-    obs.pressure = pressure / 100.  # convert to mBar
+    obs.pressure = pressure / 100.0  # convert to mBar
     obs.temp = temperature
     obs.horizon = horizon
 
@@ -503,11 +573,16 @@ def _ephem_setup(latitude, longitude, altitude, pressure, temperature,
     return obs, sun
 
 
-def sun_rise_set_transit_ephem(times, latitude, longitude,
-                               next_or_previous='next',
-                               altitude=0.,
-                               pressure=101325.,
-                               temperature=12., horizon='0:00'):
+def sun_rise_set_transit_ephem(
+    times,
+    latitude,
+    longitude,
+    next_or_previous="next",
+    altitude=0.0,
+    pressure=101325.0,
+    temperature=12.0,
+    horizon="0:00",
+):
     """
     Calculate the next sunrise and sunset times using the PyEphem package.
 
@@ -549,22 +624,22 @@ def sun_rise_set_transit_ephem(times, latitude, longitude,
     if times.tz:
         tzinfo = times.tz
     else:
-        raise ValueError('times must be localized')
+        raise ValueError("times must be localized")
 
-    obs, sun = _ephem_setup(latitude, longitude, altitude,
-                            pressure, temperature, horizon)
+    obs, sun = _ephem_setup(
+        latitude, longitude, altitude, pressure, temperature, horizon
+    )
     # create lists of sunrise and sunset time localized to time.tz
-    if next_or_previous.lower() == 'next':
+    if next_or_previous.lower() == "next":
         rising = obs.next_rising
         setting = obs.next_setting
         transit = obs.next_transit
-    elif next_or_previous.lower() == 'previous':
+    elif next_or_previous.lower() == "previous":
         rising = obs.previous_rising
         setting = obs.previous_setting
         transit = obs.previous_transit
     else:
-        raise ValueError("next_or_previous must be either 'next' or" +
-                         " 'previous'")
+        raise ValueError("next_or_previous must be either 'next' or" + " 'previous'")
 
     sunrise = []
     sunset = []
@@ -578,13 +653,20 @@ def sun_rise_set_transit_ephem(times, latitude, longitude,
         sunset.append(_ephem_to_timezone(setting(sun), tzinfo))
         trans.append(_ephem_to_timezone(transit(sun), tzinfo))
 
-    return pd.DataFrame(index=times, data={'sunrise': sunrise,
-                                           'sunset': sunset,
-                                           'transit': trans})
+    return pd.DataFrame(
+        index=times, data={"sunrise": sunrise, "sunset": sunset, "transit": trans}
+    )
 
 
-def pyephem(time, latitude, longitude, altitude=0., pressure=101325.,
-            temperature=12., horizon='+0:00'):
+def pyephem(
+    time,
+    latitude,
+    longitude,
+    altitude=0.0,
+    pressure=101325.0,
+    temperature=12.0,
+    horizon="+0:00",
+):
     """
     Calculate the solar position using the PyEphem package.
 
@@ -629,8 +711,9 @@ def pyephem(time, latitude, longitude, altitude=0., pressure=101325.,
 
     sun_coords = pd.DataFrame(index=time)
 
-    obs, sun = _ephem_setup(latitude, longitude, altitude,
-                            pressure, temperature, horizon)
+    obs, sun = _ephem_setup(
+        latitude, longitude, altitude, pressure, temperature, horizon
+    )
 
     # make and fill lists of the sun's altitude and azimuth
     # this is the pressure and temperature corrected apparent alt/az.
@@ -642,8 +725,8 @@ def pyephem(time, latitude, longitude, altitude=0., pressure=101325.,
         alts.append(sun.alt)
         azis.append(sun.az)
 
-    sun_coords['apparent_elevation'] = alts
-    sun_coords['apparent_azimuth'] = azis
+    sun_coords["apparent_elevation"] = alts
+    sun_coords["apparent_azimuth"] = azis
 
     # redo it for p=0 to get no atmosphere alt/az
     obs.pressure = 0
@@ -655,13 +738,13 @@ def pyephem(time, latitude, longitude, altitude=0., pressure=101325.,
         alts.append(sun.alt)
         azis.append(sun.az)
 
-    sun_coords['elevation'] = alts
-    sun_coords['azimuth'] = azis
+    sun_coords["elevation"] = alts
+    sun_coords["azimuth"] = azis
 
     # convert to degrees. add zenith
     sun_coords = np.rad2deg(sun_coords)
-    sun_coords['apparent_zenith'] = 90 - sun_coords['apparent_elevation']
-    sun_coords['zenith'] = 90 - sun_coords['elevation']
+    sun_coords["apparent_zenith"] = 90 - sun_coords["apparent_elevation"]
+    sun_coords["zenith"] = 90 - sun_coords["elevation"]
 
     return sun_coords
 
@@ -736,7 +819,7 @@ def ephemeris(time, latitude, longitude, pressure=101325.0, temperature=12.0):
     Latitude = latitude
     Longitude = -1 * longitude
 
-    Abber = 20 / 3600.
+    Abber = 20 / 3600.0
     LatR = np.radians(Latitude)
 
     # the SPA algorithm needs time to be expressed in terms of
@@ -746,105 +829,136 @@ def ephemeris(time, latitude, longitude, pressure=101325.0, temperature=12.0):
 
     # strip out the day of the year and calculate the decimal hour
     DayOfYear = time_utc.dayofyear
-    DecHours = (time_utc.hour + time_utc.minute/60. + time_utc.second/3600. +
-                time_utc.microsecond/3600.e6)
+    DecHours = (
+        time_utc.hour
+        + time_utc.minute / 60.0
+        + time_utc.second / 3600.0
+        + time_utc.microsecond / 3600.0e6
+    )
 
     # np.array needed for pandas > 0.20
     UnivDate = np.array(DayOfYear)
     UnivHr = np.array(DecHours)
 
     Yr = np.array(time_utc.year) - 1900
-    YrBegin = 365 * Yr + np.floor((Yr - 1) / 4.) - 0.5
+    YrBegin = 365 * Yr + np.floor((Yr - 1) / 4.0) - 0.5
 
     Ezero = YrBegin + UnivDate
-    T = Ezero / 36525.
+    T = Ezero / 36525.0
 
     # Calculate Greenwich Mean Sidereal Time (GMST)
-    GMST0 = 6 / 24. + 38 / 1440. + (
-        45.836 + 8640184.542 * T + 0.0929 * T ** 2) / 86400.
+    GMST0 = (
+        6 / 24.0 + 38 / 1440.0 + (45.836 + 8640184.542 * T + 0.0929 * T**2) / 86400.0
+    )
     GMST0 = 360 * (GMST0 - np.floor(GMST0))
-    GMSTi = np.mod(GMST0 + 360 * (1.0027379093 * UnivHr / 24.), 360)
+    GMSTi = np.mod(GMST0 + 360 * (1.0027379093 * UnivHr / 24.0), 360)
 
     # Local apparent sidereal time
     LocAST = np.mod((360 + GMSTi - Longitude), 360)
 
-    EpochDate = Ezero + UnivHr / 24.
-    T1 = EpochDate / 36525.
+    EpochDate = Ezero + UnivHr / 24.0
+    T1 = EpochDate / 36525.0
 
     ObliquityR = np.radians(
-        23.452294 - 0.0130125 * T1 - 1.64e-06 * T1 ** 2 + 5.03e-07 * T1 ** 3)
-    MlPerigee = 281.22083 + 4.70684e-05 * EpochDate + 0.000453 * T1 ** 2 + (
-        3e-06 * T1 ** 3)
-    MeanAnom = np.mod((358.47583 + 0.985600267 * EpochDate - 0.00015 *
-                       T1 ** 2 - 3e-06 * T1 ** 3), 360)
-    Eccen = 0.01675104 - 4.18e-05 * T1 - 1.26e-07 * T1 ** 2
+        23.452294 - 0.0130125 * T1 - 1.64e-06 * T1**2 + 5.03e-07 * T1**3
+    )
+    MlPerigee = 281.22083 + 4.70684e-05 * EpochDate + 0.000453 * T1**2 + (3e-06 * T1**3)
+    MeanAnom = np.mod(
+        (358.47583 + 0.985600267 * EpochDate - 0.00015 * T1**2 - 3e-06 * T1**3), 360
+    )
+    Eccen = 0.01675104 - 4.18e-05 * T1 - 1.26e-07 * T1**2
     EccenAnom = MeanAnom
     E = 0
 
     while np.max(abs(EccenAnom - E)) > 0.0001:
         E = EccenAnom
-        EccenAnom = MeanAnom + np.degrees(Eccen)*np.sin(np.radians(E))
+        EccenAnom = MeanAnom + np.degrees(Eccen) * np.sin(np.radians(E))
 
-    TrueAnom = (
-        2 * np.mod(np.degrees(np.arctan2(((1 + Eccen) / (1 - Eccen)) ** 0.5 *
-                   np.tan(np.radians(EccenAnom) / 2.), 1)), 360))
+    TrueAnom = 2 * np.mod(
+        np.degrees(
+            np.arctan2(
+                ((1 + Eccen) / (1 - Eccen)) ** 0.5
+                * np.tan(np.radians(EccenAnom) / 2.0),
+                1,
+            )
+        ),
+        360,
+    )
     EcLon = np.mod(MlPerigee + TrueAnom, 360) - Abber
     EcLonR = np.radians(EcLon)
-    DecR = np.arcsin(np.sin(ObliquityR)*np.sin(EcLonR))
+    DecR = np.arcsin(np.sin(ObliquityR) * np.sin(EcLonR))
 
-    RtAscen = np.degrees(np.arctan2(np.cos(ObliquityR)*np.sin(EcLonR),
-                                    np.cos(EcLonR)))
+    RtAscen = np.degrees(
+        np.arctan2(np.cos(ObliquityR) * np.sin(EcLonR), np.cos(EcLonR))
+    )
 
     HrAngle = LocAST - RtAscen
     HrAngleR = np.radians(HrAngle)
     HrAngle = HrAngle - (360 * (abs(HrAngle) > 180))
 
-    SunAz = np.degrees(np.arctan2(-np.sin(HrAngleR),
-                                  np.cos(LatR)*np.tan(DecR) -
-                                  np.sin(LatR)*np.cos(HrAngleR)))
+    SunAz = np.degrees(
+        np.arctan2(
+            -np.sin(HrAngleR),
+            np.cos(LatR) * np.tan(DecR) - np.sin(LatR) * np.cos(HrAngleR),
+        )
+    )
     SunAz[SunAz < 0] += 360
 
-    SunEl = np.degrees(np.arcsin(
-        np.cos(LatR) * np.cos(DecR) * np.cos(HrAngleR) +
-        np.sin(LatR) * np.sin(DecR)))
+    SunEl = np.degrees(
+        np.arcsin(
+            np.cos(LatR) * np.cos(DecR) * np.cos(HrAngleR) + np.sin(LatR) * np.sin(DecR)
+        )
+    )
 
-    SolarTime = (180 + HrAngle) / 15.
+    SolarTime = (180 + HrAngle) / 15.0
 
     # Calculate refraction correction
     Elevation = SunEl
     TanEl = pd.Series(np.tan(np.radians(Elevation)), index=time_utc)
-    Refract = pd.Series(0., index=time_utc)
+    Refract = pd.Series(0.0, index=time_utc)
 
     Refract[(Elevation > 5) & (Elevation <= 85)] = (
-        58.1/TanEl - 0.07/(TanEl**3) + 8.6e-05/(TanEl**5))
+        58.1 / TanEl - 0.07 / (TanEl**3) + 8.6e-05 / (TanEl**5)
+    )
 
     Refract[(Elevation > -0.575) & (Elevation <= 5)] = (
-        Elevation *
-        (-518.2 + Elevation*(103.4 + Elevation*(-12.79 + Elevation*0.711))) +
-        1735)
+        Elevation
+        * (-518.2 + Elevation * (103.4 + Elevation * (-12.79 + Elevation * 0.711)))
+        + 1735
+    )
 
     Refract[(Elevation > -1) & (Elevation <= -0.575)] = -20.774 / TanEl
 
-    Refract *= (283/(273. + temperature)) * (pressure/101325.) / 3600.
+    Refract *= (283 / (273.0 + temperature)) * (pressure / 101325.0) / 3600.0
 
     ApparentSunEl = SunEl + Refract
 
     # make output DataFrame
     DFOut = pd.DataFrame(index=time_utc)
-    DFOut['apparent_elevation'] = ApparentSunEl
-    DFOut['elevation'] = SunEl
-    DFOut['azimuth'] = SunAz
-    DFOut['apparent_zenith'] = 90 - ApparentSunEl
-    DFOut['zenith'] = 90 - SunEl
-    DFOut['solar_time'] = SolarTime
+    DFOut["apparent_elevation"] = ApparentSunEl
+    DFOut["elevation"] = SunEl
+    DFOut["azimuth"] = SunAz
+    DFOut["apparent_zenith"] = 90 - ApparentSunEl
+    DFOut["zenith"] = 90 - SunEl
+    DFOut["solar_time"] = SolarTime
     DFOut.index = time
 
     return DFOut
 
 
-def calc_time(lower_bound, upper_bound, latitude, longitude, attribute, value,
-              altitude=0.0, pressure=101325.0, temperature=12.0,
-              horizon='+0:00', xtol=1.0e-12):
+def calc_time(
+    lower_bound,
+    upper_bound,
+    latitude,
+    longitude,
+    attribute,
+    value,
+    altitude=0.0,
+    pressure=101325.0,
+    temperature=12.0,
+    horizon="+0:00",
+    xtol=1.0e-12,
+):
     """
     Calculate the time between lower_bound and upper_bound
     where the attribute is equal to value. Uses PyEphem for
@@ -894,8 +1008,9 @@ def calc_time(lower_bound, upper_bound, latitude, longitude, attribute, value,
         If the given attribute is not an attribute of a
         PyEphem.Sun object.
     """
-    obs, sun = _ephem_setup(latitude, longitude, altitude,
-                            pressure, temperature, horizon)
+    obs, sun = _ephem_setup(
+        latitude, longitude, altitude, pressure, temperature, horizon
+    )
 
     def compute_attr(thetime, target, attr):
         obs.date = thetime
@@ -905,8 +1020,7 @@ def calc_time(lower_bound, upper_bound, latitude, longitude, attribute, value,
     lb = datetime_to_djd(lower_bound)
     ub = datetime_to_djd(upper_bound)
 
-    djd_root = so.brentq(compute_attr, lb, ub,
-                         (value, attribute), xtol=xtol)
+    djd_root = so.brentq(compute_attr, lb, ub, (value, attribute), xtol=xtol)
 
     return djd_to_datetime(djd_root)
 
@@ -925,8 +1039,6 @@ def pyephem_earthsun_distance(time):
     pd.Series. Earth-sun distance in AU.
     """
 
-    
-
     sun = ephem.Sun()
     earthsun = []
     for thetime in tools._pandas_to_utc(time):
@@ -939,7 +1051,7 @@ def pyephem_earthsun_distance(time):
     return pd.Series(earthsun, index=time)
 
 
-def nrel_earthsun_distance(time, how='numpy', delta_t=67.0, numthreads=4):
+def nrel_earthsun_distance(time, how="numpy", delta_t=67.0, numthreads=4):
     """
     Calculates the distance from the earth to the sun using the
     NREL SPA algorithm.
@@ -981,7 +1093,11 @@ def nrel_earthsun_distance(time, how='numpy', delta_t=67.0, numthreads=4):
         try:
             time = pd.DatetimeIndex(time)
         except (TypeError, ValueError):
-            time = pd.DatetimeIndex([time, ])
+            time = pd.DatetimeIndex(
+                [
+                    time,
+                ]
+            )
 
     unixtime = _datetime_to_unixtime(time)
 
@@ -1012,7 +1128,7 @@ def _calculate_simple_day_angle(dayofyear, offset=1):
     -------
     day_angle : numeric
     """
-    return (2. * np.pi / 365.) * (dayofyear - offset)
+    return (2.0 * np.pi / 365.0) * (dayofyear - offset)
 
 
 def equation_of_time_spencer71(dayofyear):
@@ -1073,9 +1189,11 @@ def equation_of_time_spencer71(dayofyear):
     day_angle = _calculate_simple_day_angle(dayofyear)
     # convert from radians to minutes per day = 24[h/day] * 60[min/h] / 2 / pi
     eot = (1440.0 / 2 / np.pi) * (
-        0.0000075 +
-        0.001868 * np.cos(day_angle) - 0.032077 * np.sin(day_angle) -
-        0.014615 * np.cos(2.0 * day_angle) - 0.040849 * np.sin(2.0 * day_angle)
+        0.0000075
+        + 0.001868 * np.cos(day_angle)
+        - 0.032077 * np.sin(day_angle)
+        - 0.014615 * np.cos(2.0 * day_angle)
+        - 0.040849 * np.sin(2.0 * day_angle)
     )
     return eot
 
@@ -1108,8 +1226,7 @@ def equation_of_time_pvcdrom(dayofyear):
     equation_of_time_spencer71
     """
     # day angle relative to Vernal Equinox, typically March 22 (day number 81)
-    bday = \
-        _calculate_simple_day_angle(dayofyear) - (2.0 * np.pi / 365.0) * 80.0
+    bday = _calculate_simple_day_angle(dayofyear) - (2.0 * np.pi / 365.0) * 80.0
     # same value but about 2x faster than Spencer (1971)
     return 9.87 * np.sin(2.0 * bday) - 7.53 * np.cos(bday) - 1.5 * np.sin(bday)
 
@@ -1151,10 +1268,13 @@ def declination_spencer71(dayofyear):
     """
     day_angle = _calculate_simple_day_angle(dayofyear)
     return (
-        0.006918 -
-        0.399912 * np.cos(day_angle) + 0.070257 * np.sin(day_angle) -
-        0.006758 * np.cos(2. * day_angle) + 0.000907 * np.sin(2. * day_angle) -
-        0.002697 * np.cos(3. * day_angle) + 0.00148 * np.sin(3. * day_angle)
+        0.006918
+        - 0.399912 * np.cos(day_angle)
+        + 0.070257 * np.sin(day_angle)
+        - 0.006758 * np.cos(2.0 * day_angle)
+        + 0.000907 * np.sin(2.0 * day_angle)
+        - 0.002697 * np.cos(3.0 * day_angle)
+        + 0.00148 * np.sin(3.0 * day_angle)
     )
 
 
@@ -1248,28 +1368,25 @@ def solar_azimuth_analytical(latitude, hourangle, declination, zenith):
     solar_zenith_analytical
     """
 
-    numer = (np.cos(zenith) * np.sin(latitude) - np.sin(declination))
-    denom = (np.sin(zenith) * np.cos(latitude))
+    numer = np.cos(zenith) * np.sin(latitude) - np.sin(declination)
+    denom = np.sin(zenith) * np.cos(latitude)
 
     # cases that would generate new NaN values are safely ignored here
     # since they are dealt with further below
-    with np.errstate(invalid='ignore', divide='ignore'):
+    with np.errstate(invalid="ignore", divide="ignore"):
         cos_azi = numer / denom
 
     # when zero division occurs, use the limit value of the analytical
     # expression
-    cos_azi = \
-        np.where(np.isclose(denom,    0.0, rtol=0.0, atol=1e-8),  1.0, cos_azi)
+    cos_azi = np.where(np.isclose(denom, 0.0, rtol=0.0, atol=1e-8), 1.0, cos_azi)
 
     # when too many round-ups in floating point math take cos_azi beyond
     # 1.0, use 1.0
-    cos_azi = \
-        np.where(np.isclose(cos_azi,  1.0, rtol=0.0, atol=1e-8),  1.0, cos_azi)
-    cos_azi = \
-        np.where(np.isclose(cos_azi, -1.0, rtol=0.0, atol=1e-8), -1.0, cos_azi)
+    cos_azi = np.where(np.isclose(cos_azi, 1.0, rtol=0.0, atol=1e-8), 1.0, cos_azi)
+    cos_azi = np.where(np.isclose(cos_azi, -1.0, rtol=0.0, atol=1e-8), -1.0, cos_azi)
 
     # when NaN values occur in input, ignore and pass to output
-    with np.errstate(invalid='ignore'):
+    with np.errstate(invalid="ignore"):
         sign_ha = np.sign(hourangle)
 
     return sign_ha * np.arccos(cos_azi) + np.pi
@@ -1322,8 +1439,8 @@ def solar_zenith_analytical(latitude, hourangle, declination):
     hour_angle
     """
     return np.arccos(
-        np.cos(declination) * np.cos(latitude) * np.cos(hourangle) +
-        np.sin(declination) * np.sin(latitude)
+        np.cos(declination) * np.cos(latitude) * np.cos(hourangle)
+        + np.sin(declination) * np.sin(latitude)
     )
 
 
@@ -1371,14 +1488,14 @@ def hour_angle(times, longitude, equation_of_time):
 
     # times must be localized
     if not times.tz:
-        raise ValueError('times must be localized')
+        raise ValueError("times must be localized")
 
     # hours - timezone = (times - normalized_times) - (naive_times - times)
     tzs = np.array([ts.utcoffset().total_seconds() for ts in times]) / 3600
 
     hrs_minus_tzs = _times_to_hours_after_local_midnight(times) - tzs
 
-    return 15. * (hrs_minus_tzs - 12.) + longitude + equation_of_time / 4.
+    return 15.0 * (hrs_minus_tzs - 12.0) + longitude + equation_of_time / 4.0
 
 
 def _hour_angle_to_hours(times, hourangle, longitude, equation_of_time):
@@ -1386,10 +1503,10 @@ def _hour_angle_to_hours(times, hourangle, longitude, equation_of_time):
 
     # times must be localized
     if not times.tz:
-        raise ValueError('times must be localized')
+        raise ValueError("times must be localized")
 
     tzs = np.array([ts.utcoffset().total_seconds() for ts in times]) / 3600
-    hours = (hourangle - longitude - equation_of_time / 4.) / 15. + 12. + tzs
+    hours = (hourangle - longitude - equation_of_time / 4.0) / 15.0 + 12.0 + tzs
     return np.asarray(hours)
 
 
@@ -1400,11 +1517,11 @@ def _local_times_from_hours_since_midnight(times, hours):
 
     # times must be localized
     if not times.tz:
-        raise ValueError('times must be localized')
+        raise ValueError("times must be localized")
 
     # normalize local times to previous local midnight and add the hours until
     # sunrise, sunset, and transit
-    return times.normalize() + pd.to_timedelta(hours, unit='h')
+    return times.normalize() + pd.to_timedelta(hours, unit="h")
 
 
 def _times_to_hours_after_local_midnight(times):
@@ -1412,7 +1529,7 @@ def _times_to_hours_after_local_midnight(times):
 
     # times must be localized
     if not times.tz:
-        raise ValueError('times must be localized')
+        raise ValueError("times must be localized")
 
     # Some timezones have a DST shift at midnight:
     #   11:59pm -> 1:00am - results in a nonexistent midnight
@@ -1422,16 +1539,18 @@ def _times_to_hours_after_local_midnight(times):
 
     # Use Pandas functionality for shifting nonexistent times forward
     normalized_times = naive_normalized_times.tz_localize(
-        times.tz, nonexistent='shift_forward', ambiguous='raise')
+        times.tz, nonexistent="shift_forward", ambiguous="raise"
+    )
 
-    hrs = (times - normalized_times) / pd.Timedelta('1h')
+    hrs = (times - normalized_times) / pd.Timedelta("1h")
 
     # ensure array return instead of a version-dependent pandas <T>Index
     return np.array(hrs)
 
 
-def sun_rise_set_transit_geometric(times, latitude, longitude, declination,
-                                   equation_of_time):
+def sun_rise_set_transit_geometric(
+    times, latitude, longitude, declination, equation_of_time
+):
     """
     Geometric calculation of solar sunrise, sunset, and transit.
 
@@ -1475,7 +1594,7 @@ def sun_rise_set_transit_geometric(times, latitude, longitude, declination,
 
     # times must be localized
     if not times.tz:
-        raise ValueError('times must be localized')
+        raise ValueError("times must be localized")
 
     latitude_rad = np.radians(latitude)  # radians
     sunset_angle_rad = np.arccos(-np.tan(declination) * np.tan(latitude_rad))
@@ -1484,9 +1603,9 @@ def sun_rise_set_transit_geometric(times, latitude, longitude, declination,
     # so sunrise is just negative of sunset
     sunrise_angle = -sunset_angle
     sunrise_hour = _hour_angle_to_hours(
-        times, sunrise_angle, longitude, equation_of_time)
-    sunset_hour = _hour_angle_to_hours(
-        times, sunset_angle, longitude, equation_of_time)
+        times, sunrise_angle, longitude, equation_of_time
+    )
+    sunset_hour = _hour_angle_to_hours(times, sunset_angle, longitude, equation_of_time)
     transit_hour = _hour_angle_to_hours(times, 0, longitude, equation_of_time)
     sunrise = _local_times_from_hours_since_midnight(times, sunrise_hour)
     sunset = _local_times_from_hours_since_midnight(times, sunset_hour)

@@ -2,6 +2,7 @@
 The bifacial.utils module contains functions that support bifacial irradiance
 modeling.
 """
+
 import numpy as np
 from pvlib.tools import sind, cosd, tand
 from scipy.integrate import trapezoid
@@ -37,8 +38,9 @@ def _solar_projection_tangent(solar_zenith, solar_azimuth, surface_azimuth):
     return tan_phi
 
 
-def _unshaded_ground_fraction(surface_tilt, surface_azimuth, solar_zenith,
-                              solar_azimuth, gcr, max_zenith=87):
+def _unshaded_ground_fraction(
+    surface_tilt, surface_azimuth, solar_zenith, solar_azimuth, gcr, max_zenith=87
+):
     r"""
     Calculate the fraction of the ground with incident direct irradiance.
 
@@ -83,11 +85,11 @@ def _unshaded_ground_fraction(surface_tilt, surface_azimuth, solar_zenith,
        Photovoltaic Specialists Conference (PVSC), 2019, pp. 1282-1287.
        :doi:`10.1109/PVSC40753.2019.8980572`.
     """
-    tan_phi = _solar_projection_tangent(solar_zenith, solar_azimuth,
-                                        surface_azimuth)
+    tan_phi = _solar_projection_tangent(solar_zenith, solar_azimuth, surface_azimuth)
     f_gnd_beam = 1.0 - np.minimum(
-        1.0, gcr * np.abs(cosd(surface_tilt) + sind(surface_tilt) * tan_phi))
-    np.where(solar_zenith > max_zenith, 0., f_gnd_beam)  # [1], Eq. 4
+        1.0, gcr * np.abs(cosd(surface_tilt) + sind(surface_tilt) * tan_phi)
+    )
+    np.where(solar_zenith > max_zenith, 0.0, f_gnd_beam)  # [1], Eq. 4
     return f_gnd_beam  # 1 - min(1, abs()) < 1 always
 
 
@@ -137,7 +139,7 @@ def vf_ground_sky_2d(rotation, gcr, x, pitch, height, max_rows=10):
     x = np.atleast_1d(x)[:, np.newaxis, np.newaxis]
     rotation = np.atleast_1d(rotation)[np.newaxis, :, np.newaxis]
     all_k = np.arange(-max_rows, max_rows + 1)
-    width = gcr * pitch / 2.
+    width = gcr * pitch / 2.0
     distance_to_row_centers = (all_k - x) * pitch
     dy = width * sind(rotation)
     dx = width * cosd(rotation)
@@ -168,13 +170,14 @@ def vf_ground_sky_2d(rotation, gcr, x, pitch, height, max_rows=10):
     # Note that the 0.5 view factor coefficient is applied after summing
     # as a minor speed optimization.
     np.subtract(next_edge, prev_edge, out=next_edge)
-    np.clip(next_edge, a_min=0., a_max=None, out=next_edge)
+    np.clip(next_edge, a_min=0.0, a_max=None, out=next_edge)
     vf = np.sum(next_edge, axis=-1) / 2
     return vf
 
 
-def vf_ground_sky_2d_integ(surface_tilt, gcr, height, pitch, max_rows=10,
-                           npoints=100, vectorize=False):
+def vf_ground_sky_2d_integ(
+    surface_tilt, gcr, height, pitch, max_rows=10, npoints=100, vectorize=False
+):
     """
     Integrated view factor to the sky from the ground underneath
     interior rows of the array.
@@ -225,7 +228,7 @@ def vf_ground_sky_2d_integ(surface_tilt, gcr, height, pitch, max_rows=10,
 
 
 def _vf_poly(surface_tilt, gcr, x, delta):
-    r'''
+    r"""
     A term common to many 2D view factor calculations
 
     Parameters
@@ -244,14 +247,14 @@ def _vf_poly(surface_tilt, gcr, x, delta):
     Returns
     -------
     numeric
-    '''
+    """
     a = 1 / gcr
     c = cosd(surface_tilt)
-    return np.sqrt(a*a + 2*delta*a*c*x + x*x)
+    return np.sqrt(a * a + 2 * delta * a * c * x + x * x)
 
 
 def vf_row_sky_2d(surface_tilt, gcr, x):
-    r'''
+    r"""
     Calculate the view factor to the sky from a point x on a row surface.
 
     Assumes a PV system of infinitely long rows with uniform pitch on
@@ -274,13 +277,13 @@ def vf_row_sky_2d(surface_tilt, gcr, x):
     vf : numeric
         Fraction of the sky dome visible from the point x. [unitless]
 
-    '''
+    """
     p = _vf_poly(surface_tilt, gcr, 1 - x, -1)
-    return 0.5*(1 + (1/gcr * cosd(surface_tilt) - (1 - x)) / p)
+    return 0.5 * (1 + (1 / gcr * cosd(surface_tilt) - (1 - x)) / p)
 
 
 def vf_row_sky_2d_integ(surface_tilt, gcr, x0=0, x1=1):
-    r'''
+    r"""
     Calculate the average view factor to the sky from a segment of the row
     surface between x0 and x1.
 
@@ -309,20 +312,21 @@ def vf_row_sky_2d_integ(surface_tilt, gcr, x0=0, x1=1):
         Average fraction of the sky dome visible from points in the segment
         from x0 to x1. [unitless]
 
-    '''
+    """
     u = np.abs(x1 - x0)
     p0 = _vf_poly(surface_tilt, gcr, 1 - x0, -1)
     p1 = _vf_poly(surface_tilt, gcr, 1 - x1, -1)
-    with np.errstate(divide='ignore'):
-        result = np.where(u < 1e-6,
-                          vf_row_sky_2d(surface_tilt, gcr, x0),
-                          0.5*(1 + 1/u * (p1 - p0))
-                          )
+    with np.errstate(divide="ignore"):
+        result = np.where(
+            u < 1e-6,
+            vf_row_sky_2d(surface_tilt, gcr, x0),
+            0.5 * (1 + 1 / u * (p1 - p0)),
+        )
     return result
 
 
 def vf_row_ground_2d(surface_tilt, gcr, x):
-    r'''
+    r"""
     Calculate the view factor to the ground from a point x on a row surface.
 
     Assumes a PV system of infinitely long rows with uniform pitch on
@@ -345,13 +349,13 @@ def vf_row_ground_2d(surface_tilt, gcr, x):
     vf : numeric
         View factor to the visible ground from the point x. [unitless]
 
-    '''
+    """
     p = _vf_poly(surface_tilt, gcr, x, 1)
-    return 0.5 * (1 - (1/gcr * cosd(surface_tilt) + x)/p)
+    return 0.5 * (1 - (1 / gcr * cosd(surface_tilt) + x) / p)
 
 
 def vf_row_ground_2d_integ(surface_tilt, gcr, x0=0, x1=1):
-    r'''
+    r"""
     Calculate the average view factor to the ground from a segment of the row
     surface between x0 and x1.
 
@@ -380,13 +384,14 @@ def vf_row_ground_2d_integ(surface_tilt, gcr, x0=0, x1=1):
         Integrated view factor to the visible ground on the interval (x0, x1).
         [unitless]
 
-    '''
+    """
     u = np.abs(x1 - x0)
     p0 = _vf_poly(surface_tilt, gcr, x0, 1)
     p1 = _vf_poly(surface_tilt, gcr, x1, 1)
-    with np.errstate(divide='ignore'):
-        result = np.where(u < 1e-6,
-                          vf_row_ground_2d(surface_tilt, gcr, x0),
-                          0.5*(1 - 1/u * (p1 - p0))
-                          )
+    with np.errstate(divide="ignore"):
+        result = np.where(
+            u < 1e-6,
+            vf_row_ground_2d(surface_tilt, gcr, x0),
+            0.5 * (1 - 1 / u * (p1 - p0)),
+        )
     return result

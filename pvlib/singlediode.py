@@ -9,10 +9,7 @@ from scipy.optimize import brentq, newton
 from scipy.special import lambertw
 
 # newton method default parameters for this module
-NEWTON_DEFAULT_PARAMS = {
-    'tol': 1e-6,
-    'maxiter': 100
-}
+NEWTON_DEFAULT_PARAMS = {"tol": 1e-6, "maxiter": 100}
 
 # intrinsic voltage per cell junction for a:Si, CdTe, Mertens et al.
 VOLTAGE_BUILTIN = 0.9  # [V]
@@ -56,10 +53,20 @@ def estimate_voc(photocurrent, saturation_current, nNsVth):
     return nNsVth * np.log(np.asarray(photocurrent) / saturation_current + 1.0)
 
 
-def bishop88(diode_voltage, photocurrent, saturation_current,
-             resistance_series, resistance_shunt, nNsVth, d2mutau=0,
-             NsVbi=np.inf, breakdown_factor=0., breakdown_voltage=-5.5,
-             breakdown_exp=3.28, gradients=False):
+def bishop88(
+    diode_voltage,
+    photocurrent,
+    saturation_current,
+    resistance_series,
+    resistance_shunt,
+    nNsVth,
+    d2mutau=0,
+    NsVbi=np.inf,
+    breakdown_factor=0.0,
+    breakdown_voltage=-5.5,
+    breakdown_exp=3.28,
+    gradients=False,
+):
     r"""
     Explicit calculation of points on the IV curve described by the single
     diode equation.  Values are calculated as described in [1]_.
@@ -167,11 +174,16 @@ def bishop88(diode_voltage, photocurrent, saturation_current,
         brk_pwr = np.power(brk_term, -breakdown_exp)
         i_breakdown = breakdown_factor * diode_voltage * g_sh * brk_pwr
     else:
-        i_breakdown = 0.
-    i = (photocurrent - saturation_current * np.expm1(v_star)  # noqa: W503
-         - diode_voltage * g_sh - i_recomb - i_breakdown)   # noqa: W503
+        i_breakdown = 0.0
+    i = (
+        photocurrent
+        - saturation_current * np.expm1(v_star)  # noqa: W503
+        - diode_voltage * g_sh
+        - i_recomb
+        - i_breakdown
+    )  # noqa: W503
     v = diode_voltage - i * resistance_series
-    retval = (i, v, i*v)
+    retval = (i, v, i * v)
     if gradients:
         # calculate recombination loss current gradients where d2mutau > 0
         grad_i_recomb = np.where(is_recomb, i_recomb / v_recomb, 0)
@@ -181,14 +193,22 @@ def bishop88(diode_voltage, photocurrent, saturation_current,
             brk_pwr_1 = np.power(brk_term, -breakdown_exp - 1)
             brk_pwr_2 = np.power(brk_term, -breakdown_exp - 2)
             brk_fctr = breakdown_factor * g_sh
-            grad_i_brk = brk_fctr * (brk_pwr + diode_voltage *
-                                     -breakdown_exp * brk_pwr_1)
-            grad2i_brk = (brk_fctr * -breakdown_exp        # noqa: W503
-                          * (2 * brk_pwr_1 + diode_voltage   # noqa: W503
-                             * (-breakdown_exp - 1) * brk_pwr_2))  # noqa: W503
+            grad_i_brk = brk_fctr * (
+                brk_pwr + diode_voltage * -breakdown_exp * brk_pwr_1
+            )
+            grad2i_brk = (
+                brk_fctr
+                * -breakdown_exp  # noqa: W503
+                * (
+                    2 * brk_pwr_1
+                    + diode_voltage  # noqa: W503
+                    * (-breakdown_exp - 1)
+                    * brk_pwr_2
+                )
+            )  # noqa: W503
         else:
-            grad_i_brk = 0.
-            grad2i_brk = 0.
+            grad_i_brk = 0.0
+            grad2i_brk = 0.0
         grad_i = -g_diode - g_sh - grad_i_recomb - grad_i_brk  # di/dvd
         grad_v = 1.0 - grad_i * resistance_series  # dv/dvd
         # dp/dv = d(iv)/dv = v * di/dv + i
@@ -197,18 +217,27 @@ def bishop88(diode_voltage, photocurrent, saturation_current,
         grad2i = -g_diode / nNsVth - grad_2i_recomb - grad2i_brk  # d2i/dvd
         grad2v = -grad2i * resistance_series  # d2v/dvd
         grad2p = (
-            grad_v * grad + v * (grad2i/grad_v - grad_i*grad2v/grad_v**2)
-            + grad_i
+            grad_v * grad + v * (grad2i / grad_v - grad_i * grad2v / grad_v**2) + grad_i
         )  # d2p/dv/dvd
         retval += (grad_i, grad_v, grad, grad_p, grad2p)
     return retval
 
 
-def bishop88_i_from_v(voltage, photocurrent, saturation_current,
-                      resistance_series, resistance_shunt, nNsVth,
-                      d2mutau=0, NsVbi=np.inf, breakdown_factor=0.,
-                      breakdown_voltage=-5.5, breakdown_exp=3.28,
-                      method='newton', method_kwargs=None):
+def bishop88_i_from_v(
+    voltage,
+    photocurrent,
+    saturation_current,
+    resistance_series,
+    resistance_shunt,
+    nNsVth,
+    d2mutau=0,
+    NsVbi=np.inf,
+    breakdown_factor=0.0,
+    breakdown_voltage=-5.5,
+    breakdown_exp=3.28,
+    method="newton",
+    method_kwargs=None,
+):
     """
     Find current given any voltage.
 
@@ -293,9 +322,18 @@ def bishop88_i_from_v(voltage, photocurrent, saturation_current,
        :doi:`10.1016/0379-6787(88)90059-2`
     """
     # collect args
-    args = (photocurrent, saturation_current,
-            resistance_series, resistance_shunt, nNsVth, d2mutau, NsVbi,
-            breakdown_factor, breakdown_voltage, breakdown_exp)
+    args = (
+        photocurrent,
+        saturation_current,
+        resistance_series,
+        resistance_shunt,
+        nNsVth,
+        d2mutau,
+        NsVbi,
+        breakdown_factor,
+        breakdown_voltage,
+        breakdown_exp,
+    )
     method = method.lower()
 
     # method_kwargs create dict if not provided
@@ -307,49 +345,90 @@ def bishop88_i_from_v(voltage, photocurrent, saturation_current,
         # calculate voltage residual given diode voltage "x"
         return bishop88(x, *a)[1] - v
 
-    if method == 'brentq':
+    if method == "brentq":
         # first bound the search using voc
         voc_est = estimate_voc(photocurrent, saturation_current, nNsVth)
         # start iteration slightly less than NsVbi when voc_est > NsVbi, to
         # avoid the asymptote at NsVbi
-        xp = np.where(voc_est < NsVbi, voc_est, 0.9999*NsVbi)
+        xp = np.where(voc_est < NsVbi, voc_est, 0.9999 * NsVbi)
 
         # brentq only works with scalar inputs, so we need a set up function
         # and np.vectorize to repeatedly call the optimizer with the right
         # arguments for possible array input
-        def vd_from_brent(voc, v, iph, isat, rs, rsh, gamma, d2mutau, NsVbi,
-                          breakdown_factor, breakdown_voltage, breakdown_exp):
-            return brentq(fv, 0.0, voc,
-                          args=(v, iph, isat, rs, rsh, gamma, d2mutau, NsVbi,
-                                breakdown_factor, breakdown_voltage,
-                                breakdown_exp),
-                          **method_kwargs)
+        def vd_from_brent(
+            voc,
+            v,
+            iph,
+            isat,
+            rs,
+            rsh,
+            gamma,
+            d2mutau,
+            NsVbi,
+            breakdown_factor,
+            breakdown_voltage,
+            breakdown_exp,
+        ):
+            return brentq(
+                fv,
+                0.0,
+                voc,
+                args=(
+                    v,
+                    iph,
+                    isat,
+                    rs,
+                    rsh,
+                    gamma,
+                    d2mutau,
+                    NsVbi,
+                    breakdown_factor,
+                    breakdown_voltage,
+                    breakdown_exp,
+                ),
+                **method_kwargs,
+            )
 
         vd_from_brent_vectorized = np.vectorize(vd_from_brent)
         vd = vd_from_brent_vectorized(xp, voltage, *args)
-    elif method == 'newton':
-        x0, (voltage, *args), method_kwargs = \
-            _prepare_newton_inputs(voltage, (voltage, *args), method_kwargs)
-        vd = newton(func=lambda x, *a: fv(x, voltage, *a), x0=x0,
-                    fprime=lambda x, *a: bishop88(x, *a, gradients=True)[4],
-                    args=args, **method_kwargs)
+    elif method == "newton":
+        x0, (voltage, *args), method_kwargs = _prepare_newton_inputs(
+            voltage, (voltage, *args), method_kwargs
+        )
+        vd = newton(
+            func=lambda x, *a: fv(x, voltage, *a),
+            x0=x0,
+            fprime=lambda x, *a: bishop88(x, *a, gradients=True)[4],
+            args=args,
+            **method_kwargs,
+        )
     else:
         raise NotImplementedError("Method '%s' isn't implemented" % method)
 
     # When 'full_output' parameter is specified, returned 'vd' is a tuple with
     # many elements, where the root is the first one. So we use it to output
     # the bishop88 result and return tuple(scalar, tuple with method results)
-    if method_kwargs.get('full_output') is True:
+    if method_kwargs.get("full_output") is True:
         return (bishop88(vd[0], *args)[0], vd)
     else:
         return bishop88(vd, *args)[0]
 
 
-def bishop88_v_from_i(current, photocurrent, saturation_current,
-                      resistance_series, resistance_shunt, nNsVth,
-                      d2mutau=0, NsVbi=np.inf, breakdown_factor=0.,
-                      breakdown_voltage=-5.5, breakdown_exp=3.28,
-                      method='newton', method_kwargs=None):
+def bishop88_v_from_i(
+    current,
+    photocurrent,
+    saturation_current,
+    resistance_series,
+    resistance_shunt,
+    nNsVth,
+    d2mutau=0,
+    NsVbi=np.inf,
+    breakdown_factor=0.0,
+    breakdown_voltage=-5.5,
+    breakdown_exp=3.28,
+    method="newton",
+    method_kwargs=None,
+):
     """
     Find voltage given any current.
 
@@ -434,9 +513,18 @@ def bishop88_v_from_i(current, photocurrent, saturation_current,
        :doi:`10.1016/0379-6787(88)90059-2`
     """
     # collect args
-    args = (photocurrent, saturation_current,
-            resistance_series, resistance_shunt, nNsVth, d2mutau, NsVbi,
-            breakdown_factor, breakdown_voltage, breakdown_exp)
+    args = (
+        photocurrent,
+        saturation_current,
+        resistance_series,
+        resistance_shunt,
+        nNsVth,
+        d2mutau,
+        NsVbi,
+        breakdown_factor,
+        breakdown_voltage,
+        breakdown_exp,
+    )
     method = method.lower()
 
     # method_kwargs create dict if not provided
@@ -448,48 +536,89 @@ def bishop88_v_from_i(current, photocurrent, saturation_current,
     voc_est = estimate_voc(photocurrent, saturation_current, nNsVth)
     # start iteration slightly less than NsVbi when voc_est > NsVbi, to avoid
     # the asymptote at NsVbi
-    xp = np.where(voc_est < NsVbi, voc_est, 0.9999*NsVbi)
+    xp = np.where(voc_est < NsVbi, voc_est, 0.9999 * NsVbi)
 
     def fi(x, i, *a):
         # calculate current residual given diode voltage "x"
         return bishop88(x, *a)[0] - i
 
-    if method == 'brentq':
+    if method == "brentq":
         # brentq only works with scalar inputs, so we need a set up function
         # and np.vectorize to repeatedly call the optimizer with the right
         # arguments for possible array input
-        def vd_from_brent(voc, i, iph, isat, rs, rsh, gamma, d2mutau, NsVbi,
-                          breakdown_factor, breakdown_voltage, breakdown_exp):
-            return brentq(fi, 0.0, voc,
-                          args=(i, iph, isat, rs, rsh, gamma, d2mutau, NsVbi,
-                                breakdown_factor, breakdown_voltage,
-                                breakdown_exp),
-                          **method_kwargs)
+        def vd_from_brent(
+            voc,
+            i,
+            iph,
+            isat,
+            rs,
+            rsh,
+            gamma,
+            d2mutau,
+            NsVbi,
+            breakdown_factor,
+            breakdown_voltage,
+            breakdown_exp,
+        ):
+            return brentq(
+                fi,
+                0.0,
+                voc,
+                args=(
+                    i,
+                    iph,
+                    isat,
+                    rs,
+                    rsh,
+                    gamma,
+                    d2mutau,
+                    NsVbi,
+                    breakdown_factor,
+                    breakdown_voltage,
+                    breakdown_exp,
+                ),
+                **method_kwargs,
+            )
 
         vd_from_brent_vectorized = np.vectorize(vd_from_brent)
         vd = vd_from_brent_vectorized(xp, current, *args)
-    elif method == 'newton':
-        x0, (current, *args), method_kwargs = \
-            _prepare_newton_inputs(xp, (current, *args), method_kwargs)
-        vd = newton(func=lambda x, *a: fi(x, current, *a), x0=x0,
-                    fprime=lambda x, *a: bishop88(x, *a, gradients=True)[3],
-                    args=args, **method_kwargs)
+    elif method == "newton":
+        x0, (current, *args), method_kwargs = _prepare_newton_inputs(
+            xp, (current, *args), method_kwargs
+        )
+        vd = newton(
+            func=lambda x, *a: fi(x, current, *a),
+            x0=x0,
+            fprime=lambda x, *a: bishop88(x, *a, gradients=True)[3],
+            args=args,
+            **method_kwargs,
+        )
     else:
         raise NotImplementedError("Method '%s' isn't implemented" % method)
 
     # When 'full_output' parameter is specified, returned 'vd' is a tuple with
     # many elements, where the root is the first one. So we use it to output
     # the bishop88 result and return tuple(scalar, tuple with method results)
-    if method_kwargs.get('full_output') is True:
+    if method_kwargs.get("full_output") is True:
         return (bishop88(vd[0], *args)[1], vd)
     else:
         return bishop88(vd, *args)[1]
 
 
-def bishop88_mpp(photocurrent, saturation_current, resistance_series,
-                 resistance_shunt, nNsVth, d2mutau=0, NsVbi=np.inf,
-                 breakdown_factor=0., breakdown_voltage=-5.5,
-                 breakdown_exp=3.28, method='newton', method_kwargs=None):
+def bishop88_mpp(
+    photocurrent,
+    saturation_current,
+    resistance_series,
+    resistance_shunt,
+    nNsVth,
+    d2mutau=0,
+    NsVbi=np.inf,
+    breakdown_factor=0.0,
+    breakdown_voltage=-5.5,
+    breakdown_exp=3.28,
+    method="newton",
+    method_kwargs=None,
+):
     """
     Find max power point.
 
@@ -573,9 +702,18 @@ def bishop88_mpp(photocurrent, saturation_current, resistance_series,
        :doi:`10.1016/0379-6787(88)90059-2`
     """
     # collect args
-    args = (photocurrent, saturation_current,
-            resistance_series, resistance_shunt, nNsVth, d2mutau, NsVbi,
-            breakdown_factor, breakdown_voltage, breakdown_exp)
+    args = (
+        photocurrent,
+        saturation_current,
+        resistance_series,
+        resistance_shunt,
+        nNsVth,
+        d2mutau,
+        NsVbi,
+        breakdown_factor,
+        breakdown_voltage,
+        breakdown_exp,
+    )
     method = method.lower()
 
     # method_kwargs create dict if not provided
@@ -587,30 +725,45 @@ def bishop88_mpp(photocurrent, saturation_current, resistance_series,
     voc_est = estimate_voc(photocurrent, saturation_current, nNsVth)
     # start iteration slightly less than NsVbi when voc_est > NsVbi, to avoid
     # the asymptote at NsVbi
-    xp = np.where(voc_est < NsVbi, voc_est, 0.9999*NsVbi)
+    xp = np.where(voc_est < NsVbi, voc_est, 0.9999 * NsVbi)
 
     def fmpp(x, *a):
         return bishop88(x, *a, gradients=True)[6]
 
-    if method == 'brentq':
+    if method == "brentq":
         # break out arguments for numpy.vectorize to handle broadcasting
         vec_fun = np.vectorize(
-            lambda voc, iph, isat, rs, rsh, gamma, d2mutau, NsVbi, vbr_a, vbr,
-            vbr_exp: brentq(fmpp, 0.0, voc,
-                            args=(iph, isat, rs, rsh, gamma, d2mutau, NsVbi,
-                                  vbr_a, vbr, vbr_exp),
-                            **method_kwargs)
+            lambda voc,
+            iph,
+            isat,
+            rs,
+            rsh,
+            gamma,
+            d2mutau,
+            NsVbi,
+            vbr_a,
+            vbr,
+            vbr_exp: brentq(
+                fmpp,
+                0.0,
+                voc,
+                args=(iph, isat, rs, rsh, gamma, d2mutau, NsVbi, vbr_a, vbr, vbr_exp),
+                **method_kwargs,
+            )
         )
         vd = vec_fun(xp, *args)
-    elif method == 'newton':
+    elif method == "newton":
         # make sure all args are numpy arrays if max size > 1
         # if voc_est is an array, then make a copy to use for initial guess, v0
 
-        x0, args, method_kwargs = \
-            _prepare_newton_inputs(xp, args, method_kwargs)
-        vd = newton(func=fmpp, x0=x0,
-                    fprime=lambda x, *a: bishop88(x, *a, gradients=True)[7],
-                    args=args, **method_kwargs)
+        x0, args, method_kwargs = _prepare_newton_inputs(xp, args, method_kwargs)
+        vd = newton(
+            func=fmpp,
+            x0=x0,
+            fprime=lambda x, *a: bishop88(x, *a, gradients=True)[7],
+            args=args,
+            **method_kwargs,
+        )
     else:
         raise NotImplementedError("Method '%s' isn't implemented" % method)
 
@@ -618,15 +771,14 @@ def bishop88_mpp(photocurrent, saturation_current, resistance_series,
     # many elements, where the root is the first one. So we use it to output
     # the bishop88 result and return
     # tuple(tuple with bishop88 solution, tuple with method results)
-    if method_kwargs.get('full_output') is True:
+    if method_kwargs.get("full_output") is True:
         return (bishop88(vd[0], *args), vd)
     else:
         return bishop88(vd, *args)
 
 
 def _shape_of_max_size(*args):
-    return max(((np.size(a), np.shape(a)) for a in args),
-               key=lambda t: t[0])[1]
+    return max(((np.size(a), np.shape(a)) for a in args), key=lambda t: t[0])[1]
 
 
 def _prepare_newton_inputs(x0, args, method_kwargs):
@@ -662,46 +814,71 @@ def _prepare_newton_inputs(x0, args, method_kwargs):
     return x0, args, method_kwargs
 
 
-def _lambertw_v_from_i(current, photocurrent, saturation_current,
-                       resistance_series, resistance_shunt, nNsVth):
+def _lambertw_v_from_i(
+    current,
+    photocurrent,
+    saturation_current,
+    resistance_series,
+    resistance_shunt,
+    nNsVth,
+):
     # Record if inputs were all scalar
-    output_is_scalar = all(map(np.isscalar,
-                               (current, photocurrent, saturation_current,
-                                resistance_series, resistance_shunt, nNsVth)))
+    output_is_scalar = all(
+        map(
+            np.isscalar,
+            (
+                current,
+                photocurrent,
+                saturation_current,
+                resistance_series,
+                resistance_shunt,
+                nNsVth,
+            ),
+        )
+    )
 
     # This transforms Gsh=1/Rsh, including ideal Rsh=np.inf into Gsh=0., which
     #  is generally more numerically stable
-    conductance_shunt = 1. / resistance_shunt
+    conductance_shunt = 1.0 / resistance_shunt
 
     # Ensure that we are working with read-only views of numpy arrays
     # Turns Series into arrays so that we don't have to worry about
     #  multidimensional broadcasting failing
-    I, IL, I0, Rs, Gsh, a = \
-        np.broadcast_arrays(current, photocurrent, saturation_current,
-                            resistance_series, conductance_shunt, nNsVth)
+    I, IL, I0, Rs, Gsh, a = np.broadcast_arrays(
+        current,
+        photocurrent,
+        saturation_current,
+        resistance_series,
+        conductance_shunt,
+        nNsVth,
+    )
 
     # Intitalize output V (I might not be float64)
     V = np.full_like(I, np.nan, dtype=np.float64)
 
     # Determine indices where 0 < Gsh requires implicit model solution
-    idx_p = 0. < Gsh
+    idx_p = 0.0 < Gsh
 
     # Determine indices where 0 = Gsh allows explicit model solution
-    idx_z = 0. == Gsh
+    idx_z = 0.0 == Gsh
 
     # Explicit solutions where Gsh=0
     if np.any(idx_z):
-        V[idx_z] = a[idx_z] * np.log1p((IL[idx_z] - I[idx_z]) / I0[idx_z]) - \
-                   I[idx_z] * Rs[idx_z]
+        V[idx_z] = (
+            a[idx_z] * np.log1p((IL[idx_z] - I[idx_z]) / I0[idx_z])
+            - I[idx_z] * Rs[idx_z]
+        )
 
     # Only compute using LambertW if there are cases with Gsh>0
     if np.any(idx_p):
         # LambertW argument, cannot be float128, may overflow to np.inf
         # overflow is explicitly handled below, so ignore warnings here
-        with np.errstate(over='ignore'):
-            argW = (I0[idx_p] / (Gsh[idx_p] * a[idx_p]) *
-                    np.exp((-I[idx_p] + IL[idx_p] + I0[idx_p]) /
-                           (Gsh[idx_p] * a[idx_p])))
+        with np.errstate(over="ignore"):
+            argW = (
+                I0[idx_p]
+                / (Gsh[idx_p] * a[idx_p])
+                * np.exp((-I[idx_p] + IL[idx_p] + I0[idx_p]) / (Gsh[idx_p] * a[idx_p]))
+            )
 
         # lambertw typically returns complex value with zero imaginary part
         # may overflow to np.inf
@@ -713,10 +890,12 @@ def _lambertw_v_from_i(current, photocurrent, saturation_current,
         # Only re-compute LambertW if it overflowed
         if np.any(idx_inf):
             # Calculate using log(argW) in case argW is really big
-            logargW = (np.log(I0[idx_p]) - np.log(Gsh[idx_p]) -
-                       np.log(a[idx_p]) +
-                       (-I[idx_p] + IL[idx_p] + I0[idx_p]) /
-                       (Gsh[idx_p] * a[idx_p]))[idx_inf]
+            logargW = (
+                np.log(I0[idx_p])
+                - np.log(Gsh[idx_p])
+                - np.log(a[idx_p])
+                + (-I[idx_p] + IL[idx_p] + I0[idx_p]) / (Gsh[idx_p] * a[idx_p])
+            )[idx_inf]
 
             # Three iterations of Newton-Raphson method to solve
             #  w+log(w)=logargW. The initial guess is w=logargW. Where direct
@@ -724,14 +903,17 @@ def _lambertw_v_from_i(current, photocurrent, saturation_current,
             #  of Newton's method gives approximately 8 digits of precision.
             w = logargW
             for _ in range(0, 3):
-                w = w * (1. - np.log(w) + logargW) / (1. + w)
+                w = w * (1.0 - np.log(w) + logargW) / (1.0 + w)
             lambertwterm[idx_inf] = w
 
         # Eqn. 3 in Jain and Kapoor, 2004
         #  V = -I*(Rs + Rsh) + IL*Rsh - a*lambertwterm + I0*Rsh
         # Recast in terms of Gsh=1/Rsh for better numerical stability.
-        V[idx_p] = (IL[idx_p] + I0[idx_p] - I[idx_p]) / Gsh[idx_p] - \
-            I[idx_p] * Rs[idx_p] - a[idx_p] * lambertwterm
+        V[idx_p] = (
+            (IL[idx_p] + I0[idx_p] - I[idx_p]) / Gsh[idx_p]
+            - I[idx_p] * Rs[idx_p]
+            - a[idx_p] * lambertwterm
+        )
 
     if output_is_scalar:
         return V.item()
@@ -739,46 +921,75 @@ def _lambertw_v_from_i(current, photocurrent, saturation_current,
         return V
 
 
-def _lambertw_i_from_v(voltage, photocurrent, saturation_current,
-                       resistance_series, resistance_shunt, nNsVth):
+def _lambertw_i_from_v(
+    voltage,
+    photocurrent,
+    saturation_current,
+    resistance_series,
+    resistance_shunt,
+    nNsVth,
+):
     # Record if inputs were all scalar
-    output_is_scalar = all(map(np.isscalar,
-                               (voltage, photocurrent, saturation_current,
-                                resistance_series, resistance_shunt, nNsVth)))
+    output_is_scalar = all(
+        map(
+            np.isscalar,
+            (
+                voltage,
+                photocurrent,
+                saturation_current,
+                resistance_series,
+                resistance_shunt,
+                nNsVth,
+            ),
+        )
+    )
 
     # This transforms Gsh=1/Rsh, including ideal Rsh=np.inf into Gsh=0., which
     #  is generally more numerically stable
-    conductance_shunt = 1. / resistance_shunt
+    conductance_shunt = 1.0 / resistance_shunt
 
     # Ensure that we are working with read-only views of numpy arrays
     # Turns Series into arrays so that we don't have to worry about
     #  multidimensional broadcasting failing
-    V, IL, I0, Rs, Gsh, a = \
-        np.broadcast_arrays(voltage, photocurrent, saturation_current,
-                            resistance_series, conductance_shunt, nNsVth)
+    V, IL, I0, Rs, Gsh, a = np.broadcast_arrays(
+        voltage,
+        photocurrent,
+        saturation_current,
+        resistance_series,
+        conductance_shunt,
+        nNsVth,
+    )
 
     # Intitalize output I (V might not be float64)
-    I = np.full_like(V, np.nan, dtype=np.float64)           # noqa: E741, N806
+    I = np.full_like(V, np.nan, dtype=np.float64)  # noqa: E741, N806
 
     # Determine indices where 0 < Rs requires implicit model solution
-    idx_p = 0. < Rs
+    idx_p = 0.0 < Rs
 
     # Determine indices where 0 = Rs allows explicit model solution
-    idx_z = 0. == Rs
+    idx_z = 0.0 == Rs
 
     # Explicit solutions where Rs=0
     if np.any(idx_z):
-        I[idx_z] = IL[idx_z] - I0[idx_z] * np.expm1(V[idx_z] / a[idx_z]) - \
-                   Gsh[idx_z] * V[idx_z]
+        I[idx_z] = (
+            IL[idx_z]
+            - I0[idx_z] * np.expm1(V[idx_z] / a[idx_z])
+            - Gsh[idx_z] * V[idx_z]
+        )
 
     # Only compute using LambertW if there are cases with Rs>0
     # Does NOT handle possibility of overflow, github issue 298
     if np.any(idx_p):
         # LambertW argument, cannot be float128, may overflow to np.inf
-        argW = Rs[idx_p] * I0[idx_p] / (
-                    a[idx_p] * (Rs[idx_p] * Gsh[idx_p] + 1.)) * \
-               np.exp((Rs[idx_p] * (IL[idx_p] + I0[idx_p]) + V[idx_p]) /
-                      (a[idx_p] * (Rs[idx_p] * Gsh[idx_p] + 1.)))
+        argW = (
+            Rs[idx_p]
+            * I0[idx_p]
+            / (a[idx_p] * (Rs[idx_p] * Gsh[idx_p] + 1.0))
+            * np.exp(
+                (Rs[idx_p] * (IL[idx_p] + I0[idx_p]) + V[idx_p])
+                / (a[idx_p] * (Rs[idx_p] * Gsh[idx_p] + 1.0))
+            )
+        )
 
         # lambertw typically returns complex value with zero imaginary part
         # may overflow to np.inf
@@ -787,9 +998,9 @@ def _lambertw_i_from_v(voltage, photocurrent, saturation_current,
         # Eqn. 2 in Jain and Kapoor, 2004
         #  I = -V/(Rs + Rsh) - (a/Rs)*lambertwterm + Rsh*(IL + I0)/(Rs + Rsh)
         # Recast in terms of Gsh=1/Rsh for better numerical stability.
-        I[idx_p] = (IL[idx_p] + I0[idx_p] - V[idx_p] * Gsh[idx_p]) / \
-                   (Rs[idx_p] * Gsh[idx_p] + 1.) - (
-                               a[idx_p] / Rs[idx_p]) * lambertwterm
+        I[idx_p] = (IL[idx_p] + I0[idx_p] - V[idx_p] * Gsh[idx_p]) / (
+            Rs[idx_p] * Gsh[idx_p] + 1.0
+        ) - (a[idx_p] / Rs[idx_p]) * lambertwterm
 
     if output_is_scalar:
         return I.item()
@@ -797,30 +1008,39 @@ def _lambertw_i_from_v(voltage, photocurrent, saturation_current,
         return I
 
 
-def _lambertw(photocurrent, saturation_current, resistance_series,
-              resistance_shunt, nNsVth, ivcurve_pnts=None):
+def _lambertw(
+    photocurrent,
+    saturation_current,
+    resistance_series,
+    resistance_shunt,
+    nNsVth,
+    ivcurve_pnts=None,
+):
     # collect args
-    params = {'photocurrent': photocurrent,
-              'saturation_current': saturation_current,
-              'resistance_series': resistance_series,
-              'resistance_shunt': resistance_shunt, 'nNsVth': nNsVth}
+    params = {
+        "photocurrent": photocurrent,
+        "saturation_current": saturation_current,
+        "resistance_series": resistance_series,
+        "resistance_shunt": resistance_shunt,
+        "nNsVth": nNsVth,
+    }
 
     # Compute short circuit current
-    i_sc = _lambertw_i_from_v(0., **params)
+    i_sc = _lambertw_i_from_v(0.0, **params)
 
     # Compute open circuit voltage
-    v_oc = _lambertw_v_from_i(0., **params)
+    v_oc = _lambertw_v_from_i(0.0, **params)
 
     # Set small elements <0 in v_oc to 0
     if isinstance(v_oc, np.ndarray):
-        v_oc[(v_oc < 0) & (v_oc > -1e-12)] = 0.
+        v_oc[(v_oc < 0) & (v_oc > -1e-12)] = 0.0
     elif isinstance(v_oc, (float, int)):
         if v_oc < 0 and v_oc > -1e-12:
-            v_oc = 0.
+            v_oc = 0.0
 
     # Find the voltage, v_mp, where the power is maximized.
     # Start the golden section search at v_oc * 1.14
-    p_mp, v_mp = _golden_sect_DataFrame(params, 0., v_oc * 1.14, _pwr_optfcn)
+    p_mp, v_mp = _golden_sect_DataFrame(params, 0.0, v_oc * 1.14, _pwr_optfcn)
 
     # Find Imp using Lambert W
     i_mp = _lambertw_i_from_v(v_mp, **params)
@@ -834,8 +1054,7 @@ def _lambertw(photocurrent, saturation_current, resistance_series,
 
     # create ivcurve
     if ivcurve_pnts:
-        ivcurve_v = (np.asarray(v_oc)[..., np.newaxis] *
-                     np.linspace(0, 1, ivcurve_pnts))
+        ivcurve_v = np.asarray(v_oc)[..., np.newaxis] * np.linspace(0, 1, ivcurve_pnts)
 
         ivcurve_i = _lambertw_i_from_v(ivcurve_v.T, **params).T
 
@@ -845,13 +1064,17 @@ def _lambertw(photocurrent, saturation_current, resistance_series,
 
 
 def _pwr_optfcn(df, loc):
-    '''
+    """
     Function to find power from ``i_from_v``.
-    '''
+    """
 
-    current = _lambertw_i_from_v(df[loc], df['photocurrent'],
-                                 df['saturation_current'],
-                                 df['resistance_series'],
-                                 df['resistance_shunt'], df['nNsVth'])
+    current = _lambertw_i_from_v(
+        df[loc],
+        df["photocurrent"],
+        df["saturation_current"],
+        df["resistance_series"],
+        df["resistance_shunt"],
+        df["nNsVth"],
+    )
 
     return current * df[loc]

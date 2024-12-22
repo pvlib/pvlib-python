@@ -10,20 +10,21 @@ from .conftest import fail_on_pvlib_version
 import warnings
 
 
-@pytest.mark.xfail(strict=True,
-                   reason='fail_on_pvlib_version should cause test to fail')
-@fail_on_pvlib_version('0.0')
+@pytest.mark.xfail(
+    strict=True, reason="fail_on_pvlib_version should cause test to fail"
+)
+@fail_on_pvlib_version("0.0")
 def test_fail_on_pvlib_version():
     pass  # pragma: no cover
 
 
-@fail_on_pvlib_version('100000.0')
+@fail_on_pvlib_version("100000.0")
 def test_fail_on_pvlib_version_pass():
     pass
 
 
-@pytest.mark.xfail(strict=True, reason='ensure that the test is called')
-@fail_on_pvlib_version('100000.0')
+@pytest.mark.xfail(strict=True, reason="ensure that the test is called")
+@fail_on_pvlib_version("100000.0")
 def test_fail_on_pvlib_version_fail_in_test():
     raise Exception
 
@@ -46,7 +47,7 @@ def deprec_func():
     )(alt_func)
 
 
-@fail_on_pvlib_version('350.9')
+@fail_on_pvlib_version("350.9")
 def test_use_fixture_with_decorator(some_data, deprec_func):
     # test that the correct data is returned by the some_data fixture
     assert some_data == "some data"
@@ -61,9 +62,7 @@ def renamed_kwarg_func():
     This function is called 'func' and has a docstring equal to 'docstring'.
     """
 
-    @_deprecation.renamed_kwarg_warning(
-        "0.1.0", "old_kwarg", "new_kwarg", "0.2.0"
-    )
+    @_deprecation.renamed_kwarg_warning("0.1.0", "old_kwarg", "new_kwarg", "0.2.0")
     def func(new_kwarg):
         """docstring"""
         return new_kwarg
@@ -91,7 +90,5 @@ def test_renamed_kwarg_warning(renamed_kwarg_func):
         renamed_kwarg_func(old_kwarg=1, new_kwarg=2)
 
     # assert when not providing any of them
-    with pytest.raises(
-        TypeError, match="missing 1 required positional argument"
-    ):
+    with pytest.raises(TypeError, match="missing 1 required positional argument"):
         renamed_kwarg_func()

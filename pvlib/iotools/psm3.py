@@ -16,55 +16,74 @@ TMY_URL = NSRDB_API_BASE + "/api/nsrdb/v2/solar/psm3-tmy-download.csv"
 PSM5MIN_URL = NSRDB_API_BASE + "/api/nsrdb/v2/solar/psm3-5min-download.csv"
 
 ATTRIBUTES = (
-    'air_temperature', 'dew_point', 'dhi', 'dni', 'ghi', 'surface_albedo',
-    'surface_pressure', 'wind_direction', 'wind_speed')
-PVLIB_PYTHON = 'pvlib python'
+    "air_temperature",
+    "dew_point",
+    "dhi",
+    "dni",
+    "ghi",
+    "surface_albedo",
+    "surface_pressure",
+    "wind_direction",
+    "wind_speed",
+)
+PVLIB_PYTHON = "pvlib python"
 
 # Dictionary mapping PSM3 response names to pvlib names
 VARIABLE_MAP = {
-    'GHI': 'ghi',
-    'DHI': 'dhi',
-    'DNI': 'dni',
-    'Clearsky GHI': 'ghi_clear',
-    'Clearsky DHI': 'dhi_clear',
-    'Clearsky DNI': 'dni_clear',
-    'Solar Zenith Angle': 'solar_zenith',
-    'Temperature': 'temp_air',
-    'Dew Point': 'temp_dew',
-    'Relative Humidity': 'relative_humidity',
-    'Pressure': 'pressure',
-    'Wind Speed': 'wind_speed',
-    'Wind Direction': 'wind_direction',
-    'Surface Albedo': 'albedo',
-    'Precipitable Water': 'precipitable_water',
+    "GHI": "ghi",
+    "DHI": "dhi",
+    "DNI": "dni",
+    "Clearsky GHI": "ghi_clear",
+    "Clearsky DHI": "dhi_clear",
+    "Clearsky DNI": "dni_clear",
+    "Solar Zenith Angle": "solar_zenith",
+    "Temperature": "temp_air",
+    "Dew Point": "temp_dew",
+    "Relative Humidity": "relative_humidity",
+    "Pressure": "pressure",
+    "Wind Speed": "wind_speed",
+    "Wind Direction": "wind_direction",
+    "Surface Albedo": "albedo",
+    "Precipitable Water": "precipitable_water",
 }
 
 # Dictionary mapping pvlib names to PSM3 request names
 # Note, PSM3 uses different names for the same variables in the
 # response and the request
 REQUEST_VARIABLE_MAP = {
-    'ghi': 'ghi',
-    'dhi': 'dhi',
-    'dni': 'dni',
-    'ghi_clear': 'clearsky_ghi',
-    'dhi_clear': 'clearsky_dhi',
-    'dni_clear': 'clearsky_dni',
-    'zenith': 'solar_zenith_angle',
-    'temp_air': 'air_temperature',
-    'temp_dew': 'dew_point',
-    'relative_humidity': 'relative_humidity',
-    'pressure': 'surface_pressure',
-    'wind_speed': 'wind_speed',
-    'wind_direction': 'wind_direction',
-    'albedo': 'surface_albedo',
-    'precipitable_water': 'total_precipitable_water',
+    "ghi": "ghi",
+    "dhi": "dhi",
+    "dni": "dni",
+    "ghi_clear": "clearsky_ghi",
+    "dhi_clear": "clearsky_dhi",
+    "dni_clear": "clearsky_dni",
+    "zenith": "solar_zenith_angle",
+    "temp_air": "air_temperature",
+    "temp_dew": "dew_point",
+    "relative_humidity": "relative_humidity",
+    "pressure": "surface_pressure",
+    "wind_speed": "wind_speed",
+    "wind_direction": "wind_direction",
+    "albedo": "surface_albedo",
+    "precipitable_water": "total_precipitable_water",
 }
 
 
-def get_psm3(latitude, longitude, api_key, email, names='tmy', interval=60,
-             attributes=ATTRIBUTES, leap_day=True, full_name=PVLIB_PYTHON,
-             affiliation=PVLIB_PYTHON, map_variables=True, url=None,
-             timeout=30):
+def get_psm3(
+    latitude,
+    longitude,
+    api_key,
+    email,
+    names="tmy",
+    interval=60,
+    attributes=ATTRIBUTES,
+    leap_day=True,
+    full_name=PVLIB_PYTHON,
+    affiliation=PVLIB_PYTHON,
+    map_variables=True,
+    url=None,
+    timeout=30,
+):
     """
     Retrieve NSRDB PSM3 timeseries weather data from the PSM3 API. The NSRDB
     is described in [1]_ and the PSM3 API is described in [2]_, [3]_, and [4]_.
@@ -169,8 +188,8 @@ def get_psm3(latitude, longitude, api_key, email, names='tmy', interval=60,
     # The well know text (WKT) representation of geometry notation is strict.
     # A POINT object is a string with longitude first, then the latitude, with
     # four decimals each, and exactly one space between them.
-    longitude = ('%9.4f' % longitude).strip()
-    latitude = ('%8.4f' % latitude).strip()
+    longitude = ("%9.4f" % longitude).strip()
+    latitude = ("%8.4f" % latitude).strip()
     # TODO: make format_WKT(object_type, *args) in tools.py
 
     # convert to string to accomodate integer years being passed in
@@ -181,23 +200,23 @@ def get_psm3(latitude, longitude, api_key, email, names='tmy', interval=60,
 
     # required query-string parameters for request to PSM3 API
     params = {
-        'api_key': api_key,
-        'full_name': full_name,
-        'email': email,
-        'affiliation': affiliation,
-        'reason': PVLIB_PYTHON,
-        'mailing_list': 'false',
-        'wkt': 'POINT(%s %s)' % (longitude, latitude),
-        'names': names,
-        'attributes':  ','.join(attributes),
-        'leap_day': str(leap_day).lower(),
-        'utc': 'false',
-        'interval': interval
+        "api_key": api_key,
+        "full_name": full_name,
+        "email": email,
+        "affiliation": affiliation,
+        "reason": PVLIB_PYTHON,
+        "mailing_list": "false",
+        "wkt": "POINT(%s %s)" % (longitude, latitude),
+        "names": names,
+        "attributes": ",".join(attributes),
+        "leap_day": str(leap_day).lower(),
+        "utc": "false",
+        "interval": interval,
     }
     # request CSV download from NREL PSM3
     if url is None:
         # determine the endpoint that suits the user inputs
-        if any(prefix in names for prefix in ('tmy', 'tgy', 'tdy')):
+        if any(prefix in names for prefix in ("tmy", "tgy", "tdy")):
             url = TMY_URL
         elif interval in (5, 15):
             url = PSM5MIN_URL
@@ -209,13 +228,13 @@ def get_psm3(latitude, longitude, api_key, email, names='tmy', interval=60,
         # if the API key is rejected, then the response status will be 403
         # Forbidden, and then the error is in the content and there is no JSON
         try:
-            errors = response.json()['errors']
+            errors = response.json()["errors"]
         except JSONDecodeError:
-            errors = response.content.decode('utf-8')
+            errors = response.content.decode("utf-8")
         raise requests.HTTPError(errors, response=response)
     # the CSV is in the response content as a UTF-8 bytestring
     # to use pandas we need to create a file buffer from the response
-    fbuf = io.StringIO(response.content.decode('utf-8'))
+    fbuf = io.StringIO(response.content.decode("utf-8"))
     return parse_psm3(fbuf, map_variables)
 
 
@@ -317,42 +336,47 @@ def parse_psm3(fbuf, map_variables=True):
        <https://web.archive.org/web/20170207203107/https://sam.nrel.gov/sites/default/files/content/documents/pdf/wfcsv.pdf>`_
     """
     # The first 2 lines of the response are headers with metadata
-    metadata_fields = fbuf.readline().split(',')
+    metadata_fields = fbuf.readline().split(",")
     metadata_fields[-1] = metadata_fields[-1].strip()  # strip trailing newline
-    metadata_values = fbuf.readline().split(',')
+    metadata_values = fbuf.readline().split(",")
     metadata_values[-1] = metadata_values[-1].strip()  # strip trailing newline
     metadata = dict(zip(metadata_fields, metadata_values))
     # the response is all strings, so set some metadata types to numbers
-    metadata['Local Time Zone'] = int(metadata['Local Time Zone'])
-    metadata['Time Zone'] = int(metadata['Time Zone'])
-    metadata['Latitude'] = float(metadata['Latitude'])
-    metadata['Longitude'] = float(metadata['Longitude'])
-    metadata['Elevation'] = int(metadata['Elevation'])
+    metadata["Local Time Zone"] = int(metadata["Local Time Zone"])
+    metadata["Time Zone"] = int(metadata["Time Zone"])
+    metadata["Latitude"] = float(metadata["Latitude"])
+    metadata["Longitude"] = float(metadata["Longitude"])
+    metadata["Elevation"] = int(metadata["Elevation"])
     # get the column names so we can set the dtypes
-    columns = fbuf.readline().split(',')
+    columns = fbuf.readline().split(",")
     columns[-1] = columns[-1].strip()  # strip trailing newline
     # Since the header has so many columns, excel saves blank cols in the
     # data below the header lines.
-    columns = [col for col in columns if col != '']
+    columns = [col for col in columns if col != ""]
     dtypes = dict.fromkeys(columns, float)  # all floats except datevec
     dtypes.update(Year=int, Month=int, Day=int, Hour=int, Minute=int)
-    dtypes['Cloud Type'] = int
-    dtypes['Fill Flag'] = int
+    dtypes["Cloud Type"] = int
+    dtypes["Fill Flag"] = int
     data = pd.read_csv(
-        fbuf, header=None, names=columns, usecols=columns, dtype=dtypes,
-        delimiter=',', lineterminator='\n')  # skip carriage returns \r
+        fbuf,
+        header=None,
+        names=columns,
+        usecols=columns,
+        dtype=dtypes,
+        delimiter=",",
+        lineterminator="\n",
+    )  # skip carriage returns \r
     # the response 1st 5 columns are a date vector, convert to datetime
-    dtidx = pd.to_datetime(
-        data[['Year', 'Month', 'Day', 'Hour', 'Minute']])
+    dtidx = pd.to_datetime(data[["Year", "Month", "Day", "Hour", "Minute"]])
     # in USA all timezones are integers
-    tz = 'Etc/GMT%+d' % -metadata['Time Zone']
+    tz = "Etc/GMT%+d" % -metadata["Time Zone"]
     data.index = pd.DatetimeIndex(dtidx).tz_localize(tz)
 
     if map_variables:
         data = data.rename(columns=VARIABLE_MAP)
-        metadata['latitude'] = metadata.pop('Latitude')
-        metadata['longitude'] = metadata.pop('Longitude')
-        metadata['altitude'] = metadata.pop('Elevation')
+        metadata["latitude"] = metadata.pop("Latitude")
+        metadata["longitude"] = metadata.pop("Longitude")
+        metadata["altitude"] = metadata.pop("Elevation")
 
     return data, metadata
 
@@ -394,6 +418,6 @@ def read_psm3(filename, map_variables=True):
     .. [2] `Standard Time Series Data File Format
        <https://web.archive.org/web/20170207203107/https://sam.nrel.gov/sites/default/files/content/documents/pdf/wfcsv.pdf>`_
     """
-    with open(str(filename), 'r') as fbuf:
+    with open(str(filename), "r") as fbuf:
         content = parse_psm3(fbuf, map_variables)
     return content

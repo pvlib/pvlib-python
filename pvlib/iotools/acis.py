@@ -5,21 +5,20 @@ import numpy as np
 
 VARIABLE_MAP = {
     # time series names
-    'pcpn': 'precipitation',
-    'maxt': 'temp_air_max',
-    'avgt': 'temp_air_average',
-    'obst': 'temp_air_observation',
-    'mint': 'temp_air_min',
-    'cdd': 'cooling_degree_days',
-    'hdd': 'heating_degree_days',
-    'gdd': 'growing_degree_days',
-    'snow': 'snowfall',
-    'snwd': 'snowdepth',
-
+    "pcpn": "precipitation",
+    "maxt": "temp_air_max",
+    "avgt": "temp_air_average",
+    "obst": "temp_air_observation",
+    "mint": "temp_air_min",
+    "cdd": "cooling_degree_days",
+    "hdd": "heating_degree_days",
+    "gdd": "growing_degree_days",
+    "snow": "snowfall",
+    "snwd": "snowdepth",
     # metadata names
-    'lat': 'latitude',
-    'lon': 'longitude',
-    'elev': 'altitude',
+    "lat": "latitude",
+    "lon": "longitude",
+    "elev": "altitude",
 }
 
 
@@ -29,39 +28,38 @@ def _get_acis(start, end, params, map_variables, url, **kwargs):
     """
     params = {
         # use pd.to_datetime so that strings (e.g. '2021-01-01') are accepted
-        'sdate': pd.to_datetime(start).strftime('%Y-%m-%d'),
-        'edate': pd.to_datetime(end).strftime('%Y-%m-%d'),
-        'output': 'json',
+        "sdate": pd.to_datetime(start).strftime("%Y-%m-%d"),
+        "edate": pd.to_datetime(end).strftime("%Y-%m-%d"),
+        "output": "json",
         **params,  # endpoint-specific parameters
     }
-    response = requests.post(url,
-                             json=params,
-                             headers={"Content-Type": "application/json"},
-                             **kwargs)
+    response = requests.post(
+        url, json=params, headers={"Content-Type": "application/json"}, **kwargs
+    )
     response.raise_for_status()
     payload = response.json()
 
     # somewhat inconveniently, the ACIS API tends to return errors as "valid"
     # responses instead of using proper HTTP error codes:
     if "error" in payload:
-        raise requests.HTTPError(payload['error'], response=response)
+        raise requests.HTTPError(payload["error"], response=response)
 
-    columns = ['date'] + [e['name'] for e in params['elems']]
-    df = pd.DataFrame(payload['data'], columns=columns)
-    df = df.set_index('date')
+    columns = ["date"] + [e["name"] for e in params["elems"]]
+    df = pd.DataFrame(payload["data"], columns=columns)
+    df = df.set_index("date")
     df.index = pd.to_datetime(df.index)
     df.index.name = None
 
-    metadata = payload['meta']
+    metadata = payload["meta"]
 
     try:
-        # for StnData endpoint, unpack combination "ll" into lat, lon 
-        metadata['lon'], metadata['lat'] = metadata.pop('ll')
+        # for StnData endpoint, unpack combination "ll" into lat, lon
+        metadata["lon"], metadata["lat"] = metadata.pop("ll")
     except KeyError:
         pass
 
     try:
-        metadata['elev'] = metadata['elev'] * 0.3048  # feet to meters
+        metadata["elev"] = metadata["elev"] * 0.3048  # feet to meters
     except KeyError:
         # some queries don't return elevation
         pass
@@ -76,8 +74,15 @@ def _get_acis(start, end, params, map_variables, url, **kwargs):
     return df, metadata
 
 
-def get_acis_prism(latitude, longitude, start, end, map_variables=True,
-                   url="https://data.rcc-acis.org/GridData", **kwargs):
+def get_acis_prism(
+    latitude,
+    longitude,
+    start,
+    end,
+    map_variables=True,
+    url="https://data.rcc-acis.org/GridData",
+    **kwargs,
+):
     """
     Retrieve estimated daily precipitation and temperature data from PRISM
     via the Applied Climate Information System (ACIS).
@@ -149,18 +154,26 @@ def get_acis_prism(latitude, longitude, start, end, map_variables=True,
         {"name": "gdd", "interval": "dly", "units": "degreeC"},
     ]
     params = {
-        'loc': f"{longitude},{latitude}",
-        'grid': "21",
-        'elems': elems,
-        'meta': ["ll", "elev"],
+        "loc": f"{longitude},{latitude}",
+        "grid": "21",
+        "elems": elems,
+        "meta": ["ll", "elev"],
     }
     df, meta = _get_acis(start, end, params, map_variables, url, **kwargs)
     df = df.replace(-999, np.nan)
     return df, meta
 
 
-def get_acis_nrcc(latitude, longitude, start, end, grid, map_variables=True,
-                  url="https://data.rcc-acis.org/GridData", **kwargs):
+def get_acis_nrcc(
+    latitude,
+    longitude,
+    start,
+    end,
+    grid,
+    map_variables=True,
+    url="https://data.rcc-acis.org/GridData",
+    **kwargs,
+):
     """
     Retrieve estimated daily precipitation and temperature data from the
     Northeast Regional Climate Center via the Applied Climate
@@ -234,19 +247,25 @@ def get_acis_nrcc(latitude, longitude, start, end, grid, map_variables=True,
         {"name": "gdd", "interval": "dly", "units": "degreeC"},
     ]
     params = {
-        'loc': f"{longitude},{latitude}",
-        'grid': grid,
-        'elems': elems,
-        'meta': ["ll", "elev"],
+        "loc": f"{longitude},{latitude}",
+        "grid": grid,
+        "elems": elems,
+        "meta": ["ll", "elev"],
     }
     df, meta = _get_acis(start, end, params, map_variables, url, **kwargs)
     df = df.replace(-999, np.nan)
     return df, meta
 
 
-
-def get_acis_mpe(latitude, longitude, start, end, map_variables=True,
-                 url="https://data.rcc-acis.org/GridData", **kwargs):
+def get_acis_mpe(
+    latitude,
+    longitude,
+    start,
+    end,
+    map_variables=True,
+    url="https://data.rcc-acis.org/GridData",
+    **kwargs,
+):
     """
     Retrieve estimated daily Multi-sensor Precipitation Estimates
     via the Applied Climate Information System (ACIS).
@@ -312,19 +331,25 @@ def get_acis_mpe(latitude, longitude, start, end, map_variables=True,
         {"name": "pcpn", "interval": "dly", "units": "mm"},
     ]
     params = {
-        'loc': f"{longitude},{latitude}",
-        'grid': "2",
-        'elems': elems,
-        'meta': ["ll"],  # "elev" is not supported for this dataset
+        "loc": f"{longitude},{latitude}",
+        "grid": "2",
+        "elems": elems,
+        "meta": ["ll"],  # "elev" is not supported for this dataset
     }
     df, meta = _get_acis(start, end, params, map_variables, url, **kwargs)
     df = df.replace(-999, np.nan)
     return df, meta
 
 
-def get_acis_station_data(station, start, end, trace_val=0.001,
-                          map_variables=True,
-                          url="https://data.rcc-acis.org/StnData", **kwargs):
+def get_acis_station_data(
+    station,
+    start,
+    end,
+    trace_val=0.001,
+    map_variables=True,
+    url="https://data.rcc-acis.org/StnData",
+    **kwargs,
+):
     """
     Retrieve weather station climate records via the Applied Climate
     Information System (ACIS).
@@ -407,10 +432,12 @@ def get_acis_station_data(station, start, end, trace_val=0.001,
         {"name": "gdd", "interval": "dly", "units": "degreeC"},
     ]
     params = {
-        'sid': str(station),
-        'elems': elems,
-        'meta': ('name,state,sids,sid_dates,ll,elev,uid,county,'
-                 'climdiv,valid_daterange,tzo,network')
+        "sid": str(station),
+        "elems": elems,
+        "meta": (
+            "name,state,sids,sid_dates,ll,elev,uid,county,"
+            "climdiv,valid_daterange,tzo,network"
+        ),
     }
     df, metadata = _get_acis(start, end, params, map_variables, url, **kwargs)
     df = df.replace("M", np.nan)
@@ -419,10 +446,14 @@ def get_acis_station_data(station, start, end, trace_val=0.001,
     return df, metadata
 
 
-def get_acis_available_stations(latitude_range, longitude_range,
-                                start=None, end=None,
-                                url="https://data.rcc-acis.org/StnMeta",
-                                **kwargs):
+def get_acis_available_stations(
+    latitude_range,
+    longitude_range,
+    start=None,
+    end=None,
+    url="https://data.rcc-acis.org/StnMeta",
+    **kwargs,
+):
     """
     List weather stations in a given area available from the
     Applied Climate Information System (ACIS).
@@ -453,7 +484,7 @@ def get_acis_available_stations(latitude_range, longitude_range,
     -------
     stations : pandas.DataFrame
         A dataframe of station metadata, one row per station.
-        The ``sids`` column contains IDs that can be used with 
+        The ``sids`` column contains IDs that can be used with
         :py:func:`get_acis_station_data`.
 
     Raises
@@ -488,29 +519,27 @@ def get_acis_available_stations(latitude_range, longitude_range,
     )
     params = {
         "bbox": bbox,
-        "meta": ("name,state,sids,sid_dates,ll,elev,"
-                 "uid,county,climdiv,tzo,network"),    
+        "meta": ("name,state,sids,sid_dates,ll,elev," "uid,county,climdiv,tzo,network"),
     }
     if start is not None and end is not None:
-        params['elems'] = ['maxt', 'mint', 'avgt', 'obst',
-                           'pcpn', 'snow', 'snwd']
-        params['sdate'] = pd.to_datetime(start).strftime('%Y-%m-%d')
-        params['edate'] = pd.to_datetime(end).strftime('%Y-%m-%d')
+        params["elems"] = ["maxt", "mint", "avgt", "obst", "pcpn", "snow", "snwd"]
+        params["sdate"] = pd.to_datetime(start).strftime("%Y-%m-%d")
+        params["edate"] = pd.to_datetime(end).strftime("%Y-%m-%d")
 
-    response = requests.post(url,
-                             json=params,
-                             headers={"Content-Type": "application/json"},
-                             **kwargs)
+    response = requests.post(
+        url, json=params, headers={"Content-Type": "application/json"}, **kwargs
+    )
     response.raise_for_status()
     payload = response.json()
     if "error" in payload:
-        raise requests.HTTPError(payload['error'], response=response)
+        raise requests.HTTPError(payload["error"], response=response)
 
-    metadata = payload['meta']
+    metadata = payload["meta"]
     for station_record in metadata:
-        station_record['altitude'] = station_record.pop('elev')
-        station_record['longitude'], station_record['latitude'] = \
-            station_record.pop('ll')
+        station_record["altitude"] = station_record.pop("elev")
+        station_record["longitude"], station_record["latitude"] = station_record.pop(
+            "ll"
+        )
 
     df = pd.DataFrame(metadata)
     return df

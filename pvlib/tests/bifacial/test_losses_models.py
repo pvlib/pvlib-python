@@ -49,6 +49,4 @@ def test_power_mismatch_deline():
     result_mms = bifacial.power_mismatch_deline(
         premise_rmads, fill_factor=ff_of_interest, fill_factor_reference=ff_ref
     )
-    assert_allclose(
-        result_mms, expected_ft_mms * ff_of_interest / ff_ref, atol=1e-5
-    )
+    assert_allclose(result_mms, expected_ft_mms * ff_of_interest / ff_ref, atol=1e-5)

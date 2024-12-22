@@ -35,7 +35,7 @@ def _poa_ground_shadows(poa_ground, f_gnd_beam, df, vf_gnd_sky):
         ground. [W/m^2]
 
     """
-    return poa_ground * (f_gnd_beam*(1 - df) + df*vf_gnd_sky)
+    return poa_ground * (f_gnd_beam * (1 - df) + df * vf_gnd_sky)
 
 
 def _poa_sky_diffuse_pv(dhi, gcr, surface_tilt):
@@ -88,7 +88,7 @@ def _poa_sky_diffuse_pv(dhi, gcr, surface_tilt):
     poa_sky_diffuse_pv : numeric
         Total sky diffuse irradiance incident on the PV surface. [W/m^2]
     """
-    vf_integ = utils.vf_row_sky_2d_integ(surface_tilt, gcr, 0., 1.)
+    vf_integ = utils.vf_row_sky_2d_integ(surface_tilt, gcr, 0.0, 1.0)
     return dhi * vf_integ
 
 
@@ -115,12 +115,11 @@ def _poa_ground_pv(poa_ground, gcr, surface_tilt):
     numeric
         Ground diffuse irradiance on the row plane. [W/m^2]
     """
-    vf_integ = utils.vf_row_ground_2d_integ(surface_tilt, gcr, 0., 1.)
+    vf_integ = utils.vf_row_ground_2d_integ(surface_tilt, gcr, 0.0, 1.0)
     return poa_ground * vf_integ
 
 
-def _shaded_fraction(solar_zenith, solar_azimuth, surface_tilt,
-                     surface_azimuth, gcr):
+def _shaded_fraction(solar_zenith, solar_azimuth, surface_tilt, surface_azimuth, gcr):
     """
     Calculate fraction (from the bottom) of row slant height that is shaded
     from direct irradiance by the row in front toward the sun.
@@ -167,22 +166,37 @@ def _shaded_fraction(solar_zenith, solar_azimuth, surface_tilt,
        https://www.nrel.gov/docs/fy20osti/76626.pdf
     """
     tan_phi = utils._solar_projection_tangent(
-        solar_zenith, solar_azimuth, surface_azimuth)
+        solar_zenith, solar_azimuth, surface_azimuth
+    )
     # length of shadow behind a row as a fraction of pitch
     x = gcr * (sind(surface_tilt) * tan_phi + cosd(surface_tilt))
-    f_x = 1 - 1. / x
+    f_x = 1 - 1.0 / x
     # set f_x to be 1 when sun is behind the array
     ao = aoi(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth)
-    f_x = np.where(ao < 90, f_x, 1.)
+    f_x = np.where(ao < 90, f_x, 1.0)
     # when x < 1, the shadow is not long enough to fall on the row surface
-    f_x = np.where(x > 1., f_x, 0.)
+    f_x = np.where(x > 1.0, f_x, 0.0)
     return f_x
 
 
-def get_irradiance_poa(surface_tilt, surface_azimuth, solar_zenith,
-                       solar_azimuth, gcr, height, pitch, ghi, dhi, dni,
-                       albedo, model='isotropic', dni_extra=None, iam=1.0,
-                       npoints=100, vectorize=False):
+def get_irradiance_poa(
+    surface_tilt,
+    surface_azimuth,
+    solar_zenith,
+    solar_azimuth,
+    gcr,
+    height,
+    pitch,
+    ghi,
+    dhi,
+    dni,
+    albedo,
+    model="isotropic",
+    dni_extra=None,
+    iam=1.0,
+    npoints=100,
+    vectorize=False,
+):
     r"""
     Calculate plane-of-array (POA) irradiance on one side of a row of modules.
 
@@ -290,23 +304,36 @@ def get_irradiance_poa(surface_tilt, surface_azimuth, solar_zenith,
     --------
     get_irradiance
     """
-    if model == 'haydavies':
+    if model == "haydavies":
         if dni_extra is None:
-            raise ValueError(f'must supply dni_extra for {model} model')
+            raise ValueError(f"must supply dni_extra for {model} model")
         # Call haydavies first time within the horizontal plane - to subtract
         # circumsolar_horizontal from DHI
-        sky_diffuse_comps_horizontal = haydavies(0, 180, dhi, dni, dni_extra,
-                                                 solar_zenith, solar_azimuth,
-                                                 return_components=True)
-        circumsolar_horizontal = sky_diffuse_comps_horizontal['circumsolar']
+        sky_diffuse_comps_horizontal = haydavies(
+            0,
+            180,
+            dhi,
+            dni,
+            dni_extra,
+            solar_zenith,
+            solar_azimuth,
+            return_components=True,
+        )
+        circumsolar_horizontal = sky_diffuse_comps_horizontal["circumsolar"]
 
         # Call haydavies a second time where circumsolar_normal is facing
         # directly towards sun, and can be added to DNI
-        sky_diffuse_comps_normal = haydavies(solar_zenith, solar_azimuth, dhi,
-                                             dni, dni_extra, solar_zenith,
-                                             solar_azimuth,
-                                             return_components=True)
-        circumsolar_normal = sky_diffuse_comps_normal['circumsolar']
+        sky_diffuse_comps_normal = haydavies(
+            solar_zenith,
+            solar_azimuth,
+            dhi,
+            dni,
+            dni_extra,
+            solar_zenith,
+            solar_azimuth,
+            return_components=True,
+        )
+        circumsolar_normal = sky_diffuse_comps_normal["circumsolar"]
 
         dhi = dhi - circumsolar_horizontal
         dni = dni + circumsolar_normal
@@ -319,17 +346,19 @@ def get_irradiance_poa(surface_tilt, surface_azimuth, solar_zenith,
     # fraction of ground between rows that is illuminated accounting for
     # shade from panels. [1], Eq. 4
     f_gnd_beam = utils._unshaded_ground_fraction(
-        surface_tilt, surface_azimuth, solar_zenith, solar_azimuth, gcr)
+        surface_tilt, surface_azimuth, solar_zenith, solar_azimuth, gcr
+    )
     # integrated view factor from the ground to the sky, integrated between
     # adjacent rows interior to the array
     # method differs from [1], Eq. 7 and Eq. 8; height is defined at row
     # center rather than at row lower edge as in [1].
     vf_gnd_sky = utils.vf_ground_sky_2d_integ(
-        surface_tilt, gcr, height, pitch, max_rows, npoints,
-        vectorize)
+        surface_tilt, gcr, height, pitch, max_rows, npoints, vectorize
+    )
     # fraction of row slant height that is shaded from direct irradiance
-    f_x = _shaded_fraction(solar_zenith, solar_azimuth, surface_tilt,
-                           surface_azimuth, gcr)
+    f_x = _shaded_fraction(
+        solar_zenith, solar_azimuth, surface_tilt, surface_azimuth, gcr
+    )
 
     # Total sky diffuse received by both shaded and unshaded portions
     poa_sky_pv = _poa_sky_diffuse_pv(dhi, gcr, surface_tilt)
@@ -341,15 +370,16 @@ def get_irradiance_poa(surface_tilt, surface_azimuth, solar_zenith,
     ground_diffuse = ghi * albedo
 
     # diffuse fraction
-    diffuse_fraction = np.clip(dhi / ghi, 0., 1.)
+    diffuse_fraction = np.clip(dhi / ghi, 0.0, 1.0)
     # make diffuse fraction 0 when ghi is small
-    diffuse_fraction = np.where(ghi < 0.0001, 0., diffuse_fraction)
+    diffuse_fraction = np.where(ghi < 0.0001, 0.0, diffuse_fraction)
 
     # Reduce ground-reflected irradiance because other rows in the array
     # block irradiance from reaching the ground.
     # [2], Eq. 9
     ground_diffuse = _poa_ground_shadows(
-        ground_diffuse, f_gnd_beam, diffuse_fraction, vf_gnd_sky)
+        ground_diffuse, f_gnd_beam, diffuse_fraction, vf_gnd_sky
+    )
 
     # Ground-reflected irradiance on the row surface accounting for
     # the view to the ground. This deviates from [1], Eq. 10, 11 and
@@ -363,25 +393,47 @@ def get_irradiance_poa(surface_tilt, surface_azimuth, solar_zenith,
     # component
     poa_diffuse = poa_gnd_pv + poa_sky_pv
     # beam on plane, make an array for consistency with poa_diffuse
-    poa_beam = np.atleast_1d(beam_component(
-        surface_tilt, surface_azimuth, solar_zenith, solar_azimuth, dni))
+    poa_beam = np.atleast_1d(
+        beam_component(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth, dni)
+    )
     poa_direct = poa_beam * (1 - f_x) * iam  # direct only on the unshaded part
     poa_global = poa_direct + poa_diffuse
 
     output = {
-        'poa_global': poa_global, 'poa_direct': poa_direct,
-        'poa_diffuse': poa_diffuse, 'poa_ground_diffuse': poa_gnd_pv,
-        'poa_sky_diffuse': poa_sky_pv, 'shaded_fraction': f_x}
+        "poa_global": poa_global,
+        "poa_direct": poa_direct,
+        "poa_diffuse": poa_diffuse,
+        "poa_ground_diffuse": poa_gnd_pv,
+        "poa_sky_diffuse": poa_sky_pv,
+        "shaded_fraction": f_x,
+    }
     if isinstance(poa_global, pd.Series):
         output = pd.DataFrame(output)
     return output
 
 
-def get_irradiance(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
-                   gcr, height, pitch, ghi, dhi, dni,
-                   albedo, model='isotropic', dni_extra=None, iam_front=1.0,
-                   iam_back=1.0, bifaciality=0.8, shade_factor=-0.02,
-                   transmission_factor=0, npoints=100, vectorize=False):
+def get_irradiance(
+    surface_tilt,
+    surface_azimuth,
+    solar_zenith,
+    solar_azimuth,
+    gcr,
+    height,
+    pitch,
+    ghi,
+    dhi,
+    dni,
+    albedo,
+    model="isotropic",
+    dni_extra=None,
+    iam_front=1.0,
+    iam_back=1.0,
+    bifaciality=0.8,
+    shade_factor=-0.02,
+    transmission_factor=0,
+    npoints=100,
+    vectorize=False,
+):
     """
     Get front and rear irradiance using the infinite sheds model.
 
@@ -534,34 +586,58 @@ def get_irradiance(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
     backside_tilt, backside_sysaz = _backside(surface_tilt, surface_azimuth)
     # front side POA irradiance
     irrad_front = get_irradiance_poa(
-        surface_tilt=surface_tilt, surface_azimuth=surface_azimuth,
-        solar_zenith=solar_zenith, solar_azimuth=solar_azimuth,
-        gcr=gcr, height=height, pitch=pitch, ghi=ghi, dhi=dhi, dni=dni,
-        albedo=albedo, model=model, dni_extra=dni_extra, iam=iam_front,
-        npoints=npoints, vectorize=vectorize)
+        surface_tilt=surface_tilt,
+        surface_azimuth=surface_azimuth,
+        solar_zenith=solar_zenith,
+        solar_azimuth=solar_azimuth,
+        gcr=gcr,
+        height=height,
+        pitch=pitch,
+        ghi=ghi,
+        dhi=dhi,
+        dni=dni,
+        albedo=albedo,
+        model=model,
+        dni_extra=dni_extra,
+        iam=iam_front,
+        npoints=npoints,
+        vectorize=vectorize,
+    )
     # back side POA irradiance
     irrad_back = get_irradiance_poa(
-        surface_tilt=backside_tilt, surface_azimuth=backside_sysaz,
-        solar_zenith=solar_zenith, solar_azimuth=solar_azimuth,
-        gcr=gcr, height=height, pitch=pitch, ghi=ghi, dhi=dhi, dni=dni,
-        albedo=albedo, model=model, dni_extra=dni_extra, iam=iam_back,
-        npoints=npoints, vectorize=vectorize)
+        surface_tilt=backside_tilt,
+        surface_azimuth=backside_sysaz,
+        solar_zenith=solar_zenith,
+        solar_azimuth=solar_azimuth,
+        gcr=gcr,
+        height=height,
+        pitch=pitch,
+        ghi=ghi,
+        dhi=dhi,
+        dni=dni,
+        albedo=albedo,
+        model=model,
+        dni_extra=dni_extra,
+        iam=iam_back,
+        npoints=npoints,
+        vectorize=vectorize,
+    )
 
     colmap_front = {
-        'poa_global': 'poa_front',
-        'poa_direct': 'poa_front_direct',
-        'poa_diffuse': 'poa_front_diffuse',
-        'poa_sky_diffuse': 'poa_front_sky_diffuse',
-        'poa_ground_diffuse': 'poa_front_ground_diffuse',
-        'shaded_fraction': 'shaded_fraction_front',
+        "poa_global": "poa_front",
+        "poa_direct": "poa_front_direct",
+        "poa_diffuse": "poa_front_diffuse",
+        "poa_sky_diffuse": "poa_front_sky_diffuse",
+        "poa_ground_diffuse": "poa_front_ground_diffuse",
+        "shaded_fraction": "shaded_fraction_front",
     }
     colmap_back = {
-        'poa_global': 'poa_back',
-        'poa_direct': 'poa_back_direct',
-        'poa_diffuse': 'poa_back_diffuse',
-        'poa_sky_diffuse': 'poa_back_sky_diffuse',
-        'poa_ground_diffuse': 'poa_back_ground_diffuse',
-        'shaded_fraction': 'shaded_fraction_back',
+        "poa_global": "poa_back",
+        "poa_direct": "poa_back_direct",
+        "poa_diffuse": "poa_back_diffuse",
+        "poa_sky_diffuse": "poa_back_sky_diffuse",
+        "poa_ground_diffuse": "poa_back_ground_diffuse",
+        "shaded_fraction": "shaded_fraction_back",
     }
 
     if isinstance(ghi, pd.Series):
@@ -577,12 +653,13 @@ def get_irradiance(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
         output = irrad_front
 
     effects = (1 + shade_factor) * (1 + transmission_factor)
-    output['poa_global'] = output['poa_front'] + \
-        output['poa_back'] * bifaciality * effects
+    output["poa_global"] = (
+        output["poa_front"] + output["poa_back"] * bifaciality * effects
+    )
     return output
 
 
 def _backside(tilt, surface_azimuth):
-    backside_tilt = 180. - tilt
-    backside_sysaz = (180. + surface_azimuth) % 360.
+    backside_tilt = 180.0 - tilt
+    backside_sysaz = (180.0 + surface_azimuth) % 360.0
     return backside_tilt, backside_sysaz

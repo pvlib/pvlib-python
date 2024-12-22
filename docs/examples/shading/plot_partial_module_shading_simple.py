@@ -46,18 +46,18 @@ from scipy.constants import e as qe, k as kB
 # For simplicity, use cell temperature of 25C for all calculations.
 # kB is J/K, qe is C=J/V
 # kB * T / qe -> V
-Vth = kB * (273.15+25) / qe
+Vth = kB * (273.15 + 25) / qe
 
 cell_parameters = {
-    'I_L_ref': 8.24,
-    'I_o_ref': 2.36e-9,
-    'a_ref': 1.3*Vth,
-    'R_sh_ref': 1000,
-    'R_s': 0.00181,
-    'alpha_sc': 0.0042,
-    'breakdown_factor': 2e-3,
-    'breakdown_exp': 3,
-    'breakdown_voltage': -15,
+    "I_L_ref": 8.24,
+    "I_o_ref": 2.36e-9,
+    "a_ref": 1.3 * Vth,
+    "R_sh_ref": 1000,
+    "R_s": 0.00181,
+    "alpha_sc": 0.0042,
+    "breakdown_factor": 2e-3,
+    "breakdown_exp": 3,
+    "breakdown_voltage": -15,
 }
 
 # %%
@@ -91,12 +91,12 @@ def simulate_full_curve(parameters, Geff, Tcell, ivcurve_pnts=1000):
     sde_args = pvsystem.calcparams_desoto(
         Geff,
         Tcell,
-        alpha_sc=parameters['alpha_sc'],
-        a_ref=parameters['a_ref'],
-        I_L_ref=parameters['I_L_ref'],
-        I_o_ref=parameters['I_o_ref'],
-        R_sh_ref=parameters['R_sh_ref'],
-        R_s=parameters['R_s'],
+        alpha_sc=parameters["alpha_sc"],
+        a_ref=parameters["a_ref"],
+        I_L_ref=parameters["I_L_ref"],
+        I_o_ref=parameters["I_o_ref"],
+        R_sh_ref=parameters["R_sh_ref"],
+        R_s=parameters["R_s"],
     )
     # sde_args has values:
     # (photocurrent, saturation_current, resistance_series,
@@ -105,22 +105,22 @@ def simulate_full_curve(parameters, Geff, Tcell, ivcurve_pnts=1000):
     # Use Bishop's method to calculate points on the IV curve with V ranging
     # from the reverse breakdown voltage to open circuit
     kwargs = {
-        'breakdown_factor': parameters['breakdown_factor'],
-        'breakdown_exp': parameters['breakdown_exp'],
-        'breakdown_voltage': parameters['breakdown_voltage'],
+        "breakdown_factor": parameters["breakdown_factor"],
+        "breakdown_exp": parameters["breakdown_exp"],
+        "breakdown_voltage": parameters["breakdown_voltage"],
     }
-    v_oc = singlediode.bishop88_v_from_i(
-        0.0, *sde_args, **kwargs
-    )
+    v_oc = singlediode.bishop88_v_from_i(0.0, *sde_args, **kwargs)
     # ideally would use some intelligent log-spacing to concentrate points
     # around the forward- and reverse-bias knees, but this is good enough:
-    vd = np.linspace(0.99*kwargs['breakdown_voltage'], v_oc, ivcurve_pnts)
+    vd = np.linspace(0.99 * kwargs["breakdown_voltage"], v_oc, ivcurve_pnts)
 
     ivcurve_i, ivcurve_v, _ = singlediode.bishop88(vd, *sde_args, **kwargs)
-    return pd.DataFrame({
-        'i': ivcurve_i,
-        'v': ivcurve_v,
-    })
+    return pd.DataFrame(
+        {
+            "i": ivcurve_i,
+            "v": ivcurve_v,
+        }
+    )
 
 
 # %%
@@ -131,18 +131,19 @@ def simulate_full_curve(parameters, Geff, Tcell, ivcurve_pnts=1000):
 # portion largely intact.  In this example plot, we choose :math:`200 W/m^2`
 # as the amount of irradiance received by a shaded cell.
 
+
 def plot_curves(dfs, labels, title):
     """plot the forward- and reverse-bias portions of an IV curve"""
     fig, axes = plt.subplots(1, 2, sharey=True, figsize=(5, 3))
     for df, label in zip(dfs, labels):
-        df.plot('v', 'i', label=label, ax=axes[0])
-        df.plot('v', 'i', label=label, ax=axes[1])
+        df.plot("v", "i", label=label, ax=axes[0])
+        df.plot("v", "i", label=label, ax=axes[1])
         axes[0].set_xlim(right=0)
         axes[0].set_ylim([0, 25])
-        axes[1].set_xlim([0, df['v'].max()*1.5])
-    axes[0].set_ylabel('current [A]')
-    axes[0].set_xlabel('voltage [V]')
-    axes[1].set_xlabel('voltage [V]')
+        axes[1].set_xlim([0, df["v"].max() * 1.5])
+    axes[0].set_ylabel("current [A]")
+    axes[0].set_xlabel("voltage [V]")
+    axes[1].set_xlabel("voltage [V]")
     fig.suptitle(title)
     fig.tight_layout()
     return axes
@@ -150,9 +151,11 @@ def plot_curves(dfs, labels, title):
 
 cell_curve_full_sun = simulate_full_curve(cell_parameters, Geff=1000, Tcell=25)
 cell_curve_shaded = simulate_full_curve(cell_parameters, Geff=200, Tcell=25)
-ax = plot_curves([cell_curve_full_sun, cell_curve_shaded],
-                 labels=['Full Sun', 'Shaded'],
-                 title='Cell-level reverse- and forward-biased IV curves')
+ax = plot_curves(
+    [cell_curve_full_sun, cell_curve_shaded],
+    labels=["Full Sun", "Shaded"],
+    title="Cell-level reverse- and forward-biased IV curves",
+)
 
 # %%
 # This figure shows how a cell's current decreases roughly in proportion to
@@ -179,8 +182,9 @@ ax = plot_curves([cell_curve_full_sun, cell_curve_shaded],
 
 def interpolate(df, i):
     """convenience wrapper around scipy.interpolate.interp1d"""
-    f_interp = interp1d(np.flipud(df['i']), np.flipud(df['v']), kind='linear',
-                        fill_value='extrapolate')
+    f_interp = interp1d(
+        np.flipud(df["i"]), np.flipud(df["v"]), kind="linear", fill_value="extrapolate"
+    )
     return f_interp(i)
 
 
@@ -190,14 +194,14 @@ def combine_series(dfs):
     The current range is based on the first curve's current range.
     """
     df1 = dfs[0]
-    imin = df1['i'].min()
-    imax = df1['i'].max()
+    imin = df1["i"].min()
+    imax = df1["i"].max()
     i = np.linspace(imin, imax, 1000)
     v = 0
     for df2 in dfs:
         v_cell = interpolate(df2, i)
         v += v_cell
-    return pd.DataFrame({'i': i, 'v': v})
+    return pd.DataFrame({"i": i, "v": v})
 
 
 # %%
@@ -214,8 +218,16 @@ def combine_series(dfs):
 # substring's voltage is clamped to the diode's trigger voltage (assumed to
 # be 0.5V here).
 
-def simulate_module(cell_parameters, poa_direct, poa_diffuse, Tcell,
-                    shaded_fraction, cells_per_string=24, strings=3):
+
+def simulate_module(
+    cell_parameters,
+    poa_direct,
+    poa_diffuse,
+    Tcell,
+    shaded_fraction,
+    cells_per_string=24,
+    strings=3,
+):
     """
     Simulate the IV curve for a partially shaded module.
     The shade is assumed to be coming up from the bottom of the module when in
@@ -231,32 +243,26 @@ def simulate_module(cell_parameters, poa_direct, poa_diffuse, Tcell,
     # find the fraction of shade in the border row
     partial_shade_fraction = 1 - (shaded_fraction * nrow - nrow_full_shade)
 
-    df_lit = simulate_full_curve(
-        cell_parameters,
-        poa_diffuse + poa_direct,
-        Tcell)
+    df_lit = simulate_full_curve(cell_parameters, poa_diffuse + poa_direct, Tcell)
     df_partial = simulate_full_curve(
-        cell_parameters,
-        poa_diffuse + partial_shade_fraction * poa_direct,
-        Tcell)
-    df_shaded = simulate_full_curve(
-        cell_parameters,
-        poa_diffuse,
-        Tcell)
+        cell_parameters, poa_diffuse + partial_shade_fraction * poa_direct, Tcell
+    )
+    df_shaded = simulate_full_curve(cell_parameters, poa_diffuse, Tcell)
     # build a list of IV curves for a single column of cells (half a substring)
-    include_partial_cell = (shaded_fraction < 1)
+    include_partial_cell = shaded_fraction < 1
     half_substring_curves = (
         [df_lit] * (nrow - nrow_full_shade - 1)
         + ([df_partial] if include_partial_cell else [])  # noqa: W503
         + [df_shaded] * nrow_full_shade  # noqa: W503
     )
     substring_curve = combine_series(half_substring_curves)
-    substring_curve['v'] *= 2  # turn half strings into whole strings
+    substring_curve["v"] *= 2  # turn half strings into whole strings
     # bypass diode:
-    substring_curve['v'] = substring_curve['v'].clip(lower=-0.5)
+    substring_curve["v"] = substring_curve["v"].clip(lower=-0.5)
     # no need to interpolate since we're just scaling voltage directly:
-    substring_curve['v'] *= strings
+    substring_curve["v"] *= strings
     return substring_curve
+
 
 # %%
 # Now let's see how shade affects the IV curves at the module level.  For this
@@ -272,16 +278,18 @@ def simulate_module(cell_parameters, poa_direct, poa_diffuse, Tcell,
 
 
 kwargs = {
-    'cell_parameters': cell_parameters,
-    'poa_direct': 800,
-    'poa_diffuse': 200,
-    'Tcell': 25
+    "cell_parameters": cell_parameters,
+    "poa_direct": 800,
+    "poa_diffuse": 200,
+    "Tcell": 25,
 }
 module_curve_full_sun = simulate_module(shaded_fraction=0, **kwargs)
 module_curve_shaded = simulate_module(shaded_fraction=0.1, **kwargs)
-ax = plot_curves([module_curve_full_sun, module_curve_shaded],
-                 labels=['Full Sun', 'Shaded'],
-                 title='Module-level reverse- and forward-biased IV curves')
+ax = plot_curves(
+    [module_curve_full_sun, module_curve_shaded],
+    labels=["Full Sun", "Shaded"],
+    title="Module-level reverse- and forward-biased IV curves",
+)
 
 # %%
 # Calculating shading loss across shading scenarios
@@ -303,30 +311,29 @@ def find_pmp(df):
 data = []
 for diffuse_fraction in np.linspace(0, 1, 11):
     for shaded_fraction in np.linspace(0, 1, 51):
-
-        df = simulate_module(cell_parameters,
-                             poa_direct=(1-diffuse_fraction)*1000,
-                             poa_diffuse=diffuse_fraction*1000,
-                             Tcell=25,
-                             shaded_fraction=shaded_fraction)
-        data.append({
-            'fd': diffuse_fraction,
-            'fs': shaded_fraction,
-            'pmp': find_pmp(df)
-        })
+        df = simulate_module(
+            cell_parameters,
+            poa_direct=(1 - diffuse_fraction) * 1000,
+            poa_diffuse=diffuse_fraction * 1000,
+            Tcell=25,
+            shaded_fraction=shaded_fraction,
+        )
+        data.append(
+            {"fd": diffuse_fraction, "fs": shaded_fraction, "pmp": find_pmp(df)}
+        )
 
 results = pd.DataFrame(data)
-results['pmp'] /= results['pmp'].max()  # normalize power to 0-1
-results_pivot = results.pivot(index='fd', columns='fs', values='pmp')
+results["pmp"] /= results["pmp"].max()  # normalize power to 0-1
+results_pivot = results.pivot(index="fd", columns="fs", values="pmp")
 plt.figure()
-plt.imshow(results_pivot, origin='lower', aspect='auto')
-plt.xlabel('shaded fraction')
-plt.ylabel('diffuse fraction')
+plt.imshow(results_pivot, origin="lower", aspect="auto")
+plt.xlabel("shaded fraction")
+plt.ylabel("diffuse fraction")
 xlabels = [f"{fs:0.02f}" for fs in results_pivot.columns[::5]]
 ylabels = [f"{fd:0.02f}" for fd in results_pivot.index]
-plt.xticks(range(0, 5*len(xlabels), 5), xlabels)
+plt.xticks(range(0, 5 * len(xlabels), 5), xlabels)
 plt.yticks(range(0, len(ylabels)), ylabels)
-plt.title('Module P_mp across shading conditions')
+plt.title("Module P_mp across shading conditions")
 plt.colorbar()
 plt.show()
 # use this figure as the thumbnail:

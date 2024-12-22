@@ -26,19 +26,23 @@ import pvlib
 # in the pvlib data directory. TMY3 are made from the median months from years
 # of data measured from 1990 to 2010. Therefore we change the timestamps to a
 # common year, 1990.
-DATA_DIR = pathlib.Path(pvlib.__file__).parent / 'data'
-greensboro, metadata = read_tmy3(DATA_DIR / '723170TYA.CSV', coerce_year=1990,
-                                 map_variables=True)
+DATA_DIR = pathlib.Path(pvlib.__file__).parent / "data"
+greensboro, metadata = read_tmy3(
+    DATA_DIR / "723170TYA.CSV", coerce_year=1990, map_variables=True
+)
 
 # Many of the diffuse fraction estimation methods require the "true" zenith, so
 # we calculate the solar positions for the 1990 at Greensboro, NC.
 # NOTE: TMY3 files timestamps indicate the end of the hour, so shift indices
 # back 30-minutes to calculate solar position at center of the interval
 solpos = get_solarposition(
-    greensboro.index.shift(freq="-30T"), latitude=metadata['latitude'],
-    longitude=metadata['longitude'], altitude=metadata['altitude'],
-    pressure=greensboro.pressure*100,  # convert from millibar to Pa
-    temperature=greensboro.temp_air)
+    greensboro.index.shift(freq="-30T"),
+    latitude=metadata["latitude"],
+    longitude=metadata["longitude"],
+    altitude=metadata["altitude"],
+    pressure=greensboro.pressure * 100,  # convert from millibar to Pa
+    temperature=greensboro.temp_air,
+)
 solpos.index = greensboro.index  # reset index to end of the hour
 
 # %%
@@ -57,13 +61,14 @@ solpos.index = greensboro.index  # reset index to end of the hour
 # an exponential relation with airmass.
 
 out_disc = irradiance.disc(
-    greensboro.ghi, solpos.zenith, greensboro.index, greensboro.pressure*100)
+    greensboro.ghi, solpos.zenith, greensboro.index, greensboro.pressure * 100
+)
 # use "complete sum" AKA "closure" equations: DHI = GHI - DNI * cos(zenith)
 df_disc = irradiance.complete_irradiance(
-    solar_zenith=solpos.apparent_zenith, ghi=greensboro.ghi, dni=out_disc.dni,
-    dhi=None)
-out_disc = out_disc.rename(columns={'dni': 'dni_disc'})
-out_disc['dhi_disc'] = df_disc.dhi
+    solar_zenith=solpos.apparent_zenith, ghi=greensboro.ghi, dni=out_disc.dni, dhi=None
+)
+out_disc = out_disc.rename(columns={"dni": "dni_disc"})
+out_disc["dhi_disc"] = df_disc.dhi
 
 # %%
 # DIRINT
@@ -73,15 +78,19 @@ out_disc['dhi_disc'] = df_disc.dhi
 # developed by Richard Perez and Pierre Ineichen in 1992.
 
 dni_dirint = irradiance.dirint(
-    greensboro.ghi, solpos.zenith, greensboro.index, greensboro.pressure*100,
-    temp_dew=greensboro.temp_dew)
+    greensboro.ghi,
+    solpos.zenith,
+    greensboro.index,
+    greensboro.pressure * 100,
+    temp_dew=greensboro.temp_dew,
+)
 # use "complete sum" AKA "closure" equation: DHI = GHI - DNI * cos(zenith)
 df_dirint = irradiance.complete_irradiance(
-    solar_zenith=solpos.apparent_zenith, ghi=greensboro.ghi, dni=dni_dirint,
-    dhi=None)
+    solar_zenith=solpos.apparent_zenith, ghi=greensboro.ghi, dni=dni_dirint, dhi=None
+)
 out_dirint = pd.DataFrame(
-    {'dni_dirint': dni_dirint, 'dhi_dirint': df_dirint.dhi},
-    index=greensboro.index)
+    {"dni_dirint": dni_dirint, "dhi_dirint": df_dirint.dhi}, index=greensboro.index
+)
 
 # %%
 # Erbs
@@ -93,7 +102,7 @@ out_dirint = pd.DataFrame(
 # between 0.22 < kt <= 0.8, and a horizontal line for kt > 0.8.
 
 out_erbs = irradiance.erbs(greensboro.ghi, solpos.zenith, greensboro.index)
-out_erbs = out_erbs.rename(columns={'dni': 'dni_erbs', 'dhi': 'dhi_erbs'})
+out_erbs = out_erbs.rename(columns={"dni": "dni_erbs", "dhi": "dhi_erbs"})
 
 # %%
 # Boland
@@ -104,8 +113,7 @@ out_erbs = out_erbs.rename(columns={'dni': 'dni_erbs', 'dhi': 'dhi_erbs'})
 # between zero and one.
 
 out_boland = irradiance.boland(greensboro.ghi, solpos.zenith, greensboro.index)
-out_boland = out_boland.rename(
-    columns={'dni': 'dni_boland', 'dhi': 'dhi_boland'})
+out_boland = out_boland.rename(columns={"dni": "dni_boland", "dhi": "dhi_boland"})
 
 # %%
 # Comparison Plots
@@ -119,38 +127,54 @@ out_boland = out_boland.rename(
 # file together to make plotting easier.
 
 dni_renames = {
-    'dni': 'TMY3', 'dni_disc': 'DISC', 'dni_dirint': 'DIRINT',
-    'dni_erbs': 'Erbs', 'dni_boland': 'Boland'}
+    "dni": "TMY3",
+    "dni_disc": "DISC",
+    "dni_dirint": "DIRINT",
+    "dni_erbs": "Erbs",
+    "dni_boland": "Boland",
+}
 dni = [
-    greensboro.dni, out_disc.dni_disc, out_dirint.dni_dirint,
-    out_erbs.dni_erbs, out_boland.dni_boland]
+    greensboro.dni,
+    out_disc.dni_disc,
+    out_dirint.dni_dirint,
+    out_erbs.dni_erbs,
+    out_boland.dni_boland,
+]
 dni = pd.concat(dni, axis=1).rename(columns=dni_renames)
 dhi_renames = {
-    'dhi': 'TMY3', 'dhi_disc': 'DISC', 'dhi_dirint': 'DIRINT',
-    'dhi_erbs': 'Erbs', 'dhi_boland': 'Boland'}
+    "dhi": "TMY3",
+    "dhi_disc": "DISC",
+    "dhi_dirint": "DIRINT",
+    "dhi_erbs": "Erbs",
+    "dhi_boland": "Boland",
+}
 dhi = [
-    greensboro.dhi, out_disc.dhi_disc, out_dirint.dhi_dirint,
-    out_erbs.dhi_erbs, out_boland.dhi_boland]
+    greensboro.dhi,
+    out_disc.dhi_disc,
+    out_dirint.dhi_dirint,
+    out_erbs.dhi_erbs,
+    out_boland.dhi_boland,
+]
 dhi = pd.concat(dhi, axis=1).rename(columns=dhi_renames)
-ghi_kt = pd.concat([greensboro.ghi/1000.0, out_erbs.kt], axis=1)
+ghi_kt = pd.concat([greensboro.ghi / 1000.0, out_erbs.kt], axis=1)
 
 # %%
 # Winter
 # ++++++
 # Finally, let's plot them for a few winter days and compare
 
-JAN04, JAN07 = '1990-01-04 00:00:00-05:00', '1990-01-07 23:59:59-05:00'
+JAN04, JAN07 = "1990-01-04 00:00:00-05:00", "1990-01-07 23:59:59-05:00"
 f, ax = plt.subplots(3, 1, figsize=(8, 10), sharex=True)
 dni[JAN04:JAN07].plot(ax=ax[0])
 ax[0].grid(which="both")
-ax[0].set_ylabel('DNI $[W/m^2]$')
-ax[0].set_title('Comparison of Diffuse Fraction Estimation Methods')
+ax[0].set_ylabel("DNI $[W/m^2]$")
+ax[0].set_title("Comparison of Diffuse Fraction Estimation Methods")
 dhi[JAN04:JAN07].plot(ax=ax[1])
 ax[1].grid(which="both")
-ax[1].set_ylabel('DHI $[W/m^2]$')
+ax[1].set_ylabel("DHI $[W/m^2]$")
 ghi_kt[JAN04:JAN07].plot(ax=ax[2])
-ax[2].grid(which='both')
-ax[2].set_ylabel(r'$\frac{GHI}{E0}, k_t$')
+ax[2].grid(which="both")
+ax[2].set_ylabel(r"$\frac{GHI}{E0}, k_t$")
 f.tight_layout()
 
 # %%
@@ -158,18 +182,18 @@ f.tight_layout()
 # ++++++
 # And a few spring days ...
 
-APR04, APR07 = '1990-04-04 00:00:00-05:00', '1990-04-07 23:59:59-05:00'
+APR04, APR07 = "1990-04-04 00:00:00-05:00", "1990-04-07 23:59:59-05:00"
 f, ax = plt.subplots(3, 1, figsize=(8, 10), sharex=True)
 dni[APR04:APR07].plot(ax=ax[0])
 ax[0].grid(which="both")
-ax[0].set_ylabel('DNI $[W/m^2]$')
-ax[0].set_title('Comparison of Diffuse Fraction Estimation Methods')
+ax[0].set_ylabel("DNI $[W/m^2]$")
+ax[0].set_title("Comparison of Diffuse Fraction Estimation Methods")
 dhi[APR04:APR07].plot(ax=ax[1])
 ax[1].grid(which="both")
-ax[1].set_ylabel('DHI $[W/m^2]$')
+ax[1].set_ylabel("DHI $[W/m^2]$")
 ghi_kt[APR04:APR07].plot(ax=ax[2])
-ax[2].grid(which='both')
-ax[2].set_ylabel(r'$\frac{GHI}{E0}, k_t$')
+ax[2].grid(which="both")
+ax[2].set_ylabel(r"$\frac{GHI}{E0}, k_t$")
 f.tight_layout()
 
 # %%
@@ -177,18 +201,18 @@ f.tight_layout()
 # ++++++
 # And few summer days to finish off the seasons.
 
-JUL04, JUL07 = '1990-07-04 00:00:00-05:00', '1990-07-07 23:59:59-05:00'
+JUL04, JUL07 = "1990-07-04 00:00:00-05:00", "1990-07-07 23:59:59-05:00"
 f, ax = plt.subplots(3, 1, figsize=(8, 10), sharex=True)
 dni[JUL04:JUL07].plot(ax=ax[0])
 ax[0].grid(which="both")
-ax[0].set_ylabel('DNI $[W/m^2]$')
-ax[0].set_title('Comparison of Diffuse Fraction Estimation Methods')
+ax[0].set_ylabel("DNI $[W/m^2]$")
+ax[0].set_title("Comparison of Diffuse Fraction Estimation Methods")
 dhi[JUL04:JUL07].plot(ax=ax[1])
 ax[1].grid(which="both")
-ax[1].set_ylabel('DHI $[W/m^2]$')
+ax[1].set_ylabel("DHI $[W/m^2]$")
 ghi_kt[JUL04:JUL07].plot(ax=ax[2])
-ax[2].grid(which='both')
-ax[2].set_ylabel(r'$\frac{GHI}{E0}, k_t$')
+ax[2].grid(which="both")
+ax[2].set_ylabel(r"$\frac{GHI}{E0}, k_t$")
 f.tight_layout()
 
 # %%

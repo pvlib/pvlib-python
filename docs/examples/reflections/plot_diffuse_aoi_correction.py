@@ -31,7 +31,6 @@ loss for diffuse irradiance.
 #  .. [2] Duffie, John A. & Beckman, William A. (2013). Solar Engineering
 #     of Thermal Processes.  DOI: 10.1002/9781118671603
 
-
 from pvlib.iam import marion_diffuse, physical
 import numpy as np
 import matplotlib.pyplot as plt
@@ -59,10 +58,10 @@ aoi = np.arange(0, 91)
 iam_no_coating = physical(aoi, n=1.526, K=0)
 iam_ar_coating = physical(aoi, n=1.3, K=0)
 
-plt.plot(aoi, iam_ar_coating, c='b', label='$F_b$, AR coated, n=1.3')
-plt.plot(aoi, iam_no_coating, c='r', label='$F_b$, uncoated, n=1.526')
-plt.xlabel(r'Angle-of-Incidence, AOI $(\degree)$')
-plt.ylabel('Diffuse Incidence Angle Modifier')
+plt.plot(aoi, iam_ar_coating, c="b", label="$F_b$, AR coated, n=1.3")
+plt.plot(aoi, iam_no_coating, c="r", label="$F_b$, uncoated, n=1.526")
+plt.xlabel(r"Angle-of-Incidence, AOI $(\degree)$")
+plt.ylabel("Diffuse Incidence Angle Modifier")
 plt.legend()
 plt.ylim([0, 1.2])
 plt.grid()
@@ -80,20 +79,26 @@ plt.grid()
 tilts = np.arange(0, 91, 2.5)
 
 # marion_diffuse calculates all three IAM values (sky, horizon, ground)
-iam_no_coating = marion_diffuse('physical', tilts, n=1.526, K=0)
-iam_ar_coating = marion_diffuse('physical', tilts, n=1.3, K=0)
+iam_no_coating = marion_diffuse("physical", tilts, n=1.526, K=0)
+iam_ar_coating = marion_diffuse("physical", tilts, n=1.3, K=0)
 
 # %%
 # First we recreate Figure 4 in [1]_, showing the dependence of the sky diffuse
 # incidence angle modifier on module tilt.
 
-plt.plot(tilts, iam_ar_coating['sky'], c='b', marker='^',
-         label='$F_{sky}$, AR coated, n=1.3')
-plt.plot(tilts, iam_no_coating['sky'], c='r', marker='x',
-         label='$F_{sky}$, uncoated, n=1.526')
+plt.plot(
+    tilts, iam_ar_coating["sky"], c="b", marker="^", label="$F_{sky}$, AR coated, n=1.3"
+)
+plt.plot(
+    tilts,
+    iam_no_coating["sky"],
+    c="r",
+    marker="x",
+    label="$F_{sky}$, uncoated, n=1.526",
+)
 plt.ylim([0.9, 1.0])
-plt.xlabel(r'PV Module Tilt, $\beta (\degree)$')
-plt.ylabel('Diffuse Incidence Angle Modifier')
+plt.xlabel(r"PV Module Tilt, $\beta (\degree)$")
+plt.ylabel("Diffuse Incidence Angle Modifier")
 plt.grid()
 plt.legend()
 plt.show()
@@ -104,16 +109,36 @@ plt.show()
 # :py:func:`pvlib.iam.marion_diffuse` defaults to using 1800 points for the
 # horizon case (instead of 180 like the others) to match [1]_.
 
-plt.plot(tilts, iam_ar_coating['horizon'], c='b', marker='^',
-         label='$F_{hor}$, AR coated, n=1.3')
-plt.plot(tilts, iam_no_coating['horizon'], c='r', marker='x',
-         label='$F_{hor}$, uncoated, n=1.526')
-plt.plot(tilts, iam_ar_coating['ground'], c='b', marker='s',
-         label='$F_{grd}$, AR coated, n=1.3')
-plt.plot(tilts, iam_no_coating['ground'], c='r', marker='+',
-         label='$F_{grd}$, uncoated, n=1.526')
-plt.xlabel(r'PV Module Tilt, $\beta (\degree)$')
-plt.ylabel('Diffuse Incidence Angle Modifier')
+plt.plot(
+    tilts,
+    iam_ar_coating["horizon"],
+    c="b",
+    marker="^",
+    label="$F_{hor}$, AR coated, n=1.3",
+)
+plt.plot(
+    tilts,
+    iam_no_coating["horizon"],
+    c="r",
+    marker="x",
+    label="$F_{hor}$, uncoated, n=1.526",
+)
+plt.plot(
+    tilts,
+    iam_ar_coating["ground"],
+    c="b",
+    marker="s",
+    label="$F_{grd}$, AR coated, n=1.3",
+)
+plt.plot(
+    tilts,
+    iam_no_coating["ground"],
+    c="r",
+    marker="+",
+    label="$F_{grd}$, uncoated, n=1.526",
+)
+plt.xlabel(r"PV Module Tilt, $\beta (\degree)$")
+plt.ylabel("Diffuse Incidence Angle Modifier")
 plt.grid()
 plt.legend()
 plt.show()

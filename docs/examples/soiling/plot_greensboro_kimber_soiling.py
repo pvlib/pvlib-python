@@ -37,31 +37,37 @@ from pvlib.soiling import kimber
 import pvlib
 
 # get full path to the data directory
-DATA_DIR = pathlib.Path(pvlib.__file__).parent / 'data'
+DATA_DIR = pathlib.Path(pvlib.__file__).parent / "data"
 
 # get TMY3 data with rain
-greensboro, _ = read_tmy3(DATA_DIR / '723170TYA.CSV', coerce_year=1990,
-                          map_variables=True)
+greensboro, _ = read_tmy3(
+    DATA_DIR / "723170TYA.CSV", coerce_year=1990, map_variables=True
+)
 # get the rain data
-greensboro_rain = greensboro['Lprecip depth (mm)']
+greensboro_rain = greensboro["Lprecip depth (mm)"]
 # calculate soiling with no wash dates and cleaning threshold of 25-mm of rain
 THRESHOLD = 25.0
 soiling_no_wash = kimber(greensboro_rain, cleaning_threshold=THRESHOLD)
-soiling_no_wash.name = 'soiling'
+soiling_no_wash.name = "soiling"
 # daily rain totals
-daily_rain = greensboro_rain.iloc[:-1].resample('D').sum()
+daily_rain = greensboro_rain.iloc[:-1].resample("D").sum()
 plt.plot(
-    daily_rain.index.to_pydatetime(), daily_rain.values/25.4,
-    soiling_no_wash.index.to_pydatetime(), soiling_no_wash.values*100.0)
+    daily_rain.index.to_pydatetime(),
+    daily_rain.values / 25.4,
+    soiling_no_wash.index.to_pydatetime(),
+    soiling_no_wash.values * 100.0,
+)
 plt.hlines(
-    THRESHOLD/25.4, xmin=datetime(1990, 1, 1), xmax=datetime(1990, 12, 31),
-    linestyles='--')
+    THRESHOLD / 25.4,
+    xmin=datetime(1990, 1, 1),
+    xmax=datetime(1990, 12, 31),
+    linestyles="--",
+)
 plt.grid()
-plt.title(
-    f'Kimber Soiling Model, dashed line shows threshold ({THRESHOLD}[mm])')
-plt.xlabel('timestamp')
-plt.ylabel('soiling build-up fraction [%] and daily rainfall [inches]')
-plt.legend(['daily rainfall [in]', 'soiling [%]'])
+plt.title(f"Kimber Soiling Model, dashed line shows threshold ({THRESHOLD}[mm])")
+plt.xlabel("timestamp")
+plt.ylabel("soiling build-up fraction [%] and daily rainfall [inches]")
+plt.legend(["daily rainfall [in]", "soiling [%]"])
 plt.tight_layout()
 
 plt.show()

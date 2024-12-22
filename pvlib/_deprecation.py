@@ -130,43 +130,65 @@ class pvlibDeprecationWarning(UserWarning):
 
 
 # make it easier for others to copy paste this code into their projects
-_projectName = 'pvlib'
+_projectName = "pvlib"
 _projectWarning = pvlibDeprecationWarning
 
 
 def _generate_deprecation_message(
-        since, message='', name='', alternative='', pending=False,
-        obj_type='attribute', addendum='', removal=''):
-
+    since,
+    message="",
+    name="",
+    alternative="",
+    pending=False,
+    obj_type="attribute",
+    addendum="",
+    removal="",
+):
     if removal == "":
         removal = "soon"
     elif removal:
         if pending:
-            raise ValueError(
-                "A pending deprecation cannot have a scheduled removal")
+            raise ValueError("A pending deprecation cannot have a scheduled removal")
         removal = "in {}".format(removal)
 
     if not message:
         message = (
             "The %(name)s %(obj_type)s"
-            + (" will be deprecated in a future version"
-               if pending else
-               (" was deprecated in %(projectName)s %(since)s"
-                + (" and will be removed %(removal)s"
-                   if removal else
-                   "")))
+            + (
+                " will be deprecated in a future version"
+                if pending
+                else (
+                    " was deprecated in %(projectName)s %(since)s"
+                    + (" and will be removed %(removal)s" if removal else "")
+                )
+            )
             + "."
             + (" Use %(alternative)s instead." if alternative else "")
-            + (" %(addendum)s" if addendum else ""))
+            + (" %(addendum)s" if addendum else "")
+        )
 
     return message % dict(
-        func=name, name=name, obj_type=obj_type, since=since, removal=removal,
-        alternative=alternative, addendum=addendum, projectName=_projectName)
+        func=name,
+        name=name,
+        obj_type=obj_type,
+        since=since,
+        removal=removal,
+        alternative=alternative,
+        addendum=addendum,
+        projectName=_projectName,
+    )
 
 
 def warn_deprecated(
-        since, message='', name='', alternative='', pending=False,
-        obj_type='attribute', addendum='', removal=''):
+    since,
+    message="",
+    name="",
+    alternative="",
+    pending=False,
+    obj_type="attribute",
+    addendum="",
+    removal="",
+):
     """
     Used to display deprecation in a standard way.
     Parameters
@@ -205,16 +227,16 @@ def warn_deprecated(
             warn_deprecated('1.4.0', name='matplotlib.name_of_module',
                             obj_type='module')
     """
-    message = '\n' + _generate_deprecation_message(
-        since, message, name, alternative, pending, obj_type, addendum,
-        removal=removal)
-    category = (PendingDeprecationWarning if pending
-                else _projectWarning)
+    message = "\n" + _generate_deprecation_message(
+        since, message, name, alternative, pending, obj_type, addendum, removal=removal
+    )
+    category = PendingDeprecationWarning if pending else _projectWarning
     warnings.warn(message, category, stacklevel=2)
 
 
-def deprecated(since, message='', name='', alternative='', pending=False,
-               addendum='', removal=''):
+def deprecated(
+    since, message="", name="", alternative="", pending=False, addendum="", removal=""
+):
     """
     Decorator to mark a function or a class as deprecated.
     Parameters
@@ -259,9 +281,14 @@ def deprecated(since, message='', name='', alternative='', pending=False,
                 pass
     """
 
-    def deprecate(obj, message=message, name=name, alternative=alternative,
-                  pending=pending, addendum=addendum):
-
+    def deprecate(
+        obj,
+        message=message,
+        name=name,
+        alternative=alternative,
+        pending=pending,
+        addendum=addendum,
+    ):
         if not name:
             name = obj.__name__
 
@@ -294,24 +321,31 @@ def deprecated(since, message='', name='', alternative='', pending=False,
                     return wrapper
 
         message = _generate_deprecation_message(
-            since, message, name, alternative, pending, obj_type, addendum,
-            removal=removal)
-        category = (PendingDeprecationWarning if pending
-                    else _projectWarning)
+            since,
+            message,
+            name,
+            alternative,
+            pending,
+            obj_type,
+            addendum,
+            removal=removal,
+        )
+        category = PendingDeprecationWarning if pending else _projectWarning
 
         def wrapper(*args, **kwargs):
             warnings.warn(message, category, stacklevel=2)
             return func(*args, **kwargs)
 
-        old_doc = textwrap.dedent(old_doc or '').strip('\n')
+        old_doc = textwrap.dedent(old_doc or "").strip("\n")
         message = message.strip()
-        new_doc = (('\n.. deprecated:: %(since)s'
-                    '\n    %(message)s\n\n' %
-                    {'since': since, 'message': message}) + old_doc)
+        new_doc = (
+            "\n.. deprecated:: %(since)s"
+            "\n    %(message)s\n\n" % {"since": since, "message": message}
+        ) + old_doc
         if not old_doc:
             # This is to prevent a spurious 'unexected unindent' warning from
             # docutils when the original docstring was blank.
-            new_doc += r'\ '
+            new_doc += r"\ "
 
         return finalize(wrapper, new_doc)
 

@@ -1,39 +1,80 @@
 """
 Import functions for NOAA SURFRAD Data.
 """
+
 import io
 from urllib.request import urlopen, Request
 import pandas as pd
 import numpy as np
 
 SURFRAD_COLUMNS = [
-    'year', 'jday', 'month', 'day', 'hour', 'minute', 'dt', 'zen',
-    'dw_solar', 'dw_solar_flag', 'uw_solar', 'uw_solar_flag', 'direct_n',
-    'direct_n_flag', 'diffuse', 'diffuse_flag', 'dw_ir', 'dw_ir_flag',
-    'dw_casetemp', 'dw_casetemp_flag', 'dw_dometemp', 'dw_dometemp_flag',
-    'uw_ir', 'uw_ir_flag', 'uw_casetemp', 'uw_casetemp_flag', 'uw_dometemp',
-    'uw_dometemp_flag', 'uvb', 'uvb_flag', 'par', 'par_flag', 'netsolar',
-    'netsolar_flag', 'netir', 'netir_flag', 'totalnet', 'totalnet_flag',
-    'temp', 'temp_flag', 'rh', 'rh_flag', 'windspd', 'windspd_flag',
-    'winddir', 'winddir_flag', 'pressure', 'pressure_flag']
+    "year",
+    "jday",
+    "month",
+    "day",
+    "hour",
+    "minute",
+    "dt",
+    "zen",
+    "dw_solar",
+    "dw_solar_flag",
+    "uw_solar",
+    "uw_solar_flag",
+    "direct_n",
+    "direct_n_flag",
+    "diffuse",
+    "diffuse_flag",
+    "dw_ir",
+    "dw_ir_flag",
+    "dw_casetemp",
+    "dw_casetemp_flag",
+    "dw_dometemp",
+    "dw_dometemp_flag",
+    "uw_ir",
+    "uw_ir_flag",
+    "uw_casetemp",
+    "uw_casetemp_flag",
+    "uw_dometemp",
+    "uw_dometemp_flag",
+    "uvb",
+    "uvb_flag",
+    "par",
+    "par_flag",
+    "netsolar",
+    "netsolar_flag",
+    "netir",
+    "netir_flag",
+    "totalnet",
+    "totalnet_flag",
+    "temp",
+    "temp_flag",
+    "rh",
+    "rh_flag",
+    "windspd",
+    "windspd_flag",
+    "winddir",
+    "winddir_flag",
+    "pressure",
+    "pressure_flag",
+]
 
 # Dictionary mapping surfrad variables to pvlib names
 VARIABLE_MAP = {
-    'zen': 'solar_zenith',
-    'dw_solar': 'ghi',
-    'dw_solar_flag': 'ghi_flag',
-    'direct_n': 'dni',
-    'direct_n_flag': 'dni_flag',
-    'diffuse': 'dhi',
-    'diffuse_flag': 'dhi_flag',
-    'temp': 'temp_air',
-    'temp_flag': 'temp_air_flag',
-    'windspd': 'wind_speed',
-    'windspd_flag': 'wind_speed_flag',
-    'winddir': 'wind_direction',
-    'winddir_flag': 'wind_direction_flag',
-    'rh': 'relative_humidity',
-    'rh_flag': 'relative_humidity_flag'
+    "zen": "solar_zenith",
+    "dw_solar": "ghi",
+    "dw_solar_flag": "ghi_flag",
+    "direct_n": "dni",
+    "direct_n_flag": "dni_flag",
+    "diffuse": "dhi",
+    "diffuse_flag": "dhi_flag",
+    "temp": "temp_air",
+    "temp_flag": "temp_air_flag",
+    "windspd": "wind_speed",
+    "windspd_flag": "wind_speed_flag",
+    "winddir": "wind_direction",
+    "winddir_flag": "wind_direction_flag",
+    "rh": "relative_humidity",
+    "rh_flag": "relative_humidity_flag",
 }
 
 
@@ -126,12 +167,12 @@ def read_surfrad(filename, map_variables=True):
     .. [3] `NOAA SURFRAD HTTP Index
        <https://gml.noaa.gov/aftp/data/radiation/surfrad/>`_
     """
-    if str(filename).startswith('ftp') or str(filename).startswith('http'):
+    if str(filename).startswith("ftp") or str(filename).startswith("http"):
         req = Request(filename)
         response = urlopen(req)
-        file_buffer = io.StringIO(response.read().decode(errors='ignore'))
+        file_buffer = io.StringIO(response.read().decode(errors="ignore"))
     else:
-        file_buffer = open(str(filename), 'r')
+        file_buffer = open(str(filename), "r")
 
     # Read and parse the first two lines to build the metadata dict.
     station = file_buffer.readline()
@@ -139,15 +180,14 @@ def read_surfrad(filename, map_variables=True):
 
     metadata_list = file_metadata.split()
     metadata = {}
-    metadata['name'] = station.strip()
-    metadata['latitude'] = float(metadata_list[0])
-    metadata['longitude'] = float(metadata_list[1])
-    metadata['elevation'] = float(metadata_list[2])
-    metadata['surfrad_version'] = int(metadata_list[-1])
-    metadata['tz'] = 'UTC'
+    metadata["name"] = station.strip()
+    metadata["latitude"] = float(metadata_list[0])
+    metadata["longitude"] = float(metadata_list[1])
+    metadata["elevation"] = float(metadata_list[2])
+    metadata["surfrad_version"] = int(metadata_list[-1])
+    metadata["tz"] = "UTC"
 
-    data = pd.read_csv(file_buffer, sep=r'\s+',
-                       header=None, names=SURFRAD_COLUMNS)
+    data = pd.read_csv(file_buffer, sep=r"\s+", header=None, names=SURFRAD_COLUMNS)
     file_buffer.close()
 
     data = _format_index(data)
@@ -174,10 +214,10 @@ def _format_index(data):
         Dataframe with a DatetimeIndex localized to UTC.
     """
     year = data.year.apply(str)
-    jday = data.jday.apply(lambda x: '{:03d}'.format(x))
-    hours = data.hour.apply(lambda x: '{:02d}'.format(x))
-    minutes = data.minute.apply(lambda x: '{:02d}'.format(x))
+    jday = data.jday.apply(lambda x: "{:03d}".format(x))
+    hours = data.hour.apply(lambda x: "{:02d}".format(x))
+    minutes = data.minute.apply(lambda x: "{:02d}".format(x))
     index = pd.to_datetime(year + jday + hours + minutes, format="%Y%j%H%M")
     data.index = index
-    data = data.tz_localize('UTC')
+    data = data.tz_localize("UTC")
     return data

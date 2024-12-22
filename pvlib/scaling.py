@@ -127,13 +127,13 @@ def _compute_vr(positions, cloud_speed, tmscales):
     # Added by Joe Ranalli (@jranalli), Penn State Hazleton, 2021
 
     pos = np.array(positions)
-    dist = pdist(pos, 'euclidean')
+    dist = pdist(pos, "euclidean")
 
     # Find effective length of position vector, 'dist' is full pairwise
     n_pairs = len(dist)
 
     def fn(x):
-        return np.abs((x ** 2 - x) / 2 - n_pairs)
+        return np.abs((x**2 - x) / 2 - n_pairs)
 
     n_dist = np.round(scipy.optimize.fmin(fn, np.sqrt(n_pairs), disp=False))
     n_dist = n_dist.item()
@@ -145,7 +145,7 @@ def _compute_vr(positions, cloud_speed, tmscales):
 
         # 2*rho is because rho_ij = rho_ji. +n_dist accounts for sum(rho_ii=1)
         denominator = 2 * np.sum(rho) + n_dist
-        vr[i] = n_dist ** 2 / denominator  # Eq 6 of [1]
+        vr[i] = n_dist**2 / denominator  # Eq 6 of [1]
     return vr
 
 
@@ -193,7 +193,7 @@ def latlon_to_xy(coordinates):
         meanlat = np.mean([lat for (lat, lon) in coordinates])  # Mean latitude
     except TypeError:  # Assume it's a single value?
         meanlat = coordinates[0]
-    m_per_deg_lon = r_earth * np.cos(np.pi/180 * meanlat) * np.pi/180
+    m_per_deg_lon = r_earth * np.cos(np.pi / 180 * meanlat) * np.pi / 180
 
     # Conversion
     pos = coordinates * np.array(m_per_deg_lat, m_per_deg_lon)
@@ -254,16 +254,16 @@ def _compute_wavelet(clearsky_index, dt=None):
     else:  # flatten() succeeded, thus it's a pandas type, so get its dt
         try:  # Assume it's a time series type index
             dt = clearsky_index.index[1] - clearsky_index.index[0]
-            dt = dt.seconds + dt.microseconds/1e6
+            dt = dt.seconds + dt.microseconds / 1e6
         except AttributeError:  # It must just be a numeric index
-            dt = (clearsky_index.index[1] - clearsky_index.index[0])
+            dt = clearsky_index.index[1] - clearsky_index.index[0]
 
     # Pad the series on both ends in time and place in a dataframe
-    cs_long = np.pad(vals, (len(vals), len(vals)), 'symmetric')
+    cs_long = np.pad(vals, (len(vals), len(vals)), "symmetric")
     cs_long = pd.DataFrame(cs_long)
 
     # Compute wavelet time scales
-    min_tmscale = np.ceil(np.log(dt)/np.log(2))  # Minimum wavelet timescale
+    min_tmscale = np.ceil(np.log(dt) / np.log(2))  # Minimum wavelet timescale
     max_tmscale = int(13 - min_tmscale)  # maximum wavelet timescale
 
     tmscales = np.zeros(max_tmscale)
@@ -288,13 +288,13 @@ def _compute_wavelet(clearsky_index, dt=None):
 
     # Calculate detail coefficients by difference between successive averages
     wavelet_long = np.zeros(csi_mean.shape)
-    for i in np.arange(0, max_tmscale-1):
-        wavelet_long[i, :] = csi_mean[i, :] - csi_mean[i+1, :]
+    for i in np.arange(0, max_tmscale - 1):
+        wavelet_long[i, :] = csi_mean[i, :] - csi_mean[i + 1, :]
     wavelet_long[-1, :] = csi_mean[-1, :]  # Lowest freq (CAn)
 
     # Clip off the padding and just return the original time window
     wavelet = np.zeros([max_tmscale, len(vals)])
     for i in np.arange(0, max_tmscale):
-        wavelet[i, :] = wavelet_long[i, len(vals): 2*len(vals)]
+        wavelet[i, :] = wavelet_long[i, len(vals) : 2 * len(vals)]
 
     return wavelet, tmscales

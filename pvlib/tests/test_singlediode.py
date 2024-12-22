@@ -6,8 +6,14 @@ import numpy as np
 import pandas as pd
 import scipy
 from pvlib import pvsystem
-from pvlib.singlediode import (bishop88_mpp, estimate_voc, VOLTAGE_BUILTIN,
-                               bishop88, bishop88_i_from_v, bishop88_v_from_i)
+from pvlib.singlediode import (
+    bishop88_mpp,
+    estimate_voc,
+    VOLTAGE_BUILTIN,
+    bishop88,
+    bishop88_i_from_v,
+    bishop88_v_from_i,
+)
 import pytest
 from numpy.testing import assert_array_equal
 from .conftest import DATA_DIR
@@ -16,48 +22,60 @@ POA = 888
 TCELL = 55
 
 
-@pytest.mark.parametrize('method', ['brentq', 'newton'])
+@pytest.mark.parametrize("method", ["brentq", "newton"])
 def test_method_spr_e20_327(method, cec_module_spr_e20_327):
     """test pvsystem.singlediode with different methods on SPR-E20-327"""
     spr_e20_327 = cec_module_spr_e20_327
     x = pvsystem.calcparams_desoto(
-        effective_irradiance=POA, temp_cell=TCELL,
-        alpha_sc=spr_e20_327['alpha_sc'], a_ref=spr_e20_327['a_ref'],
-        I_L_ref=spr_e20_327['I_L_ref'], I_o_ref=spr_e20_327['I_o_ref'],
-        R_sh_ref=spr_e20_327['R_sh_ref'], R_s=spr_e20_327['R_s'],
-        EgRef=1.121, dEgdT=-0.0002677)
-    pvs = pvsystem.singlediode(*x, method='lambertw')
+        effective_irradiance=POA,
+        temp_cell=TCELL,
+        alpha_sc=spr_e20_327["alpha_sc"],
+        a_ref=spr_e20_327["a_ref"],
+        I_L_ref=spr_e20_327["I_L_ref"],
+        I_o_ref=spr_e20_327["I_o_ref"],
+        R_sh_ref=spr_e20_327["R_sh_ref"],
+        R_s=spr_e20_327["R_s"],
+        EgRef=1.121,
+        dEgdT=-0.0002677,
+    )
+    pvs = pvsystem.singlediode(*x, method="lambertw")
     out = pvsystem.singlediode(*x, method=method)
 
-    assert np.isclose(pvs['i_sc'], out['i_sc'])
-    assert np.isclose(pvs['v_oc'], out['v_oc'])
-    assert np.isclose(pvs['i_mp'], out['i_mp'])
-    assert np.isclose(pvs['v_mp'], out['v_mp'])
-    assert np.isclose(pvs['p_mp'], out['p_mp'])
-    assert np.isclose(pvs['i_x'], out['i_x'])
-    assert np.isclose(pvs['i_xx'], out['i_xx'])
+    assert np.isclose(pvs["i_sc"], out["i_sc"])
+    assert np.isclose(pvs["v_oc"], out["v_oc"])
+    assert np.isclose(pvs["i_mp"], out["i_mp"])
+    assert np.isclose(pvs["v_mp"], out["v_mp"])
+    assert np.isclose(pvs["p_mp"], out["p_mp"])
+    assert np.isclose(pvs["i_x"], out["i_x"])
+    assert np.isclose(pvs["i_xx"], out["i_xx"])
 
 
-@pytest.mark.parametrize('method', ['brentq', 'newton'])
+@pytest.mark.parametrize("method", ["brentq", "newton"])
 def test_newton_fs_495(method, cec_module_fs_495):
     """test pvsystem.singlediode with different methods on FS495"""
     fs_495 = cec_module_fs_495
     x = pvsystem.calcparams_desoto(
-        effective_irradiance=POA, temp_cell=TCELL,
-        alpha_sc=fs_495['alpha_sc'], a_ref=fs_495['a_ref'],
-        I_L_ref=fs_495['I_L_ref'], I_o_ref=fs_495['I_o_ref'],
-        R_sh_ref=fs_495['R_sh_ref'], R_s=fs_495['R_s'],
-        EgRef=1.475, dEgdT=-0.0003)
-    pvs = pvsystem.singlediode(*x, method='lambertw')
+        effective_irradiance=POA,
+        temp_cell=TCELL,
+        alpha_sc=fs_495["alpha_sc"],
+        a_ref=fs_495["a_ref"],
+        I_L_ref=fs_495["I_L_ref"],
+        I_o_ref=fs_495["I_o_ref"],
+        R_sh_ref=fs_495["R_sh_ref"],
+        R_s=fs_495["R_s"],
+        EgRef=1.475,
+        dEgdT=-0.0003,
+    )
+    pvs = pvsystem.singlediode(*x, method="lambertw")
     out = pvsystem.singlediode(*x, method=method)
 
-    assert np.isclose(pvs['i_sc'], out['i_sc'])
-    assert np.isclose(pvs['v_oc'], out['v_oc'])
-    assert np.isclose(pvs['i_mp'], out['i_mp'])
-    assert np.isclose(pvs['v_mp'], out['v_mp'])
-    assert np.isclose(pvs['p_mp'], out['p_mp'])
-    assert np.isclose(pvs['i_x'], out['i_x'])
-    assert np.isclose(pvs['i_xx'], out['i_xx'])
+    assert np.isclose(pvs["i_sc"], out["i_sc"])
+    assert np.isclose(pvs["v_oc"], out["v_oc"])
+    assert np.isclose(pvs["i_mp"], out["i_mp"])
+    assert np.isclose(pvs["v_mp"], out["v_mp"])
+    assert np.isclose(pvs["p_mp"], out["p_mp"])
+    assert np.isclose(pvs["i_x"], out["i_x"])
+    assert np.isclose(pvs["i_xx"], out["i_xx"])
 
 
 def build_precise_iv_curve_dataframe(file_csv, file_json):
@@ -102,51 +120,58 @@ def build_precise_iv_curve_dataframe(file_csv, file_json):
     """
     params = pd.read_csv(file_csv)
     curves_metadata = pd.read_json(file_json)
-    curves = pd.DataFrame(curves_metadata['IV Curves'].values.tolist())
-    curves['cells_in_series'] = curves_metadata['cells_in_series']
-    joined = params.merge(curves, on='Index', how='inner',
-                          suffixes=(None, '_drop'), validate='one_to_one')
-    joined = joined[(c for c in joined.columns if not c.endswith('_drop'))]
+    curves = pd.DataFrame(curves_metadata["IV Curves"].values.tolist())
+    curves["cells_in_series"] = curves_metadata["cells_in_series"]
+    joined = params.merge(
+        curves, on="Index", how="inner", suffixes=(None, "_drop"), validate="one_to_one"
+    )
+    joined = joined[(c for c in joined.columns if not c.endswith("_drop"))]
 
     # parse strings to np.float64
-    is_array = ['Currents', 'Voltages', 'diode_voltage']
+    is_array = ["Currents", "Voltages", "diode_voltage"]
     for col in is_array:
         joined[col] = [np.asarray(a, dtype=np.float64) for a in joined[col]]
-    is_number = ['v_oc', 'i_sc', 'v_mp', 'i_mp', 'p_mp', 'i_x', 'i_xx',
-                 'Temperature']
+    is_number = ["v_oc", "i_sc", "v_mp", "i_mp", "p_mp", "i_x", "i_xx", "Temperature"]
     joined[is_number] = joined[is_number].astype(np.float64)
 
-    joined['Boltzmann'] = scipy.constants.Boltzmann
-    joined['Elementary Charge'] = scipy.constants.elementary_charge
-    joined['Vth'] = (
-        joined['Boltzmann'] * joined['Temperature']
-        / joined['Elementary Charge']
+    joined["Boltzmann"] = scipy.constants.Boltzmann
+    joined["Elementary Charge"] = scipy.constants.elementary_charge
+    joined["Vth"] = (
+        joined["Boltzmann"] * joined["Temperature"] / joined["Elementary Charge"]
     )
 
     return joined
 
 
-@pytest.fixture(scope='function', params=[
-    {
-        'csv': f'{DATA_DIR}/precise_iv_curves_parameter_sets1.csv',
-        'json': f'{DATA_DIR}/precise_iv_curves1.json'
-    },
-    {
-        'csv': f'{DATA_DIR}/precise_iv_curves_parameter_sets2.csv',
-        'json': f'{DATA_DIR}/precise_iv_curves2.json'
-    }
-], ids=[1, 2])
+@pytest.fixture(
+    scope="function",
+    params=[
+        {
+            "csv": f"{DATA_DIR}/precise_iv_curves_parameter_sets1.csv",
+            "json": f"{DATA_DIR}/precise_iv_curves1.json",
+        },
+        {
+            "csv": f"{DATA_DIR}/precise_iv_curves_parameter_sets2.csv",
+            "json": f"{DATA_DIR}/precise_iv_curves2.json",
+        },
+    ],
+    ids=[1, 2],
+)
 def precise_iv_curves(request):
-    file_csv, file_json = request.param['csv'], request.param['json']
+    file_csv, file_json = request.param["csv"], request.param["json"]
     pc = build_precise_iv_curve_dataframe(file_csv, file_json)
-    params = ['photocurrent', 'saturation_current', 'resistance_series',
-              'resistance_shunt']
+    params = [
+        "photocurrent",
+        "saturation_current",
+        "resistance_series",
+        "resistance_shunt",
+    ]
     singlediode_params = pc.loc[:, params]
-    singlediode_params['nNsVth'] = pc['n'] * pc['cells_in_series'] * pc['Vth']
+    singlediode_params["nNsVth"] = pc["n"] * pc["cells_in_series"] * pc["Vth"]
     return singlediode_params, pc
 
 
-@pytest.mark.parametrize('method', ['lambertw', 'brentq', 'newton'])
+@pytest.mark.parametrize("method", ["lambertw", "brentq", "newton"])
 def test_singlediode_precision(method, precise_iv_curves):
     """
     Tests the accuracy of singlediode. ivcurve_pnts is not tested.
@@ -154,17 +179,17 @@ def test_singlediode_precision(method, precise_iv_curves):
     x, pc = precise_iv_curves
     outs = pvsystem.singlediode(method=method, **x)
 
-    assert np.allclose(pc['i_sc'], outs['i_sc'], atol=1e-10, rtol=0)
-    assert np.allclose(pc['v_oc'], outs['v_oc'], atol=1e-10, rtol=0)
-    assert np.allclose(pc['i_mp'], outs['i_mp'], atol=7e-8, rtol=0)
-    assert np.allclose(pc['v_mp'], outs['v_mp'], atol=1e-6, rtol=0)
-    assert np.allclose(pc['p_mp'], outs['p_mp'], atol=1e-10, rtol=0)
-    assert np.allclose(pc['i_x'], outs['i_x'], atol=1e-10, rtol=0)
+    assert np.allclose(pc["i_sc"], outs["i_sc"], atol=1e-10, rtol=0)
+    assert np.allclose(pc["v_oc"], outs["v_oc"], atol=1e-10, rtol=0)
+    assert np.allclose(pc["i_mp"], outs["i_mp"], atol=7e-8, rtol=0)
+    assert np.allclose(pc["v_mp"], outs["v_mp"], atol=1e-6, rtol=0)
+    assert np.allclose(pc["p_mp"], outs["p_mp"], atol=1e-10, rtol=0)
+    assert np.allclose(pc["i_x"], outs["i_x"], atol=1e-10, rtol=0)
 
     # This test should pass with atol=9e-8 on MacOS and Windows.
     # The atol was lowered to pass on Linux when the vectorized umath module
     # introduced in NumPy 1.22.0 is used.
-    assert np.allclose(pc['i_xx'], outs['i_xx'], atol=1e-6, rtol=0)
+    assert np.allclose(pc["i_xx"], outs["i_xx"], atol=1e-6, rtol=0)
 
 
 def test_singlediode_lambert_negative_voc(mocker):
@@ -187,13 +212,13 @@ def test_singlediode_lambert_negative_voc(mocker):
     assert_array_equal(outs["v_oc"], [0, 0])
 
 
-@pytest.mark.parametrize('method', ['lambertw', 'brentq', 'newton'])
+@pytest.mark.parametrize("method", ["lambertw", "brentq", "newton"])
 def test_v_from_i_i_from_v_precision(method, precise_iv_curves):
     """
     Tests the accuracy of pvsystem.v_from_i and pvsystem.i_from_v.
     """
     x, pc = precise_iv_curves
-    pc_i, pc_v = pc['Currents'], pc['Voltages']
+    pc_i, pc_v = pc["Currents"], pc["Voltages"]
     for i, v, (_, x_one_curve) in zip(pc_i, pc_v, x.iterrows()):
         out_i = pvsystem.i_from_v(voltage=v, method=method, **x_one_curve)
         out_v = pvsystem.v_from_i(current=i, method=method, **x_one_curve)
@@ -218,96 +243,113 @@ def get_pvsyst_fs_495():
 
     """
     return {
-        'd2mutau': 1.31, 'alpha_sc': 0.00039, 'gamma_ref': 1.48,
-        'mu_gamma': 0.001, 'I_o_ref': 9.62e-10, 'R_sh_ref': 5000,
-        'R_sh_0': 12500, 'R_sh_exp': 3.1, 'R_s': 4.6, 'beta_oc': -0.2116,
-        'EgRef': 1.5, 'cells_in_series': 108, 'cells_in_parallel': 2,
-        'I_sc_ref': 1.55, 'V_oc_ref': 86.5, 'I_mp_ref': 1.4, 'V_mp_ref': 67.85,
-        'temp_ref': 25, 'irrad_ref': 1000, 'I_L_ref': 1.5743233463848496
+        "d2mutau": 1.31,
+        "alpha_sc": 0.00039,
+        "gamma_ref": 1.48,
+        "mu_gamma": 0.001,
+        "I_o_ref": 9.62e-10,
+        "R_sh_ref": 5000,
+        "R_sh_0": 12500,
+        "R_sh_exp": 3.1,
+        "R_s": 4.6,
+        "beta_oc": -0.2116,
+        "EgRef": 1.5,
+        "cells_in_series": 108,
+        "cells_in_parallel": 2,
+        "I_sc_ref": 1.55,
+        "V_oc_ref": 86.5,
+        "I_mp_ref": 1.4,
+        "V_mp_ref": 67.85,
+        "temp_ref": 25,
+        "irrad_ref": 1000,
+        "I_L_ref": 1.5743233463848496,
     }
+
 
 # DeSoto @(888[W/m**2], 55[degC]) = {Pmp: 72.71, Isc: 1.402, Voc: 75.42)
 
 
 @pytest.mark.parametrize(
-    'poa, temp_cell, expected, tol', [
+    "poa, temp_cell, expected, tol",
+    [
         # reference conditions
         (
-            get_pvsyst_fs_495()['irrad_ref'],
-            get_pvsyst_fs_495()['temp_ref'],
+            get_pvsyst_fs_495()["irrad_ref"],
+            get_pvsyst_fs_495()["temp_ref"],
             {
-                'pmp': (get_pvsyst_fs_495()['I_mp_ref'] *
-                        get_pvsyst_fs_495()['V_mp_ref']),
-                'isc': get_pvsyst_fs_495()['I_sc_ref'],
-                'voc': get_pvsyst_fs_495()['V_oc_ref']
+                "pmp": (
+                    get_pvsyst_fs_495()["I_mp_ref"] * get_pvsyst_fs_495()["V_mp_ref"]
+                ),
+                "isc": get_pvsyst_fs_495()["I_sc_ref"],
+                "voc": get_pvsyst_fs_495()["V_oc_ref"],
             },
-            (5e-4, 0.04)
+            (5e-4, 0.04),
         ),
         # other conditions
-        (
-            POA,
-            TCELL,
-            {
-                'pmp': 76.262,
-                'isc': 1.3868,
-                'voc': 79.292
-            },
-            (1e-4, 1e-4)
-        )
-    ]
+        (POA, TCELL, {"pmp": 76.262, "isc": 1.3868, "voc": 79.292}, (1e-4, 1e-4)),
+    ],
 )
-@pytest.mark.parametrize('method', ['newton', 'brentq'])
+@pytest.mark.parametrize("method", ["newton", "brentq"])
 def test_pvsyst_recombination_loss(method, poa, temp_cell, expected, tol):
     """test PVSst recombination loss"""
     pvsyst_fs_495 = get_pvsyst_fs_495()
     # first evaluate PVSyst model with thin-film recombination loss current
     # at reference conditions
     x = pvsystem.calcparams_pvsyst(
-        effective_irradiance=poa, temp_cell=temp_cell,
-        alpha_sc=pvsyst_fs_495['alpha_sc'],
-        gamma_ref=pvsyst_fs_495['gamma_ref'],
-        mu_gamma=pvsyst_fs_495['mu_gamma'], I_L_ref=pvsyst_fs_495['I_L_ref'],
-        I_o_ref=pvsyst_fs_495['I_o_ref'], R_sh_ref=pvsyst_fs_495['R_sh_ref'],
-        R_sh_0=pvsyst_fs_495['R_sh_0'], R_sh_exp=pvsyst_fs_495['R_sh_exp'],
-        R_s=pvsyst_fs_495['R_s'],
-        cells_in_series=pvsyst_fs_495['cells_in_series'],
-        EgRef=pvsyst_fs_495['EgRef']
+        effective_irradiance=poa,
+        temp_cell=temp_cell,
+        alpha_sc=pvsyst_fs_495["alpha_sc"],
+        gamma_ref=pvsyst_fs_495["gamma_ref"],
+        mu_gamma=pvsyst_fs_495["mu_gamma"],
+        I_L_ref=pvsyst_fs_495["I_L_ref"],
+        I_o_ref=pvsyst_fs_495["I_o_ref"],
+        R_sh_ref=pvsyst_fs_495["R_sh_ref"],
+        R_sh_0=pvsyst_fs_495["R_sh_0"],
+        R_sh_exp=pvsyst_fs_495["R_sh_exp"],
+        R_s=pvsyst_fs_495["R_s"],
+        cells_in_series=pvsyst_fs_495["cells_in_series"],
+        EgRef=pvsyst_fs_495["EgRef"],
     )
     il_pvsyst, io_pvsyst, rs_pvsyst, rsh_pvsyst, nnsvt_pvsyst = x
-    voc_est_pvsyst = estimate_voc(photocurrent=il_pvsyst,
-                                  saturation_current=io_pvsyst,
-                                  nNsVth=nnsvt_pvsyst)
+    voc_est_pvsyst = estimate_voc(
+        photocurrent=il_pvsyst, saturation_current=io_pvsyst, nNsVth=nnsvt_pvsyst
+    )
     vd_pvsyst = np.linspace(0, voc_est_pvsyst, 1000)
     pvsyst = bishop88(
-        diode_voltage=vd_pvsyst, photocurrent=il_pvsyst,
-        saturation_current=io_pvsyst, resistance_series=rs_pvsyst,
-        resistance_shunt=rsh_pvsyst, nNsVth=nnsvt_pvsyst,
-        d2mutau=pvsyst_fs_495['d2mutau'],
-        NsVbi=VOLTAGE_BUILTIN*pvsyst_fs_495['cells_in_series']
+        diode_voltage=vd_pvsyst,
+        photocurrent=il_pvsyst,
+        saturation_current=io_pvsyst,
+        resistance_series=rs_pvsyst,
+        resistance_shunt=rsh_pvsyst,
+        nNsVth=nnsvt_pvsyst,
+        d2mutau=pvsyst_fs_495["d2mutau"],
+        NsVbi=VOLTAGE_BUILTIN * pvsyst_fs_495["cells_in_series"],
     )
     # test max power
-    assert np.isclose(max(pvsyst[2]), expected['pmp'], *tol)
+    assert np.isclose(max(pvsyst[2]), expected["pmp"], *tol)
 
     # test short circuit current
     isc_pvsyst = np.interp(0, pvsyst[1], pvsyst[0])
-    assert np.isclose(isc_pvsyst, expected['isc'], *tol)
+    assert np.isclose(isc_pvsyst, expected["isc"], *tol)
 
     # test open circuit voltage
     voc_pvsyst = np.interp(0, pvsyst[0][::-1], pvsyst[1][::-1])
-    assert np.isclose(voc_pvsyst, expected['voc'], *tol)
+    assert np.isclose(voc_pvsyst, expected["voc"], *tol)
 
     # repeat tests as above with specialized bishop88 functions
-    y = dict(d2mutau=pvsyst_fs_495['d2mutau'],
-             NsVbi=VOLTAGE_BUILTIN*pvsyst_fs_495['cells_in_series'])
+    y = dict(
+        d2mutau=pvsyst_fs_495["d2mutau"],
+        NsVbi=VOLTAGE_BUILTIN * pvsyst_fs_495["cells_in_series"],
+    )
 
     mpp_88 = bishop88_mpp(*x, **y, method=method)
-    assert np.isclose(mpp_88[2], expected['pmp'], *tol)
+    assert np.isclose(mpp_88[2], expected["pmp"], *tol)
 
     isc_88 = bishop88_i_from_v(0, *x, **y, method=method)
-    assert np.isclose(isc_88, expected['isc'], *tol)
+    assert np.isclose(isc_88, expected["isc"], *tol)
 
     voc_88 = bishop88_v_from_i(0, *x, **y, method=method)
-    assert np.isclose(voc_88, expected['voc'], *tol)
+    assert np.isclose(voc_88, expected["voc"], *tol)
 
     ioc_88 = bishop88_i_from_v(voc_88, *x, **y, method=method)
     assert np.isclose(ioc_88, 0.0, *tol)
@@ -317,96 +359,111 @@ def test_pvsyst_recombination_loss(method, poa, temp_cell, expected, tol):
 
 
 @pytest.mark.parametrize(
-    'brk_params, recomb_params, poa, temp_cell, expected, tol', [
+    "brk_params, recomb_params, poa, temp_cell, expected, tol",
+    [
         # reference conditions without breakdown model
         (
-            (0., -5.5, 3.28),
-            (get_pvsyst_fs_495()['d2mutau'],
-             VOLTAGE_BUILTIN * get_pvsyst_fs_495()['cells_in_series']),
-            get_pvsyst_fs_495()['irrad_ref'],
-            get_pvsyst_fs_495()['temp_ref'],
+            (0.0, -5.5, 3.28),
+            (
+                get_pvsyst_fs_495()["d2mutau"],
+                VOLTAGE_BUILTIN * get_pvsyst_fs_495()["cells_in_series"],
+            ),
+            get_pvsyst_fs_495()["irrad_ref"],
+            get_pvsyst_fs_495()["temp_ref"],
             {
-                'pmp': (get_pvsyst_fs_495()['I_mp_ref'] *  # noqa: W504
-                        get_pvsyst_fs_495()['V_mp_ref']),
-                'isc': get_pvsyst_fs_495()['I_sc_ref'],
-                'voc': get_pvsyst_fs_495()['V_oc_ref']
+                "pmp": (
+                    get_pvsyst_fs_495()["I_mp_ref"]  # noqa: W504
+                    * get_pvsyst_fs_495()["V_mp_ref"]
+                ),
+                "isc": get_pvsyst_fs_495()["I_sc_ref"],
+                "voc": get_pvsyst_fs_495()["V_oc_ref"],
             },
-            (5e-4, 0.04)
+            (5e-4, 0.04),
         ),
         # other conditions with breakdown model on and recombination model off
         (
-            (1.e-4, -5.5, 3.28),
-            (0., np.inf),
+            (1.0e-4, -5.5, 3.28),
+            (0.0, np.inf),
             POA,
             TCELL,
-            {
-                'pmp': 79.723,
-                'isc': 1.4071,
-                'voc': 79.646
-            },
-            (1e-4, 1e-4)
-        )
-    ]
+            {"pmp": 79.723, "isc": 1.4071, "voc": 79.646},
+            (1e-4, 1e-4),
+        ),
+    ],
 )
-@pytest.mark.parametrize('method', ['newton', 'brentq'])
-def test_pvsyst_breakdown(method, brk_params, recomb_params, poa, temp_cell,
-                          expected, tol):
+@pytest.mark.parametrize("method", ["newton", "brentq"])
+def test_pvsyst_breakdown(
+    method, brk_params, recomb_params, poa, temp_cell, expected, tol
+):
     """test PVSyst recombination loss"""
     pvsyst_fs_495 = get_pvsyst_fs_495()
     # first evaluate PVSyst model with thin-film recombination loss current
     # at reference conditions
     x = pvsystem.calcparams_pvsyst(
-        effective_irradiance=poa, temp_cell=temp_cell,
-        alpha_sc=pvsyst_fs_495['alpha_sc'],
-        gamma_ref=pvsyst_fs_495['gamma_ref'],
-        mu_gamma=pvsyst_fs_495['mu_gamma'], I_L_ref=pvsyst_fs_495['I_L_ref'],
-        I_o_ref=pvsyst_fs_495['I_o_ref'], R_sh_ref=pvsyst_fs_495['R_sh_ref'],
-        R_sh_0=pvsyst_fs_495['R_sh_0'], R_sh_exp=pvsyst_fs_495['R_sh_exp'],
-        R_s=pvsyst_fs_495['R_s'],
-        cells_in_series=pvsyst_fs_495['cells_in_series'],
-        EgRef=pvsyst_fs_495['EgRef']
+        effective_irradiance=poa,
+        temp_cell=temp_cell,
+        alpha_sc=pvsyst_fs_495["alpha_sc"],
+        gamma_ref=pvsyst_fs_495["gamma_ref"],
+        mu_gamma=pvsyst_fs_495["mu_gamma"],
+        I_L_ref=pvsyst_fs_495["I_L_ref"],
+        I_o_ref=pvsyst_fs_495["I_o_ref"],
+        R_sh_ref=pvsyst_fs_495["R_sh_ref"],
+        R_sh_0=pvsyst_fs_495["R_sh_0"],
+        R_sh_exp=pvsyst_fs_495["R_sh_exp"],
+        R_s=pvsyst_fs_495["R_s"],
+        cells_in_series=pvsyst_fs_495["cells_in_series"],
+        EgRef=pvsyst_fs_495["EgRef"],
     )
     il_pvsyst, io_pvsyst, rs_pvsyst, rsh_pvsyst, nnsvt_pvsyst = x
 
     d2mutau, NsVbi = recomb_params
     breakdown_factor, breakdown_voltage, breakdown_exp = brk_params
 
-    voc_est_pvsyst = estimate_voc(photocurrent=il_pvsyst,
-                                  saturation_current=io_pvsyst,
-                                  nNsVth=nnsvt_pvsyst)
+    voc_est_pvsyst = estimate_voc(
+        photocurrent=il_pvsyst, saturation_current=io_pvsyst, nNsVth=nnsvt_pvsyst
+    )
     vd_pvsyst = np.linspace(0, voc_est_pvsyst, 1000)
     pvsyst = bishop88(
-        diode_voltage=vd_pvsyst, photocurrent=il_pvsyst,
-        saturation_current=io_pvsyst, resistance_series=rs_pvsyst,
-        resistance_shunt=rsh_pvsyst, nNsVth=nnsvt_pvsyst,
-        d2mutau=d2mutau, NsVbi=NsVbi,
-        breakdown_factor=breakdown_factor, breakdown_voltage=breakdown_voltage,
-        breakdown_exp=breakdown_exp
+        diode_voltage=vd_pvsyst,
+        photocurrent=il_pvsyst,
+        saturation_current=io_pvsyst,
+        resistance_series=rs_pvsyst,
+        resistance_shunt=rsh_pvsyst,
+        nNsVth=nnsvt_pvsyst,
+        d2mutau=d2mutau,
+        NsVbi=NsVbi,
+        breakdown_factor=breakdown_factor,
+        breakdown_voltage=breakdown_voltage,
+        breakdown_exp=breakdown_exp,
     )
     # test max power
-    assert np.isclose(max(pvsyst[2]), expected['pmp'], *tol)
+    assert np.isclose(max(pvsyst[2]), expected["pmp"], *tol)
 
     # test short circuit current
     isc_pvsyst = np.interp(0, pvsyst[1], pvsyst[0])
-    assert np.isclose(isc_pvsyst, expected['isc'], *tol)
+    assert np.isclose(isc_pvsyst, expected["isc"], *tol)
 
     # test open circuit voltage
     voc_pvsyst = np.interp(0, pvsyst[0][::-1], pvsyst[1][::-1])
-    assert np.isclose(voc_pvsyst, expected['voc'], *tol)
+    assert np.isclose(voc_pvsyst, expected["voc"], *tol)
 
     # repeat tests as above with specialized bishop88 functions
-    y = {'d2mutau': recomb_params[0], 'NsVbi': recomb_params[1],
-         'breakdown_factor': brk_params[0], 'breakdown_voltage': brk_params[1],
-         'breakdown_exp': brk_params[2]}
+    y = {
+        "d2mutau": recomb_params[0],
+        "NsVbi": recomb_params[1],
+        "breakdown_factor": brk_params[0],
+        "breakdown_voltage": brk_params[1],
+        "breakdown_exp": brk_params[2],
+    }
 
     mpp_88 = bishop88_mpp(*x, **y, method=method)
-    assert np.isclose(mpp_88[2], expected['pmp'], *tol)
+    assert np.isclose(mpp_88[2], expected["pmp"], *tol)
 
     isc_88 = bishop88_i_from_v(0, *x, **y, method=method)
-    assert np.isclose(isc_88, expected['isc'], *tol)
+    assert np.isclose(isc_88, expected["isc"], *tol)
 
     voc_88 = bishop88_v_from_i(0, *x, **y, method=method)
-    assert np.isclose(voc_88, expected['voc'], *tol)
+    assert np.isclose(voc_88, expected["voc"], *tol)
 
     ioc_88 = bishop88_i_from_v(voc_88, *x, **y, method=method)
     assert np.isclose(ioc_88, 0.0, *tol)
@@ -421,105 +478,133 @@ def bishop88_arguments():
     # evaluate PVSyst model with thin-film recombination loss current
     # at reference conditions
     x = pvsystem.calcparams_pvsyst(
-        effective_irradiance=pvsyst_fs_495['irrad_ref'],
-        temp_cell=pvsyst_fs_495['temp_ref'],
-        alpha_sc=pvsyst_fs_495['alpha_sc'],
-        gamma_ref=pvsyst_fs_495['gamma_ref'],
-        mu_gamma=pvsyst_fs_495['mu_gamma'], I_L_ref=pvsyst_fs_495['I_L_ref'],
-        I_o_ref=pvsyst_fs_495['I_o_ref'], R_sh_ref=pvsyst_fs_495['R_sh_ref'],
-        R_sh_0=pvsyst_fs_495['R_sh_0'], R_sh_exp=pvsyst_fs_495['R_sh_exp'],
-        R_s=pvsyst_fs_495['R_s'],
-        cells_in_series=pvsyst_fs_495['cells_in_series'],
-        EgRef=pvsyst_fs_495['EgRef']
+        effective_irradiance=pvsyst_fs_495["irrad_ref"],
+        temp_cell=pvsyst_fs_495["temp_ref"],
+        alpha_sc=pvsyst_fs_495["alpha_sc"],
+        gamma_ref=pvsyst_fs_495["gamma_ref"],
+        mu_gamma=pvsyst_fs_495["mu_gamma"],
+        I_L_ref=pvsyst_fs_495["I_L_ref"],
+        I_o_ref=pvsyst_fs_495["I_o_ref"],
+        R_sh_ref=pvsyst_fs_495["R_sh_ref"],
+        R_sh_0=pvsyst_fs_495["R_sh_0"],
+        R_sh_exp=pvsyst_fs_495["R_sh_exp"],
+        R_s=pvsyst_fs_495["R_s"],
+        cells_in_series=pvsyst_fs_495["cells_in_series"],
+        EgRef=pvsyst_fs_495["EgRef"],
     )
-    y = dict(d2mutau=pvsyst_fs_495['d2mutau'],
-             NsVbi=VOLTAGE_BUILTIN*pvsyst_fs_495['cells_in_series'])
+    y = dict(
+        d2mutau=pvsyst_fs_495["d2mutau"],
+        NsVbi=VOLTAGE_BUILTIN * pvsyst_fs_495["cells_in_series"],
+    )
     # Convert (*x, **y) in a bishop88_.* call to dict of arguments
     args_dict = {
-        'photocurrent': x[0],
-        'saturation_current': x[1],
-        'resistance_series': x[2],
-        'resistance_shunt': x[3],
-        'nNsVth': x[4],
+        "photocurrent": x[0],
+        "saturation_current": x[1],
+        "resistance_series": x[2],
+        "resistance_shunt": x[3],
+        "nNsVth": x[4],
     }
     args_dict.update(y)
     return args_dict
 
 
-@pytest.mark.parametrize('method, method_kwargs', [
-    ('newton', {
-        'tol': 1e-8,
-        'rtol': 1e-8,
-        'maxiter': 30,
-    }),
-    ('brentq', {
-        'xtol': 1e-8,
-        'rtol': 1e-8,
-        'maxiter': 30,
-    })
-])
-def test_bishop88_kwargs_transfer(method, method_kwargs, mocker,
-                                  bishop88_arguments):
+@pytest.mark.parametrize(
+    "method, method_kwargs",
+    [
+        (
+            "newton",
+            {
+                "tol": 1e-8,
+                "rtol": 1e-8,
+                "maxiter": 30,
+            },
+        ),
+        (
+            "brentq",
+            {
+                "xtol": 1e-8,
+                "rtol": 1e-8,
+                "maxiter": 30,
+            },
+        ),
+    ],
+)
+def test_bishop88_kwargs_transfer(method, method_kwargs, mocker, bishop88_arguments):
     """test method_kwargs modifying optimizer does not break anything"""
     # patch method namespace at singlediode module namespace
-    optimizer_mock = mocker.patch('pvlib.singlediode.' + method)
+    optimizer_mock = mocker.patch("pvlib.singlediode." + method)
 
     # check kwargs passed to bishop_.* are a subset of the call args
     # since they are called with more keyword arguments
 
-    bishop88_i_from_v(0, **bishop88_arguments, method=method,
-                      method_kwargs=method_kwargs)
+    bishop88_i_from_v(
+        0, **bishop88_arguments, method=method, method_kwargs=method_kwargs
+    )
     _, kwargs = optimizer_mock.call_args
     assert method_kwargs.items() <= kwargs.items()
 
-    bishop88_v_from_i(0, **bishop88_arguments, method=method,
-                      method_kwargs=method_kwargs)
+    bishop88_v_from_i(
+        0, **bishop88_arguments, method=method, method_kwargs=method_kwargs
+    )
     _, kwargs = optimizer_mock.call_args
     assert method_kwargs.items() <= kwargs.items()
 
-    bishop88_mpp(**bishop88_arguments, method=method,
-                 method_kwargs=method_kwargs)
+    bishop88_mpp(**bishop88_arguments, method=method, method_kwargs=method_kwargs)
     _, kwargs = optimizer_mock.call_args
     assert method_kwargs.items() <= kwargs.items()
 
 
-@pytest.mark.parametrize('method, method_kwargs', [
-    ('newton', {
-        'tol': 1e-4,
-        'rtol': 1e-4,
-        'maxiter': 20,
-        '_inexistent_param': "0.01"
-    }),
-    ('brentq', {
-        'xtol': 1e-4,
-        'rtol': 1e-4,
-        'maxiter': 20,
-        '_inexistent_param': "0.01"
-    })
-])
+@pytest.mark.parametrize(
+    "method, method_kwargs",
+    [
+        (
+            "newton",
+            {"tol": 1e-4, "rtol": 1e-4, "maxiter": 20, "_inexistent_param": "0.01"},
+        ),
+        (
+            "brentq",
+            {"xtol": 1e-4, "rtol": 1e-4, "maxiter": 20, "_inexistent_param": "0.01"},
+        ),
+    ],
+)
 def test_bishop88_kwargs_fails(method, method_kwargs, bishop88_arguments):
     """test invalid method_kwargs passed onto the optimizer fail"""
 
-    pytest.raises(TypeError, bishop88_i_from_v,
-                  0, **bishop88_arguments, method=method,
-                  method_kwargs=method_kwargs)
+    pytest.raises(
+        TypeError,
+        bishop88_i_from_v,
+        0,
+        **bishop88_arguments,
+        method=method,
+        method_kwargs=method_kwargs,
+    )
 
-    pytest.raises(TypeError, bishop88_v_from_i,
-                  0, **bishop88_arguments, method=method,
-                  method_kwargs=method_kwargs)
+    pytest.raises(
+        TypeError,
+        bishop88_v_from_i,
+        0,
+        **bishop88_arguments,
+        method=method,
+        method_kwargs=method_kwargs,
+    )
 
-    pytest.raises(TypeError, bishop88_mpp,
-                  **bishop88_arguments, method=method,
-                  method_kwargs=method_kwargs)
+    pytest.raises(
+        TypeError,
+        bishop88_mpp,
+        **bishop88_arguments,
+        method=method,
+        method_kwargs=method_kwargs,
+    )
 
 
-@pytest.mark.parametrize('method', ['newton', 'brentq'])
+@pytest.mark.parametrize("method", ["newton", "brentq"])
 def test_bishop88_full_output_kwarg(method, bishop88_arguments):
     """test call to bishop88_.* with full_output=True return values are ok"""
-    method_kwargs = {'full_output': True}
+    method_kwargs = {"full_output": True}
 
-    ret_val = bishop88_i_from_v(0, **bishop88_arguments, method=method,
-                                method_kwargs=method_kwargs)
+    ret_val = bishop88_i_from_v(
+        0, **bishop88_arguments, method=method, method_kwargs=method_kwargs
+    )
     assert isinstance(ret_val, tuple)  # ret_val must be a tuple
     assert len(ret_val) == 2  # of two elements
     assert isinstance(ret_val[0], float)  # first one has bishop88 result
@@ -527,8 +612,9 @@ def test_bishop88_full_output_kwarg(method, bishop88_arguments):
     # any root finder returns at least 2 elements with full_output=True
     assert len(ret_val[1]) >= 2
 
-    ret_val = bishop88_v_from_i(0, **bishop88_arguments, method=method,
-                                method_kwargs=method_kwargs)
+    ret_val = bishop88_v_from_i(
+        0, **bishop88_arguments, method=method, method_kwargs=method_kwargs
+    )
     assert isinstance(ret_val, tuple)  # ret_val must be a tuple
     assert len(ret_val) == 2  # of two elements
     assert isinstance(ret_val[0], float)  # first one has bishop88 result
@@ -536,8 +622,9 @@ def test_bishop88_full_output_kwarg(method, bishop88_arguments):
     # any root finder returns at least 2 elements with full_output=True
     assert len(ret_val[1]) >= 2
 
-    ret_val = bishop88_mpp(**bishop88_arguments, method=method,
-                           method_kwargs=method_kwargs)
+    ret_val = bishop88_mpp(
+        **bishop88_arguments, method=method, method_kwargs=method_kwargs
+    )
     assert isinstance(ret_val, tuple)  # ret_val must be a tuple
     assert len(ret_val) == 2  # of two elements
     assert isinstance(ret_val[0], tuple)  # first one has bishop88 result
@@ -547,7 +634,7 @@ def test_bishop88_full_output_kwarg(method, bishop88_arguments):
     assert len(ret_val[1]) >= 2
 
 
-@pytest.mark.parametrize('method', ['newton', 'brentq'])
+@pytest.mark.parametrize("method", ["newton", "brentq"])
 def test_bishop88_pdSeries_len_one(method, bishop88_arguments):
     for k, v in bishop88_arguments.items():
         bishop88_arguments[k] = pd.Series([v])
@@ -558,25 +645,27 @@ def test_bishop88_pdSeries_len_one(method, bishop88_arguments):
     bishop88_mpp(**bishop88_arguments, method=method)
 
 
-def _sde_check_solution(i, v, il, io, rs, rsh, a, d2mutau=0., NsVbi=np.inf):
+def _sde_check_solution(i, v, il, io, rs, rsh, a, d2mutau=0.0, NsVbi=np.inf):
     vd = v + rs * i
-    return il - io*np.expm1(vd/a) - vd/rsh - il*d2mutau/(NsVbi - vd) - i
+    return il - io * np.expm1(vd / a) - vd / rsh - il * d2mutau / (NsVbi - vd) - i
 
 
-@pytest.mark.parametrize('method', ['newton', 'brentq'])
+@pytest.mark.parametrize("method", ["newton", "brentq"])
 def test_bishop88_init_cond(method):
     # GH 2013
-    p = {'alpha_sc': 0.0012256,
-         'gamma_ref': 1.2916241612804187,
-         'mu_gamma': 0.00047308959960937403,
-         'I_L_ref': 3.068717040806731,
-         'I_o_ref': 2.2691248021217617e-11,
-         'R_sh_ref': 7000,
-         'R_sh_0': 7000,
-         'R_s': 4.602,
-         'cells_in_series': 268,
-         'R_sh_exp': 5.5,
-         'EgRef': 1.5}
+    p = {
+        "alpha_sc": 0.0012256,
+        "gamma_ref": 1.2916241612804187,
+        "mu_gamma": 0.00047308959960937403,
+        "I_L_ref": 3.068717040806731,
+        "I_o_ref": 2.2691248021217617e-11,
+        "R_sh_ref": 7000,
+        "R_sh_0": 7000,
+        "R_s": 4.602,
+        "cells_in_series": 268,
+        "R_sh_exp": 5.5,
+        "EgRef": 1.5,
+    }
     NsVbi = 268 * 0.9
     d2mutau = 1.4
     irrad = np.arange(20, 1100, 20)
@@ -589,20 +678,32 @@ def test_bishop88_init_cond(method):
     # test _mpp
     result = bishop88_mpp(*sde_params, d2mutau=d2mutau, NsVbi=NsVbi)
     imp, vmp, pmp = result
-    err = np.abs(_sde_check_solution(
-        imp, vmp, sde_params[0], sde_params[1], sde_params[2], sde_params[3],
-        sde_params[4], d2mutau=d2mutau, NsVbi=NsVbi))
+    err = np.abs(
+        _sde_check_solution(
+            imp,
+            vmp,
+            sde_params[0],
+            sde_params[1],
+            sde_params[2],
+            sde_params[3],
+            sde_params[4],
+            d2mutau=d2mutau,
+            NsVbi=NsVbi,
+        )
+    )
     bad_results = np.isnan(pmp) | (pmp < 0) | (err > 0.00001)  # 0.01mA error
     assert not bad_results.any()
     # test v_from_i
     vmp2 = bishop88_v_from_i(imp, *sde_params, d2mutau=d2mutau, NsVbi=NsVbi)
-    err = np.abs(_sde_check_solution(imp, vmp2, *sde_params, d2mutau=d2mutau,
-                                     NsVbi=NsVbi))
+    err = np.abs(
+        _sde_check_solution(imp, vmp2, *sde_params, d2mutau=d2mutau, NsVbi=NsVbi)
+    )
     bad_results = np.isnan(vmp2) | (vmp2 < 0) | (err > 0.00001)
     assert not bad_results.any()
     # test v_from_i
     imp2 = bishop88_i_from_v(vmp, *sde_params, d2mutau=d2mutau, NsVbi=NsVbi)
-    err = np.abs(_sde_check_solution(imp2, vmp, *sde_params, d2mutau=d2mutau,
-                                     NsVbi=NsVbi))
+    err = np.abs(
+        _sde_check_solution(imp2, vmp, *sde_params, d2mutau=d2mutau, NsVbi=NsVbi)
+    )
     bad_results = np.isnan(imp2) | (imp2 < 0) | (err > 0.00001)
     assert not bad_results.any()

@@ -23,12 +23,10 @@ import pvlib
 
 # Golden, CO
 latitude, longitude = 39.76, -105.22
-tz = 'MST'
+tz = "MST"
 
 # Set times in the morning of the December solstice.
-times = pd.date_range(
-    '2020-12-20 6:30', '2020-12-20 9:00', freq='1T', tz=tz
-)
+times = pd.date_range("2020-12-20 6:30", "2020-12-20 9:00", freq="1T", tz=tz)
 
 # Create location object, and get solar position and clearsky irradiance data.
 location = pvlib.location.Location(latitude, longitude, tz)
@@ -49,18 +47,65 @@ dhi = clearsky.dhi
 # With basic inputs in place, let's perform the adjustment for horizon shading:
 
 # Use hard-coded horizon profile data from location object above.
-horizon_profile = pd.Series([
-    10.7, 11.8, 11.5, 10.3, 8.0, 6.5, 3.8, 2.3, 2.3, 2.3, 4.6, 8.0, 10.3, 11.1,
-    10.7, 10.3, 9.2, 6.1, 5.3, 2.3, 3.1, 1.9, 1.9, 2.7, 3.8, 5.3, 6.5, 8.4,
-    8.8, 8.4, 8.4, 8.4, 6.5, 6.1, 6.5, 6.1, 7.3, 9.2, 8.4, 8.0, 5.7, 5.3, 5.3,
-    4.2, 4.2, 4.2, 7.3, 9.5
-], index=np.arange(0, 360, 7.5))
+horizon_profile = pd.Series(
+    [
+        10.7,
+        11.8,
+        11.5,
+        10.3,
+        8.0,
+        6.5,
+        3.8,
+        2.3,
+        2.3,
+        2.3,
+        4.6,
+        8.0,
+        10.3,
+        11.1,
+        10.7,
+        10.3,
+        9.2,
+        6.1,
+        5.3,
+        2.3,
+        3.1,
+        1.9,
+        1.9,
+        2.7,
+        3.8,
+        5.3,
+        6.5,
+        8.4,
+        8.8,
+        8.4,
+        8.4,
+        8.4,
+        6.5,
+        6.1,
+        6.5,
+        6.1,
+        7.3,
+        9.2,
+        8.4,
+        8.0,
+        5.7,
+        5.3,
+        5.3,
+        4.2,
+        4.2,
+        4.2,
+        7.3,
+        9.5,
+    ],
+    index=np.arange(0, 360, 7.5),
+)
 
 ax = horizon_profile.plot(xlim=(0, 360), ylim=(0, None), figsize=(6, 2.5))
-ax.set_title('Horizon profile')
+ax.set_title("Horizon profile")
 ax.set_xticks([0, 90, 180, 270, 360])
-ax.set_xlabel('Azimuth [°]')
-ax.set_ylabel('Horizon angle [°]')
+ax.set_xlabel("Azimuth [°]")
+ax.set_ylabel("Horizon angle [°]")
 
 # %%
 # .. admonition:: Horizon data from PVGIS
@@ -93,26 +138,31 @@ irrad_pre_adj = pvlib.irradiance.get_total_irradiance(
 )
 
 irrad_post_adj = pvlib.irradiance.get_total_irradiance(
-    surface_tilt, surface_azimuth, solar_zenith, solar_azimuth, dni_adjusted,
-    ghi_adjusted, dhi
+    surface_tilt,
+    surface_azimuth,
+    solar_zenith,
+    solar_azimuth,
+    dni_adjusted,
+    ghi_adjusted,
+    dhi,
 )
 
 # Create and plot result DataFrames.
-poa_global_comparison = pd.DataFrame({
-    'poa_global_pre-adjustment': irrad_pre_adj.poa_global,
-    'poa_global_post-adjustment': irrad_post_adj.poa_global
-})
+poa_global_comparison = pd.DataFrame(
+    {
+        "poa_global_pre-adjustment": irrad_pre_adj.poa_global,
+        "poa_global_post-adjustment": irrad_post_adj.poa_global,
+    }
+)
 
-dni_comparison = pd.DataFrame({
-    'dni_pre-adjustment': dni,
-    'dni_post-adjustment': dni_adjusted
-})
+dni_comparison = pd.DataFrame(
+    {"dni_pre-adjustment": dni, "dni_post-adjustment": dni_adjusted}
+)
 
 # Plot results
 poa_global_comparison.plot(
-    title='POA-Global: Before and after Horizon Adjustment',
-    ylabel='Irradiance'
+    title="POA-Global: Before and after Horizon Adjustment", ylabel="Irradiance"
 )
 dni_comparison.plot(
-    title='DNI: Before and after Horizon Adjustment', ylabel='Irradiance'
+    title="DNI: Before and after Horizon Adjustment", ylabel="Irradiance"
 )

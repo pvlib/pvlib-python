@@ -43,12 +43,12 @@ surface_tilt = np.arange(0, 90, 0.5)
 
 plt.figure()
 for k in [1, 1.5, 2, 2.5, 3, 4, 5, 7, 10]:
-    gcr = 1/k
+    gcr = 1 / k
     psi = shading.masking_angle_passias(surface_tilt, gcr)
-    plt.plot(surface_tilt, psi, label=f'k={k}')
+    plt.plot(surface_tilt, psi, label=f"k={k}")
 
-plt.xlabel('Inclination angle [degrees]')
-plt.ylabel('Average masking angle [degrees]')
+plt.xlabel("Inclination angle [degrees]")
+plt.ylabel("Average masking angle [degrees]")
 plt.legend()
 plt.show()
 
@@ -66,15 +66,15 @@ plt.show()
 
 plt.figure()
 for k in [1, 1.5, 2, 10]:
-    gcr = 1/k
+    gcr = 1 / k
     psi = shading.masking_angle_passias(surface_tilt, gcr)
     shading_loss = shading.sky_diffuse_passias(psi)
     transposition_ratio = irradiance.isotropic(surface_tilt, dhi=1.0)
-    relative_diffuse = transposition_ratio * (1-shading_loss) * 100  # %
-    plt.plot(surface_tilt, relative_diffuse, label=f'k={k}')
+    relative_diffuse = transposition_ratio * (1 - shading_loss) * 100  # %
+    plt.plot(surface_tilt, relative_diffuse, label=f"k={k}")
 
-plt.xlabel('Inclination angle [degrees]')
-plt.ylabel('Relative diffuse irradiance [%]')
+plt.xlabel("Inclination angle [degrees]")
+plt.ylabel("Relative diffuse irradiance [%]")
 plt.ylim(0, 105)
 plt.legend()
 plt.show()

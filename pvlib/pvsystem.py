@@ -20,34 +20,73 @@ from typing import Optional, Union
 from pvlib._deprecation import deprecated
 
 import pvlib  # used to avoid albedo name collision in the Array class
-from pvlib import (atmosphere, iam, inverter, irradiance,
-                   singlediode as _singlediode, spectrum, temperature)
+from pvlib import (
+    atmosphere,
+    iam,
+    inverter,
+    irradiance,
+    singlediode as _singlediode,
+    spectrum,
+    temperature,
+)
 from pvlib.tools import _build_kwargs, _build_args
 import pvlib.tools as tools
 
 
 # a dict of required parameter names for each DC power model
 _DC_MODEL_PARAMS = {
-    'sapm': {
-        'A0', 'A1', 'A2', 'A3', 'A4', 'B0', 'B1', 'B2', 'B3',
-        'B4', 'B5', 'C0', 'C1', 'C2', 'C3', 'C4', 'C5', 'C6',
-        'C7', 'Isco', 'Impo', 'Voco', 'Vmpo', 'Aisc', 'Aimp', 'Bvoco',
-        'Mbvoc', 'Bvmpo', 'Mbvmp', 'N', 'Cells_in_Series',
-        'IXO', 'IXXO', 'FD'},
-    'desoto': {
-        'alpha_sc', 'a_ref', 'I_L_ref', 'I_o_ref',
-        'R_sh_ref', 'R_s'},
-    'cec': {
-        'alpha_sc', 'a_ref', 'I_L_ref', 'I_o_ref',
-        'R_sh_ref', 'R_s', 'Adjust'},
-    'pvsyst': {
-        'gamma_ref', 'mu_gamma', 'I_L_ref', 'I_o_ref',
-        'R_sh_ref', 'R_sh_0', 'R_s', 'alpha_sc', 'EgRef',
-        'cells_in_series'},
-    'singlediode': {
-        'alpha_sc', 'a_ref', 'I_L_ref', 'I_o_ref',
-        'R_sh_ref', 'R_s'},
-    'pvwatts': {'pdc0', 'gamma_pdc'}
+    "sapm": {
+        "A0",
+        "A1",
+        "A2",
+        "A3",
+        "A4",
+        "B0",
+        "B1",
+        "B2",
+        "B3",
+        "B4",
+        "B5",
+        "C0",
+        "C1",
+        "C2",
+        "C3",
+        "C4",
+        "C5",
+        "C6",
+        "C7",
+        "Isco",
+        "Impo",
+        "Voco",
+        "Vmpo",
+        "Aisc",
+        "Aimp",
+        "Bvoco",
+        "Mbvoc",
+        "Bvmpo",
+        "Mbvmp",
+        "N",
+        "Cells_in_Series",
+        "IXO",
+        "IXXO",
+        "FD",
+    },
+    "desoto": {"alpha_sc", "a_ref", "I_L_ref", "I_o_ref", "R_sh_ref", "R_s"},
+    "cec": {"alpha_sc", "a_ref", "I_L_ref", "I_o_ref", "R_sh_ref", "R_s", "Adjust"},
+    "pvsyst": {
+        "gamma_ref",
+        "mu_gamma",
+        "I_L_ref",
+        "I_o_ref",
+        "R_sh_ref",
+        "R_sh_0",
+        "R_s",
+        "alpha_sc",
+        "EgRef",
+        "cells_in_series",
+    },
+    "singlediode": {"alpha_sc", "a_ref", "I_L_ref", "I_o_ref", "R_sh_ref", "R_s"},
+    "pvwatts": {"pdc0", "gamma_pdc"},
 }
 
 
@@ -61,13 +100,15 @@ def _unwrap_single_value(func):
     Adds 'unwrap' as a keyword argument that can be set to False
     to force the return value to be a tuple, regardless of its length.
     """
+
     @functools.wraps(func)
     def f(*args, **kwargs):
-        unwrap = kwargs.pop('unwrap', True)
+        unwrap = kwargs.pop("unwrap", True)
         x = func(*args, **kwargs)
         if unwrap and len(x) == 1:
             return x[0]
         return x
+
     return f
 
 
@@ -194,43 +235,56 @@ class PVSystem:
     pvlib.location.Location
     """
 
-    def __init__(self,
-                 arrays=None,
-                 surface_tilt=0, surface_azimuth=180,
-                 albedo=None, surface_type=None,
-                 module=None, module_type=None,
-                 module_parameters=None,
-                 temperature_model_parameters=None,
-                 modules_per_string=1, strings_per_inverter=1,
-                 inverter=None, inverter_parameters=None,
-                 racking_model=None, losses_parameters=None, name=None):
-
+    def __init__(
+        self,
+        arrays=None,
+        surface_tilt=0,
+        surface_azimuth=180,
+        albedo=None,
+        surface_type=None,
+        module=None,
+        module_type=None,
+        module_parameters=None,
+        temperature_model_parameters=None,
+        modules_per_string=1,
+        strings_per_inverter=1,
+        inverter=None,
+        inverter_parameters=None,
+        racking_model=None,
+        losses_parameters=None,
+        name=None,
+    ):
         if arrays is None:
             if losses_parameters is None:
                 array_losses_parameters = {}
             else:
-                array_losses_parameters = _build_kwargs(['dc_ohmic_percent'],
-                                                        losses_parameters)
-            self.arrays = (Array(
-                FixedMount(surface_tilt, surface_azimuth, racking_model),
-                albedo,
-                surface_type,
-                module,
-                module_type,
-                module_parameters,
-                temperature_model_parameters,
-                modules_per_string,
-                strings_per_inverter,
-                array_losses_parameters,
-            ),)
+                array_losses_parameters = _build_kwargs(
+                    ["dc_ohmic_percent"], losses_parameters
+                )
+            self.arrays = (
+                Array(
+                    FixedMount(surface_tilt, surface_azimuth, racking_model),
+                    albedo,
+                    surface_type,
+                    module,
+                    module_type,
+                    module_parameters,
+                    temperature_model_parameters,
+                    modules_per_string,
+                    strings_per_inverter,
+                    array_losses_parameters,
+                ),
+            )
         elif isinstance(arrays, Array):
             self.arrays = (arrays,)
         elif len(arrays) == 0:
-            raise ValueError("PVSystem must have at least one Array. "
-                             "If you want to create a PVSystem instance "
-                             "with a single Array pass `arrays=None` and pass "
-                             "values directly to PVSystem attributes, e.g., "
-                             "`surface_tilt=30`")
+            raise ValueError(
+                "PVSystem must have at least one Array. "
+                "If you want to create a PVSystem instance "
+                "with a single Array pass `arrays=None` and pass "
+                "values directly to PVSystem attributes, e.g., "
+                "`surface_tilt=30`"
+            )
         else:
             self.arrays = tuple(arrays)
 
@@ -248,11 +302,11 @@ class PVSystem:
         self.name = name
 
     def __repr__(self):
-        repr = f'PVSystem:\n  name: {self.name}\n  '
+        repr = f"PVSystem:\n  name: {self.name}\n  "
         for array in self.arrays:
-            repr += '\n  '.join(array.__repr__().split('\n'))
-            repr += '\n  '
-        repr += f'inverter: {self.inverter}'
+            repr += "\n  ".join(array.__repr__().split("\n"))
+            repr += "\n  "
+        repr += f"inverter: {self.inverter}"
         return repr
 
     def _validate_per_array(self, values, system_wide=False):
@@ -305,13 +359,24 @@ class PVSystem:
             The angle of incidence
         """
 
-        return tuple(array.get_aoi(solar_zenith, solar_azimuth)
-                     for array in self.arrays)
+        return tuple(
+            array.get_aoi(solar_zenith, solar_azimuth) for array in self.arrays
+        )
 
     @_unwrap_single_value
-    def get_irradiance(self, solar_zenith, solar_azimuth, dni, ghi, dhi,
-                       dni_extra=None, airmass=None, albedo=None,
-                       model='haydavies', **kwargs):
+    def get_irradiance(
+        self,
+        solar_zenith,
+        solar_azimuth,
+        dni,
+        ghi,
+        dhi,
+        dni_extra=None,
+        airmass=None,
+        albedo=None,
+        model="haydavies",
+        **kwargs,
+    ):
         """
         Uses :py:func:`pvlib.irradiance.get_total_irradiance` to
         calculate the plane of array irradiance components on the tilted
@@ -374,17 +439,23 @@ class PVSystem:
         albedo = self._validate_per_array(albedo, system_wide=True)
 
         return tuple(
-            array.get_irradiance(solar_zenith, solar_azimuth,
-                                 dni, ghi, dhi,
-                                 dni_extra=dni_extra, airmass=airmass,
-                                 albedo=albedo, model=model, **kwargs)
-            for array, dni, ghi, dhi, albedo in zip(
-                self.arrays, dni, ghi, dhi, albedo
+            array.get_irradiance(
+                solar_zenith,
+                solar_azimuth,
+                dni,
+                ghi,
+                dhi,
+                dni_extra=dni_extra,
+                airmass=airmass,
+                albedo=albedo,
+                model=model,
+                **kwargs,
             )
+            for array, dni, ghi, dhi, albedo in zip(self.arrays, dni, ghi, dhi, albedo)
         )
 
     @_unwrap_single_value
-    def get_iam(self, aoi, iam_model='physical'):
+    def get_iam(self, aoi, iam_model="physical"):
         """
         Determine the incidence angle modifier using the method specified by
         ``iam_model``.
@@ -412,12 +483,14 @@ class PVSystem:
             if `iam_model` is not a valid model name.
         """
         aoi = self._validate_per_array(aoi)
-        return tuple(array.get_iam(aoi, iam_model)
-                     for array, aoi in zip(self.arrays, aoi))
+        return tuple(
+            array.get_iam(aoi, iam_model) for array, aoi in zip(self.arrays, aoi)
+        )
 
     @_unwrap_single_value
-    def get_cell_temperature(self, poa_global, temp_air, wind_speed, model,
-                             effective_irradiance=None):
+    def get_cell_temperature(
+        self, poa_global, temp_air, wind_speed, model, effective_irradiance=None
+    ):
         """
         Determine cell temperature using the method specified by ``model``.
 
@@ -460,16 +533,16 @@ class PVSystem:
         temp_air = self._validate_per_array(temp_air, system_wide=True)
         wind_speed = self._validate_per_array(wind_speed, system_wide=True)
         # Not used for all models, but Array.get_cell_temperature handles it
-        effective_irradiance = self._validate_per_array(effective_irradiance,
-                                                        system_wide=True)
+        effective_irradiance = self._validate_per_array(
+            effective_irradiance, system_wide=True
+        )
 
         return tuple(
-            array.get_cell_temperature(poa_global, temp_air, wind_speed,
-                                       model, effective_irradiance)
-            for array, poa_global, temp_air, wind_speed, effective_irradiance
-            in zip(
-                self.arrays, poa_global, temp_air, wind_speed,
-                effective_irradiance
+            array.get_cell_temperature(
+                poa_global, temp_air, wind_speed, model, effective_irradiance
+            )
+            for array, poa_global, temp_air, wind_speed, effective_irradiance in zip(
+                self.arrays, poa_global, temp_air, wind_speed, effective_irradiance
             )
         )
 
@@ -497,18 +570,27 @@ class PVSystem:
 
         build_kwargs = functools.partial(
             _build_kwargs,
-            ['a_ref', 'I_L_ref', 'I_o_ref', 'R_sh_ref',
-             'R_s', 'alpha_sc', 'EgRef', 'dEgdT',
-             'irrad_ref', 'temp_ref']
+            [
+                "a_ref",
+                "I_L_ref",
+                "I_o_ref",
+                "R_sh_ref",
+                "R_s",
+                "alpha_sc",
+                "EgRef",
+                "dEgdT",
+                "irrad_ref",
+                "temp_ref",
+            ],
         )
 
         return tuple(
             calcparams_desoto(
-                effective_irradiance, temp_cell,
-                **build_kwargs(array.module_parameters)
+                effective_irradiance, temp_cell, **build_kwargs(array.module_parameters)
             )
-            for array, effective_irradiance, temp_cell
-            in zip(self.arrays, effective_irradiance, temp_cell)
+            for array, effective_irradiance, temp_cell in zip(
+                self.arrays, effective_irradiance, temp_cell
+            )
         )
 
     @_unwrap_single_value
@@ -535,18 +617,28 @@ class PVSystem:
 
         build_kwargs = functools.partial(
             _build_kwargs,
-            ['a_ref', 'I_L_ref', 'I_o_ref', 'R_sh_ref',
-             'R_s', 'alpha_sc', 'Adjust', 'EgRef', 'dEgdT',
-             'irrad_ref', 'temp_ref']
+            [
+                "a_ref",
+                "I_L_ref",
+                "I_o_ref",
+                "R_sh_ref",
+                "R_s",
+                "alpha_sc",
+                "Adjust",
+                "EgRef",
+                "dEgdT",
+                "irrad_ref",
+                "temp_ref",
+            ],
         )
 
         return tuple(
             calcparams_cec(
-                effective_irradiance, temp_cell,
-                **build_kwargs(array.module_parameters)
+                effective_irradiance, temp_cell, **build_kwargs(array.module_parameters)
             )
-            for array, effective_irradiance, temp_cell
-            in zip(self.arrays, effective_irradiance, temp_cell)
+            for array, effective_irradiance, temp_cell in zip(
+                self.arrays, effective_irradiance, temp_cell
+            )
         )
 
     @_unwrap_single_value
@@ -573,20 +665,30 @@ class PVSystem:
 
         build_kwargs = functools.partial(
             _build_kwargs,
-            ['gamma_ref', 'mu_gamma', 'I_L_ref', 'I_o_ref',
-             'R_sh_ref', 'R_sh_0', 'R_sh_exp',
-             'R_s', 'alpha_sc', 'EgRef',
-             'irrad_ref', 'temp_ref',
-             'cells_in_series']
+            [
+                "gamma_ref",
+                "mu_gamma",
+                "I_L_ref",
+                "I_o_ref",
+                "R_sh_ref",
+                "R_sh_0",
+                "R_sh_exp",
+                "R_s",
+                "alpha_sc",
+                "EgRef",
+                "irrad_ref",
+                "temp_ref",
+                "cells_in_series",
+            ],
         )
 
         return tuple(
             calcparams_pvsyst(
-                effective_irradiance, temp_cell,
-                **build_kwargs(array.module_parameters)
+                effective_irradiance, temp_cell, **build_kwargs(array.module_parameters)
             )
-            for array, effective_irradiance, temp_cell
-            in zip(self.arrays, effective_irradiance, temp_cell)
+            for array, effective_irradiance, temp_cell in zip(
+                self.arrays, effective_irradiance, temp_cell
+            )
         )
 
     @_unwrap_single_value
@@ -613,8 +715,9 @@ class PVSystem:
 
         return tuple(
             sapm(effective_irradiance, temp_cell, array.module_parameters)
-            for array, effective_irradiance, temp_cell
-            in zip(self.arrays, effective_irradiance, temp_cell)
+            for array, effective_irradiance, temp_cell in zip(
+                self.arrays, effective_irradiance, temp_cell
+            )
         )
 
     @_unwrap_single_value
@@ -634,15 +737,14 @@ class PVSystem:
             The SAPM spectral loss coefficient.
         """
         return tuple(
-            spectrum.spectral_factor_sapm(airmass_absolute,
-                                          array.module_parameters)
+            spectrum.spectral_factor_sapm(airmass_absolute, array.module_parameters)
             for array in self.arrays
         )
 
     @_unwrap_single_value
-    def sapm_effective_irradiance(self, poa_direct, poa_diffuse,
-                                  airmass_absolute, aoi,
-                                  reference_irradiance=1000):
+    def sapm_effective_irradiance(
+        self, poa_direct, poa_diffuse, airmass_absolute, aoi, reference_irradiance=1000
+    ):
         """
         Use the :py:func:`sapm_effective_irradiance` function, the input
         parameters, and ``self.module_parameters`` to calculate
@@ -672,10 +774,11 @@ class PVSystem:
         aoi = self._validate_per_array(aoi)
         return tuple(
             sapm_effective_irradiance(
-                poa_direct, poa_diffuse, airmass_absolute, aoi,
-                array.module_parameters)
-            for array, poa_direct, poa_diffuse, aoi
-            in zip(self.arrays, poa_direct, poa_diffuse, aoi)
+                poa_direct, poa_diffuse, airmass_absolute, aoi, array.module_parameters
+            )
+            for array, poa_direct, poa_diffuse, aoi in zip(
+                self.arrays, poa_direct, poa_diffuse, aoi
+            )
         )
 
     @_unwrap_single_value
@@ -711,12 +814,10 @@ class PVSystem:
         pw = self._validate_per_array(pw, system_wide=True)
 
         def _spectral_correction(array, pw):
-            if 'first_solar_spectral_coefficients' in \
-                    array.module_parameters.keys():
-                coefficients = \
-                    array.module_parameters[
-                        'first_solar_spectral_coefficients'
-                    ]
+            if "first_solar_spectral_coefficients" in array.module_parameters.keys():
+                coefficients = array.module_parameters[
+                    "first_solar_spectral_coefficients"
+                ]
                 module_type = None
             else:
                 module_type = array._infer_cell_type()
@@ -725,21 +826,38 @@ class PVSystem:
             return spectrum.spectral_factor_firstsolar(
                 pw, airmass_absolute, module_type, coefficients
             )
-        return tuple(
-            itertools.starmap(_spectral_correction, zip(self.arrays, pw))
-        )
 
-    def singlediode(self, photocurrent, saturation_current,
-                    resistance_series, resistance_shunt, nNsVth):
+        return tuple(itertools.starmap(_spectral_correction, zip(self.arrays, pw)))
+
+    def singlediode(
+        self,
+        photocurrent,
+        saturation_current,
+        resistance_series,
+        resistance_shunt,
+        nNsVth,
+    ):
         """Wrapper around the :py:func:`pvlib.pvsystem.singlediode` function.
 
         See :py:func:`pvsystem.singlediode` for details
         """
-        return singlediode(photocurrent, saturation_current,
-                           resistance_series, resistance_shunt, nNsVth)
+        return singlediode(
+            photocurrent,
+            saturation_current,
+            resistance_series,
+            resistance_shunt,
+            nNsVth,
+        )
 
-    def i_from_v(self, voltage, photocurrent, saturation_current,
-                 resistance_series, resistance_shunt, nNsVth):
+    def i_from_v(
+        self,
+        voltage,
+        photocurrent,
+        saturation_current,
+        resistance_series,
+        resistance_shunt,
+        nNsVth,
+    ):
         """Wrapper around the :py:func:`pvlib.pvsystem.i_from_v` function.
 
         See :py:func:`pvlib.pvsystem.i_from_v` for details.
@@ -747,8 +865,14 @@ class PVSystem:
         .. versionchanged:: 0.10.0
            The function's arguments have been reordered.
         """
-        return i_from_v(voltage, photocurrent, saturation_current,
-                        resistance_series, resistance_shunt, nNsVth)
+        return i_from_v(
+            voltage,
+            photocurrent,
+            saturation_current,
+            resistance_series,
+            resistance_shunt,
+            nNsVth,
+        )
 
     def get_ac(self, model, p_dc, v_dc=None):
         r"""Calculates AC power from p_dc using the inverter model indicated
@@ -790,27 +914,28 @@ class PVSystem:
         """
         model = model.lower()
         multiple_arrays = self.num_arrays > 1
-        if model == 'sandia':
+        if model == "sandia":
             p_dc = self._validate_per_array(p_dc)
             v_dc = self._validate_per_array(v_dc)
             if multiple_arrays:
-                return inverter.sandia_multi(
-                    v_dc, p_dc, self.inverter_parameters)
+                return inverter.sandia_multi(v_dc, p_dc, self.inverter_parameters)
             return inverter.sandia(v_dc[0], p_dc[0], self.inverter_parameters)
-        elif model == 'pvwatts':
-            kwargs = _build_kwargs(['eta_inv_nom', 'eta_inv_ref'],
-                                   self.inverter_parameters)
+        elif model == "pvwatts":
+            kwargs = _build_kwargs(
+                ["eta_inv_nom", "eta_inv_ref"], self.inverter_parameters
+            )
             p_dc = self._validate_per_array(p_dc)
             if multiple_arrays:
                 return inverter.pvwatts_multi(
-                    p_dc, self.inverter_parameters['pdc0'], **kwargs)
-            return inverter.pvwatts(
-                p_dc[0], self.inverter_parameters['pdc0'], **kwargs)
-        elif model == 'adr':
+                    p_dc, self.inverter_parameters["pdc0"], **kwargs
+                )
+            return inverter.pvwatts(p_dc[0], self.inverter_parameters["pdc0"], **kwargs)
+        elif model == "adr":
             if multiple_arrays:
                 raise ValueError(
-                    'The adr inverter function cannot be used for an inverter',
-                    ' with multiple MPPT inputs')
+                    "The adr inverter function cannot be used for an inverter",
+                    " with multiple MPPT inputs",
+                )
             # While this is only used for single-array systems, calling
             # _validate_per_arry lets us pass in singleton tuples.
             p_dc = self._validate_per_array(p_dc)
@@ -818,8 +943,9 @@ class PVSystem:
             return inverter.adr(v_dc[0], p_dc[0], self.inverter_parameters)
         else:
             raise ValueError(
-                model + ' is not a valid AC power model.',
-                ' model must be one of "sandia", "adr" or "pvwatts"')
+                model + " is not a valid AC power model.",
+                ' model must be one of "sandia", "adr" or "pvwatts"',
+            )
 
     @_unwrap_single_value
     def scale_voltage_current_power(self, data):
@@ -840,9 +966,9 @@ class PVSystem:
         """
         data = self._validate_per_array(data)
         return tuple(
-            scale_voltage_current_power(data,
-                                        voltage=array.modules_per_string,
-                                        current=array.strings)
+            scale_voltage_current_power(
+                data, voltage=array.modules_per_string, current=array.strings
+            )
             for array, data in zip(self.arrays, data)
         )
 
@@ -858,12 +984,16 @@ class PVSystem:
         g_poa_effective = self._validate_per_array(g_poa_effective)
         temp_cell = self._validate_per_array(temp_cell)
         return tuple(
-            pvwatts_dc(g_poa_effective, temp_cell,
-                       array.module_parameters['pdc0'],
-                       array.module_parameters['gamma_pdc'],
-                       **_build_kwargs(['temp_ref'], array.module_parameters))
-            for array, g_poa_effective, temp_cell
-            in zip(self.arrays, g_poa_effective, temp_cell)
+            pvwatts_dc(
+                g_poa_effective,
+                temp_cell,
+                array.module_parameters["pdc0"],
+                array.module_parameters["gamma_pdc"],
+                **_build_kwargs(["temp_ref"], array.module_parameters),
+            )
+            for array, g_poa_effective, temp_cell in zip(
+                self.arrays, g_poa_effective, temp_cell
+            )
         )
 
     def pvwatts_losses(self):
@@ -874,10 +1004,21 @@ class PVSystem:
 
         See :py:func:`pvlib.pvsystem.pvwatts_losses` for details.
         """
-        kwargs = _build_kwargs(['soiling', 'shading', 'snow', 'mismatch',
-                                'wiring', 'connections', 'lid',
-                                'nameplate_rating', 'age', 'availability'],
-                               self.losses_parameters)
+        kwargs = _build_kwargs(
+            [
+                "soiling",
+                "shading",
+                "snow",
+                "mismatch",
+                "wiring",
+                "connections",
+                "lid",
+                "nameplate_rating",
+                "age",
+                "availability",
+            ],
+            self.losses_parameters,
+        )
         return pvwatts_losses(**kwargs)
 
     @_unwrap_single_value
@@ -951,14 +1092,20 @@ class Array:
         Name of Array instance.
     """
 
-    def __init__(self, mount,
-                 albedo=None, surface_type=None,
-                 module=None, module_type=None,
-                 module_parameters=None,
-                 temperature_model_parameters=None,
-                 modules_per_string=1, strings=1,
-                 array_losses_parameters=None,
-                 name=None):
+    def __init__(
+        self,
+        mount,
+        albedo=None,
+        surface_type=None,
+        module=None,
+        module_type=None,
+        module_parameters=None,
+        temperature_model_parameters=None,
+        modules_per_string=1,
+        strings=1,
+        array_losses_parameters=None,
+        name=None,
+    ):
         self.mount = mount
 
         self.surface_type = surface_type
@@ -979,8 +1126,7 @@ class Array:
         self.modules_per_string = modules_per_string
 
         if temperature_model_parameters is None:
-            self.temperature_model_parameters = \
-                self._infer_temperature_model_params()
+            self.temperature_model_parameters = self._infer_temperature_model_params()
         else:
             self.temperature_model_parameters = temperature_model_parameters
 
@@ -992,27 +1138,31 @@ class Array:
         self.name = name
 
     def __repr__(self):
-        attrs = ['name', 'mount', 'module',
-                 'albedo', 'module_type',
-                 'temperature_model_parameters',
-                 'strings', 'modules_per_string']
+        attrs = [
+            "name",
+            "mount",
+            "module",
+            "albedo",
+            "module_type",
+            "temperature_model_parameters",
+            "strings",
+            "modules_per_string",
+        ]
 
-        return 'Array:\n  ' + '\n  '.join(
-            f'{attr}: {getattr(self, attr)}' for attr in attrs
+        return "Array:\n  " + "\n  ".join(
+            f"{attr}: {getattr(self, attr)}" for attr in attrs
         )
 
     def _infer_temperature_model_params(self):
         # try to infer temperature model parameters from racking_model
         # and module_type
-        param_set = f'{self.mount.racking_model}_{self.module_type}'
-        if param_set in temperature.TEMPERATURE_MODEL_PARAMETERS['sapm']:
-            return temperature._temperature_model_params('sapm', param_set)
-        elif 'freestanding' in param_set:
-            return temperature._temperature_model_params('pvsyst',
-                                                         'freestanding')
-        elif 'insulated' in param_set:  # after SAPM to avoid confusing keys
-            return temperature._temperature_model_params('pvsyst',
-                                                         'insulated')
+        param_set = f"{self.mount.racking_model}_{self.module_type}"
+        if param_set in temperature.TEMPERATURE_MODEL_PARAMETERS["sapm"]:
+            return temperature._temperature_model_params("sapm", param_set)
+        elif "freestanding" in param_set:
+            return temperature._temperature_model_params("pvsyst", "freestanding")
+        elif "insulated" in param_set:  # after SAPM to avoid confusing keys
+            return temperature._temperature_model_params("pvsyst", "insulated")
         else:
             return {}
 
@@ -1028,31 +1178,33 @@ class Array:
 
         """
 
-        _cell_type_dict = {'Multi-c-Si': 'multisi',
-                           'Mono-c-Si': 'monosi',
-                           'Thin Film': 'cigs',
-                           'a-Si/nc': 'asi',
-                           'CIS': 'cigs',
-                           'CIGS': 'cigs',
-                           '1-a-Si': 'asi',
-                           'CdTe': 'cdte',
-                           'a-Si': 'asi',
-                           '2-a-Si': None,
-                           '3-a-Si': None,
-                           'HIT-Si': 'monosi',
-                           'mc-Si': 'multisi',
-                           'c-Si': 'multisi',
-                           'Si-Film': 'asi',
-                           'EFG mc-Si': 'multisi',
-                           'GaAs': None,
-                           'a-Si / mono-Si': 'monosi'}
+        _cell_type_dict = {
+            "Multi-c-Si": "multisi",
+            "Mono-c-Si": "monosi",
+            "Thin Film": "cigs",
+            "a-Si/nc": "asi",
+            "CIS": "cigs",
+            "CIGS": "cigs",
+            "1-a-Si": "asi",
+            "CdTe": "cdte",
+            "a-Si": "asi",
+            "2-a-Si": None,
+            "3-a-Si": None,
+            "HIT-Si": "monosi",
+            "mc-Si": "multisi",
+            "c-Si": "multisi",
+            "Si-Film": "asi",
+            "EFG mc-Si": "multisi",
+            "GaAs": None,
+            "a-Si / mono-Si": "monosi",
+        }
 
-        if 'Technology' in self.module_parameters.keys():
+        if "Technology" in self.module_parameters.keys():
             # CEC module parameter set
-            cell_type = _cell_type_dict[self.module_parameters['Technology']]
-        elif 'Material' in self.module_parameters.keys():
+            cell_type = _cell_type_dict[self.module_parameters["Technology"]]
+        elif "Material" in self.module_parameters.keys():
             # Sandia module parameter set
-            cell_type = _cell_type_dict[self.module_parameters['Material']]
+            cell_type = _cell_type_dict[self.module_parameters["Material"]]
         else:
             cell_type = None
 
@@ -1075,13 +1227,26 @@ class Array:
             Then angle of incidence.
         """
         orientation = self.mount.get_orientation(solar_zenith, solar_azimuth)
-        return irradiance.aoi(orientation['surface_tilt'],
-                              orientation['surface_azimuth'],
-                              solar_zenith, solar_azimuth)
+        return irradiance.aoi(
+            orientation["surface_tilt"],
+            orientation["surface_azimuth"],
+            solar_zenith,
+            solar_azimuth,
+        )
 
-    def get_irradiance(self, solar_zenith, solar_azimuth, dni, ghi, dhi,
-                       dni_extra=None, airmass=None, albedo=None,
-                       model='haydavies', **kwargs):
+    def get_irradiance(
+        self,
+        solar_zenith,
+        solar_azimuth,
+        dni,
+        ghi,
+        dhi,
+        dni_extra=None,
+        airmass=None,
+        albedo=None,
+        model="haydavies",
+        **kwargs,
+    ):
         """
         Get plane of array irradiance components.
 
@@ -1136,11 +1301,11 @@ class Array:
 
         # dni_extra is not needed for all models, but this is easier
         if dni_extra is None:
-            if (hasattr(solar_zenith, 'index') and
-                    isinstance(solar_zenith.index, pd.DatetimeIndex)):
+            if hasattr(solar_zenith, "index") and isinstance(
+                solar_zenith.index, pd.DatetimeIndex
+            ):
                 # calculate extraterrestrial irradiance
-                dni_extra = irradiance.get_extra_radiation(
-                    solar_zenith.index)
+                dni_extra = irradiance.get_extra_radiation(solar_zenith.index)
             else:
                 # use the solar constant
                 dni_extra = 1367.0
@@ -1149,17 +1314,22 @@ class Array:
             airmass = atmosphere.get_relative_airmass(solar_zenith)
 
         orientation = self.mount.get_orientation(solar_zenith, solar_azimuth)
-        return irradiance.get_total_irradiance(orientation['surface_tilt'],
-                                               orientation['surface_azimuth'],
-                                               solar_zenith, solar_azimuth,
-                                               dni, ghi, dhi,
-                                               dni_extra=dni_extra,
-                                               airmass=airmass,
-                                               albedo=albedo,
-                                               model=model,
-                                               **kwargs)
+        return irradiance.get_total_irradiance(
+            orientation["surface_tilt"],
+            orientation["surface_azimuth"],
+            solar_zenith,
+            solar_azimuth,
+            dni,
+            ghi,
+            dhi,
+            dni_extra=dni_extra,
+            airmass=airmass,
+            albedo=albedo,
+            model=model,
+            **kwargs,
+        )
 
-    def get_iam(self, aoi, iam_model='physical'):
+    def get_iam(self, aoi, iam_model="physical"):
         """
         Determine the incidence angle modifier using the method specified by
         ``iam_model``.
@@ -1188,21 +1358,22 @@ class Array:
             if `iam_model` is not a valid model name.
         """
         model = iam_model.lower()
-        if model in ['ashrae', 'physical', 'martin_ruiz', 'interp']:
+        if model in ["ashrae", "physical", "martin_ruiz", "interp"]:
             func = getattr(iam, model)  # get function at pvlib.iam
             # get all parameters from function signature to retrieve them from
             # module_parameters if present
             params = set(inspect.signature(func).parameters.keys())
-            params.discard('aoi')  # exclude aoi so it can't be repeated
+            params.discard("aoi")  # exclude aoi so it can't be repeated
             kwargs = _build_kwargs(params, self.module_parameters)
             return func(aoi, **kwargs)
-        elif model == 'sapm':
+        elif model == "sapm":
             return iam.sapm(aoi, self.module_parameters)
         else:
-            raise ValueError(model + ' is not a valid IAM model')
+            raise ValueError(model + " is not a valid IAM model")
 
-    def get_cell_temperature(self, poa_global, temp_air, wind_speed, model,
-                             effective_irradiance=None):
+    def get_cell_temperature(
+        self, poa_global, temp_air, wind_speed, model, effective_irradiance=None
+    ):
         """
         Determine cell temperature using the method specified by ``model``.
 
@@ -1243,49 +1414,57 @@ class Array:
         """
         # convenience wrapper to avoid passing args 2 and 3 every call
         _build_tcell_args = functools.partial(
-            _build_args, input_dict=self.temperature_model_parameters,
-            dict_name='temperature_model_parameters')
+            _build_args,
+            input_dict=self.temperature_model_parameters,
+            dict_name="temperature_model_parameters",
+        )
 
-        if model == 'sapm':
+        if model == "sapm":
             func = temperature.sapm_cell
-            required = _build_tcell_args(['a', 'b', 'deltaT'])
-            optional = _build_kwargs(['irrad_ref'],
-                                     self.temperature_model_parameters)
-        elif model == 'pvsyst':
+            required = _build_tcell_args(["a", "b", "deltaT"])
+            optional = _build_kwargs(["irrad_ref"], self.temperature_model_parameters)
+        elif model == "pvsyst":
             func = temperature.pvsyst_cell
             required = tuple()
             optional = {
-                **_build_kwargs(['module_efficiency', 'alpha_absorption'],
-                                self.module_parameters),
-                **_build_kwargs(['u_c', 'u_v'],
-                                self.temperature_model_parameters)
+                **_build_kwargs(
+                    ["module_efficiency", "alpha_absorption"], self.module_parameters
+                ),
+                **_build_kwargs(["u_c", "u_v"], self.temperature_model_parameters),
             }
-        elif model == 'faiman':
+        elif model == "faiman":
             func = temperature.faiman
             required = tuple()
-            optional = _build_kwargs(['u0', 'u1'],
-                                     self.temperature_model_parameters)
-        elif model == 'fuentes':
+            optional = _build_kwargs(["u0", "u1"], self.temperature_model_parameters)
+        elif model == "fuentes":
             func = temperature.fuentes
-            required = _build_tcell_args(['noct_installed'])
-            optional = _build_kwargs([
-                'wind_height', 'emissivity', 'absorption',
-                'surface_tilt', 'module_width', 'module_length'],
-                self.temperature_model_parameters)
+            required = _build_tcell_args(["noct_installed"])
+            optional = _build_kwargs(
+                [
+                    "wind_height",
+                    "emissivity",
+                    "absorption",
+                    "surface_tilt",
+                    "module_width",
+                    "module_length",
+                ],
+                self.temperature_model_parameters,
+            )
             if self.mount.module_height is not None:
-                optional['module_height'] = self.mount.module_height
-        elif model == 'noct_sam':
-            func = functools.partial(temperature.noct_sam,
-                                     effective_irradiance=effective_irradiance)
-            required = _build_tcell_args(['noct', 'module_efficiency'])
-            optional = _build_kwargs(['transmittance_absorptance',
-                                      'array_height', 'mount_standoff'],
-                                     self.temperature_model_parameters)
+                optional["module_height"] = self.mount.module_height
+        elif model == "noct_sam":
+            func = functools.partial(
+                temperature.noct_sam, effective_irradiance=effective_irradiance
+            )
+            required = _build_tcell_args(["noct", "module_efficiency"])
+            optional = _build_kwargs(
+                ["transmittance_absorptance", "array_height", "mount_standoff"],
+                self.temperature_model_parameters,
+            )
         else:
-            raise ValueError(f'{model} is not a valid cell temperature model')
+            raise ValueError(f"{model} is not a valid cell temperature model")
 
-        temperature_cell = func(poa_global, temp_air, wind_speed,
-                                *required, **optional)
+        temperature_cell = func(poa_global, temp_air, wind_speed, *required, **optional)
         return temperature_cell
 
     def dc_ohms_from_percent(self):
@@ -1320,37 +1499,38 @@ class Array:
         """
 
         # get relevent Vmp and Imp parameters from CEC parameters
-        if all(elem in self.module_parameters
-               for elem in ['V_mp_ref', 'I_mp_ref']):
-            vmp_ref = self.module_parameters['V_mp_ref']
-            imp_ref = self.module_parameters['I_mp_ref']
+        if all(elem in self.module_parameters for elem in ["V_mp_ref", "I_mp_ref"]):
+            vmp_ref = self.module_parameters["V_mp_ref"]
+            imp_ref = self.module_parameters["I_mp_ref"]
 
         # get relevant Vmp and Imp parameters from SAPM parameters
-        elif all(elem in self.module_parameters for elem in ['Vmpo', 'Impo']):
-            vmp_ref = self.module_parameters['Vmpo']
-            imp_ref = self.module_parameters['Impo']
+        elif all(elem in self.module_parameters for elem in ["Vmpo", "Impo"]):
+            vmp_ref = self.module_parameters["Vmpo"]
+            imp_ref = self.module_parameters["Impo"]
 
         # get relevant Vmp and Imp parameters if they are PVsyst-like
-        elif all(elem in self.module_parameters for elem in ['Vmpp', 'Impp']):
-            vmp_ref = self.module_parameters['Vmpp']
-            imp_ref = self.module_parameters['Impp']
+        elif all(elem in self.module_parameters for elem in ["Vmpp", "Impp"]):
+            vmp_ref = self.module_parameters["Vmpp"]
+            imp_ref = self.module_parameters["Impp"]
 
         # raise error if relevant Vmp and Imp parameters are not found
         else:
-            raise ValueError('Parameters for Vmp and Imp could not be found '
-                             'in the array module parameters. Module '
-                             'parameters must include one set of '
-                             '{"V_mp_ref", "I_mp_Ref"}, '
-                             '{"Vmpo", "Impo"}, or '
-                             '{"Vmpp", "Impp"}.'
-                             )
+            raise ValueError(
+                "Parameters for Vmp and Imp could not be found "
+                "in the array module parameters. Module "
+                "parameters must include one set of "
+                '{"V_mp_ref", "I_mp_Ref"}, '
+                '{"Vmpo", "Impo"}, or '
+                '{"Vmpp", "Impp"}.'
+            )
 
         return dc_ohms_from_percent(
             vmp_ref,
             imp_ref,
-            self.array_losses_parameters['dc_ohmic_percent'],
+            self.array_losses_parameters["dc_ohmic_percent"],
             self.modules_per_string,
-            self.strings)
+            self.strings,
+        )
 
 
 @dataclass
@@ -1416,8 +1596,8 @@ class FixedMount(AbstractMount):
     def get_orientation(self, solar_zenith, solar_azimuth):
         # note -- docstring is automatically inherited from AbstractMount
         return {
-            'surface_tilt': self.surface_tilt,
-            'surface_azimuth': self.surface_azimuth,
+            "surface_tilt": self.surface_tilt,
+            "surface_azimuth": self.surface_azimuth,
         }
 
 
@@ -1489,11 +1669,12 @@ class SingleAxisTrackerMount(AbstractMount):
        The height above ground of the center of the module [m]. Used for
        the Fuentes cell temperature model.
     """
+
     axis_tilt: float = 0.0
     axis_azimuth: float = 0.0
     max_angle: Union[float, tuple] = 90.0
     backtrack: bool = True
-    gcr: float = 2.0/7.0
+    gcr: float = 2.0 / 7.0
     cross_axis_tilt: float = 0.0
     racking_model: Optional[str] = None
     module_height: Optional[float] = None
@@ -1501,20 +1682,35 @@ class SingleAxisTrackerMount(AbstractMount):
     def get_orientation(self, solar_zenith, solar_azimuth):
         # note -- docstring is automatically inherited from AbstractMount
         from pvlib import tracking  # avoid circular import issue
+
         tracking_data = tracking.singleaxis(
-            solar_zenith, solar_azimuth,
-            self.axis_tilt, self.axis_azimuth,
-            self.max_angle, self.backtrack,
-            self.gcr, self.cross_axis_tilt
+            solar_zenith,
+            solar_azimuth,
+            self.axis_tilt,
+            self.axis_azimuth,
+            self.max_angle,
+            self.backtrack,
+            self.gcr,
+            self.cross_axis_tilt,
         )
         return tracking_data
 
 
-def calcparams_desoto(effective_irradiance, temp_cell,
-                      alpha_sc, a_ref, I_L_ref, I_o_ref, R_sh_ref, R_s,
-                      EgRef=1.121, dEgdT=-0.0002677,
-                      irrad_ref=1000, temp_ref=25):
-    '''
+def calcparams_desoto(
+    effective_irradiance,
+    temp_cell,
+    alpha_sc,
+    a_ref,
+    I_L_ref,
+    I_o_ref,
+    R_sh_ref,
+    R_s,
+    EgRef=1.121,
+    dEgdT=-0.0002677,
+    irrad_ref=1000,
+    temp_ref=25,
+):
+    """
     Calculates five parameter values for the single diode equation at
     effective irradiance and cell temperature using the De Soto et al.
     model. The five values returned by ``calcparams_desoto`` can be used by
@@ -1676,16 +1872,16 @@ def calcparams_desoto(effective_irradiance, temp_cell,
          * M = unknown
 
          Source: [4]
-    '''
+    """
 
     # Boltzmann constant in eV/K, 8.617332478e-05
-    k = constants.value('Boltzmann constant in eV/K')
+    k = constants.value("Boltzmann constant in eV/K")
 
     # reference temperature
     Tref_K = temp_ref + 273.15
     Tcell_K = temp_cell + 273.15
 
-    E_g = EgRef * (1 + dEgdT*(Tcell_K - Tref_K))
+    E_g = EgRef * (1 + dEgdT * (Tcell_K - Tref_K))
 
     nNsVth = a_ref * (Tcell_K / Tref_K)
 
@@ -1693,10 +1889,12 @@ def calcparams_desoto(effective_irradiance, temp_cell,
     # used, in place of the product S*M in [1]. effective_irradiance is
     # equivalent to the product of S (irradiance reaching a module's cells) *
     # M (spectral adjustment factor) as described in [1].
-    IL = effective_irradiance / irrad_ref * \
-        (I_L_ref + alpha_sc * (Tcell_K - Tref_K))
-    I0 = (I_o_ref * ((Tcell_K / Tref_K) ** 3) *
-          (np.exp(EgRef / (k*(Tref_K)) - (E_g / (k*(Tcell_K))))))
+    IL = effective_irradiance / irrad_ref * (I_L_ref + alpha_sc * (Tcell_K - Tref_K))
+    I0 = (
+        I_o_ref
+        * ((Tcell_K / Tref_K) ** 3)
+        * (np.exp(EgRef / (k * (Tref_K)) - (E_g / (k * (Tcell_K)))))
+    )
     # Note that the equation for Rsh differs from [1]. In [1] Rsh is given as
     # Rsh = Rsh_ref * (S_ref / S) where S is broadband irradiance reaching
     # the module's cells. If desired this model behavior can be duplicated
@@ -1704,7 +1902,7 @@ def calcparams_desoto(effective_irradiance, temp_cell,
     # irradiance and not applying a spectral loss modifier, i.e.,
     # spectral_modifier = 1.0.
     # use errstate to silence divide by warning
-    with np.errstate(divide='ignore'):
+    with np.errstate(divide="ignore"):
         Rsh = R_sh_ref * (irrad_ref / effective_irradiance)
 
     Rs = R_s
@@ -1723,11 +1921,22 @@ def calcparams_desoto(effective_irradiance, temp_cell,
     return tuple(pd.Series(a, index=index).rename(None) for a in out)
 
 
-def calcparams_cec(effective_irradiance, temp_cell,
-                   alpha_sc, a_ref, I_L_ref, I_o_ref, R_sh_ref, R_s,
-                   Adjust, EgRef=1.121, dEgdT=-0.0002677,
-                   irrad_ref=1000, temp_ref=25):
-    '''
+def calcparams_cec(
+    effective_irradiance,
+    temp_cell,
+    alpha_sc,
+    a_ref,
+    I_L_ref,
+    I_o_ref,
+    R_sh_ref,
+    R_s,
+    Adjust,
+    EgRef=1.121,
+    dEgdT=-0.0002677,
+    irrad_ref=1000,
+    temp_ref=25,
+):
+    """
     Calculates five parameter values for the single diode equation at
     effective irradiance and cell temperature using the CEC
     model. The CEC model [1]_ differs from the De soto et al.
@@ -1828,26 +2037,43 @@ def calcparams_cec(effective_irradiance, temp_cell,
     singlediode
     retrieve_sam
 
-    '''
+    """
 
     # pass adjusted temperature coefficient to desoto
-    return calcparams_desoto(effective_irradiance, temp_cell,
-                             alpha_sc*(1.0 - Adjust/100),
-                             a_ref, I_L_ref, I_o_ref,
-                             R_sh_ref, R_s,
-                             EgRef=EgRef, dEgdT=dEgdT,
-                             irrad_ref=irrad_ref, temp_ref=temp_ref)
+    return calcparams_desoto(
+        effective_irradiance,
+        temp_cell,
+        alpha_sc * (1.0 - Adjust / 100),
+        a_ref,
+        I_L_ref,
+        I_o_ref,
+        R_sh_ref,
+        R_s,
+        EgRef=EgRef,
+        dEgdT=dEgdT,
+        irrad_ref=irrad_ref,
+        temp_ref=temp_ref,
+    )
 
 
-def calcparams_pvsyst(effective_irradiance, temp_cell,
-                      alpha_sc, gamma_ref, mu_gamma,
-                      I_L_ref, I_o_ref,
-                      R_sh_ref, R_sh_0, R_s,
-                      cells_in_series,
-                      R_sh_exp=5.5,
-                      EgRef=1.121,
-                      irrad_ref=1000, temp_ref=25):
-    '''
+def calcparams_pvsyst(
+    effective_irradiance,
+    temp_cell,
+    alpha_sc,
+    gamma_ref,
+    mu_gamma,
+    I_L_ref,
+    I_o_ref,
+    R_sh_ref,
+    R_sh_0,
+    R_s,
+    cells_in_series,
+    R_sh_exp=5.5,
+    EgRef=1.121,
+    irrad_ref=1000,
+    temp_ref=25,
+):
+    """
     Calculates five parameter values for the single diode equation at
     effective irradiance and cell temperature using the PVsyst v6
     model.  The PVsyst v6 model is described in [1]_, [2]_, [3]_.
@@ -1945,7 +2171,7 @@ def calcparams_pvsyst(effective_irradiance, temp_cell,
     calcparams_desoto
     singlediode
 
-    '''
+    """
 
     # Boltzmann constant in J/K
     k = constants.k
@@ -1960,18 +2186,20 @@ def calcparams_pvsyst(effective_irradiance, temp_cell,
     gamma = gamma_ref + mu_gamma * (Tcell_K - Tref_K)
     nNsVth = gamma * k / q * cells_in_series * Tcell_K
 
-    IL = effective_irradiance / irrad_ref * \
-        (I_L_ref + alpha_sc * (Tcell_K - Tref_K))
+    IL = effective_irradiance / irrad_ref * (I_L_ref + alpha_sc * (Tcell_K - Tref_K))
 
-    I0 = I_o_ref * ((Tcell_K / Tref_K) ** 3) * \
-        (np.exp((q * EgRef) / (k * gamma) * (1 / Tref_K - 1 / Tcell_K)))
+    I0 = (
+        I_o_ref
+        * ((Tcell_K / Tref_K) ** 3)
+        * (np.exp((q * EgRef) / (k * gamma) * (1 / Tref_K - 1 / Tcell_K)))
+    )
 
-    Rsh_tmp = \
-        (R_sh_ref - R_sh_0 * np.exp(-R_sh_exp)) / (1.0 - np.exp(-R_sh_exp))
+    Rsh_tmp = (R_sh_ref - R_sh_0 * np.exp(-R_sh_exp)) / (1.0 - np.exp(-R_sh_exp))
     Rsh_base = np.maximum(0.0, Rsh_tmp)
 
-    Rsh = Rsh_base + (R_sh_0 - Rsh_base) * \
-        np.exp(-R_sh_exp * effective_irradiance / irrad_ref)
+    Rsh = Rsh_base + (R_sh_0 - Rsh_base) * np.exp(
+        -R_sh_exp * effective_irradiance / irrad_ref
+    )
 
     Rs = R_s
 
@@ -2112,16 +2340,16 @@ def retrieve_sam(name=None, path=None):
 
 
 def _normalize_sam_product_names(names):
-    '''
+    """
     Replace special characters within the product names to make them more
     suitable for use as Dataframe column names.
-    '''
+    """
     # Contributed by Anton Driesse (@adriesse), PV Performance Labs. July, 2019
 
     import warnings
 
     BAD_CHARS = ' -.()[]:+/",'
-    GOOD_CHARS = '____________'
+    GOOD_CHARS = "____________"
 
     mapping = str.maketrans(BAD_CHARS, GOOD_CHARS)
     names = pd.Series(data=names)
@@ -2129,37 +2357,36 @@ def _normalize_sam_product_names(names):
 
     n_duplicates = names.duplicated().sum()
     if n_duplicates > 0:
-        warnings.warn('Original names contain %d duplicate(s).' % n_duplicates)
+        warnings.warn("Original names contain %d duplicate(s)." % n_duplicates)
 
     n_duplicates = norm_names.duplicated().sum()
     if n_duplicates > 0:
-        warnings.warn(
-            'Normalized names contain %d duplicate(s).' % n_duplicates)
+        warnings.warn("Normalized names contain %d duplicate(s)." % n_duplicates)
 
     return norm_names.values
 
 
 def _parse_raw_sam_df(csvdata):
-
     df = pd.read_csv(csvdata, index_col=0, skiprows=[1, 2])
 
-    df.columns = df.columns.str.replace(' ', '_')
+    df.columns = df.columns.str.replace(" ", "_")
     df.index = _normalize_sam_product_names(df.index)
     df = df.transpose()
 
-    if 'ADRCoefficients' in df.index:
-        ad_ce = 'ADRCoefficients'
+    if "ADRCoefficients" in df.index:
+        ad_ce = "ADRCoefficients"
         # for each inverter, parses a string of coefficients like
         # ' 1.33, 2.11, 3.12' into a list containing floats:
         # [1.33, 2.11, 3.12]
-        df.loc[ad_ce] = df.loc[ad_ce].map(lambda x: list(
-            map(float, x.strip(' []').split())))
+        df.loc[ad_ce] = df.loc[ad_ce].map(
+            lambda x: list(map(float, x.strip(" []").split()))
+        )
 
     return df
 
 
 def sapm(effective_irradiance, temp_cell, module):
-    '''
+    """
     The Sandia PV Array Performance Model (SAPM) generates 5 points on a
     PV module's I-V curve (Voc, Isc, Ix, Ixx, Vmp/Imp) according to
     SAND2004-3535. Assumes a reference cell temperature of 25 C.
@@ -2245,7 +2472,7 @@ def sapm(effective_irradiance, temp_cell, module):
     retrieve_sam
     pvlib.temperature.sapm_cell
     pvlib.temperature.sapm_module
-    '''
+    """
 
     # TODO: someday, change temp_ref and irrad_ref to reference_temperature and
     # reference_irradiance and expose
@@ -2256,69 +2483,81 @@ def sapm(effective_irradiance, temp_cell, module):
     kb = constants.k  # Boltzmann's constant in units of J/K
 
     # avoid problem with integer input
-    Ee = np.array(effective_irradiance, dtype='float64') / irrad_ref
+    Ee = np.array(effective_irradiance, dtype="float64") / irrad_ref
 
     # set up masking for 0, positive, and nan inputs
-    Ee_gt_0 = np.full_like(Ee, False, dtype='bool')
-    Ee_eq_0 = np.full_like(Ee, False, dtype='bool')
+    Ee_gt_0 = np.full_like(Ee, False, dtype="bool")
+    Ee_eq_0 = np.full_like(Ee, False, dtype="bool")
     notnan = ~np.isnan(Ee)
     np.greater(Ee, 0, where=notnan, out=Ee_gt_0)
     np.equal(Ee, 0, where=notnan, out=Ee_eq_0)
 
-    Bvmpo = module['Bvmpo'] + module['Mbvmp']*(1 - Ee)
-    Bvoco = module['Bvoco'] + module['Mbvoc']*(1 - Ee)
-    delta = module['N'] * kb * (temp_cell + 273.15) / q
+    Bvmpo = module["Bvmpo"] + module["Mbvmp"] * (1 - Ee)
+    Bvoco = module["Bvoco"] + module["Mbvoc"] * (1 - Ee)
+    delta = module["N"] * kb * (temp_cell + 273.15) / q
 
     # avoid repeated computation
     logEe = np.full_like(Ee, np.nan)
     np.log(Ee, where=Ee_gt_0, out=logEe)
     logEe = np.where(Ee_eq_0, -np.inf, logEe)
     # avoid repeated __getitem__
-    cells_in_series = module['Cells_in_Series']
+    cells_in_series = module["Cells_in_Series"]
 
     out = OrderedDict()
 
-    out['i_sc'] = (
-        module['Isco'] * Ee * (1 + module['Aisc']*(temp_cell - temp_ref)))
+    out["i_sc"] = module["Isco"] * Ee * (1 + module["Aisc"] * (temp_cell - temp_ref))
 
-    out['i_mp'] = (
-        module['Impo'] * (module['C0']*Ee + module['C1']*(Ee**2)) *
-        (1 + module['Aimp']*(temp_cell - temp_ref)))
+    out["i_mp"] = (
+        module["Impo"]
+        * (module["C0"] * Ee + module["C1"] * (Ee**2))
+        * (1 + module["Aimp"] * (temp_cell - temp_ref))
+    )
 
-    out['v_oc'] = np.maximum(0, (
-        module['Voco'] + cells_in_series * delta * logEe +
-        Bvoco*(temp_cell - temp_ref)))
+    out["v_oc"] = np.maximum(
+        0,
+        (
+            module["Voco"]
+            + cells_in_series * delta * logEe
+            + Bvoco * (temp_cell - temp_ref)
+        ),
+    )
 
-    out['v_mp'] = np.maximum(0, (
-        module['Vmpo'] +
-        module['C2'] * cells_in_series * delta * logEe +
-        module['C3'] * cells_in_series * ((delta * logEe) ** 2) +
-        Bvmpo*(temp_cell - temp_ref)))
+    out["v_mp"] = np.maximum(
+        0,
+        (
+            module["Vmpo"]
+            + module["C2"] * cells_in_series * delta * logEe
+            + module["C3"] * cells_in_series * ((delta * logEe) ** 2)
+            + Bvmpo * (temp_cell - temp_ref)
+        ),
+    )
 
-    out['p_mp'] = out['i_mp'] * out['v_mp']
+    out["p_mp"] = out["i_mp"] * out["v_mp"]
 
-    out['i_x'] = (
-        module['IXO'] * (module['C4']*Ee + module['C5']*(Ee**2)) *
-        (1 + module['Aisc']*(temp_cell - temp_ref)))
+    out["i_x"] = (
+        module["IXO"]
+        * (module["C4"] * Ee + module["C5"] * (Ee**2))
+        * (1 + module["Aisc"] * (temp_cell - temp_ref))
+    )
 
-    out['i_xx'] = (
-        module['IXXO'] * (module['C6']*Ee + module['C7']*(Ee**2)) *
-        (1 + module['Aimp']*(temp_cell - temp_ref)))
+    out["i_xx"] = (
+        module["IXXO"]
+        * (module["C6"] * Ee + module["C7"] * (Ee**2))
+        * (1 + module["Aimp"] * (temp_cell - temp_ref))
+    )
 
-    if isinstance(out['i_sc'], pd.Series):
+    if isinstance(out["i_sc"], pd.Series):
         out = pd.DataFrame(out)
 
     return out
 
 
 sapm_spectral_loss = deprecated(
-    since='0.10.0',
-    alternative='pvlib.spectrum.spectral_factor_sapm'
+    since="0.10.0", alternative="pvlib.spectrum.spectral_factor_sapm"
 )(spectrum.spectral_factor_sapm)
 
 
-def sapm_effective_irradiance(poa_direct, poa_diffuse, airmass_absolute, aoi,
-                              module):
+def sapm_effective_irradiance(poa_direct, poa_diffuse, airmass_absolute, aoi, module):
     r"""
     Calculates the SAPM effective irradiance using the SAPM spectral
     loss and SAPM angle of incidence loss functions.
@@ -2382,13 +2621,19 @@ def sapm_effective_irradiance(poa_direct, poa_diffuse, airmass_absolute, aoi,
     F1 = spectrum.spectral_factor_sapm(airmass_absolute, module)
     F2 = iam.sapm(aoi, module)
 
-    Ee = F1 * (poa_direct * F2 + module['FD'] * poa_diffuse)
+    Ee = F1 * (poa_direct * F2 + module["FD"] * poa_diffuse)
 
     return Ee
 
 
-def singlediode(photocurrent, saturation_current, resistance_series,
-                resistance_shunt, nNsVth, method='lambertw'):
+def singlediode(
+    photocurrent,
+    saturation_current,
+    resistance_series,
+    resistance_shunt,
+    nNsVth,
+    method="lambertw",
+):
     r"""
     Solve the single diode equation to obtain a photovoltaic IV curve.
 
@@ -2497,35 +2742,32 @@ def singlediode(photocurrent, saturation_current, resistance_series,
        photovoltaic cell interconnection circuits" JW Bishop, Solar Cell (1988)
        https://doi.org/10.1016/0379-6787(88)90059-2
     """
-    args = (photocurrent, saturation_current, resistance_series,
-            resistance_shunt, nNsVth)  # collect args
+    args = (
+        photocurrent,
+        saturation_current,
+        resistance_series,
+        resistance_shunt,
+        nNsVth,
+    )  # collect args
     # Calculate points on the IV curve using the LambertW solution to the
     # single diode equation
-    if method.lower() == 'lambertw':
+    if method.lower() == "lambertw":
         out = _singlediode._lambertw(*args)
         points = out[:7]
     else:
         # Calculate points on the IV curve using either 'newton' or 'brentq'
         # methods. Voltages are determined by first solving the single diode
         # equation for the diode voltage V_d then backing out voltage
-        v_oc = _singlediode.bishop88_v_from_i(
-            0.0, *args, method=method.lower()
-        )
-        i_mp, v_mp, p_mp = _singlediode.bishop88_mpp(
-            *args, method=method.lower()
-        )
-        i_sc = _singlediode.bishop88_i_from_v(
-            0.0, *args, method=method.lower()
-        )
-        i_x = _singlediode.bishop88_i_from_v(
-            v_oc / 2.0, *args, method=method.lower()
-        )
+        v_oc = _singlediode.bishop88_v_from_i(0.0, *args, method=method.lower())
+        i_mp, v_mp, p_mp = _singlediode.bishop88_mpp(*args, method=method.lower())
+        i_sc = _singlediode.bishop88_i_from_v(0.0, *args, method=method.lower())
+        i_x = _singlediode.bishop88_i_from_v(v_oc / 2.0, *args, method=method.lower())
         i_xx = _singlediode.bishop88_i_from_v(
             (v_oc + v_mp) / 2.0, *args, method=method.lower()
         )
         points = i_sc, v_oc, i_mp, v_mp, p_mp, i_x, i_xx
 
-    columns = ('i_sc', 'v_oc', 'i_mp', 'v_mp', 'p_mp', 'i_x', 'i_xx')
+    columns = ("i_sc", "v_oc", "i_mp", "v_mp", "p_mp", "i_x", "i_xx")
 
     if all(map(np.isscalar, args)):
         out = {c: p for c, p in zip(columns, points)}
@@ -2542,9 +2784,16 @@ def singlediode(photocurrent, saturation_current, resistance_series,
     return out
 
 
-def max_power_point(photocurrent, saturation_current, resistance_series,
-                    resistance_shunt, nNsVth, d2mutau=0, NsVbi=np.inf,
-                    method='brentq'):
+def max_power_point(
+    photocurrent,
+    saturation_current,
+    resistance_series,
+    resistance_shunt,
+    nNsVth,
+    d2mutau=0,
+    NsVbi=np.inf,
+    method="brentq",
+):
     """
     Given the single diode equation coefficients, calculates the maximum power
     point (MPP).
@@ -2589,23 +2838,36 @@ def max_power_point(photocurrent, saturation_current, resistance_series,
     guaranteed to converge.
     """
     i_mp, v_mp, p_mp = _singlediode.bishop88_mpp(
-        photocurrent, saturation_current, resistance_series,
-        resistance_shunt, nNsVth, d2mutau, NsVbi, method=method.lower()
+        photocurrent,
+        saturation_current,
+        resistance_series,
+        resistance_shunt,
+        nNsVth,
+        d2mutau,
+        NsVbi,
+        method=method.lower(),
     )
     if isinstance(photocurrent, pd.Series):
-        ivp = {'i_mp': i_mp, 'v_mp': v_mp, 'p_mp': p_mp}
+        ivp = {"i_mp": i_mp, "v_mp": v_mp, "p_mp": p_mp}
         out = pd.DataFrame(ivp, index=photocurrent.index)
     else:
         out = OrderedDict()
-        out['i_mp'] = i_mp
-        out['v_mp'] = v_mp
-        out['p_mp'] = p_mp
+        out["i_mp"] = i_mp
+        out["v_mp"] = v_mp
+        out["p_mp"] = p_mp
     return out
 
 
-def v_from_i(current, photocurrent, saturation_current, resistance_series,
-             resistance_shunt, nNsVth, method='lambertw'):
-    '''
+def v_from_i(
+    current,
+    photocurrent,
+    saturation_current,
+    resistance_series,
+    resistance_shunt,
+    nNsVth,
+    method="lambertw",
+):
+    """
     Device voltage at the given device current for the single diode model.
 
     Uses the single diode model (SDM) as described in, e.g.,
@@ -2669,10 +2931,16 @@ def v_from_i(current, photocurrent, saturation_current, resistance_series,
     .. [1] A. Jain, A. Kapoor, "Exact analytical solutions of the
        parameters of real solar cells using Lambert W-function", Solar
        Energy Materials and Solar Cells, 81 (2004) 269-277.
-    '''
-    args = (current, photocurrent, saturation_current,
-            resistance_series, resistance_shunt, nNsVth)
-    if method.lower() == 'lambertw':
+    """
+    args = (
+        current,
+        photocurrent,
+        saturation_current,
+        resistance_series,
+        resistance_shunt,
+        nNsVth,
+    )
+    if method.lower() == "lambertw":
         return _singlediode._lambertw_v_from_i(*args)
     else:
         # Calculate points on the IV curve using either 'newton' or 'brentq'
@@ -2685,9 +2953,16 @@ def v_from_i(current, photocurrent, saturation_current, resistance_series,
         return np.broadcast_to(V, shape)
 
 
-def i_from_v(voltage, photocurrent, saturation_current, resistance_series,
-             resistance_shunt, nNsVth, method='lambertw'):
-    '''
+def i_from_v(
+    voltage,
+    photocurrent,
+    saturation_current,
+    resistance_series,
+    resistance_shunt,
+    nNsVth,
+    method="lambertw",
+):
+    """
     Device current at the given device voltage for the single diode model.
 
     Uses the single diode model (SDM) as described in, e.g.,
@@ -2751,10 +3026,16 @@ def i_from_v(voltage, photocurrent, saturation_current, resistance_series,
     .. [1] A. Jain, A. Kapoor, "Exact analytical solutions of the
        parameters of real solar cells using Lambert W-function", Solar
        Energy Materials and Solar Cells, 81 (2004) 269-277.
-    '''
-    args = (voltage, photocurrent, saturation_current,
-            resistance_series, resistance_shunt, nNsVth)
-    if method.lower() == 'lambertw':
+    """
+    args = (
+        voltage,
+        photocurrent,
+        saturation_current,
+        resistance_series,
+        resistance_shunt,
+        nNsVth,
+    )
+    if method.lower() == "lambertw":
         return _singlediode._lambertw_i_from_v(*args)
     else:
         # Calculate points on the IV curve using either 'newton' or 'brentq'
@@ -2791,9 +3072,9 @@ def scale_voltage_current_power(data, voltage=1, current=1):
 
     # as written, only works with a DataFrame
     # could make it work with a dict, but it would be more verbose
-    voltage_keys = ['v_mp', 'v_oc']
-    current_keys = ['i_mp', 'i_x', 'i_xx', 'i_sc']
-    power_keys = ['p_mp']
+    voltage_keys = ["v_mp", "v_oc"]
+    current_keys = ["i_mp", "i_x", "i_xx", "i_sc"]
+    power_keys = ["p_mp"]
     voltage_df = data.filter(voltage_keys, axis=1) * voltage
     current_df = data.filter(current_keys, axis=1) * current
     power_df = data.filter(power_keys, axis=1) * voltage * current
@@ -2802,7 +3083,7 @@ def scale_voltage_current_power(data, voltage=1, current=1):
     return df_sorted
 
 
-def pvwatts_dc(g_poa_effective, temp_cell, pdc0, gamma_pdc, temp_ref=25.):
+def pvwatts_dc(g_poa_effective, temp_cell, pdc0, gamma_pdc, temp_ref=25.0):
     r"""
     Implements NREL's PVWatts DC power model. The PVWatts DC model [1]_ is:
 
@@ -2846,15 +3127,23 @@ def pvwatts_dc(g_poa_effective, temp_cell, pdc0, gamma_pdc, temp_ref=25.):
            (2014).
     """  # noqa: E501
 
-    pdc = (g_poa_effective * 0.001 * pdc0 *
-           (1 + gamma_pdc * (temp_cell - temp_ref)))
+    pdc = g_poa_effective * 0.001 * pdc0 * (1 + gamma_pdc * (temp_cell - temp_ref))
 
     return pdc
 
 
-def pvwatts_losses(soiling=2, shading=3, snow=0, mismatch=2, wiring=2,
-                   connections=0.5, lid=1.5, nameplate_rating=1, age=0,
-                   availability=3):
+def pvwatts_losses(
+    soiling=2,
+    shading=3,
+    snow=0,
+    mismatch=2,
+    wiring=2,
+    connections=0.5,
+    lid=1.5,
+    nameplate_rating=1,
+    age=0,
+    availability=3,
+):
     r"""
     Implements NREL's PVWatts system loss model.
     The PVWatts loss model [1]_ is:
@@ -2892,23 +3181,33 @@ def pvwatts_losses(soiling=2, shading=3, snow=0, mismatch=2, wiring=2,
            (2014).
     """
 
-    params = [soiling, shading, snow, mismatch, wiring, connections, lid,
-              nameplate_rating, age, availability]
+    params = [
+        soiling,
+        shading,
+        snow,
+        mismatch,
+        wiring,
+        connections,
+        lid,
+        nameplate_rating,
+        age,
+        availability,
+    ]
 
     # manually looping over params allows for numpy/pandas to handle any
     # array-like broadcasting that might be necessary.
     perf = 1
     for param in params:
-        perf *= 1 - param/100
+        perf *= 1 - param / 100
 
-    losses = (1 - perf) * 100.
+    losses = (1 - perf) * 100.0
 
     return losses
 
 
-def dc_ohms_from_percent(vmp_ref, imp_ref, dc_ohmic_percent,
-                         modules_per_string=1,
-                         strings=1):
+def dc_ohms_from_percent(
+    vmp_ref, imp_ref, dc_ohmic_percent, modules_per_string=1, strings=1
+):
     r"""
     Calculate the equivalent resistance of the conductors from the percent
     ohmic loss of an array at reference conditions.
@@ -2998,7 +3297,7 @@ def dc_ohmic_losses(resistance, current):
     return resistance * current * current
 
 
-def combine_loss_factors(index, *losses, fill_method='ffill'):
+def combine_loss_factors(index, *losses, fill_method="ffill"):
     r"""
     Combines Series loss fractions while setting a common index.
 
@@ -3035,6 +3334,6 @@ def combine_loss_factors(index, *losses, fill_method='ffill'):
 
     for loss in losses:
         loss = loss.reindex(index, method=fill_method)
-        combined_factor *= (1 - loss)
+        combined_factor *= 1 - loss
 
     return 1 - combined_factor

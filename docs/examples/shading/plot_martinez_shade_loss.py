@@ -166,8 +166,7 @@ blocks_per_module = {
 
 # Calculate the number of shaded blocks during the day
 shaded_blocks_per_module = {
-    k: np.ceil(blocks_N * shaded_fraction)
-    for k, blocks_N in blocks_per_module.items()
+    k: np.ceil(blocks_N * shaded_fraction) for k, blocks_N in blocks_per_module.items()
 }
 
 # %%
@@ -176,9 +175,7 @@ shaded_blocks_per_module = {
 # To calculate the power output losses due to shading, we need the plane of
 # array irradiance. For this example, we will use synthetic data:
 
-clearsky = locus.get_clearsky(
-    times, solar_position=solar_pos, model="ineichen"
-)
+clearsky = locus.get_clearsky(times, solar_position=solar_pos, model="ineichen")
 dni_extra = pvlib.irradiance.get_extra_radiation(times)
 airmass = pvlib.atmosphere.get_relative_airmass(solar_apparent_zenith)
 sky_diffuse = pvlib.irradiance.perez_driesse(

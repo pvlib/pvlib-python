@@ -43,13 +43,13 @@ tau500 = 0.1
 ozone = 0.31  # atm-cm
 albedo = 0.2
 
-times = pd.date_range('2023-01-01 08:00', freq='h', periods=9,
-                      tz='America/Denver')
+times = pd.date_range("2023-01-01 08:00", freq="h", periods=9, tz="America/Denver")
 solpos = solarposition.get_solarposition(times, lat, lon)
 aoi = irradiance.aoi(tilt, azimuth, solpos.apparent_zenith, solpos.azimuth)
 
-relative_airmass = atmosphere.get_relative_airmass(solpos.apparent_zenith,
-                                                   model='kastenyoung1989')
+relative_airmass = atmosphere.get_relative_airmass(
+    solpos.apparent_zenith, model="kastenyoung1989"
+)
 
 # %%
 # Spectral simulation
@@ -80,16 +80,13 @@ spectra_components = spectrum.spectrl2(
 # hours on the first day of 2023.
 
 plt.figure()
-plt.plot(spectra_components['wavelength'], spectra_components['poa_global'])
+plt.plot(spectra_components["wavelength"], spectra_components["poa_global"])
 plt.xlim(200, 2700)
 plt.ylim(0, 1.8)
 plt.ylabel(r"Spectral irradiance (Wm⁻²nm⁻¹)")
 plt.xlabel(r"Wavelength (nm)")
 time_labels = times.strftime("%H%M")
-labels = [
-    f"{t}, {am_:0.02f}"
-    for t, am_ in zip(time_labels, relative_airmass)
-]
+labels = [f"{t}, {am_:0.02f}" for t, am_ in zip(time_labels, relative_airmass)]
 plt.legend(labels, title="Time, AM")
 plt.show()
 
@@ -102,8 +99,8 @@ plt.show()
 # total broadband irradiance, which we calculate by integrating the entire
 # spectral irradiance distribution with respect to wavelength.
 
-spectral_poa = spectra_components['poa_global']
-wavelength = spectra_components['wavelength']
+spectral_poa = spectra_components["poa_global"]
+wavelength = spectra_components["wavelength"]
 
 broadband_irradiance = trapezoid(spectral_poa, wavelength, axis=0)
 
@@ -117,10 +114,7 @@ plt.ylim(0, 0.0018)
 plt.ylabel(r"Normalised Irradiance (nm⁻¹)")
 plt.xlabel(r"Wavelength (nm)")
 time_labels = times.strftime("%H%M")
-labels = [
-    f"{t}, {am_:0.02f}"
-    for t, am_ in zip(time_labels, relative_airmass)
-]
+labels = [f"{t}, {am_:0.02f}" for t, am_ in zip(time_labels, relative_airmass)]
 plt.legend(labels, title="Time, AM")
 plt.show()
 
@@ -166,11 +160,8 @@ plt.ylim(0, 0.0018)
 plt.ylabel(r"Normalised Irradiance (nm⁻¹)")
 plt.xlabel(r"Wavelength (nm)")
 time_labels = times.strftime("%H%M")
-labels = [
-    f"{t}, {ape_:0.02f}"
-    for t, ape_ in zip(time_labels, ape)
-]
-plt.legend(labels,  title="Time, APE (eV)")
+labels = [f"{t}, {ape_:0.02f}" for t, ape_ in zip(time_labels, ape)]
+plt.legend(labels, title="Time, APE (eV)")
 plt.show()
 
 # %%

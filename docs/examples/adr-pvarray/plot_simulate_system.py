@@ -27,15 +27,19 @@ from pvlib.pvarray import pvefficiency_adr
 #
 
 PVLIB_DIR = pvlib.__path__[0]
-DATA_FILE = os.path.join(PVLIB_DIR, 'data', '723170TYA.CSV')
+DATA_FILE = os.path.join(PVLIB_DIR, "data", "723170TYA.CSV")
 
-tmy, metadata = iotools.read_tmy3(DATA_FILE, coerce_year=1990,
-                                  map_variables=True)
+tmy, metadata = iotools.read_tmy3(DATA_FILE, coerce_year=1990, map_variables=True)
 
-df = pd.DataFrame({'ghi': tmy['ghi'], 'dhi': tmy['dhi'], 'dni': tmy['dni'],
-                   'temp_air': tmy['temp_air'],
-                   'wind_speed': tmy['wind_speed'],
-                   })
+df = pd.DataFrame(
+    {
+        "ghi": tmy["ghi"],
+        "dhi": tmy["dhi"],
+        "dni": tmy["dni"],
+        "temp_air": tmy["temp_air"],
+        "wind_speed": tmy["wind_speed"],
+    }
+)
 
 # %%
 #
@@ -52,22 +56,21 @@ solpos = loc.get_solarposition(df.index)
 # Determine  total irradiance on a fixed-tilt array
 #
 
-TILT = metadata['latitude']
+TILT = metadata["latitude"]
 ORIENT = 180
 
-total_irrad = get_total_irradiance(TILT, ORIENT,
-                                   solpos.apparent_zenith, solpos.azimuth,
-                                   df.dni, df.ghi, df.dhi)
+total_irrad = get_total_irradiance(
+    TILT, ORIENT, solpos.apparent_zenith, solpos.azimuth, df.dni, df.ghi, df.dhi
+)
 
-df['poa_global'] = total_irrad.poa_global
+df["poa_global"] = total_irrad.poa_global
 
 # %%
 #
 # Estimate the expected operating temperature of the PV modules
 #
 
-df['temp_pv'] = pvlib.temperature.faiman(df.poa_global, df.temp_air,
-                                         df.wind_speed)
+df["temp_pv"] = pvlib.temperature.faiman(df.poa_global, df.temp_air, df.wind_speed)
 
 # %%
 #
@@ -89,22 +92,23 @@ df['temp_pv'] = pvlib.temperature.faiman(df.poa_global, df.temp_air,
 
 # Borrow the ADR model parameters from the other example:
 
-adr_params = {'k_a': 0.99924,
-              'k_d': -5.49097,
-              'tc_d': 0.01918,
-              'k_rs': 0.06999,
-              'k_rsh': 0.26144
-              }
+adr_params = {
+    "k_a": 0.99924,
+    "k_d": -5.49097,
+    "tc_d": 0.01918,
+    "k_rs": 0.06999,
+    "k_rsh": 0.26144,
+}
 
-df['eta_rel'] = pvefficiency_adr(df['poa_global'], df['temp_pv'], **adr_params)
+df["eta_rel"] = pvefficiency_adr(df["poa_global"], df["temp_pv"], **adr_params)
 
 # Set the desired array size:
-P_STC = 5000.   # (W)
+P_STC = 5000.0  # (W)
 
 # and the irradiance level needed to achieve this output:
-G_STC = 1000.   # (W/m2)
+G_STC = 1000.0  # (W/m2)
 
-df['p_mp'] = P_STC * df['eta_rel'] * (df['poa_global'] / G_STC)
+df["p_mp"] = P_STC * df["eta_rel"] * (df["poa_global"] / G_STC)
 
 # %%
 #
@@ -112,22 +116,22 @@ df['p_mp'] = P_STC * df['eta_rel'] * (df['poa_global'] / G_STC)
 #
 
 plt.figure()
-pc = plt.scatter(df['poa_global'], df['eta_rel'], c=df['temp_pv'], cmap='jet')
-plt.colorbar(label='Temperature [C]', ax=plt.gca())
+pc = plt.scatter(df["poa_global"], df["eta_rel"], c=df["temp_pv"], cmap="jet")
+plt.colorbar(label="Temperature [C]", ax=plt.gca())
 pc.set_alpha(0.25)
 plt.grid(alpha=0.5)
 plt.ylim(0.48)
-plt.xlabel('Irradiance [W/m²]')
-plt.ylabel('Relative efficiency [-]')
+plt.xlabel("Irradiance [W/m²]")
+plt.ylabel("Relative efficiency [-]")
 plt.show()
 
 plt.figure()
-pc = plt.scatter(df['poa_global'], df['p_mp'], c=df['temp_pv'], cmap='jet')
-plt.colorbar(label='Temperature [C]', ax=plt.gca())
+pc = plt.scatter(df["poa_global"], df["p_mp"], c=df["temp_pv"], cmap="jet")
+plt.colorbar(label="Temperature [C]", ax=plt.gca())
 pc.set_alpha(0.25)
 plt.grid(alpha=0.5)
-plt.xlabel('Irradiance [W/m²]')
-plt.ylabel('Array power [W]')
+plt.xlabel("Irradiance [W/m²]")
+plt.ylabel("Array power [W]")
 plt.show()
 
 # %%
@@ -135,12 +139,12 @@ plt.show()
 # One day:
 #
 
-DEMO_DAY = '1990-08-05'
+DEMO_DAY = "1990-08-05"
 
 plt.figure()
-plt.plot(df['p_mp'][DEMO_DAY])
+plt.plot(df["p_mp"][DEMO_DAY])
 plt.xticks(rotation=30)
-plt.ylabel('Power [W]')
+plt.ylabel("Power [W]")
 plt.show()
 
 # %%

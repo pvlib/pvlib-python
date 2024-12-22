@@ -58,18 +58,13 @@ def test_sr_to_qe(sr_and_eqe_fixture):
     assert_allclose(qe, sr_and_eqe_fixture["quantum_efficiency"])
     # pandas series type
     # note: output Series' name should match the input
-    qe = spectrum.sr_to_qe(
-        sr_and_eqe_fixture["spectral_response"]
-    )
+    qe = spectrum.sr_to_qe(sr_and_eqe_fixture["spectral_response"])
     pd.testing.assert_series_equal(
-        qe, sr_and_eqe_fixture["quantum_efficiency"],
-        check_names=False
+        qe, sr_and_eqe_fixture["quantum_efficiency"], check_names=False
     )
     assert qe.name == "spectral_response"
     # series normalization
-    qe = spectrum.sr_to_qe(
-        sr_and_eqe_fixture["spectral_response"] * 10, normalize=True
-    )
+    qe = spectrum.sr_to_qe(sr_and_eqe_fixture["spectral_response"] * 10, normalize=True)
     pd.testing.assert_series_equal(
         qe,
         sr_and_eqe_fixture["quantum_efficiency"]
@@ -90,12 +85,9 @@ def test_qe_to_sr(sr_and_eqe_fixture):
     assert_allclose(sr, sr_and_eqe_fixture["spectral_response"])
     # pandas series type
     # note: output Series' name should match the input
-    sr = spectrum.qe_to_sr(
-        sr_and_eqe_fixture["quantum_efficiency"]
-    )
+    sr = spectrum.qe_to_sr(sr_and_eqe_fixture["quantum_efficiency"])
     pd.testing.assert_series_equal(
-        sr, sr_and_eqe_fixture["spectral_response"],
-        check_names=False
+        sr, sr_and_eqe_fixture["spectral_response"], check_names=False
     )
     assert sr.name == "quantum_efficiency"
     # series normalization
@@ -110,9 +102,7 @@ def test_qe_to_sr(sr_and_eqe_fixture):
     )
     # error on lack of wavelength parameter if no pandas object is provided
     with pytest.raises(TypeError, match="must have an '.index' attribute"):
-        _ = spectrum.qe_to_sr(
-            sr_and_eqe_fixture["quantum_efficiency"].values
-        )
+        _ = spectrum.qe_to_sr(sr_and_eqe_fixture["quantum_efficiency"].values)
 
 
 def test_qe_and_sr_reciprocal_conversion(sr_and_eqe_fixture):

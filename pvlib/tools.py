@@ -137,9 +137,9 @@ def localize_to_utc(time, location):
         time_utc = time.astimezone(pytz.utc)
     else:
         try:
-            time_utc = time.tz_convert('UTC')
+            time_utc = time.tz_convert("UTC")
         except TypeError:
-            time_utc = time.tz_localize(location.tz).tz_convert('UTC')
+            time_utc = time.tz_localize(location.tz).tz_convert("UTC")
 
     return time_utc
 
@@ -165,12 +165,12 @@ def datetime_to_djd(time):
         time_utc = time.astimezone(pytz.utc)
 
     djd_start = pytz.utc.localize(dt.datetime(1899, 12, 31, 12))
-    djd = (time_utc - djd_start).total_seconds() * 1.0/(60 * 60 * 24)
+    djd = (time_utc - djd_start).total_seconds() * 1.0 / (60 * 60 * 24)
 
     return djd
 
 
-def djd_to_datetime(djd, tz='UTC'):
+def djd_to_datetime(djd, tz="UTC"):
     """
     Converts a Dublin Julian Day float to a datetime.datetime object
 
@@ -228,7 +228,7 @@ def _pandas_to_utc(pd_object):
     pandas object localized to or assumed to be UTC.
     """
     try:
-        pd_object_utc = pd_object.tz_convert('UTC')
+        pd_object_utc = pd_object.tz_convert("UTC")
     except TypeError:
         pd_object_utc = pd_object
     return pd_object_utc
@@ -247,8 +247,8 @@ def _doy_to_datetimeindex(doy, epoch_year=2014):
     -------
     pd.DatetimeIndex
     """
-    doy = np.atleast_1d(doy).astype('float')
-    epoch = pd.Timestamp('{}-12-31'.format(epoch_year - 1))
+    doy = np.atleast_1d(doy).astype("float")
+    epoch = pd.Timestamp("{}-12-31".format(epoch_year - 1))
     timestamps = [epoch + dt.timedelta(days=adoy) for adoy in doy]
     return pd.DatetimeIndex(timestamps)
 
@@ -326,8 +326,10 @@ def _build_args(keys, input_dict, dict_name):
         args = [input_dict[key] for key in keys]
     except KeyError as e:
         missing_key = e.args[0]
-        msg = (f"Missing required parameter '{missing_key}'. Found "
-               f"{input_dict} in {dict_name}.")
+        msg = (
+            f"Missing required parameter '{missing_key}'. Found "
+            f"{input_dict} in {dict_name}."
+        )
         raise KeyError(msg)
     return args
 
@@ -378,43 +380,43 @@ def _golden_sect_DataFrame(params, lower, upper, func, atol=1e-8):
     --------
     pvlib.singlediode._pwr_optfcn
     """
-    if np.any(upper - lower < 0.):
-        raise ValueError('upper >= lower is required')
+    if np.any(upper - lower < 0.0):
+        raise ValueError("upper >= lower is required")
 
     phim1 = (np.sqrt(5) - 1) / 2
 
     df = params.copy()  # shallow copy to avoid modifying caller's dict
-    df['VH'] = upper
-    df['VL'] = lower
+    df["VH"] = upper
+    df["VL"] = lower
 
     converged = False
 
     while not converged:
+        phi = phim1 * (df["VH"] - df["VL"])
+        df["V1"] = df["VL"] + phi
+        df["V2"] = df["VH"] - phi
 
-        phi = phim1 * (df['VH'] - df['VL'])
-        df['V1'] = df['VL'] + phi
-        df['V2'] = df['VH'] - phi
+        df["f1"] = func(df, "V1")
+        df["f2"] = func(df, "V2")
+        df["SW_Flag"] = df["f1"] > df["f2"]
 
-        df['f1'] = func(df, 'V1')
-        df['f2'] = func(df, 'V2')
-        df['SW_Flag'] = df['f1'] > df['f2']
+        df["VL"] = df["V2"] * df["SW_Flag"] + df["VL"] * (~df["SW_Flag"])
+        df["VH"] = df["V1"] * ~df["SW_Flag"] + df["VH"] * (df["SW_Flag"])
 
-        df['VL'] = df['V2']*df['SW_Flag'] + df['VL']*(~df['SW_Flag'])
-        df['VH'] = df['V1']*~df['SW_Flag'] + df['VH']*(df['SW_Flag'])
-
-        err = abs(df['V2'] - df['V1'])
+        err = abs(df["V2"] - df["V1"])
 
         # handle all NaN case gracefully
         with warnings.catch_warnings():
-            warnings.filterwarnings(action='ignore',
-                                    message='All-NaN slice encountered')
+            warnings.filterwarnings(
+                action="ignore", message="All-NaN slice encountered"
+            )
             converged = np.all(err[~np.isnan(err)] < atol)
 
     # best estimate of location of maximum
-    df['max'] = 0.5 * (df['V1'] + df['V2'])
-    func_result = func(df, 'max')
-    x = np.where(np.isnan(func_result), np.nan, df['max'])
-    if np.isscalar(df['max']):
+    df["max"] = 0.5 * (df["V1"] + df["V2"])
+    func_result = func(df, "max")
+    x = np.where(np.isnan(func_result), np.nan, df["max"])
+    if np.isscalar(df["max"]):
         # np.where always returns an ndarray, converting scalars to 0d-arrays
         x = x.item()
 
@@ -422,10 +424,10 @@ def _golden_sect_DataFrame(params, lower, upper, func, atol=1e-8):
 
 
 def _get_sample_intervals(times, win_length):
-    """ Calculates time interval and samples per window for Reno-style clear
+    """Calculates time interval and samples per window for Reno-style clear
     sky detection functions
     """
-    deltas = np.diff(times.values) / np.timedelta64(1, '60s')
+    deltas = np.diff(times.values) / np.timedelta64(1, "60s")
 
     # determine if we can proceed
     if times.inferred_freq and len(np.unique(deltas)) == 1:
@@ -435,9 +437,9 @@ def _get_sample_intervals(times, win_length):
         return sample_interval, samples_per_window
     else:
         message = (
-            'algorithm does not yet support unequal time intervals. consider '
-            'resampling your data and checking for gaps from missing '
-            'periods, leap days, etc.'
+            "algorithm does not yet support unequal time intervals. consider "
+            "resampling your data and checking for gaps from missing "
+            "periods, leap days, etc."
         )
         raise NotImplementedError(message)
 
@@ -460,11 +462,11 @@ def _degrees_to_index(degrees, coordinate):
         in the Linke turbidity lookup table.
     """
     # Assign inputmin, inputmax, and outputmax based on degree type.
-    if coordinate == 'latitude':
+    if coordinate == "latitude":
         inputmin = 90
         inputmax = -90
         outputmax = 2160
-    elif coordinate == 'longitude':
+    elif coordinate == "longitude":
         inputmin = -180
         inputmax = 180
         outputmax = 4320
@@ -472,12 +474,13 @@ def _degrees_to_index(degrees, coordinate):
         raise IndexError("coordinate must be 'latitude' or 'longitude'.")
 
     inputrange = inputmax - inputmin
-    scale = outputmax/inputrange  # number of indices per degree
+    scale = outputmax / inputrange  # number of indices per degree
     center = inputmin + 1 / scale / 2  # shift to center of index
     outputmax -= 1  # shift index to zero indexing
     index = (degrees - center) * scale
-    err = IndexError('Input, %g, is out of range (%g, %g).' %
-                     (degrees, inputmin, inputmax))
+    err = IndexError(
+        "Input, %g, is out of range (%g, %g)." % (degrees, inputmin, inputmax)
+    )
 
     # If the index is still out of bounds after rounding, raise an error.
     # 0.500001 is used in comparisons instead of 0.5 to allow for a small
@@ -500,14 +503,14 @@ def _degrees_to_index(degrees, coordinate):
     return index
 
 
-EPS = np.finfo('float64').eps  # machine precision NumPy-1.20
-DX = EPS**(1/3)  # optimal differential element
+EPS = np.finfo("float64").eps  # machine precision NumPy-1.20
+DX = EPS ** (1 / 3)  # optimal differential element
 
 
 def _first_order_centered_difference(f, x0, dx=DX, args=()):
     # simple replacement for scipy.misc.derivative, which is scheduled for
     # removal in scipy 1.12.0
-    df = f(x0+dx, *args) - f(x0-dx, *args)
+    df = f(x0 + dx, *args) - f(x0 - dx, *args)
     return df / 2 / dx
 
 
@@ -528,8 +531,7 @@ def get_pandas_index(*args):
         args list.
     """
     return next(
-        (a.index for a in args if isinstance(a, (pd.DataFrame, pd.Series))),
-        None
+        (a.index for a in args if isinstance(a, (pd.DataFrame, pd.Series))), None
     )
 
 

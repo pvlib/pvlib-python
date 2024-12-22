@@ -1,4 +1,3 @@
-
 """
 IAM Model Conversion
 ====================
@@ -26,7 +25,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from pvlib.tools import cosd
-from pvlib.iam import (ashrae, martin_ruiz, physical, convert)
+from pvlib.iam import ashrae, martin_ruiz, physical, convert
 
 # %%
 # Converting from one IAM model to another model
@@ -37,33 +36,33 @@ from pvlib.iam import (ashrae, martin_ruiz, physical, convert)
 
 # Compute IAM values using the martin_ruiz model.
 aoi = np.linspace(0, 90, 100)
-martin_ruiz_params = {'a_r': 0.16}
+martin_ruiz_params = {"a_r": 0.16}
 martin_ruiz_iam = martin_ruiz(aoi, **martin_ruiz_params)
 
 # Get parameters for the physical model and compute IAM using these parameters.
-physical_params = convert('martin_ruiz', martin_ruiz_params, 'physical')
+physical_params = convert("martin_ruiz", martin_ruiz_params, "physical")
 physical_iam = physical(aoi, **physical_params)
 
 # Get parameters for the ASHRAE model and compute IAM using these parameters.
-ashrae_params = convert('martin_ruiz', martin_ruiz_params, 'ashrae')
+ashrae_params = convert("martin_ruiz", martin_ruiz_params, "ashrae")
 ashrae_iam = ashrae(aoi, **ashrae_params)
 
 fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(11, 5), sharey=True)
 
 # Plot each model's IAM vs. angle-of-incidence (AOI).
-ax1.plot(aoi, martin_ruiz_iam, label='Martin-Ruiz')
-ax1.plot(aoi, physical_iam, label='physical')
-ax1.set_xlabel('AOI (degrees)')
-ax1.set_title('Convert from Martin-Ruiz to physical')
+ax1.plot(aoi, martin_ruiz_iam, label="Martin-Ruiz")
+ax1.plot(aoi, physical_iam, label="physical")
+ax1.set_xlabel("AOI (degrees)")
+ax1.set_title("Convert from Martin-Ruiz to physical")
 ax1.legend()
 
-ax2.plot(aoi, martin_ruiz_iam, label='Martin-Ruiz')
-ax2.plot(aoi, ashrae_iam, label='ASHRAE')
-ax2.set_xlabel('AOI (degrees)')
-ax2.set_title('Convert from Martin-Ruiz to ASHRAE')
+ax2.plot(aoi, martin_ruiz_iam, label="Martin-Ruiz")
+ax2.plot(aoi, ashrae_iam, label="ASHRAE")
+ax2.set_xlabel("AOI (degrees)")
+ax2.set_title("Convert from Martin-Ruiz to ASHRAE")
 ax2.legend()
 
-ax1.set_ylabel('IAM')
+ax1.set_ylabel("IAM")
 plt.show()
 
 
@@ -88,14 +87,13 @@ plt.show()
 
 # Compute IAM using the Martin-Ruiz model.
 aoi = np.linspace(0, 90, 100)
-martin_ruiz_params = {'a_r': 0.16}
+martin_ruiz_params = {"a_r": 0.16}
 martin_ruiz_iam = martin_ruiz(aoi, **martin_ruiz_params)
 
 # Get parameters for the physical model ...
 
 # ... using the default weight function.
-physical_params_default = convert('martin_ruiz', martin_ruiz_params,
-                                  'physical')
+physical_params_default = convert("martin_ruiz", martin_ruiz_params, "physical")
 physical_iam_default = physical(aoi, **physical_params_default)
 
 
@@ -105,17 +103,18 @@ def weight_function(aoi):
     return cosd(aoi)
 
 
-physical_params_custom = convert('martin_ruiz', martin_ruiz_params, 'physical',
-                                 weight=weight_function)
+physical_params_custom = convert(
+    "martin_ruiz", martin_ruiz_params, "physical", weight=weight_function
+)
 physical_iam_custom = physical(aoi, **physical_params_custom)
 
 # Plot IAM vs AOI.
-plt.plot(aoi, martin_ruiz_iam, label='Martin-Ruiz')
-plt.plot(aoi, physical_iam_default, label='Default weight function')
-plt.plot(aoi, physical_iam_custom, label='Custom weight function')
-plt.xlabel('AOI (degrees)')
-plt.ylabel('IAM')
-plt.title('Martin-Ruiz to physical')
+plt.plot(aoi, martin_ruiz_iam, label="Martin-Ruiz")
+plt.plot(aoi, physical_iam_default, label="Default weight function")
+plt.plot(aoi, physical_iam_custom, label="Custom weight function")
+plt.xlabel("AOI (degrees)")
+plt.ylabel("IAM")
+plt.title("Martin-Ruiz to physical")
 plt.legend()
 plt.show()
 
@@ -129,21 +128,22 @@ plt.show()
 # Get parameters for the ASHRAE model ...
 
 # ... using the default weight function.
-ashrae_params_default = convert('martin_ruiz', martin_ruiz_params, 'ashrae')
+ashrae_params_default = convert("martin_ruiz", martin_ruiz_params, "ashrae")
 ashrae_iam_default = ashrae(aoi, **ashrae_params_default)
 
 # ... using the custom weight function
-ashrae_params_custom = convert('martin_ruiz', martin_ruiz_params, 'ashrae',
-                               weight=weight_function)
+ashrae_params_custom = convert(
+    "martin_ruiz", martin_ruiz_params, "ashrae", weight=weight_function
+)
 ashrae_iam_custom = ashrae(aoi, **ashrae_params_custom)
 
 # Plot IAM vs AOI.
-plt.plot(aoi, martin_ruiz_iam, label='Martin-Ruiz')
-plt.plot(aoi, ashrae_iam_default, label='Default weight function')
-plt.plot(aoi, ashrae_iam_custom, label='Custom weight function')
-plt.xlabel('AOI (degrees)')
-plt.ylabel('IAM')
-plt.title('Martin-Ruiz to ASHRAE')
+plt.plot(aoi, martin_ruiz_iam, label="Martin-Ruiz")
+plt.plot(aoi, ashrae_iam_default, label="Default weight function")
+plt.plot(aoi, ashrae_iam_custom, label="Custom weight function")
+plt.xlabel("AOI (degrees)")
+plt.ylabel("IAM")
+plt.title("Martin-Ruiz to ASHRAE")
 plt.legend()
 plt.show()
 

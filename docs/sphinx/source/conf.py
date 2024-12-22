@@ -30,8 +30,8 @@ pd.show_versions()
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-sys.path.insert(0, os.path.abspath('../sphinxext'))
-sys.path.insert(0, os.path.abspath('../../../'))
+sys.path.insert(0, os.path.abspath("../sphinxext"))
+sys.path.insert(0, os.path.abspath("../../../"))
 
 # -- General configuration ------------------------------------------------
 
@@ -44,38 +44,35 @@ sys.path.insert(0, os.path.abspath('../../../'))
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    'sphinx.ext.autodoc',
-    'sphinx.ext.mathjax',
-    'sphinx.ext.viewcode',
-    'sphinx.ext.intersphinx',
-    'sphinx.ext.extlinks',
-    'sphinx.ext.napoleon',
-    'sphinx.ext.autosummary',
-    'IPython.sphinxext.ipython_directive',
-    'IPython.sphinxext.ipython_console_highlighting',
-    'sphinx_gallery.gen_gallery',
-    'sphinx_toggleprompt',
-    'sphinx_favicon',
-    'hoverxref.extension',
+    "sphinx.ext.autodoc",
+    "sphinx.ext.mathjax",
+    "sphinx.ext.viewcode",
+    "sphinx.ext.intersphinx",
+    "sphinx.ext.extlinks",
+    "sphinx.ext.napoleon",
+    "sphinx.ext.autosummary",
+    "IPython.sphinxext.ipython_directive",
+    "IPython.sphinxext.ipython_console_highlighting",
+    "sphinx_gallery.gen_gallery",
+    "sphinx_toggleprompt",
+    "sphinx_favicon",
+    "hoverxref.extension",
 ]
 
-mathjax3_config = {'chtml': {'displayAlign': 'left',
-                             'displayIndent': '2em'}}
+mathjax3_config = {"chtml": {"displayAlign": "left", "displayIndent": "2em"}}
 
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {
-    'python': ('https://docs.python.org/3/', None),
-    'numpy': ('https://numpy.org/doc/stable/', None),
-    'scipy': ('https://docs.scipy.org/doc/scipy/reference/', None),
-    'pandas': ('https://pandas.pydata.org/pandas-docs/stable', None),
-    'matplotlib': ('https://matplotlib.org/stable', None),
+    "python": ("https://docs.python.org/3/", None),
+    "numpy": ("https://numpy.org/doc/stable/", None),
+    "scipy": ("https://docs.scipy.org/doc/scipy/reference/", None),
+    "pandas": ("https://pandas.pydata.org/pandas-docs/stable", None),
+    "matplotlib": ("https://matplotlib.org/stable", None),
 }
 
 # Enable hover tooltips
 hoverxref_auto_ref = True
-hoverxref_roles = [
-    "class", "meth", "func", "ref", "term", "obj", "mod", "data"
-]
+hoverxref_roles = ["class", "meth", "func", "ref", "term", "obj", "mod", "data"]
 hoverxref_role_types = dict.fromkeys(hoverxref_roles, "tooltip")
 hoverxref_domains = ["py"]
 hoverxref_intersphinx = list(intersphinx_mapping.keys())
@@ -83,22 +80,22 @@ hoverxref_intersphinx = list(intersphinx_mapping.keys())
 napoleon_use_rtype = False  # group rtype on same line together with return
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ['_templates']
+templates_path = ["_templates"]
 
 # The suffix of source filenames.
-source_suffix = '.rst'
+source_suffix = ".rst"
 
 # The encoding of source files.
 # source_encoding = 'utf-8-sig'
 
 # The master toctree document.
-master_doc = 'index'
+master_doc = "index"
 
 # General information about the project.
-project = 'pvlib python'
-copyright = '''pvlib python Contributors (2023);
+project = "pvlib python"
+copyright = """pvlib python Contributors (2023);
     PVLIB python Development Team (2014);
-    Sandia National Laboratories (2013)'''
+    Sandia National Laboratories (2013)"""
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -107,7 +104,7 @@ copyright = '''pvlib python Contributors (2023);
 import pvlib  # noqa: E402
 
 # The short X.Y version.
-version = '%s' % (pvlib.__version__)
+version = "%s" % (pvlib.__version__)
 # The full version, including alpha/beta/rc tags.
 release = version
 
@@ -123,7 +120,7 @@ release = version
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
-exclude_patterns = ['whatsnew/*', '**.ipynb_checkpoints']
+exclude_patterns = ["whatsnew/*", "**.ipynb_checkpoints"]
 
 # The reST default role (used for this markup: `text`) to use for all
 # documents.
@@ -141,7 +138,7 @@ exclude_patterns = ['whatsnew/*', '**.ipynb_checkpoints']
 # show_authors = False
 
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = 'sphinx'
+pygments_style = "sphinx"
 
 # A list of ignored prefixes for module index sorting.
 # modindex_common_prefix = []
@@ -209,7 +206,7 @@ favicons = [
 
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.
-html_logo = '_images/pvlib_logo_horiz.png'
+html_logo = "_images/pvlib_logo_horiz.png"
 
 # The name of an image file (within the static path) to use as favicon of the
 # docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
@@ -219,7 +216,7 @@ html_logo = '_images/pvlib_logo_horiz.png'
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['_static']
+html_static_path = ["_static"]
 
 # Add any extra paths that contain custom files (such as robots.txt or
 # .htaccess) here, relative to this directory. These files are copied
@@ -270,7 +267,7 @@ html_show_sourcelink = False
 # html_file_suffix = None
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'pvlib_pythondoc'
+htmlhelp_basename = "pvlib_pythondoc"
 
 
 # custom CSS workarounds
@@ -283,16 +280,15 @@ def setup(app):
     # Add a warning banner at the top of the page if viewing the "latest" docs
     app.add_js_file("version-alert.js")
 
+
 # -- Options for LaTeX output ---------------------------------------------
 
 
 latex_elements = {
     # The paper size ('letterpaper' or 'a4paper').
     # 'papersize': 'letterpaper',
-
     # The font size ('10pt', '11pt' or '12pt').
     # 'pointsize': '10pt',
-
     # Additional stuff for the LaTeX preamble.
     # 'preamble': '',
 }
@@ -301,9 +297,13 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    ('index', 'pvlib_python.tex', 'pvlib\\_python Documentation',
-     'Sandia National Laboratoraties and pvlib python Development Team',
-     'manual'),
+    (
+        "index",
+        "pvlib_python.tex",
+        "pvlib\\_python Documentation",
+        "Sandia National Laboratoraties and pvlib python Development Team",
+        "manual",
+    ),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -344,8 +344,13 @@ extlinks = {
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'pvlib_python', 'pvlib_python Documentation',
-     ['Sandia National Laboratoraties and pvlib python Development Team'], 1)
+    (
+        "index",
+        "pvlib_python",
+        "pvlib_python Documentation",
+        ["Sandia National Laboratoraties and pvlib python Development Team"],
+        1,
+    )
 ]
 
 # If true, show URL addresses after external links.
@@ -358,10 +363,15 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    ('index', 'pvlib python', 'pvlib python Documentation',
-     'Sandia National Laboratoraties and pvlib python Development Team',
-     'pvlib python', 'One line description of project.',
-     'Miscellaneous'),
+    (
+        "index",
+        "pvlib python",
+        "pvlib python Documentation",
+        "Sandia National Laboratoraties and pvlib python Development Team",
+        "pvlib python",
+        "One line description of project.",
+        "Miscellaneous",
+    ),
 ]
 
 # Documents to append as an appendix to all manuals.
@@ -380,30 +390,30 @@ ipython_warning_is_error = False
 
 # suppress "WARNING: Footnote [1] is not referenced." messages
 # https://github.com/pvlib/pvlib-python/issues/837
-suppress_warnings = ['ref.footnote']
+suppress_warnings = ["ref.footnote"]
 
 # settings for sphinx-gallery
 sphinx_gallery_conf = {
-    'examples_dirs': ['../../examples'],  # location of gallery scripts
-    'gallery_dirs': ['gallery'],  # location of generated output
+    "examples_dirs": ["../../examples"],  # location of gallery scripts
+    "gallery_dirs": ["gallery"],  # location of generated output
     # execute all scripts except for ones in the "system-models" directory:
-    'filename_pattern': '^((?!system-models).)*$',
-
+    "filename_pattern": "^((?!system-models).)*$",
     # directory where function/class granular galleries are stored
-    'backreferences_dir': 'reference/generated/gallery_backreferences',
-
+    "backreferences_dir": "reference/generated/gallery_backreferences",
     # Modules for which function/class level galleries are created. In
     # this case only pvlib, could include others though. Must be tuple of str
-    'doc_module': ('pvlib',),
-
+    "doc_module": ("pvlib",),
     # https://sphinx-gallery.github.io/dev/configuration.html#removing-config-comments  # noqa: E501
-    'remove_config_comments': True,
+    "remove_config_comments": True,
 }
 # supress warnings in gallery output
 # https://sphinx-gallery.github.io/stable/configuration.html
-warnings.filterwarnings("ignore", category=UserWarning,
-                        message='Matplotlib is currently using agg, which is a'
-                                ' non-GUI backend, so cannot show the figure.')
+warnings.filterwarnings(
+    "ignore",
+    category=UserWarning,
+    message="Matplotlib is currently using agg, which is a"
+    " non-GUI backend, so cannot show the figure.",
+)
 
 # %% helper functions for intelligent "View on Github" linking
 # based on
@@ -427,7 +437,7 @@ def get_obj_module(qualname):
     attrname = None
     while modname not in sys.modules:
         attrname = classname
-        modname, classname = modname.rsplit('.', 1)
+        modname, classname = modname.rsplit(".", 1)
 
     # retrieve object and find original module name
     if classname:
@@ -467,29 +477,31 @@ def make_github_url(file_name):
     URL_BASE = "https://github.com/pvlib/pvlib-python/blob/main/"
 
     # is it a gallery page?
-    if any(d in file_name for d in sphinx_gallery_conf['gallery_dirs']):
+    if any(d in file_name for d in sphinx_gallery_conf["gallery_dirs"]):
         example_folder = file_name.split("/")[-2]
         if file_name.split("/")[-1] == "index.rst":
             example_file = "README.rst"
         else:
-            example_file = file_name.split("/")[-1].replace('.rst', '.py')
+            example_file = file_name.split("/")[-1].replace(".rst", ".py")
 
-        if example_folder == 'gallery':
+        if example_folder == "gallery":
             target_url = URL_BASE + "docs/examples/" + example_file  # noqa: E501
         else:
-            target_url = URL_BASE + "docs/examples/" + example_folder + "/" + example_file  # noqa: E501
+            target_url = (
+                URL_BASE + "docs/examples/" + example_folder + "/" + example_file
+            )  # noqa: E501
 
     # is it an API autogen page?
     elif "generated" in file_name:
         # pagename looks like "generated/pvlib.atmosphere.alt2pres.rst"
-        qualname = file_name.split("/")[-1].replace('.rst', '')
+        qualname = file_name.split("/")[-1].replace(".rst", "")
         obj, module = get_obj_module(qualname)
         path = module.__name__.replace(".", "/") + ".py"
         target_url = URL_BASE + path
         # add line numbers if possible:
         start, end = get_linenos(obj)
         if start and end:
-            target_url += f'#L{start}-L{end}'
+            target_url += f"#L{start}-L{end}"
 
     # Just a normal source RST page
     else:
@@ -501,6 +513,6 @@ def make_github_url(file_name):
 # variables to pass into the HTML templating engine; these are accessible from
 # _templates/breadcrumbs.html
 html_context = {
-    'make_github_url': make_github_url,
-    'edit_page_url_template': '{{ make_github_url(file_name) }}',
+    "make_github_url": make_github_url,
+    "edit_page_url_template": "{{ make_github_url(file_name) }}",
 }

@@ -166,9 +166,7 @@ def get_reference_spectra(wavelengths=None, standard="ASTM G173-03"):
     )
 
     if wavelengths is not None:
-        interpolator = partial(
-            np.interp, xp=standard.index, left=0.0, right=0.0
-        )
+        interpolator = partial(np.interp, xp=standard.index, left=0.0, right=0.0)
         standard = pd.DataFrame(
             index=wavelengths,
             data={
@@ -248,13 +246,12 @@ def average_photon_energy(spectra):
     """
 
     if not isinstance(spectra, (pd.Series, pd.DataFrame)):
-        raise TypeError('`spectra` must be either a'
-                        ' pandas Series or DataFrame')
+        raise TypeError("`spectra` must be either a" " pandas Series or DataFrame")
 
     if (spectra < 0).any().any():
-        raise ValueError('Spectral irradiance data must be positive')
+        raise ValueError("Spectral irradiance data must be positive")
 
-    hclambda = pd.Series((constants.h*constants.c)/(spectra.T.index*1e-9))
+    hclambda = pd.Series((constants.h * constants.c) / (spectra.T.index * 1e-9))
     hclambda.index = spectra.T.index
     pfd = spectra.div(hclambda)
 
@@ -264,8 +261,8 @@ def average_photon_energy(spectra):
     int_spectra = integrate(spectra)
     int_pfd = integrate(pfd)
 
-    with np.errstate(invalid='ignore'):
-        ape = (1/constants.elementary_charge)*int_spectra/int_pfd
+    with np.errstate(invalid="ignore"):
+        ape = (1 / constants.elementary_charge) * int_spectra / int_pfd
 
     if isinstance(spectra, pd.DataFrame):
         ape = pd.Series(ape, index=spectra.index)

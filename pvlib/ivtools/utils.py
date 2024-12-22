@@ -10,9 +10,9 @@ from numpy.polynomial.polynomial import Polynomial as Poly
 
 
 # A small number used to decide when a slope is equivalent to zero
-EPS_slope = np.finfo('float').eps**(1/3)
+EPS_slope = np.finfo("float").eps ** (1 / 3)
 # A small number used to decide when a slope is equivalent to zero
-EPS_val = np.finfo('float').eps
+EPS_val = np.finfo("float").eps
 
 
 def _numdiff(x, f):
@@ -70,60 +70,122 @@ def _numdiff(x, f):
     # points. Calculate displacements
     ff = np.vstack((f[:-4], f[1:-3], f[2:-2], f[3:-1], f[4:])).T
 
-    a0 = (np.vstack((x[:-4], x[1:-3], x[2:-2], x[3:-1], x[4:])).T
-          - np.tile(x[2:-2], [5, 1]).T)
+    a0 = (
+        np.vstack((x[:-4], x[1:-3], x[2:-2], x[3:-1], x[4:])).T
+        - np.tile(x[2:-2], [5, 1]).T
+    )
 
     u1 = np.zeros(a0.shape)
     left = np.zeros(a0.shape)
     u2 = np.zeros(a0.shape)
 
     u1[:, 0] = (
-        a0[:, 1] * a0[:, 2] * a0[:, 3] + a0[:, 1] * a0[:, 2] * a0[:, 4]
-        + a0[:, 1] * a0[:, 3] * a0[:, 4] + a0[:, 2] * a0[:, 3] * a0[:, 4])
+        a0[:, 1] * a0[:, 2] * a0[:, 3]
+        + a0[:, 1] * a0[:, 2] * a0[:, 4]
+        + a0[:, 1] * a0[:, 3] * a0[:, 4]
+        + a0[:, 2] * a0[:, 3] * a0[:, 4]
+    )
     u1[:, 1] = (
-        a0[:, 0] * a0[:, 2] * a0[:, 3] + a0[:, 0] * a0[:, 2] * a0[:, 4]
-        + a0[:, 0] * a0[:, 3] * a0[:, 4] + a0[:, 2] * a0[:, 3] * a0[:, 4])
+        a0[:, 0] * a0[:, 2] * a0[:, 3]
+        + a0[:, 0] * a0[:, 2] * a0[:, 4]
+        + a0[:, 0] * a0[:, 3] * a0[:, 4]
+        + a0[:, 2] * a0[:, 3] * a0[:, 4]
+    )
     u1[:, 2] = (
-        a0[:, 0] * a0[:, 1] * a0[:, 3] + a0[:, 0] * a0[:, 1] * a0[:, 4]
-        + a0[:, 0] * a0[:, 3] * a0[:, 4] + a0[:, 1] * a0[:, 3] * a0[:, 4])
+        a0[:, 0] * a0[:, 1] * a0[:, 3]
+        + a0[:, 0] * a0[:, 1] * a0[:, 4]
+        + a0[:, 0] * a0[:, 3] * a0[:, 4]
+        + a0[:, 1] * a0[:, 3] * a0[:, 4]
+    )
     u1[:, 3] = (
-        a0[:, 0] * a0[:, 1] * a0[:, 2] + a0[:, 0] * a0[:, 1] * a0[:, 4]
-        + a0[:, 0] * a0[:, 2] * a0[:, 4] + a0[:, 1] * a0[:, 2] * a0[:, 4])
+        a0[:, 0] * a0[:, 1] * a0[:, 2]
+        + a0[:, 0] * a0[:, 1] * a0[:, 4]
+        + a0[:, 0] * a0[:, 2] * a0[:, 4]
+        + a0[:, 1] * a0[:, 2] * a0[:, 4]
+    )
     u1[:, 4] = (
-        a0[:, 0] * a0[:, 1] * a0[:, 2] + a0[:, 0] * a0[:, 1] * a0[:, 3]
-        + a0[:, 0] * a0[:, 2] * a0[:, 3] + a0[:, 1] * a0[:, 2] * a0[:, 3])
+        a0[:, 0] * a0[:, 1] * a0[:, 2]
+        + a0[:, 0] * a0[:, 1] * a0[:, 3]
+        + a0[:, 0] * a0[:, 2] * a0[:, 3]
+        + a0[:, 1] * a0[:, 2] * a0[:, 3]
+    )
 
-    left[:, 0] = (a0[:, 0] - a0[:, 1]) * (a0[:, 0] - a0[:, 2]) * \
-        (a0[:, 0] - a0[:, 3]) * (a0[:, 0] - a0[:, 4])
-    left[:, 1] = (a0[:, 1] - a0[:, 0]) * (a0[:, 1] - a0[:, 2]) * \
-        (a0[:, 1] - a0[:, 3]) * (a0[:, 1] - a0[:, 4])
-    left[:, 2] = (a0[:, 2] - a0[:, 0]) * (a0[:, 2] - a0[:, 1]) * \
-        (a0[:, 2] - a0[:, 3]) * (a0[:, 2] - a0[:, 4])
-    left[:, 3] = (a0[:, 3] - a0[:, 0]) * (a0[:, 3] - a0[:, 1]) * \
-        (a0[:, 3] - a0[:, 2]) * (a0[:, 3] - a0[:, 4])
-    left[:, 4] = (a0[:, 4] - a0[:, 0]) * (a0[:, 4] - a0[:, 1]) * \
-        (a0[:, 4] - a0[:, 2]) * (a0[:, 4] - a0[:, 3])
+    left[:, 0] = (
+        (a0[:, 0] - a0[:, 1])
+        * (a0[:, 0] - a0[:, 2])
+        * (a0[:, 0] - a0[:, 3])
+        * (a0[:, 0] - a0[:, 4])
+    )
+    left[:, 1] = (
+        (a0[:, 1] - a0[:, 0])
+        * (a0[:, 1] - a0[:, 2])
+        * (a0[:, 1] - a0[:, 3])
+        * (a0[:, 1] - a0[:, 4])
+    )
+    left[:, 2] = (
+        (a0[:, 2] - a0[:, 0])
+        * (a0[:, 2] - a0[:, 1])
+        * (a0[:, 2] - a0[:, 3])
+        * (a0[:, 2] - a0[:, 4])
+    )
+    left[:, 3] = (
+        (a0[:, 3] - a0[:, 0])
+        * (a0[:, 3] - a0[:, 1])
+        * (a0[:, 3] - a0[:, 2])
+        * (a0[:, 3] - a0[:, 4])
+    )
+    left[:, 4] = (
+        (a0[:, 4] - a0[:, 0])
+        * (a0[:, 4] - a0[:, 1])
+        * (a0[:, 4] - a0[:, 2])
+        * (a0[:, 4] - a0[:, 3])
+    )
 
     df[2:-2] = np.sum(-(u1 / left) * ff, axis=1)
 
     # second derivative
     u2[:, 0] = (
-        a0[:, 1] * a0[:, 2] + a0[:, 1] * a0[:, 3] + a0[:, 1] * a0[:, 4]
-        + a0[:, 2] * a0[:, 3] + a0[:, 2] * a0[:, 4] + a0[:, 3] * a0[:, 4])
+        a0[:, 1] * a0[:, 2]
+        + a0[:, 1] * a0[:, 3]
+        + a0[:, 1] * a0[:, 4]
+        + a0[:, 2] * a0[:, 3]
+        + a0[:, 2] * a0[:, 4]
+        + a0[:, 3] * a0[:, 4]
+    )
     u2[:, 1] = (
-        a0[:, 0] * a0[:, 2] + a0[:, 0] * a0[:, 3] + a0[:, 0] * a0[:, 4]
-        + a0[:, 2] * a0[:, 3] + a0[:, 2] * a0[:, 4] + a0[:, 3] * a0[:, 4])
+        a0[:, 0] * a0[:, 2]
+        + a0[:, 0] * a0[:, 3]
+        + a0[:, 0] * a0[:, 4]
+        + a0[:, 2] * a0[:, 3]
+        + a0[:, 2] * a0[:, 4]
+        + a0[:, 3] * a0[:, 4]
+    )
     u2[:, 2] = (
-        a0[:, 0] * a0[:, 1] + a0[:, 0] * a0[:, 3] + a0[:, 0] * a0[:, 4]
-        + a0[:, 1] * a0[:, 3] + a0[:, 1] * a0[:, 3] + a0[:, 3] * a0[:, 4])
+        a0[:, 0] * a0[:, 1]
+        + a0[:, 0] * a0[:, 3]
+        + a0[:, 0] * a0[:, 4]
+        + a0[:, 1] * a0[:, 3]
+        + a0[:, 1] * a0[:, 3]
+        + a0[:, 3] * a0[:, 4]
+    )
     u2[:, 3] = (
-        a0[:, 0] * a0[:, 1] + a0[:, 0] * a0[:, 2] + a0[:, 0] * a0[:, 4]
-        + a0[:, 1] * a0[:, 2] + a0[:, 1] * a0[:, 4] + a0[:, 2] * a0[:, 4])
+        a0[:, 0] * a0[:, 1]
+        + a0[:, 0] * a0[:, 2]
+        + a0[:, 0] * a0[:, 4]
+        + a0[:, 1] * a0[:, 2]
+        + a0[:, 1] * a0[:, 4]
+        + a0[:, 2] * a0[:, 4]
+    )
     u2[:, 4] = (
-        a0[:, 0] * a0[:, 1] + a0[:, 0] * a0[:, 2] + a0[:, 0] * a0[:, 3]
-        + a0[:, 1] * a0[:, 2] + a0[:, 1] * a0[:, 4] + a0[:, 2] * a0[:, 3])
+        a0[:, 0] * a0[:, 1]
+        + a0[:, 0] * a0[:, 2]
+        + a0[:, 0] * a0[:, 3]
+        + a0[:, 1] * a0[:, 2]
+        + a0[:, 1] * a0[:, 4]
+        + a0[:, 2] * a0[:, 3]
+    )
 
-    df2[2:-2] = 2. * np.sum(u2 * ff, axis=1)
+    df2[2:-2] = 2.0 * np.sum(u2 * ff, axis=1)
     return df, df2
 
 
@@ -158,24 +220,24 @@ def rectify_iv_curve(voltage, current, decimals=None):
       equal to the average of current at duplicated voltages.
     """
 
-    df = pd.DataFrame(data=np.vstack((voltage, current)).T, columns=['v', 'i'])
+    df = pd.DataFrame(data=np.vstack((voltage, current)).T, columns=["v", "i"])
     # restrict to first quadrant
     df.dropna(inplace=True)
-    df = df[(df['v'] >= 0) & (df['i'] >= 0)]
+    df = df[(df["v"] >= 0) & (df["i"] >= 0)]
     # sort pairs on voltage, then current
-    df = df.sort_values(by=['v', 'i'], ascending=[True, False])
+    df = df.sort_values(by=["v", "i"], ascending=[True, False])
 
     # eliminate duplicate voltage points
     if decimals is not None:
-        df['v'] = np.round(df['v'], decimals=decimals)
+        df["v"] = np.round(df["v"], decimals=decimals)
 
-    _, inv = np.unique(df['v'], return_inverse=True)
+    _, inv = np.unique(df["v"], return_inverse=True)
     df.index = inv
     # average current at each common voltage
     df = df.groupby(by=inv).mean()
 
     tmp = np.array(df).T
-    return tmp[0, ], tmp[1, ]
+    return tmp[0,], tmp[1,]
 
 
 def _schumaker_qspline(x, y):
@@ -250,7 +312,7 @@ def _schumaker_qspline(x, y):
 
     # [3], Eq. 9 for interior points
     # fix tuning parameters in [2], Eq 9 at chi = .5 and eta = .5
-    s[u] = pdelta[u] / (0.5*left[u] + 0.5*right[u])
+    s[u] = pdelta[u] / (0.5 * left[u] + 0.5 * right[u])
 
     # [3], Eq. 7 for left endpoint
     left_end = 2.0 * delta[0] - s[1]
@@ -293,7 +355,7 @@ def _schumaker_qspline(x, y):
     # calculate coefficients
     uu = np.zeros((k, 6))
 
-    uu[:(n - 1), :] = np.array([tmpx, tmpx2, tmpy, tmps, tmps2, delta]).T
+    uu[: (n - 1), :] = np.array([tmpx, tmpx2, tmpy, tmps, tmps2, delta]).T
 
     # [2], Algorithm 4.1 subpart 1 of Step 5
     # original x values that are left points of intervals without internal
@@ -301,25 +363,25 @@ def _schumaker_qspline(x, y):
 
     # MATLAB differs from NumPy, boolean indices must be same size as
     # array
-    xk[:(n - 1)][u] = tmpx[u]
-    yk[:(n - 1)][u] = tmpy[u]
+    xk[: (n - 1)][u] = tmpx[u]
+    yk[: (n - 1)][u] = tmpy[u]
     # constant term for each polynomial for intervals without knots
-    a[:(n - 1), 2][u] = tmpy[u]
-    a[:(n - 1), 1][u] = s[:-1][u]
-    a[:(n - 1), 0][u] = 0.5 * diffs[u] / delx[u]  # leading coefficients
+    a[: (n - 1), 2][u] = tmpy[u]
+    a[: (n - 1), 1][u] = s[:-1][u]
+    a[: (n - 1), 0][u] = 0.5 * diffs[u] / delx[u]  # leading coefficients
 
     # [2], Algorithm 4.1 subpart 2 of Step 5
     # original x values that are left points of intervals with internal knots
-    xk[:(n-1)][~u] = tmpx[~u]
-    yk[:(n-1)][~u] = tmpy[~u]
+    xk[: (n - 1)][~u] = tmpx[~u]
+    yk[: (n - 1)][~u] = tmpy[~u]
 
     aa = s[:-1] - delta
     b = s[1:] - delta
 
     # Since the above two lines can lead to numerical errors, aa and b
     # are rounded to 0.0 is their absolute value is small enough.
-    aa[np.isclose(aa, 0., atol=EPS_val)] = 0.
-    b[np.isclose(b, 0., atol=EPS_val)] = 0.
+    aa[np.isclose(aa, 0.0, atol=EPS_val)] = 0.0
+    b[np.isclose(b, 0.0, atol=EPS_val)] = 0.0
 
     sbar = np.zeros(k)
     eta = np.zeros(k)
@@ -332,103 +394,111 @@ def _schumaker_qspline(x, y):
     v = np.logical_and(~u, t0)  # len(u) == (n - 1) always
     q = np.sum(v)  # number of this type of knot to add
 
-    if q > 0.:
-        xk[(n - 1):(n + q - 1)] = .5 * (tmpx[v] + tmpx2[v])  # knot location
-        uu[(n - 1):(n + q - 1), :] = np.array([tmpx[v], tmpx2[v], tmpy[v],
-                                               tmps[v], tmps2[v], delta[v]]).T
-        xi[:(n-1)][v] = xk[(n - 1):(n + q - 1)]
+    if q > 0.0:
+        xk[(n - 1) : (n + q - 1)] = 0.5 * (tmpx[v] + tmpx2[v])  # knot location
+        uu[(n - 1) : (n + q - 1), :] = np.array(
+            [tmpx[v], tmpx2[v], tmpy[v], tmps[v], tmps2[v], delta[v]]
+        ).T
+        xi[: (n - 1)][v] = xk[(n - 1) : (n + q - 1)]
 
     t1 = np.abs(aa) > np.abs(b)
     w = np.logical_and(~u, ~v)  # second 'else' in Algorithm 4.1 Step 5
     w = np.logical_and(w, t1)
     r = np.sum(w)
 
-    if r > 0.:
-        xk[(n + q - 1):(n + q + r - 1)] = tmpx2[w] + aa[w] * delx[w] / diffs[w]
-        uu[(n + q - 1):(n + q + r - 1), :] = np.array([tmpx[w], tmpx2[w],
-                                                       tmpy[w], tmps[w],
-                                                       tmps2[w], delta[w]]).T
-        xi[:(n - 1)][w] = xk[(n + q - 1):(n + q + r - 1)]
+    if r > 0.0:
+        xk[(n + q - 1) : (n + q + r - 1)] = tmpx2[w] + aa[w] * delx[w] / diffs[w]
+        uu[(n + q - 1) : (n + q + r - 1), :] = np.array(
+            [tmpx[w], tmpx2[w], tmpy[w], tmps[w], tmps2[w], delta[w]]
+        ).T
+        xi[: (n - 1)][w] = xk[(n + q - 1) : (n + q + r - 1)]
 
     z = np.logical_and(~u, ~v)  # last 'else' in Algorithm 4.1 Step 5
     z = np.logical_and(z, ~w)
     ss = np.sum(z)
 
-    if ss > 0.:
-        xk[(n + q + r - 1):(n + q + r + ss - 1)] = \
-            tmpx[z] + b[z] * delx[z] / diffs[z]
-        uu[(n + q + r - 1):(n + q + r + ss - 1), :] = \
-            np.array([tmpx[z], tmpx2[z], tmpy[z], tmps[z], tmps2[z],
-                      delta[z]]).T
-        xi[:(n-1)][z] = xk[(n + q + r - 1):(n + q + r + ss - 1)]
+    if ss > 0.0:
+        xk[(n + q + r - 1) : (n + q + r + ss - 1)] = tmpx[z] + b[z] * delx[z] / diffs[z]
+        uu[(n + q + r - 1) : (n + q + r + ss - 1), :] = np.array(
+            [tmpx[z], tmpx2[z], tmpy[z], tmps[z], tmps2[z], delta[z]]
+        ).T
+        xi[: (n - 1)][z] = xk[(n + q + r - 1) : (n + q + r + ss - 1)]
 
     # define polynomial coefficients for intervals with added knots
     ff = ~u
-    sbar[:(n-1)][ff] = (
-        (2 * uu[:(n - 1), 5][ff] - uu[:(n-1), 4][ff])
-        + (uu[:(n - 1), 4][ff] - uu[:(n-1), 3][ff])
-        * (xi[:(n - 1)][ff] - uu[:(n-1), 0][ff])
-        / (uu[:(n - 1), 1][ff] - uu[:(n-1), 0][ff]))
-    eta[:(n-1)][ff] = (
-        (sbar[:(n - 1)][ff] - uu[:(n-1), 3][ff])
-        / (xi[:(n - 1)][ff] - uu[:(n-1), 0][ff]))
+    sbar[: (n - 1)][ff] = (2 * uu[: (n - 1), 5][ff] - uu[: (n - 1), 4][ff]) + (
+        uu[: (n - 1), 4][ff] - uu[: (n - 1), 3][ff]
+    ) * (xi[: (n - 1)][ff] - uu[: (n - 1), 0][ff]) / (
+        uu[: (n - 1), 1][ff] - uu[: (n - 1), 0][ff]
+    )
+    eta[: (n - 1)][ff] = (sbar[: (n - 1)][ff] - uu[: (n - 1), 3][ff]) / (
+        xi[: (n - 1)][ff] - uu[: (n - 1), 0][ff]
+    )
 
-    sbar[(n - 1):(n + q + r + ss - 1)] = \
-        (2 * uu[(n - 1):(n + q + r + ss - 1), 5] -
-         uu[(n - 1):(n + q + r + ss - 1), 4]) + \
-        (uu[(n - 1):(n + q + r + ss - 1), 4] -
-         uu[(n - 1):(n + q + r + ss - 1), 3]) * \
-        (xk[(n - 1):(n + q + r + ss - 1)] -
-         uu[(n - 1):(n + q + r + ss - 1), 0]) / \
-        (uu[(n - 1):(n + q + r + ss - 1), 1] -
-         uu[(n - 1):(n + q + r + ss - 1), 0])
-    eta[(n - 1):(n + q + r + ss - 1)] = \
-        (sbar[(n - 1):(n + q + r + ss - 1)] -
-         uu[(n - 1):(n + q + r + ss - 1), 3]) / \
-        (xk[(n - 1):(n + q + r + ss - 1)] -
-         uu[(n - 1):(n + q + r + ss - 1), 0])
+    sbar[(n - 1) : (n + q + r + ss - 1)] = (
+        2 * uu[(n - 1) : (n + q + r + ss - 1), 5]
+        - uu[(n - 1) : (n + q + r + ss - 1), 4]
+    ) + (
+        uu[(n - 1) : (n + q + r + ss - 1), 4] - uu[(n - 1) : (n + q + r + ss - 1), 3]
+    ) * (xk[(n - 1) : (n + q + r + ss - 1)] - uu[(n - 1) : (n + q + r + ss - 1), 0]) / (
+        uu[(n - 1) : (n + q + r + ss - 1), 1] - uu[(n - 1) : (n + q + r + ss - 1), 0]
+    )
+    eta[(n - 1) : (n + q + r + ss - 1)] = (
+        sbar[(n - 1) : (n + q + r + ss - 1)] - uu[(n - 1) : (n + q + r + ss - 1), 3]
+    ) / (xk[(n - 1) : (n + q + r + ss - 1)] - uu[(n - 1) : (n + q + r + ss - 1), 0])
 
     # constant term for polynomial for intervals with internal knots
-    a[:(n - 1), 2][~u] = uu[:(n - 1), 2][~u]
-    a[:(n - 1), 1][~u] = uu[:(n - 1), 3][~u]
-    a[:(n - 1), 0][~u] = 0.5 * eta[:(n - 1)][~u]  # leading coefficient
+    a[: (n - 1), 2][~u] = uu[: (n - 1), 2][~u]
+    a[: (n - 1), 1][~u] = uu[: (n - 1), 3][~u]
+    a[: (n - 1), 0][~u] = 0.5 * eta[: (n - 1)][~u]  # leading coefficient
 
-    a[(n - 1):(n + q + r + ss - 1), 2] = \
-        uu[(n - 1):(n + q + r + ss - 1), 2] + \
-        uu[(n - 1):(n + q + r + ss - 1), 3] * \
-        (xk[(n - 1):(n + q + r + ss - 1)] -
-         uu[(n - 1):(n + q + r + ss - 1), 0]) + \
-        .5 * eta[(n - 1):(n + q + r + ss - 1)] * \
-        (xk[(n - 1):(n + q + r + ss - 1)] -
-         uu[(n - 1):(n + q + r + ss - 1), 0]) ** 2.
-    a[(n - 1):(n + q + r + ss - 1), 1] = sbar[(n - 1):(n + q + r + ss - 1)]
-    a[(n - 1):(n + q + r + ss - 1), 0] = \
-        .5 * (uu[(n - 1):(n + q + r + ss - 1), 4] -
-              sbar[(n - 1):(n + q + r + ss - 1)]) / \
-        (uu[(n - 1):(n + q + r + ss - 1), 1] -
-         uu[(n - 1):(n + q + r + ss - 1), 0])
+    a[(n - 1) : (n + q + r + ss - 1), 2] = (
+        uu[(n - 1) : (n + q + r + ss - 1), 2]
+        + uu[(n - 1) : (n + q + r + ss - 1), 3]
+        * (xk[(n - 1) : (n + q + r + ss - 1)] - uu[(n - 1) : (n + q + r + ss - 1), 0])
+        + 0.5
+        * eta[(n - 1) : (n + q + r + ss - 1)]
+        * (xk[(n - 1) : (n + q + r + ss - 1)] - uu[(n - 1) : (n + q + r + ss - 1), 0])
+        ** 2.0
+    )
+    a[(n - 1) : (n + q + r + ss - 1), 1] = sbar[(n - 1) : (n + q + r + ss - 1)]
+    a[(n - 1) : (n + q + r + ss - 1), 0] = (
+        0.5
+        * (uu[(n - 1) : (n + q + r + ss - 1), 4] - sbar[(n - 1) : (n + q + r + ss - 1)])
+        / (
+            uu[(n - 1) : (n + q + r + ss - 1), 1]
+            - uu[(n - 1) : (n + q + r + ss - 1), 0]
+        )
+    )
 
-    yk[(n - 1):(n + q + r + ss - 1)] = a[(n - 1):(n + q + r + ss - 1), 2]
+    yk[(n - 1) : (n + q + r + ss - 1)] = a[(n - 1) : (n + q + r + ss - 1), 2]
 
     xk[n + q + r + ss - 1] = x[n - 1]
     yk[n + q + r + ss - 1] = y[n - 1]
-    flag[(n - 1):(n + q + r + ss - 1)] = True  # these are all inserted knots
+    flag[(n - 1) : (n + q + r + ss - 1)] = True  # these are all inserted knots
 
     tmp = np.vstack((xk, a.T, yk, flag)).T
     # sort output in terms of increasing x (original plus added knots)
-    tmp2 = tmp[tmp[:, 0].argsort(kind='mergesort')]
+    tmp2 = tmp[tmp[:, 0].argsort(kind="mergesort")]
 
     t = tmp2[:, 0]
     outn = len(t)
-    c = tmp2[0:(outn - 1), 1:4]
+    c = tmp2[0 : (outn - 1), 1:4]
     yhat = tmp2[:, 4]
     kflag = tmp2[:, 5]
     return t, c, yhat, kflag
 
 
-def astm_e1036(v, i, imax_limits=(0.75, 1.15), vmax_limits=(0.75, 1.15),
-               voc_points=3, isc_points=3, mp_fit_order=4):
-    '''
+def astm_e1036(
+    v,
+    i,
+    imax_limits=(0.75, 1.15),
+    vmax_limits=(0.75, 1.15),
+    voc_points=3,
+    isc_points=3,
+    mp_fit_order=4,
+):
+    """
     Extract photovoltaic IV parameters according to ASTM E1036. Assumes that
     the power producing portion of the curve is in the first quadrant.
 
@@ -468,64 +538,63 @@ def astm_e1036(v, i, imax_limits=(0.75, 1.15), vmax_limits=(0.75, 1.15),
     .. [1] Standard Test Methods for Electrical Performance of Nonconcentrator
        Terrestrial Photovoltaic Modules and Arrays Using Reference Cells,
        ASTM E1036-15(2019), :doi:`10.1520/E1036-15R19`
-    '''
+    """
 
     # Adapted from https://github.com/NREL/iv_params
     # Copyright (c) 2022, Alliance for Sustainable Energy, LLC
     # All rights reserved.
 
     df = pd.DataFrame()
-    df['v'] = v
-    df['i'] = i
-    df['p'] = df['v'] * df['i']
+    df["v"] = v
+    df["i"] = i
+    df["p"] = df["v"] * df["i"]
 
     # determine if we can use voc and isc estimates
-    i_min_ind = df['i'].abs().idxmin()
-    v_min_ind = df['v'].abs().idxmin()
-    voc_est = df['v'][i_min_ind]
-    isc_est = df['i'][v_min_ind]
+    i_min_ind = df["i"].abs().idxmin()
+    v_min_ind = df["v"].abs().idxmin()
+    voc_est = df["v"][i_min_ind]
+    isc_est = df["i"][v_min_ind]
 
     # accept the estimates if they are close enough
     # if not, perform a linear fit
-    if abs(df['i'][i_min_ind]) <= isc_est * 0.001:
+    if abs(df["i"][i_min_ind]) <= isc_est * 0.001:
         voc = voc_est
     else:
-        df['i_abs'] = df['i'].abs()
-        voc_df = df.nsmallest(voc_points, 'i_abs')
-        voc_fit = Poly.fit(voc_df['i'], voc_df['v'], 1)
+        df["i_abs"] = df["i"].abs()
+        voc_df = df.nsmallest(voc_points, "i_abs")
+        voc_fit = Poly.fit(voc_df["i"], voc_df["v"], 1)
         voc = voc_fit(0)
 
-    if abs(df['v'][v_min_ind]) <= voc_est * 0.005:
+    if abs(df["v"][v_min_ind]) <= voc_est * 0.005:
         isc = isc_est
     else:
-        df['v_abs'] = df['v'].abs()
-        isc_df = df.nsmallest(isc_points, 'v_abs')
-        isc_fit = Poly.fit(isc_df['v'], isc_df['i'], 1)
+        df["v_abs"] = df["v"].abs()
+        isc_df = df.nsmallest(isc_points, "v_abs")
+        isc_fit = Poly.fit(isc_df["v"], isc_df["i"], 1)
         isc = isc_fit(0)
 
     # estimate max power point
-    max_index = df['p'].idxmax()
+    max_index = df["p"].idxmax()
     mp_est = df.loc[max_index]
 
     # filter around max power
     mask = (
-        (df['i'] >= imax_limits[0] * mp_est['i']) &
-        (df['i'] <= imax_limits[1] * mp_est['i']) &
-        (df['v'] >= vmax_limits[0] * mp_est['v']) &
-        (df['v'] <= vmax_limits[1] * mp_est['v'])
+        (df["i"] >= imax_limits[0] * mp_est["i"])
+        & (df["i"] <= imax_limits[1] * mp_est["i"])
+        & (df["v"] >= vmax_limits[0] * mp_est["v"])
+        & (df["v"] <= vmax_limits[1] * mp_est["v"])
     )
     filtered = df[mask]
 
     # fit polynomial and find max
-    mp_fit = Poly.fit(filtered['v'], filtered['p'], mp_fit_order)
+    mp_fit = Poly.fit(filtered["v"], filtered["p"], mp_fit_order)
     # Note that this root finding procedure differs from
     # the suggestion in the standard
     roots = mp_fit.deriv().roots()
     # only consider real roots
     roots = roots.real[abs(roots.imag) < 1e-5]
     # only consider roots in the relevant part of the domain
-    roots = roots[(roots < filtered['v'].max()) &
-                  (roots > filtered['v'].min())]
+    roots = roots[(roots < filtered["v"].max()) & (roots > filtered["v"].min())]
     vmp = roots[np.argmax(mp_fit(roots))]
     pmp = mp_fit(vmp)
     # Imp isn't mentioned for update in the
@@ -535,12 +604,12 @@ def astm_e1036(v, i, imax_limits=(0.75, 1.15), vmax_limits=(0.75, 1.15),
     ff = pmp / (voc * isc)
 
     result = {}
-    result['voc'] = voc
-    result['isc'] = isc
-    result['vmp'] = vmp
-    result['imp'] = imp
-    result['pmp'] = pmp
-    result['ff'] = ff
-    result['mp_fit'] = mp_fit
+    result["voc"] = voc
+    result["isc"] = isc
+    result["vmp"] = vmp
+    result["imp"] = imp
+    result["pmp"] = pmp
+    result["ff"] = ff
+    result["mp_fit"] = mp_fit
 
     return result

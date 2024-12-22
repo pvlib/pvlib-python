@@ -16,29 +16,29 @@ from numpy.polynomial.polynomial import polyfit  # different than np.polyfit
 
 
 def _sandia_eff(v_dc, p_dc, inverter):
-    r'''
+    r"""
     Calculate the inverter AC power without clipping
-    '''
-    Paco = inverter['Paco']
-    Pdco = inverter['Pdco']
-    Vdco = inverter['Vdco']
-    C0 = inverter['C0']
-    C1 = inverter['C1']
-    C2 = inverter['C2']
-    C3 = inverter['C3']
-    Pso = inverter['Pso']
+    """
+    Paco = inverter["Paco"]
+    Pdco = inverter["Pdco"]
+    Vdco = inverter["Vdco"]
+    C0 = inverter["C0"]
+    C1 = inverter["C1"]
+    C2 = inverter["C2"]
+    C3 = inverter["C3"]
+    Pso = inverter["Pso"]
 
     A = Pdco * (1 + C1 * (v_dc - Vdco))
     B = Pso * (1 + C2 * (v_dc - Vdco))
     C = C0 * (1 + C3 * (v_dc - Vdco))
 
-    return (Paco / (A - B) - C * (A - B)) * (p_dc - B) + C * (p_dc - B)**2
+    return (Paco / (A - B) - C * (A - B)) * (p_dc - B) + C * (p_dc - B) ** 2
 
 
 def _sandia_limits(power_ac, p_dc, Paco, Pnt, Pso):
-    r'''
+    r"""
     Applies minimum and maximum power limits to `power_ac`
-    '''
+    """
     power_ac = np.minimum(Paco, power_ac)
     min_ac_power = -1.0 * abs(Pnt)
     below_limit = p_dc < Pso
@@ -51,7 +51,7 @@ def _sandia_limits(power_ac, p_dc, Paco, Pnt, Pso):
 
 
 def sandia(v_dc, p_dc, inverter):
-    r'''
+    r"""
     Convert DC power and voltage to AC power using Sandia's
     Grid-Connected PV Inverter model.
 
@@ -122,11 +122,11 @@ def sandia(v_dc, p_dc, inverter):
     See also
     --------
     pvlib.pvsystem.retrieve_sam
-    '''
+    """
 
-    Paco = inverter['Paco']
-    Pnt = inverter['Pnt']
-    Pso = inverter['Pso']
+    Paco = inverter["Paco"]
+    Pnt = inverter["Pnt"]
+    Pso = inverter["Pso"]
 
     power_ac = _sandia_eff(v_dc, p_dc, inverter)
     power_ac = _sandia_limits(power_ac, p_dc, Paco, Pnt, Pso)
@@ -138,7 +138,7 @@ def sandia(v_dc, p_dc, inverter):
 
 
 def sandia_multi(v_dc, p_dc, inverter):
-    r'''
+    r"""
     Convert DC power and voltage to AC power for an inverter with multiple
     MPPT inputs.
 
@@ -185,22 +185,23 @@ def sandia_multi(v_dc, p_dc, inverter):
     See also
     --------
     pvlib.inverter.sandia
-    '''
+    """
 
     if len(p_dc) != len(v_dc):
-        raise ValueError('p_dc and v_dc have different lengths')
+        raise ValueError("p_dc and v_dc have different lengths")
     power_dc = sum(p_dc)
-    power_ac = 0. * power_dc
+    power_ac = 0.0 * power_dc
 
     for vdc, pdc in zip(v_dc, p_dc):
         power_ac += pdc / power_dc * _sandia_eff(vdc, power_dc, inverter)
 
-    return _sandia_limits(power_ac, power_dc, inverter['Paco'],
-                          inverter['Pnt'], inverter['Pso'])
+    return _sandia_limits(
+        power_ac, power_dc, inverter["Paco"], inverter["Pnt"], inverter["Pso"]
+    )
 
 
 def adr(v_dc, p_dc, inverter, vtol=0.10):
-    r'''
+    r"""
     Converts DC power and voltage to AC power using Anton Driesse's
     grid-connected inverter efficiency model.
 
@@ -277,18 +278,18 @@ def adr(v_dc, p_dc, inverter, vtol=0.10):
     --------
     pvlib.inverter.sandia
     pvlib.pvsystem.retrieve_sam
-    '''
+    """
 
-    p_nom = inverter['Pnom']
-    v_nom = inverter['Vnom']
-    pac_max = inverter['Pacmax']
-    p_nt = inverter['Pnt']
-    ce_list = inverter['ADRCoefficients']
-    v_max = inverter['Vmax']
-    v_min = inverter['Vmin']
-    vdc_max = inverter['Vdcmax']
-    mppt_hi = inverter['MPPTHi']
-    mppt_low = inverter['MPPTLow']
+    p_nom = inverter["Pnom"]
+    v_nom = inverter["Vnom"]
+    pac_max = inverter["Pacmax"]
+    p_nt = inverter["Pnt"]
+    ce_list = inverter["ADRCoefficients"]
+    v_max = inverter["Vmax"]
+    v_min = inverter["Vmin"]
+    vdc_max = inverter["Vdcmax"]
+    mppt_hi = inverter["MPPTHi"]
+    mppt_low = inverter["MPPTLow"]
 
     v_lim_upper = float(np.nanmax([v_max, vdc_max, mppt_hi]) * (1 + vtol))
     v_lim_lower = float(np.nanmax([v_min, mppt_low]) * (1 - vtol))
@@ -297,23 +298,27 @@ def adr(v_dc, p_dc, inverter, vtol=0.10):
     vdc = v_dc / v_nom
     # zero voltage will lead to division by zero, but since power is
     # set to night time value later, these errors can be safely ignored
-    with np.errstate(invalid='ignore', divide='ignore'):
-        poly = np.array([pdc**0,  # replace with np.ones_like?
-                         pdc,
-                         pdc**2,
-                         vdc - 1,
-                         pdc * (vdc - 1),
-                         pdc**2 * (vdc - 1),
-                         1. / vdc - 1,  # divide by 0
-                         pdc * (1. / vdc - 1),  # invalid 0./0. --> nan
-                         pdc**2 * (1. / vdc - 1)])  # divide by 0
+    with np.errstate(invalid="ignore", divide="ignore"):
+        poly = np.array(
+            [
+                pdc**0,  # replace with np.ones_like?
+                pdc,
+                pdc**2,
+                vdc - 1,
+                pdc * (vdc - 1),
+                pdc**2 * (vdc - 1),
+                1.0 / vdc - 1,  # divide by 0
+                pdc * (1.0 / vdc - 1),  # invalid 0./0. --> nan
+                pdc**2 * (1.0 / vdc - 1),
+            ]
+        )  # divide by 0
     p_loss = np.dot(np.array(ce_list), poly)
     power_ac = p_nom * (pdc - p_loss)
     p_nt = -1 * np.absolute(p_nt)
 
     # set output to nan where input is outside of limits
     # errstate silences case where input is nan
-    with np.errstate(invalid='ignore'):
+    with np.errstate(invalid="ignore"):
         invalid = (v_lim_upper < v_dc) | (v_dc < v_lim_lower)
     power_ac = np.where(invalid, np.nan, power_ac)
 
@@ -398,13 +403,15 @@ def pvwatts(pdc, pdc0, eta_inv_nom=0.96, eta_inv_ref=0.9637):
 
     # eta < 0 if zeta < 0.006. power_ac is forced to be >= 0 below. GH 541
     # In some published versions of [1] the parentheses are missing
-    eta = eta_inv_nom / eta_inv_ref * (
-        -0.0162 * zeta - np.divide(0.0059, zeta, out=eta, where=pdc_neq_0)
-        + 0.9858)  # noQA: W503
+    eta = (
+        eta_inv_nom
+        / eta_inv_ref
+        * (-0.0162 * zeta - np.divide(0.0059, zeta, out=eta, where=pdc_neq_0) + 0.9858)
+    )  # noQA: W503
 
     power_ac = eta * pdc
     power_ac = np.minimum(pac0, power_ac)
-    power_ac = np.maximum(0, power_ac)     # GH 541
+    power_ac = np.maximum(0, power_ac)  # GH 541
 
     return power_ac
 
@@ -443,7 +450,7 @@ def pvwatts_multi(pdc, pdc0, eta_inv_nom=0.96, eta_inv_ref=0.9637):
 
 
 def fit_sandia(ac_power, dc_power, dc_voltage, dc_voltage_level, p_ac_0, p_nt):
-    r'''
+    r"""
     Determine parameters for the Sandia inverter model.
 
     Parameters
@@ -494,25 +501,29 @@ def fit_sandia(ac_power, dc_power, dc_voltage, dc_voltage_level, p_ac_0, p_nt):
     .. [3] W. Bower, et al., "Performance Test Protocol for Evaluating
        Inverters Used in Grid-Connected Photovoltaic Systems", available at
        https://www.energy.ca.gov/sites/default/files/2020-06/2004-11-22_Sandia_Test_Protocol_ada.pdf
-    '''  # noqa: E501
+    """  # noqa: E501
 
-    voltage_levels = ['Vmin', 'Vnom', 'Vmax']
+    voltage_levels = ["Vmin", "Vnom", "Vmax"]
 
     # average dc input voltage at each voltage level
     v_d = np.array(
-        [dc_voltage[dc_voltage_level == 'Vmin'].mean(),
-         dc_voltage[dc_voltage_level == 'Vnom'].mean(),
-         dc_voltage[dc_voltage_level == 'Vmax'].mean()])
+        [
+            dc_voltage[dc_voltage_level == "Vmin"].mean(),
+            dc_voltage[dc_voltage_level == "Vnom"].mean(),
+            dc_voltage[dc_voltage_level == "Vmax"].mean(),
+        ]
+    )
     v_nom = v_d[1]  # model parameter
     # independent variable for regressions, x_d
     x_d = v_d - v_nom
 
     # empty dataframe to contain intermediate variables
-    coeffs = pd.DataFrame(index=voltage_levels,
-                          columns=['a', 'b', 'c', 'p_dc', 'p_s0'], data=np.nan)
+    coeffs = pd.DataFrame(
+        index=voltage_levels, columns=["a", "b", "c", "p_dc", "p_s0"], data=np.nan
+    )
 
     def solve_quad(a, b, c):
-        return (-b + (b**2 - 4 * a * c)**.5) / (2 * a)
+        return (-b + (b**2 - 4 * a * c) ** 0.5) / (2 * a)
 
     # [2] STEP 3E, fit a line to (DC voltage, model_coefficient)
     def extract_c(x_d, add):
@@ -532,18 +543,27 @@ def fit_sandia(ac_power, dc_power, dc_voltage, dc_voltage_level, p_ac_0, p_nt):
         p_s0 = solve_quad(a, b, c)
 
         # Add values to dataframe at index d
-        coeffs.loc[d, 'a'] = a
-        coeffs.loc[d, 'p_dc'] = p_dc
-        coeffs.loc[d, 'p_s0'] = p_s0
+        coeffs.loc[d, "a"] = a
+        coeffs.loc[d, "p_dc"] = p_dc
+        coeffs.loc[d, "p_s0"] = p_s0
 
-    b_dc0, b_dc1, c1 = extract_c(x_d, coeffs['p_dc'])
-    b_s0, b_s1, c2 = extract_c(x_d, coeffs['p_s0'])
-    b_c0, b_c1, c3 = extract_c(x_d, coeffs['a'])
+    b_dc0, b_dc1, c1 = extract_c(x_d, coeffs["p_dc"])
+    b_s0, b_s1, c2 = extract_c(x_d, coeffs["p_s0"])
+    b_c0, b_c1, c3 = extract_c(x_d, coeffs["a"])
 
     p_dc0 = b_dc0
     p_s0 = b_s0
     c0 = b_c0
 
     # prepare dict and return
-    return {'Paco': p_ac_0, 'Pdco': p_dc0, 'Vdco': v_nom, 'Pso': p_s0,
-            'C0': c0, 'C1': c1, 'C2': c2, 'C3': c3, 'Pnt': p_nt}
+    return {
+        "Paco": p_ac_0,
+        "Pdco": p_dc0,
+        "Vdco": v_nom,
+        "Pso": p_s0,
+        "C0": c0,
+        "C1": c1,
+        "C2": c2,
+        "C3": c3,
+        "Pnt": p_nt,
+    }

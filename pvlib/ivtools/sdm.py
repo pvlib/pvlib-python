@@ -21,11 +21,21 @@ from pvlib.ivtools.sde import _fit_sandia_cocontent
 from pvlib.tools import _first_order_centered_difference
 
 
-CONSTANTS = {'E0': 1000.0, 'T0': 25.0, 'k': constants.k, 'q': constants.e}
+CONSTANTS = {"E0": 1000.0, "T0": 25.0, "k": constants.k, "q": constants.e}
 
 
-def fit_cec_sam(celltype, v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
-                gamma_pmp, cells_in_series, temp_ref=25):
+def fit_cec_sam(
+    celltype,
+    v_mp,
+    i_mp,
+    v_oc,
+    i_sc,
+    alpha_sc,
+    beta_voc,
+    gamma_pmp,
+    cells_in_series,
+    temp_ref=25,
+):
     """
     Estimates parameters for the CEC single diode model (SDM) using the SAM
     SDK.
@@ -101,26 +111,47 @@ def fit_cec_sam(celltype, v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
     try:
         from PySAM import PySSC
     except ImportError:
-        raise ImportError("Requires NREL's PySAM package at "
-                          "https://pypi.org/project/NREL-PySAM/.")
+        raise ImportError(
+            "Requires NREL's PySAM package at " "https://pypi.org/project/NREL-PySAM/."
+        )
 
-    datadict = {'tech_model': '6parsolve', 'financial_model': None,
-                'celltype': celltype, 'Vmp': v_mp,
-                'Imp': i_mp, 'Voc': v_oc, 'Isc': i_sc, 'alpha_isc': alpha_sc,
-                'beta_voc': beta_voc, 'gamma_pmp': gamma_pmp,
-                'Nser': cells_in_series, 'Tref': temp_ref}
+    datadict = {
+        "tech_model": "6parsolve",
+        "financial_model": None,
+        "celltype": celltype,
+        "Vmp": v_mp,
+        "Imp": i_mp,
+        "Voc": v_oc,
+        "Isc": i_sc,
+        "alpha_isc": alpha_sc,
+        "beta_voc": beta_voc,
+        "gamma_pmp": gamma_pmp,
+        "Nser": cells_in_series,
+        "Tref": temp_ref,
+    }
 
     result = PySSC.ssc_sim_from_dict(datadict)
-    if result['cmod_success'] == 1:
-        return tuple([result[k] for k in ['Il', 'Io', 'Rs', 'Rsh', 'a',
-                      'Adj']])
+    if result["cmod_success"] == 1:
+        return tuple([result[k] for k in ["Il", "Io", "Rs", "Rsh", "a", "Adj"]])
     else:
-        raise RuntimeError('Parameter estimation failed')
+        raise RuntimeError("Parameter estimation failed")
 
 
-def fit_desoto(v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc, cells_in_series,
-               EgRef=1.121, dEgdT=-0.0002677, temp_ref=25, irrad_ref=1000,
-               init_guess={}, root_kwargs={}):
+def fit_desoto(
+    v_mp,
+    i_mp,
+    v_oc,
+    i_sc,
+    alpha_sc,
+    beta_voc,
+    cells_in_series,
+    EgRef=1.121,
+    dEgdT=-0.0002677,
+    temp_ref=25,
+    irrad_ref=1000,
+    init_guess={},
+    root_kwargs={},
+):
     """
     Calculates the parameters for the De Soto single diode model.
 
@@ -215,55 +246,60 @@ def fit_desoto(v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc, cells_in_series,
     """
 
     # Constants
-    k = constants.value('Boltzmann constant in eV/K')  # in eV/K
+    k = constants.value("Boltzmann constant in eV/K")  # in eV/K
     Tref = temp_ref + 273.15  # [K]
 
     # initial guesses of variables for computing convergence:
     # Default values are taken from [1], p753
-    init_guess_keys = ['IL_0', 'Io_0', 'Rs_0', 'Rsh_0', 'a_0']  # order matters
+    init_guess_keys = ["IL_0", "Io_0", "Rs_0", "Rsh_0", "a_0"]  # order matters
     init = {key: None for key in init_guess_keys}
-    init['IL_0'] = i_sc
-    init['a_0'] = 1.5*k*Tref*cells_in_series
-    init['Io_0'] = i_sc * np.exp(-v_oc/init['a_0'])
-    init['Rs_0'] = (init['a_0']*np.log1p((init['IL_0'] - i_mp)/init['Io_0'])
-                    - v_mp) / i_mp
-    init['Rsh_0'] = 100.0
+    init["IL_0"] = i_sc
+    init["a_0"] = 1.5 * k * Tref * cells_in_series
+    init["Io_0"] = i_sc * np.exp(-v_oc / init["a_0"])
+    init["Rs_0"] = (
+        init["a_0"] * np.log1p((init["IL_0"] - i_mp) / init["Io_0"]) - v_mp
+    ) / i_mp
+    init["Rsh_0"] = 100.0
     # overwrite if optional init_guess is provided
     for key in init_guess:
         if key in init_guess_keys:
             init[key] = init_guess[key]
         else:
-            raise ValueError(f"'{key}' is not a valid name;"
-                             f" allowed values are {init_guess_keys}")
+            raise ValueError(
+                f"'{key}' is not a valid name;" f" allowed values are {init_guess_keys}"
+            )
     # params_i : initial values vector
     params_i = np.array([init[k] for k in init_guess_keys])
 
     # specs of module
-    specs = (i_sc, v_oc, i_mp, v_mp, beta_voc, alpha_sc, EgRef, dEgdT,
-             Tref, k)
+    specs = (i_sc, v_oc, i_mp, v_mp, beta_voc, alpha_sc, EgRef, dEgdT, Tref, k)
 
     # computing with system of equations described in [1]
-    optimize_result = optimize.root(_system_of_equations_desoto, x0=params_i,
-                                    args=(specs,), **root_kwargs)
+    optimize_result = optimize.root(
+        _system_of_equations_desoto, x0=params_i, args=(specs,), **root_kwargs
+    )
 
     if optimize_result.success:
         sdm_params = optimize_result.x
     else:
-        raise RuntimeError(
-            'Parameter estimation failed:\n' + optimize_result.message)
+        raise RuntimeError("Parameter estimation failed:\n" + optimize_result.message)
 
     # results
-    return ({'I_L_ref': sdm_params[0],
-             'I_o_ref': sdm_params[1],
-             'R_s': sdm_params[2],
-             'R_sh_ref': sdm_params[3],
-             'a_ref': sdm_params[4],
-             'alpha_sc': alpha_sc,
-             'EgRef': EgRef,
-             'dEgdT': dEgdT,
-             'irrad_ref': irrad_ref,
-             'temp_ref': temp_ref},
-            optimize_result)
+    return (
+        {
+            "I_L_ref": sdm_params[0],
+            "I_o_ref": sdm_params[1],
+            "R_s": sdm_params[2],
+            "R_sh_ref": sdm_params[3],
+            "a_ref": sdm_params[4],
+            "alpha_sc": alpha_sc,
+            "EgRef": EgRef,
+            "dEgdT": dEgdT,
+            "irrad_ref": irrad_ref,
+            "temp_ref": temp_ref,
+        },
+        optimize_result,
+    )
 
 
 def _system_of_equations_desoto(params, specs):
@@ -301,14 +337,13 @@ def _system_of_equations_desoto(params, specs):
     y[1] = -IL + Io * np.expm1(Voc / a) + Voc / Rsh
 
     # 3rd equation - Imp & Vmp - eq(5) in [1]
-    y[2] = Imp - IL + Io * np.expm1((Vmp + Imp * Rs) / a) \
-        + (Vmp + Imp * Rs) / Rsh
+    y[2] = Imp - IL + Io * np.expm1((Vmp + Imp * Rs) / a) + (Vmp + Imp * Rs) / Rsh
 
     # 4th equation - Pmp derivated=0 - eq23.2.6 in [2]
     # caution: eq(6) in [1] has a sign error
-    y[3] = Imp \
-        - Vmp * ((Io / a) * np.exp((Vmp + Imp * Rs) / a) + 1.0 / Rsh) \
-        / (1.0 + (Io * Rs / a) * np.exp((Vmp + Imp * Rs) / a) + Rs / Rsh)
+    y[3] = Imp - Vmp * ((Io / a) * np.exp((Vmp + Imp * Rs) / a) + 1.0 / Rsh) / (
+        1.0 + (Io * Rs / a) * np.exp((Vmp + Imp * Rs) / a) + Rs / Rsh
+    )
 
     # 5th equation - open-circuit T2 - eq (4) at temperature T2 in [1]
     T2 = Tref + 2
@@ -316,13 +351,13 @@ def _system_of_equations_desoto(params, specs):
     a2 = a * T2 / Tref  # eq (8) in [1]
     IL2 = IL + alpha_sc * (T2 - Tref)  # eq (11) in [1]
     Eg2 = EgRef * (1 + dEgdT * (T2 - Tref))  # eq (10) in [1]
-    Io2 = Io * (T2 / Tref)**3 * np.exp(1 / k * (EgRef/Tref - Eg2/T2))  # eq (9)
+    Io2 = Io * (T2 / Tref) ** 3 * np.exp(1 / k * (EgRef / Tref - Eg2 / T2))  # eq (9)
     y[4] = -IL2 + Io2 * np.expm1(Voc2 / a2) + Voc2 / Rsh  # eq (4) at T2
 
     return y
 
 
-def fit_pvsyst_sandia(ivcurves, specs, const=None, maxiter=5, eps1=1.e-3):
+def fit_pvsyst_sandia(ivcurves, specs, const=None, maxiter=5, eps1=1.0e-3):
     """
     Estimate parameters for the PVsyst module performance model.
 
@@ -443,18 +478,18 @@ def fit_pvsyst_sandia(ivcurves, specs, const=None, maxiter=5, eps1=1.e-3):
     if const is None:
         const = CONSTANTS
 
-    ee = ivcurves['ee']
-    tc = ivcurves['tc']
+    ee = ivcurves["ee"]
+    tc = ivcurves["tc"]
     tck = tc + 273.15
-    isc = ivcurves['i_sc']
-    voc = ivcurves['v_oc']
-    imp = ivcurves['i_mp']
-    vmp = ivcurves['v_mp']
+    isc = ivcurves["i_sc"]
+    voc = ivcurves["v_oc"]
+    imp = ivcurves["i_mp"]
+    vmp = ivcurves["v_mp"]
 
     # Cell Thermal Voltage
-    vth = const['k'] / const['q'] * tck
+    vth = const["k"] / const["q"] * tck
 
-    n = len(ivcurves['v_oc'])
+    n = len(ivcurves["v_oc"])
 
     # Initial estimate of Rsh used to obtain the diode factor gamma0 and diode
     # temperature coefficient mu_gamma. Rsh is estimated using the co-content
@@ -462,48 +497,55 @@ def fit_pvsyst_sandia(ivcurves, specs, const=None, maxiter=5, eps1=1.e-3):
 
     rsh = np.ones(n)
     for j in range(n):
-        voltage, current = rectify_iv_curve(ivcurves['v'][j], ivcurves['i'][j])
+        voltage, current = rectify_iv_curve(ivcurves["v"][j], ivcurves["i"][j])
         # initial estimate of Rsh, from integral over voltage regression
         # [5] Step 3a; [6] Step 3a
         _, _, _, rsh[j], _ = _fit_sandia_cocontent(
-            voltage, current, vth[j] * specs['cells_in_series'])
+            voltage, current, vth[j] * specs["cells_in_series"]
+        )
 
-    gamma_ref, mu_gamma = _fit_pvsyst_sandia_gamma(voc, isc, rsh, vth, tck,
-                                                   specs, const)
+    gamma_ref, mu_gamma = _fit_pvsyst_sandia_gamma(
+        voc, isc, rsh, vth, tck, specs, const
+    )
 
-    badgamma = np.isnan(gamma_ref) or np.isnan(mu_gamma) \
-        or not np.isreal(gamma_ref) or not np.isreal(mu_gamma)
+    badgamma = (
+        np.isnan(gamma_ref)
+        or np.isnan(mu_gamma)
+        or not np.isreal(gamma_ref)
+        or not np.isreal(mu_gamma)
+    )
 
     if badgamma:
         raise RuntimeError(
             "Failed to estimate the diode (ideality) factor parameter;"
-            " aborting parameter estimation.")
+            " aborting parameter estimation."
+        )
 
-    gamma = gamma_ref + mu_gamma * (tc - const['T0'])
-    nnsvth = gamma * (vth * specs['cells_in_series'])
+    gamma = gamma_ref + mu_gamma * (tc - const["T0"])
+    nnsvth = gamma * (vth * specs["cells_in_series"])
 
     # For each IV curve, sequentially determine initial values for Io, Rs,
     # and Iph [5] Step 3a; [6] Step 3
-    iph, io, rs, u = _initial_iv_params(ivcurves, ee, voc, isc, rsh,
-                                        nnsvth)
+    iph, io, rs, u = _initial_iv_params(ivcurves, ee, voc, isc, rsh, nnsvth)
 
     # Update values for each IV curve to converge at vmp, imp, voc and isc
-    iph, io, rs, rsh, u = _update_iv_params(voc, isc, vmp, imp, ee,
-                                            iph, io, rs, rsh, nnsvth, u,
-                                            maxiter, eps1)
+    iph, io, rs, rsh, u = _update_iv_params(
+        voc, isc, vmp, imp, ee, iph, io, rs, rsh, nnsvth, u, maxiter, eps1
+    )
 
     # get single diode models from converged values for each IV curve
-    pvsyst = _extract_sdm_params(ee, tc, iph, io, rs, rsh, gamma, u,
-                                 specs, const, model='pvsyst')
+    pvsyst = _extract_sdm_params(
+        ee, tc, iph, io, rs, rsh, gamma, u, specs, const, model="pvsyst"
+    )
     # Add parameters estimated in this function
-    pvsyst['gamma_ref'] = gamma_ref
-    pvsyst['mu_gamma'] = mu_gamma
-    pvsyst['cells_in_series'] = specs['cells_in_series']
+    pvsyst["gamma_ref"] = gamma_ref
+    pvsyst["mu_gamma"] = mu_gamma
+    pvsyst["cells_in_series"] = specs["cells_in_series"]
 
     return pvsyst
 
 
-def fit_desoto_sandia(ivcurves, specs, const=None, maxiter=5, eps1=1.e-3):
+def fit_desoto_sandia(ivcurves, specs, const=None, maxiter=5, eps1=1.0e-3):
     """
     Estimate parameters for the De Soto module performance model.
 
@@ -614,16 +656,16 @@ def fit_desoto_sandia(ivcurves, specs, const=None, maxiter=5, eps1=1.e-3):
     if const is None:
         const = CONSTANTS
 
-    ee = ivcurves['ee']
-    tc = ivcurves['tc']
+    ee = ivcurves["ee"]
+    tc = ivcurves["tc"]
     tck = tc + 273.15
-    isc = ivcurves['i_sc']
-    voc = ivcurves['v_oc']
-    imp = ivcurves['i_mp']
-    vmp = ivcurves['v_mp']
+    isc = ivcurves["i_sc"]
+    voc = ivcurves["v_oc"]
+    imp = ivcurves["i_mp"]
+    vmp = ivcurves["v_mp"]
 
     # Cell Thermal Voltage
-    vth = const['k'] / const['q'] * tck
+    vth = const["k"] / const["q"] * tck
 
     n = len(voc)
 
@@ -633,11 +675,12 @@ def fit_desoto_sandia(ivcurves, specs, const=None, maxiter=5, eps1=1.e-3):
 
     rsh = np.ones(n)
     for j in range(n):
-        voltage, current = rectify_iv_curve(ivcurves['v'][j], ivcurves['i'][j])
+        voltage, current = rectify_iv_curve(ivcurves["v"][j], ivcurves["i"][j])
         # initial estimate of Rsh, from integral over voltage regression
         # [5] Step 3a; [6] Step 3a
         _, _, _, rsh[j], _ = _fit_sandia_cocontent(
-            voltage, current, vth[j] * specs['cells_in_series'])
+            voltage, current, vth[j] * specs["cells_in_series"]
+        )
 
     n0 = _fit_desoto_sandia_diode(ee, voc, vth, tc, specs, const)
 
@@ -646,27 +689,29 @@ def fit_desoto_sandia(ivcurves, specs, const=None, maxiter=5, eps1=1.e-3):
     if bad_n:
         raise RuntimeError(
             "Failed to estimate the diode (ideality) factor parameter;"
-            " aborting parameter estimation.")
+            " aborting parameter estimation."
+        )
 
-    nnsvth = n0 * specs['cells_in_series'] * vth
+    nnsvth = n0 * specs["cells_in_series"] * vth
 
     # For each IV curve, sequentially determine initial values for Io, Rs,
     # and Iph [5] Step 3a; [6] Step 3
-    iph, io, rs, u = _initial_iv_params(ivcurves, ee, voc, isc, rsh,
-                                        nnsvth)
+    iph, io, rs, u = _initial_iv_params(ivcurves, ee, voc, isc, rsh, nnsvth)
 
     # Update values for each IV curve to converge at vmp, imp, voc and isc
-    iph, io, rs, rsh, u = _update_iv_params(voc, isc, vmp, imp, ee,
-                                            iph, io, rs, rsh, nnsvth, u,
-                                            maxiter, eps1)
+    iph, io, rs, rsh, u = _update_iv_params(
+        voc, isc, vmp, imp, ee, iph, io, rs, rsh, nnsvth, u, maxiter, eps1
+    )
 
     # get single diode models from converged values for each IV curve
-    desoto = _extract_sdm_params(ee, tc, iph, io, rs, rsh, n0, u,
-                                 specs, const, model='desoto')
+    desoto = _extract_sdm_params(
+        ee, tc, iph, io, rs, rsh, n0, u, specs, const, model="desoto"
+    )
     # Add parameters estimated in this function
-    desoto['a_ref'] = n0 * specs['cells_in_series'] * const['k'] / \
-        const['q'] * (const['T0'] + 273.15)
-    desoto['cells_in_series'] = specs['cells_in_series']
+    desoto["a_ref"] = (
+        n0 * specs["cells_in_series"] * const["k"] / const["q"] * (const["T0"] + 273.15)
+    )
+    desoto["cells_in_series"] = specs["cells_in_series"]
 
     return desoto
 
@@ -675,17 +720,23 @@ def _fit_pvsyst_sandia_gamma(voc, isc, rsh, vth, tck, specs, const):
     # Estimate the diode factor gamma from Isc-Voc data. Method incorporates
     # temperature dependence by means of the equation for Io
 
-    y = np.log(isc - voc / rsh) - 3. * np.log(tck / (const['T0'] + 273.15))
-    x1 = const['q'] / const['k'] * (1. / (const['T0'] + 273.15) - 1. / tck)
-    x2 = voc / (vth * specs['cells_in_series'])
+    y = np.log(isc - voc / rsh) - 3.0 * np.log(tck / (const["T0"] + 273.15))
+    x1 = const["q"] / const["k"] * (1.0 / (const["T0"] + 273.15) - 1.0 / tck)
+    x2 = voc / (vth * specs["cells_in_series"])
     uu = np.logical_or(np.isnan(y), np.isnan(x1), np.isnan(x2))
 
-    x = np.vstack((np.ones(len(x1[~uu])), x1[~uu], -x1[~uu] *
-                   (tck[~uu] - (const['T0'] + 273.15)), x2[~uu],
-                   -x2[~uu] * (tck[~uu] - (const['T0'] + 273.15)))).T
+    x = np.vstack(
+        (
+            np.ones(len(x1[~uu])),
+            x1[~uu],
+            -x1[~uu] * (tck[~uu] - (const["T0"] + 273.15)),
+            x2[~uu],
+            -x2[~uu] * (tck[~uu] - (const["T0"] + 273.15)),
+        )
+    ).T
     alpha = np.linalg.lstsq(x, y[~uu], rcond=None)[0]
 
-    gamma_ref = 1. / alpha[3]
+    gamma_ref = 1.0 / alpha[3]
     mu_gamma = alpha[4] / alpha[3] ** 2
     return gamma_ref, mu_gamma
 
@@ -697,10 +748,11 @@ def _fit_desoto_sandia_diode(ee, voc, vth, tc, specs, const):
         import statsmodels.api as sm
     except ImportError:
         raise ImportError(
-            'Parameter extraction using Sandia method requires statsmodels')
+            "Parameter extraction using Sandia method requires statsmodels"
+        )
 
-    x = specs['cells_in_series'] * vth * np.log(ee / const['E0'])
-    y = voc - specs['beta_voc'] * (tc - const['T0'])
+    x = specs["cells_in_series"] * vth * np.log(ee / const["E0"])
+    y = voc - specs["beta_voc"] * (tc - const["T0"])
     new_x = sm.add_constant(x)
     res = sm.RLM(y, new_x).fit()
     return np.array(res.params)[1]
@@ -709,42 +761,46 @@ def _fit_desoto_sandia_diode(ee, voc, vth, tc, specs, const):
 def _initial_iv_params(ivcurves, ee, voc, isc, rsh, nnsvth):
     # sets initial values for iph, io, rs and quality filter u.
     # Helper function for fit_<model>_sandia.
-    n = len(ivcurves['v_oc'])
+    n = len(ivcurves["v_oc"])
     io = np.ones(n)
     iph = np.ones(n)
     rs = np.ones(n)
 
     for j in range(n):
-
         if rsh[j] > 0:
-            volt, curr = rectify_iv_curve(ivcurves['v'][j],
-                                          ivcurves['i'][j])
+            volt, curr = rectify_iv_curve(ivcurves["v"][j], ivcurves["i"][j])
             # Initial estimate of Io, evaluate the single diode model at
             # voc and approximate Iph + Io = Isc [5] Step 3a; [6] Step 3b
-            io[j] = (isc[j] - voc[j] / rsh[j]) * np.exp(-voc[j] /
-                                                        nnsvth[j])
+            io[j] = (isc[j] - voc[j] / rsh[j]) * np.exp(-voc[j] / nnsvth[j])
 
             # initial estimate of rs from dI/dV near Voc
             # [5] Step 3a; [6] Step 3c
             [didv, d2id2v] = _numdiff(volt, curr)
-            t3 = volt > .5 * voc[j]
-            t4 = volt < .9 * voc[j]
-            tmp = -rsh[j] * didv - 1.
+            t3 = volt > 0.5 * voc[j]
+            t4 = volt < 0.9 * voc[j]
+            tmp = -rsh[j] * didv - 1.0
             with np.errstate(invalid="ignore"):  # expect nan in didv
-                v = np.logical_and.reduce(np.array([t3, t4, ~np.isnan(tmp),
-                                                    np.greater(tmp, 0)]))
+                v = np.logical_and.reduce(
+                    np.array([t3, t4, ~np.isnan(tmp), np.greater(tmp, 0)])
+                )
             if np.any(v):
-                vtrs = (nnsvth[j] / isc[j] * (
-                    np.log(tmp[v] * nnsvth[j] / (rsh[j] * io[j]))
-                    - volt[v] / nnsvth[j]))
+                vtrs = (
+                    nnsvth[j]
+                    / isc[j]
+                    * (
+                        np.log(tmp[v] * nnsvth[j] / (rsh[j] * io[j]))
+                        - volt[v] / nnsvth[j]
+                    )
+                )
                 rs[j] = np.mean(vtrs[vtrs > 0], axis=0)
             else:
-                rs[j] = 0.
+                rs[j] = 0.0
 
             # Initial estimate of Iph, evaluate the single diode model at
             # Isc [5] Step 3a; [6] Step 3d
-            iph[j] = isc[j] + io[j] * np.expm1(isc[j] / nnsvth[j]) \
-                + isc[j] * rs[j] / rsh[j]
+            iph[j] = (
+                isc[j] + io[j] * np.expm1(isc[j] / nnsvth[j]) + isc[j] * rs[j] / rsh[j]
+            )
 
         else:
             io[j] = np.nan
@@ -766,27 +822,33 @@ def _initial_iv_params(ivcurves, ee, voc, isc, rsh, nnsvth):
     return iph, io, rs, u
 
 
-def _update_iv_params(voc, isc, vmp, imp, ee, iph, io, rs, rsh, nnsvth, u,
-                      maxiter, eps1):
+def _update_iv_params(
+    voc, isc, vmp, imp, ee, iph, io, rs, rsh, nnsvth, u, maxiter, eps1
+):
     # Refine Rsh, Rs, Io and Iph in that order.
     # Helper function for fit_<model>_sandia.
-    counter = 1.  # counter variable for parameter updating while loop,
+    counter = 1.0  # counter variable for parameter updating while loop,
     # counts iterations
     prevconvergeparams = {}
-    prevconvergeparams['state'] = 0.0
+    prevconvergeparams["state"] = 0.0
 
     not_converged = np.array([True])
 
     while not_converged.any() and counter <= maxiter:
         # update rsh to match max power point using a fixed point method.
-        rsh[u] = _update_rsh_fixed_pt(vmp[u], imp[u], iph[u], io[u], rs[u],
-                                      rsh[u], nnsvth[u])
+        rsh[u] = _update_rsh_fixed_pt(
+            vmp[u], imp[u], iph[u], io[u], rs[u], rsh[u], nnsvth[u]
+        )
 
         # Calculate Rs to be consistent with Rsh and maximum power point
-        _, phi = _calc_theta_phi_exact(vmp[u], imp[u], iph[u], io[u],
-                                       rs[u], rsh[u], nnsvth[u])
-        rs[u] = (iph[u] + io[u] - imp[u]) * rsh[u] / imp[u] - \
-            nnsvth[u] * phi / imp[u] - vmp[u] / imp[u]
+        _, phi = _calc_theta_phi_exact(
+            vmp[u], imp[u], iph[u], io[u], rs[u], rsh[u], nnsvth[u]
+        )
+        rs[u] = (
+            (iph[u] + io[u] - imp[u]) * rsh[u] / imp[u]
+            - nnsvth[u] * phi / imp[u]
+            - vmp[u] / imp[u]
+        )
 
         # Update filter for good parameters
         u = _filter_params(ee, isc, io, rs, rsh)
@@ -806,43 +868,45 @@ def _update_iv_params(voc, isc, vmp, imp, ee, iph, io, rs, rsh, nnsvth, u,
         # check convergence criteria
         # [5] Step 3d
         convergeparams = _check_converge(
-            prevconvergeparams, result, vmp[u], imp[u], counter)
+            prevconvergeparams, result, vmp[u], imp[u], counter
+        )
 
         prevconvergeparams = convergeparams
-        counter += 1.
-        t5 = prevconvergeparams['vmperrmeanchange'] >= eps1
-        t6 = prevconvergeparams['imperrmeanchange'] >= eps1
-        t7 = prevconvergeparams['pmperrmeanchange'] >= eps1
-        t8 = prevconvergeparams['vmperrstdchange'] >= eps1
-        t9 = prevconvergeparams['imperrstdchange'] >= eps1
-        t10 = prevconvergeparams['pmperrstdchange'] >= eps1
-        t11 = prevconvergeparams['vmperrabsmaxchange'] >= eps1
-        t12 = prevconvergeparams['imperrabsmaxchange'] >= eps1
-        t13 = prevconvergeparams['pmperrabsmaxchange'] >= eps1
-        not_converged = np.logical_or.reduce(np.array([t5, t6, t7, t8, t9,
-                                                       t10, t11, t12, t13]))
+        counter += 1.0
+        t5 = prevconvergeparams["vmperrmeanchange"] >= eps1
+        t6 = prevconvergeparams["imperrmeanchange"] >= eps1
+        t7 = prevconvergeparams["pmperrmeanchange"] >= eps1
+        t8 = prevconvergeparams["vmperrstdchange"] >= eps1
+        t9 = prevconvergeparams["imperrstdchange"] >= eps1
+        t10 = prevconvergeparams["pmperrstdchange"] >= eps1
+        t11 = prevconvergeparams["vmperrabsmaxchange"] >= eps1
+        t12 = prevconvergeparams["imperrabsmaxchange"] >= eps1
+        t13 = prevconvergeparams["pmperrabsmaxchange"] >= eps1
+        not_converged = np.logical_or.reduce(
+            np.array([t5, t6, t7, t8, t9, t10, t11, t12, t13])
+        )
 
     return iph, io, rs, rsh, u
 
 
-def _extract_sdm_params(ee, tc, iph, io, rs, rsh, n, u, specs, const,
-                        model):
+def _extract_sdm_params(ee, tc, iph, io, rs, rsh, n, u, specs, const, model):
     # Get single diode model parameters from five parameters iph, io, rs, rsh
     # and n vs. effective irradiance and temperature
     try:
         import statsmodels.api as sm
     except ImportError:
         raise ImportError(
-            'Parameter extraction using Sandia method requires statsmodels')
+            "Parameter extraction using Sandia method requires statsmodels"
+        )
 
     tck = tc + 273.15
-    tok = const['T0'] + 273.15  # convert to to K
+    tok = const["T0"] + 273.15  # convert to to K
 
     params = {}
 
-    if model == 'pvsyst':
+    if model == "pvsyst":
         # Estimate I_o_ref and EgRef
-        x_for_io = const['q'] / const['k'] * (1. / tok - 1. / tck[u]) / n[u]
+        x_for_io = const["q"] / const["k"] * (1.0 / tok - 1.0 / tck[u]) / n[u]
 
         # Estimate R_sh_0, R_sh_ref and R_sh_exp
         # Initial guesses. R_sh_0 is value at ee=0.
@@ -867,33 +931,40 @@ def _extract_sdm_params(ee, tc, iph, io, rs, rsh, n, u, specs, const,
 
         x0 = np.array([grsh0, grshref])
         beta = optimize.least_squares(
-            fun_rsh, x0, args=(R_sh_exp, ee[u], const['E0'], rsh[u]),
-            bounds=np.array([[1., 1.], [1.e7, 1.e6]]), verbose=2)
+            fun_rsh,
+            x0,
+            args=(R_sh_exp, ee[u], const["E0"], rsh[u]),
+            bounds=np.array([[1.0, 1.0], [1.0e7, 1.0e6]]),
+            verbose=2,
+        )
         # Extract PVsyst parameter values
         R_sh_0 = beta.x[0]
         R_sh_ref = beta.x[1]
 
         # parameters unique to PVsyst
-        params['R_sh_0'] = R_sh_0
-        params['R_sh_exp'] = R_sh_exp
+        params["R_sh_0"] = R_sh_0
+        params["R_sh_exp"] = R_sh_exp
 
-    elif model == 'desoto':
+    elif model == "desoto":
         dEgdT = -0.0002677
-        x_for_io = const['q'] / const['k'] * (
-            1. / tok - 1. / tck[u] + dEgdT * (tc[u] - const['T0']) / tck[u])
+        x_for_io = (
+            const["q"]
+            / const["k"]
+            * (1.0 / tok - 1.0 / tck[u] + dEgdT * (tc[u] - const["T0"]) / tck[u])
+        )
 
         # Estimate R_sh_ref
         nans = np.isnan(rsh)
-        x = const['E0'] / ee[np.logical_and(u, ee > 400, ~nans)]
+        x = const["E0"] / ee[np.logical_and(u, ee > 400, ~nans)]
         y = rsh[np.logical_and(u, ee > 400, ~nans)]
         new_x = sm.add_constant(x)
         beta = sm.RLM(y, new_x).fit()
         R_sh_ref = beta.params[1]
 
-        params['dEgdT'] = dEgdT
+        params["dEgdT"] = dEgdT
 
     # Estimate I_o_ref and EgRef
-    y = np.log(io[u]) - 3. * np.log(tck[u] / tok)
+    y = np.log(io[u]) - 3.0 * np.log(tck[u] / tok)
     new_x = sm.add_constant(x_for_io)
     res = sm.RLM(y, new_x).fit()
     beta = res.params
@@ -901,27 +972,27 @@ def _extract_sdm_params(ee, tc, iph, io, rs, rsh, n, u, specs, const,
     EgRef = beta[1]
 
     # Estimate I_L_ref
-    x = tc[u] - const['T0']
-    y = iph[u] * (const['E0'] / ee[u])
+    x = tc[u] - const["T0"]
+    y = iph[u] * (const["E0"] / ee[u])
     # average over non-NaN values of Y and X
-    nans = np.isnan(y - specs['alpha_sc'] * x)
-    I_L_ref = np.mean(y[~nans] - specs['alpha_sc'] * x[~nans])
+    nans = np.isnan(y - specs["alpha_sc"] * x)
+    I_L_ref = np.mean(y[~nans] - specs["alpha_sc"] * x[~nans])
 
     # Estimate R_s
     nans = np.isnan(rs)
     R_s = np.mean(rs[np.logical_and(u, ee > 400, ~nans)])
 
-    params['I_L_ref'] = I_L_ref
-    params['I_o_ref'] = I_o_ref
-    params['EgRef'] = EgRef
-    params['R_sh_ref'] = R_sh_ref
-    params['R_s'] = R_s
+    params["I_L_ref"] = I_L_ref
+    params["I_o_ref"] = I_o_ref
+    params["EgRef"] = EgRef
+    params["R_sh_ref"] = R_sh_ref
+    params["R_s"] = R_s
     # save values for each IV curve
-    params['iph'] = iph
-    params['io'] = io
-    params['rsh'] = rsh
-    params['rs'] = rs
-    params['u'] = u
+    params["iph"] = iph
+    params["io"] = io
+    params["rsh"] = rsh
+    params["rs"] = rs
+    params["u"] = u
 
     return params
 
@@ -971,19 +1042,19 @@ def _update_io(voc, iph, io, rs, rsh, nnsvth):
 
     while maxerr > eps and k < niter:
         # Predict Voc
-        pvoc = v_from_i(0., iph, tio, rs, rsh, nnsvth)
+        pvoc = v_from_i(0.0, iph, tio, rs, rsh, nnsvth)
 
         # Difference in Voc
         dvoc = pvoc - voc
 
         # Update Io
         with np.errstate(invalid="ignore", divide="ignore"):
-            new_io = tio * (1. + (2. * dvoc) / (2. * nnsvth - dvoc))
+            new_io = tio * (1.0 + (2.0 * dvoc) / (2.0 * nnsvth - dvoc))
             # Calculate Maximum Percent Difference
-            maxerr = np.max(np.abs(new_io - tio) / tio) * 100.
+            maxerr = np.max(np.abs(new_io - tio) / tio) * 100.0
 
         tio = new_io
-        k += 1.
+        k += 1.0
 
     return new_io
 
@@ -996,8 +1067,7 @@ def _rsh_pvsyst(x, rshexp, g, go):
     rsho = x[0]
     rshref = x[1]
 
-    rshb = np.maximum(
-        (rshref - rsho * np.exp(-rshexp)) / (1. - np.exp(-rshexp)), 0.)
+    rshb = np.maximum((rshref - rsho * np.exp(-rshexp)) / (1.0 - np.exp(-rshexp)), 0.0)
     rsh = rshb + (rsho - rshb) * np.exp(-rshexp * g / go)
     return rsh
 
@@ -1008,23 +1078,22 @@ def _filter_params(ee, isc, io, rs, rsh):
     # where effective irradiance Ee differs by more than 5% from a linear fit
     # to Isc vs. Ee
 
-    badrsh = np.logical_or(rsh < 0., np.isnan(rsh))
-    negrs = rs < 0.
+    badrsh = np.logical_or(rsh < 0.0, np.isnan(rsh))
+    negrs = rs < 0.0
     badrs = np.logical_or(rs > rsh, np.isnan(rs))
     imagrs = ~(np.isreal(rs))
-    badio = np.logical_or(np.logical_or(~(np.isreal(rs)), io <= 0),
-                          np.isnan(io))
+    badio = np.logical_or(np.logical_or(~(np.isreal(rs)), io <= 0), np.isnan(io))
     goodr = np.logical_and(~badrsh, ~imagrs)
     goodr = np.logical_and(goodr, ~negrs)
     goodr = np.logical_and(goodr, ~badrs)
     goodr = np.logical_and(goodr, ~badio)
 
-    matrix = np.vstack((ee / 1000., np.zeros(len(ee)))).T
+    matrix = np.vstack((ee / 1000.0, np.zeros(len(ee)))).T
     eff = np.linalg.lstsq(matrix, isc, rcond=None)[0][0]
     pisc = eff * ee / 1000
     pisc_error = np.abs(pisc - isc) / isc
     # check for departure from linear relation between Isc and Ee
-    badiph = pisc_error > .05
+    badiph = pisc_error > 0.05
 
     u = np.logical_and(goodr, ~badiph)
     return u
@@ -1066,68 +1135,77 @@ def _check_converge(prevparams, result, vmp, imp, i):
 
     convergeparam = {}
 
-    imperror = (result['i_mp'] - imp) / imp * 100.
-    vmperror = (result['v_mp'] - vmp) / vmp * 100.
-    pmperror = (result['p_mp'] - (imp * vmp)) / (imp * vmp) * 100.
+    imperror = (result["i_mp"] - imp) / imp * 100.0
+    vmperror = (result["v_mp"] - vmp) / vmp * 100.0
+    pmperror = (result["p_mp"] - (imp * vmp)) / (imp * vmp) * 100.0
 
-    convergeparam['imperrmax'] = max(imperror)  # max of the error in Imp
-    convergeparam['imperrmin'] = min(imperror)  # min of the error in Imp
+    convergeparam["imperrmax"] = max(imperror)  # max of the error in Imp
+    convergeparam["imperrmin"] = min(imperror)  # min of the error in Imp
     # max of the absolute error in Imp
-    convergeparam['imperrabsmax'] = max(abs(imperror))
+    convergeparam["imperrabsmax"] = max(abs(imperror))
     # mean of the error in Imp
-    convergeparam['imperrmean'] = np.mean(imperror, axis=0)
+    convergeparam["imperrmean"] = np.mean(imperror, axis=0)
     # std of the error in Imp
-    convergeparam['imperrstd'] = np.std(imperror, axis=0, ddof=1)
+    convergeparam["imperrstd"] = np.std(imperror, axis=0, ddof=1)
 
-    convergeparam['vmperrmax'] = max(vmperror)  # max of the error in Vmp
-    convergeparam['vmperrmin'] = min(vmperror)  # min of the error in Vmp
+    convergeparam["vmperrmax"] = max(vmperror)  # max of the error in Vmp
+    convergeparam["vmperrmin"] = min(vmperror)  # min of the error in Vmp
     # max of the absolute error in Vmp
-    convergeparam['vmperrabsmax'] = max(abs(vmperror))
+    convergeparam["vmperrabsmax"] = max(abs(vmperror))
     # mean of the error in Vmp
-    convergeparam['vmperrmean'] = np.mean(vmperror, axis=0)
+    convergeparam["vmperrmean"] = np.mean(vmperror, axis=0)
     # std of the error in Vmp
-    convergeparam['vmperrstd'] = np.std(vmperror, axis=0, ddof=1)
+    convergeparam["vmperrstd"] = np.std(vmperror, axis=0, ddof=1)
 
-    convergeparam['pmperrmax'] = max(pmperror)  # max of the error in Pmp
-    convergeparam['pmperrmin'] = min(pmperror)  # min of the error in Pmp
+    convergeparam["pmperrmax"] = max(pmperror)  # max of the error in Pmp
+    convergeparam["pmperrmin"] = min(pmperror)  # min of the error in Pmp
     # max of the abs err. in Pmp
-    convergeparam['pmperrabsmax'] = max(abs(pmperror))
+    convergeparam["pmperrabsmax"] = max(abs(pmperror))
     # mean error in Pmp
-    convergeparam['pmperrmean'] = np.mean(pmperror, axis=0)
+    convergeparam["pmperrmean"] = np.mean(pmperror, axis=0)
     # std error Pmp
-    convergeparam['pmperrstd'] = np.std(pmperror, axis=0, ddof=1)
+    convergeparam["pmperrstd"] = np.std(pmperror, axis=0, ddof=1)
 
-    if prevparams['state'] != 0.0:
-        convergeparam['imperrstdchange'] = np.abs(
-            convergeparam['imperrstd'] / prevparams['imperrstd'] - 1.)
-        convergeparam['vmperrstdchange'] = np.abs(
-            convergeparam['vmperrstd'] / prevparams['vmperrstd'] - 1.)
-        convergeparam['pmperrstdchange'] = np.abs(
-            convergeparam['pmperrstd'] / prevparams['pmperrstd'] - 1.)
-        convergeparam['imperrmeanchange'] = np.abs(
-            convergeparam['imperrmean'] / prevparams['imperrmean'] - 1.)
-        convergeparam['vmperrmeanchange'] = np.abs(
-            convergeparam['vmperrmean'] / prevparams['vmperrmean'] - 1.)
-        convergeparam['pmperrmeanchange'] = np.abs(
-            convergeparam['pmperrmean'] / prevparams['pmperrmean'] - 1.)
-        convergeparam['imperrabsmaxchange'] = np.abs(
-            convergeparam['imperrabsmax'] / prevparams['imperrabsmax'] - 1.)
-        convergeparam['vmperrabsmaxchange'] = np.abs(
-            convergeparam['vmperrabsmax'] / prevparams['vmperrabsmax'] - 1.)
-        convergeparam['pmperrabsmaxchange'] = np.abs(
-            convergeparam['pmperrabsmax'] / prevparams['pmperrabsmax'] - 1.)
-        convergeparam['state'] = 1.0
+    if prevparams["state"] != 0.0:
+        convergeparam["imperrstdchange"] = np.abs(
+            convergeparam["imperrstd"] / prevparams["imperrstd"] - 1.0
+        )
+        convergeparam["vmperrstdchange"] = np.abs(
+            convergeparam["vmperrstd"] / prevparams["vmperrstd"] - 1.0
+        )
+        convergeparam["pmperrstdchange"] = np.abs(
+            convergeparam["pmperrstd"] / prevparams["pmperrstd"] - 1.0
+        )
+        convergeparam["imperrmeanchange"] = np.abs(
+            convergeparam["imperrmean"] / prevparams["imperrmean"] - 1.0
+        )
+        convergeparam["vmperrmeanchange"] = np.abs(
+            convergeparam["vmperrmean"] / prevparams["vmperrmean"] - 1.0
+        )
+        convergeparam["pmperrmeanchange"] = np.abs(
+            convergeparam["pmperrmean"] / prevparams["pmperrmean"] - 1.0
+        )
+        convergeparam["imperrabsmaxchange"] = np.abs(
+            convergeparam["imperrabsmax"] / prevparams["imperrabsmax"] - 1.0
+        )
+        convergeparam["vmperrabsmaxchange"] = np.abs(
+            convergeparam["vmperrabsmax"] / prevparams["vmperrabsmax"] - 1.0
+        )
+        convergeparam["pmperrabsmaxchange"] = np.abs(
+            convergeparam["pmperrabsmax"] / prevparams["pmperrabsmax"] - 1.0
+        )
+        convergeparam["state"] = 1.0
     else:
-        convergeparam['imperrstdchange'] = float("Inf")
-        convergeparam['vmperrstdchange'] = float("Inf")
-        convergeparam['pmperrstdchange'] = float("Inf")
-        convergeparam['imperrmeanchange'] = float("Inf")
-        convergeparam['vmperrmeanchange'] = float("Inf")
-        convergeparam['pmperrmeanchange'] = float("Inf")
-        convergeparam['imperrabsmaxchange'] = float("Inf")
-        convergeparam['vmperrabsmaxchange'] = float("Inf")
-        convergeparam['pmperrabsmaxchange'] = float("Inf")
-        convergeparam['state'] = 1.
+        convergeparam["imperrstdchange"] = float("Inf")
+        convergeparam["vmperrstdchange"] = float("Inf")
+        convergeparam["pmperrstdchange"] = float("Inf")
+        convergeparam["imperrmeanchange"] = float("Inf")
+        convergeparam["vmperrmeanchange"] = float("Inf")
+        convergeparam["pmperrmeanchange"] = float("Inf")
+        convergeparam["imperrabsmaxchange"] = float("Inf")
+        convergeparam["vmperrabsmaxchange"] = float("Inf")
+        convergeparam["pmperrabsmaxchange"] = float("Inf")
+        convergeparam["state"] = 1.0
     return convergeparam
 
 
@@ -1172,8 +1250,9 @@ def _update_rsh_fixed_pt(vmp, imp, iph, io, rs, rsh, nnsvth):
     for i in range(niter):
         _, z = _calc_theta_phi_exact(vmp, imp, iph, io, rs, x1, nnsvth)
         with np.errstate(divide="ignore"):
-            next_x1 = (1 + z) / z * ((iph + io) * x1 / imp - nnsvth * z / imp
-                                     - 2 * vmp / imp)
+            next_x1 = (
+                (1 + z) / z * ((iph + io) * x1 / imp - nnsvth * z / imp - 2 * vmp / imp)
+            )
         x1 = next_x1
 
     return x1
@@ -1239,22 +1318,26 @@ def _calc_theta_phi_exact(vmp, imp, iph, io, rs, rsh, nnsvth):
         argw = np.where(
             nnsvth == 0,
             np.nan,
-            rsh * io / nnsvth * np.exp(rsh * (iph + io - imp) / nnsvth))
+            rsh * io / nnsvth * np.exp(rsh * (iph + io - imp) / nnsvth),
+        )
         phi = np.where(argw > 0, lambertw(argw).real, np.nan)
 
     # NaN where argw overflows. Switch to log space to evaluate
     u = np.isinf(argw)
     if np.any(u):
         logargw = (
-            np.log(rsh[u]) + np.log(io[u]) - np.log(nnsvth[u])
-            + rsh[u] * (iph[u] + io[u] - imp[u]) / nnsvth[u])
+            np.log(rsh[u])
+            + np.log(io[u])
+            - np.log(nnsvth[u])
+            + rsh[u] * (iph[u] + io[u] - imp[u]) / nnsvth[u]
+        )
         # Three iterations of Newton-Raphson method to solve w+log(w)=logargW.
         # The initial guess is w=logargW. Where direct evaluation (above)
         # results in NaN from overflow, 3 iterations of Newton's method gives
         # approximately 8 digits of precision.
         x = logargw
         for i in range(3):
-            x *= ((1. - np.log(x) + logargw) / (1. + x))
+            x *= (1.0 - np.log(x) + logargw) / (1.0 + x)
         phi[u] = x
     phi = np.transpose(phi)
 
@@ -1264,8 +1347,13 @@ def _calc_theta_phi_exact(vmp, imp, iph, io, rs, rsh, nnsvth):
         argw = np.where(
             nnsvth == 0,
             np.nan,
-            rsh / (rsh + rs) * rs * io / nnsvth * np.exp(
-                rsh / (rsh + rs) * (rs * (iph + io) + vmp) / nnsvth))
+            rsh
+            / (rsh + rs)
+            * rs
+            * io
+            / nnsvth
+            * np.exp(rsh / (rsh + rs) * (rs * (iph + io) + vmp) / nnsvth),
+        )
         theta = np.where(argw > 0, lambertw(argw).real, np.nan)
 
     # NaN where argw overflows. Switch to log space to evaluate
@@ -1273,27 +1361,43 @@ def _calc_theta_phi_exact(vmp, imp, iph, io, rs, rsh, nnsvth):
     if np.any(u):
         with np.errstate(divide="ignore"):
             logargw = (
-                np.log(rsh[u]) - np.log(rsh[u] + rs[u]) + np.log(rs[u])
-                + np.log(io[u]) - np.log(nnsvth[u])
+                np.log(rsh[u])
+                - np.log(rsh[u] + rs[u])
+                + np.log(rs[u])
+                + np.log(io[u])
+                - np.log(nnsvth[u])
                 + (rsh[u] / (rsh[u] + rs[u]))
-                * (rs[u] * (iph[u] + io[u]) + vmp[u]) / nnsvth[u])
+                * (rs[u] * (iph[u] + io[u]) + vmp[u])
+                / nnsvth[u]
+            )
         # Three iterations of Newton-Raphson method to solve w+log(w)=logargW.
         # The initial guess is w=logargW. Where direct evaluation (above)
         # results in NaN from overflow, 3 iterations of Newton's method gives
         # approximately 8 digits of precision.
         x = logargw
         for i in range(3):
-            x *= ((1. - np.log(x) + logargw) / (1. + x))
+            x *= (1.0 - np.log(x) + logargw) / (1.0 + x)
         theta[u] = x
     theta = np.transpose(theta)
 
     return theta, phi
 
 
-def pvsyst_temperature_coeff(alpha_sc, gamma_ref, mu_gamma, I_L_ref, I_o_ref,
-                             R_sh_ref, R_sh_0, R_s, cells_in_series,
-                             R_sh_exp=5.5, EgRef=1.121, irrad_ref=1000,
-                             temp_ref=25):
+def pvsyst_temperature_coeff(
+    alpha_sc,
+    gamma_ref,
+    mu_gamma,
+    I_L_ref,
+    I_o_ref,
+    R_sh_ref,
+    R_sh_0,
+    R_s,
+    cells_in_series,
+    R_sh_exp=5.5,
+    EgRef=1.121,
+    irrad_ref=1000,
+    temp_ref=25,
+):
     r"""
     Calculates the temperature coefficient of power for a pvsyst single
     diode model.
@@ -1360,19 +1464,57 @@ def pvsyst_temperature_coeff(alpha_sc, gamma_ref, mu_gamma, I_L_ref, I_o_ref,
        of Photovoltaics v5(1), January 2015.
     """
 
-    def maxp(temp_cell, irrad_ref, alpha_sc, gamma_ref, mu_gamma, I_L_ref,
-             I_o_ref, R_sh_ref, R_sh_0, R_s, cells_in_series, R_sh_exp, EgRef,
-             temp_ref):
+    def maxp(
+        temp_cell,
+        irrad_ref,
+        alpha_sc,
+        gamma_ref,
+        mu_gamma,
+        I_L_ref,
+        I_o_ref,
+        R_sh_ref,
+        R_sh_0,
+        R_s,
+        cells_in_series,
+        R_sh_exp,
+        EgRef,
+        temp_ref,
+    ):
         params = calcparams_pvsyst(
-            irrad_ref, temp_cell, alpha_sc, gamma_ref, mu_gamma, I_L_ref,
-            I_o_ref, R_sh_ref, R_sh_0, R_s, cells_in_series, R_sh_exp, EgRef,
-            irrad_ref, temp_ref)
+            irrad_ref,
+            temp_cell,
+            alpha_sc,
+            gamma_ref,
+            mu_gamma,
+            I_L_ref,
+            I_o_ref,
+            R_sh_ref,
+            R_sh_0,
+            R_s,
+            cells_in_series,
+            R_sh_exp,
+            EgRef,
+            irrad_ref,
+            temp_ref,
+        )
         res = bishop88_mpp(*params)
         return res[2]
 
-    args = (irrad_ref, alpha_sc, gamma_ref, mu_gamma, I_L_ref,
-            I_o_ref, R_sh_ref, R_sh_0, R_s, cells_in_series, R_sh_exp, EgRef,
-            temp_ref)
+    args = (
+        irrad_ref,
+        alpha_sc,
+        gamma_ref,
+        mu_gamma,
+        I_L_ref,
+        I_o_ref,
+        R_sh_ref,
+        R_sh_0,
+        R_s,
+        cells_in_series,
+        R_sh_exp,
+        EgRef,
+        temp_ref,
+    )
     pmp = maxp(temp_ref, *args)
     gamma_pdc = _first_order_centered_difference(maxp, x0=temp_ref, args=args)
 

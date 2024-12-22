@@ -1,43 +1,62 @@
-"""Functions to read data from the US Climate Reference Network (CRN).
-"""
+"""Functions to read data from the US Climate Reference Network (CRN)."""
 
 import pandas as pd
 import numpy as np
 
 
 HEADERS = [
-    'WBANNO', 'UTC_DATE', 'UTC_TIME', 'LST_DATE', 'LST_TIME', 'CRX_VN',
-    'LONGITUDE', 'LATITUDE', 'AIR_TEMPERATURE', 'PRECIPITATION',
-    'SOLAR_RADIATION', 'SR_FLAG', 'SURFACE_TEMPERATURE', 'ST_TYPE', 'ST_FLAG',
-    'RELATIVE_HUMIDITY', 'RH_FLAG', 'SOIL_MOISTURE_5', 'SOIL_TEMPERATURE_5',
-    'WETNESS', 'WET_FLAG', 'WIND_1_5', 'WIND_FLAG']
+    "WBANNO",
+    "UTC_DATE",
+    "UTC_TIME",
+    "LST_DATE",
+    "LST_TIME",
+    "CRX_VN",
+    "LONGITUDE",
+    "LATITUDE",
+    "AIR_TEMPERATURE",
+    "PRECIPITATION",
+    "SOLAR_RADIATION",
+    "SR_FLAG",
+    "SURFACE_TEMPERATURE",
+    "ST_TYPE",
+    "ST_FLAG",
+    "RELATIVE_HUMIDITY",
+    "RH_FLAG",
+    "SOIL_MOISTURE_5",
+    "SOIL_TEMPERATURE_5",
+    "WETNESS",
+    "WET_FLAG",
+    "WIND_1_5",
+    "WIND_FLAG",
+]
 
 VARIABLE_MAP = {
-    'LONGITUDE': 'longitude',
-    'LATITUDE': 'latitude',
-    'AIR_TEMPERATURE': 'temp_air',
-    'SOLAR_RADIATION': 'ghi',
-    'SR_FLAG': 'ghi_flag',
-    'RELATIVE_HUMIDITY': 'relative_humidity',
-    'RH_FLAG': 'relative_humidity_flag',
-    'WIND_1_5': 'wind_speed',
-    'WIND_FLAG': 'wind_speed_flag'
+    "LONGITUDE": "longitude",
+    "LATITUDE": "latitude",
+    "AIR_TEMPERATURE": "temp_air",
+    "SOLAR_RADIATION": "ghi",
+    "SR_FLAG": "ghi_flag",
+    "RELATIVE_HUMIDITY": "relative_humidity",
+    "RH_FLAG": "relative_humidity_flag",
+    "WIND_1_5": "wind_speed",
+    "WIND_FLAG": "wind_speed_flag",
 }
 
 NAN_DICT = {
-    'CRX_VN': -99999,
-    'AIR_TEMPERATURE': -9999,
-    'PRECIPITATION': -9999,
-    'SOLAR_RADIATION': -99999,
-    'SURFACE_TEMPERATURE': -9999,
-    'RELATIVE_HUMIDITY': -9999,
-    'SOIL_MOISTURE_5': -99,
-    'SOIL_TEMPERATURE_5': -9999,
-    'WETNESS': -9999,
-    'WIND_1_5': -99}
+    "CRX_VN": -99999,
+    "AIR_TEMPERATURE": -9999,
+    "PRECIPITATION": -9999,
+    "SOLAR_RADIATION": -99999,
+    "SURFACE_TEMPERATURE": -9999,
+    "RELATIVE_HUMIDITY": -9999,
+    "SOIL_MOISTURE_5": -99,
+    "SOIL_TEMPERATURE_5": -9999,
+    "WETNESS": -9999,
+    "WIND_1_5": -99,
+}
 
 # Add NUL characters to possible NaN values for all columns
-NAN_DICT = {k: [v, '\x00\x00\x00\x00\x00\x00'] for k, v in NAN_DICT.items()}
+NAN_DICT = {k: [v, "\x00\x00\x00\x00\x00\x00"] for k, v in NAN_DICT.items()}
 
 # as specified in CRN README.txt file. excludes 1 space between columns
 WIDTHS = [5, 8, 4, 8, 4, 6, 7, 7, 7, 7, 6, 1, 7, 1, 1, 5, 1, 7, 7, 5, 1, 6, 1]
@@ -48,10 +67,29 @@ WIDTHS[-1] -= 1
 
 # specify dtypes for potentially problematic values
 DTYPES = [
-    'int64', 'int64', 'int64', 'int64', 'int64', 'str', 'float64', 'float64',
-    'float64', 'float64', 'float64', 'int64', 'float64', 'O', 'int64',
-    'float64', 'int64', 'float64', 'float64', 'int64', 'int64', 'float64',
-    'int64'
+    "int64",
+    "int64",
+    "int64",
+    "int64",
+    "int64",
+    "str",
+    "float64",
+    "float64",
+    "float64",
+    "float64",
+    "float64",
+    "int64",
+    "float64",
+    "O",
+    "int64",
+    "float64",
+    "int64",
+    "float64",
+    "float64",
+    "int64",
+    "int64",
+    "float64",
+    "int64",
 ]
 
 
@@ -113,11 +151,10 @@ def read_crn(filename, map_variables=True):
     # when our minimum pandas >= 1.2.0 (skip_blank_lines bug for <1.2.0).
     # As a workaround, parse all values as strings, then drop NaN, then cast
     # to the appropriate dtypes, and mask "sentinal" NaN (e.g. -9999.0)
-    data = pd.read_fwf(filename, header=None, names=HEADERS, widths=WIDTHS,
-                       dtype=str)
+    data = pd.read_fwf(filename, header=None, names=HEADERS, widths=WIDTHS, dtype=str)
 
     # drop empty (bad) lines
-    data = data.dropna(axis=0, how='all')
+    data = data.dropna(axis=0, how="all")
 
     # can't set dtypes in read_fwf because int cols can't contain NaN, so
     # do it here instead
@@ -129,9 +166,10 @@ def read_crn(filename, map_variables=True):
     # set index
     # UTC_TIME does not have leading 0s, so must zfill(4) to comply
     # with %H%M format
-    dts = data[['UTC_DATE', 'UTC_TIME']].astype(str)
-    dtindex = pd.to_datetime(dts['UTC_DATE'] + dts['UTC_TIME'].str.zfill(4),
-                             format='%Y%m%d%H%M', utc=True)
+    dts = data[["UTC_DATE", "UTC_TIME"]].astype(str)
+    dtindex = pd.to_datetime(
+        dts["UTC_DATE"] + dts["UTC_TIME"].str.zfill(4), format="%Y%m%d%H%M", utc=True
+    )
     data = data.set_index(dtindex)
 
     if map_variables:

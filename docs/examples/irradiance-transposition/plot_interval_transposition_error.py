@@ -67,7 +67,7 @@ def transpose(irradiance, timeshift):
     """
     idx = irradiance.index
     # calculate solar position for shifted timestamps:
-    idx = idx + pd.Timedelta(timeshift, unit='min')
+    idx = idx + pd.Timedelta(timeshift, unit="min")
     solpos = location.get_solarposition(idx)
     # but still report the values with the original timestamps:
     solpos.index = irradiance.index
@@ -75,14 +75,14 @@ def transpose(irradiance, timeshift):
     poa_components = pvlib.irradiance.get_total_irradiance(
         surface_tilt=20,
         surface_azimuth=180,
-        solar_zenith=solpos['apparent_zenith'],
-        solar_azimuth=solpos['azimuth'],
-        dni=irradiance['dni'],
-        ghi=irradiance['ghi'],
-        dhi=irradiance['dhi'],
-        model='isotropic',
+        solar_zenith=solpos["apparent_zenith"],
+        solar_azimuth=solpos["azimuth"],
+        dni=irradiance["dni"],
+        ghi=irradiance["ghi"],
+        dhi=irradiance["dhi"],
+        model="isotropic",
     )
-    return poa_components['poa_global']
+    return poa_components["poa_global"]
 
 
 # %%
@@ -93,9 +93,8 @@ def transpose(irradiance, timeshift):
 # is negligible.
 
 # baseline: all calculations done at 1-second scale
-location = pvlib.location.Location(40, -80, tz='Etc/GMT+5')
-times = pd.date_range('2019-06-01 05:00', '2019-06-01 19:00',
-                      freq='1s', tz='Etc/GMT+5')
+location = pvlib.location.Location(40, -80, tz="Etc/GMT+5")
+times = pd.date_range("2019-06-01 05:00", "2019-06-01 19:00", freq="1s", tz="Etc/GMT+5")
 solpos = location.get_solarposition(times)
 clearsky = location.get_clearsky(times, solar_position=solpos)
 poa_1s = transpose(clearsky, timeshift=0)  # no shift needed for 1s data
@@ -110,8 +109,7 @@ fig, ax = plt.subplots(figsize=(5, 3))
 results = []
 
 for timescale_minutes in [1, 5, 10, 15, 30, 60]:
-
-    timescale_str = f'{timescale_minutes}min'
+    timescale_str = f"{timescale_minutes}min"
     # get the "true" interval average of poa as the baseline for comparison
     poa_avg = poa_1s.resample(timescale_str).mean()
     # get interval averages of irradiance components to use for transposition
@@ -121,26 +119,28 @@ for timescale_minutes in [1, 5, 10, 15, 30, 60]:
     poa_avg_noshift = transpose(clearsky_avg, timeshift=0)
 
     # low-res interval averages of 1-second data, with half-interval shift
-    poa_avg_halfshift = transpose(clearsky_avg, timeshift=timescale_minutes/2)
+    poa_avg_halfshift = transpose(clearsky_avg, timeshift=timescale_minutes / 2)
 
-    df = pd.DataFrame({
-        'ground truth': poa_avg,
-        'modeled, half shift': poa_avg_halfshift,
-        'modeled, no shift': poa_avg_noshift,
-    })
-    error = df.subtract(df['ground truth'], axis=0)
+    df = pd.DataFrame(
+        {
+            "ground truth": poa_avg,
+            "modeled, half shift": poa_avg_halfshift,
+            "modeled, no shift": poa_avg_noshift,
+        }
+    )
+    error = df.subtract(df["ground truth"], axis=0)
     # add another trace to the error plot
-    error['modeled, no shift'].plot(ax=ax, label=timescale_str)
+    error["modeled, no shift"].plot(ax=ax, label=timescale_str)
     # calculate error statistics and save for later
     stats = error.abs().mean()  # average absolute error across daylight hours
-    stats['timescale_minutes'] = timescale_minutes
+    stats["timescale_minutes"] = timescale_minutes
     results.append(stats)
 
 ax.legend(ncol=2)
-ax.set_ylabel('Transposition Error [W/m$^2$]')
+ax.set_ylabel("Transposition Error [W/m$^2$]")
 fig.tight_layout()
 
-df_results = pd.DataFrame(results).set_index('timescale_minutes')
+df_results = pd.DataFrame(results).set_index("timescale_minutes")
 print(df_results)
 
 # %%
@@ -152,9 +152,9 @@ print(df_results)
 # instead of the edge reduces the error by one or two orders of magnitude:
 
 fig, ax = plt.subplots(figsize=(5, 3))
-df_results[['modeled, no shift', 'modeled, half shift']].plot.bar(rot=0, ax=ax)
-ax.set_ylabel('Mean Absolute Error [W/m$^2$]')
-ax.set_xlabel('Transposition Timescale [minutes]')
+df_results[["modeled, no shift", "modeled, half shift"]].plot.bar(rot=0, ax=ax)
+ax.set_ylabel("Mean Absolute Error [W/m$^2$]")
+ax.set_xlabel("Transposition Timescale [minutes]")
 fig.tight_layout()
 
 # %%
@@ -165,6 +165,6 @@ fig.tight_layout()
 # truth irradiance.
 
 fig, ax = plt.subplots(figsize=(5, 3))
-ax = df.plot(ax=ax, style=[None, ':', None], lw=3)
-ax.set_ylabel('Irradiance [W/m$^2$]')
+ax = df.plot(ax=ax, style=[None, ":", None], lw=3)
+ax.set_ylabel("Irradiance [W/m$^2$]")
 fig.tight_layout()

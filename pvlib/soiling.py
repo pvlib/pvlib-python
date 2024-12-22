@@ -10,8 +10,15 @@ from scipy.special import erf
 from pvlib.tools import cosd
 
 
-def hsu(rainfall, cleaning_threshold, surface_tilt, pm2_5, pm10,
-        depo_veloc=None, rain_accum_period=pd.Timedelta('1h')):
+def hsu(
+    rainfall,
+    cleaning_threshold,
+    surface_tilt,
+    pm2_5,
+    pm10,
+    depo_veloc=None,
+    rain_accum_period=pd.Timedelta("1h"),
+):
     """
     Calculates soiling ratio given particulate and rain data using the
     Fixed Velocity model from Humboldt State University (HSU).
@@ -65,10 +72,10 @@ def hsu(rainfall, cleaning_threshold, surface_tilt, pm2_5, pm10,
     """
     # never use mutable input arguments
     if depo_veloc is None:
-        depo_veloc = {'2_5': 0.0009, '10': 0.004}
+        depo_veloc = {"2_5": 0.0009, "10": 0.004}
 
     # accumulate rainfall into periods for comparison with threshold
-    accum_rain = rainfall.rolling(rain_accum_period, closed='right').sum()
+    accum_rain = rainfall.rolling(rain_accum_period, closed="right").sum()
     # cleaning is True for intervals with rainfall greater than threshold
     cleaning_times = accum_rain.index[accum_rain >= cleaning_threshold]
 
@@ -78,11 +85,11 @@ def hsu(rainfall, cleaning_threshold, surface_tilt, pm2_5, pm10,
     dt_diff = (dt[1:] - dt[:-1]).total_seconds()
     # ensure same number of elements in the array, assuming that the interval
     # prior to the first value is equal in length to the first interval
-    dt_sec = np.append(dt_diff[0], dt_diff).astype('float64')
+    dt_sec = np.append(dt_diff[0], dt_diff).astype("float64")
 
     horiz_mass_rate = (
-        pm2_5 * depo_veloc['2_5'] + np.maximum(pm10 - pm2_5, 0.)
-        * depo_veloc['10']) * dt_sec
+        pm2_5 * depo_veloc["2_5"] + np.maximum(pm10 - pm2_5, 0.0) * depo_veloc["10"]
+    ) * dt_sec
     tilted_mass_rate = horiz_mass_rate * cosd(surface_tilt)  # assuming no rain
 
     # tms -> tilt_mass_rate
@@ -90,8 +97,8 @@ def hsu(rainfall, cleaning_threshold, surface_tilt, pm2_5, pm10,
 
     mass_no_cleaning = pd.Series(index=rainfall.index, data=tms_cumsum)
     # specify dtype so pandas doesn't assume object
-    mass_removed = pd.Series(index=rainfall.index, dtype='float64')
-    mass_removed.iloc[0] = 0.
+    mass_removed = pd.Series(index=rainfall.index, dtype="float64")
+    mass_removed.iloc[0] = 0.0
     mass_removed[cleaning_times] = mass_no_cleaning[cleaning_times]
     accum_mass = mass_no_cleaning - mass_removed.ffill()
 
@@ -100,9 +107,16 @@ def hsu(rainfall, cleaning_threshold, surface_tilt, pm2_5, pm10,
     return soiling_ratio
 
 
-def kimber(rainfall, cleaning_threshold=6, soiling_loss_rate=0.0015,
-           grace_period=14, max_soiling=0.3, manual_wash_dates=None,
-           initial_soiling=0, rain_accum_period=24):
+def kimber(
+    rainfall,
+    cleaning_threshold=6,
+    soiling_loss_rate=0.0015,
+    grace_period=14,
+    max_soiling=0.3,
+    manual_wash_dates=None,
+    initial_soiling=0,
+    rain_accum_period=24,
+):
     """
     Calculates fraction of energy lost due to soiling given rainfall data and
     daily loss rate using the Kimber model.
@@ -178,27 +192,26 @@ def kimber(rainfall, cleaning_threshold=6, soiling_loss_rate=0.0015,
     # get indices as numpy datetime64, calculate timestep as numpy timedelta64,
     # and convert timestep to fraction of days
     rain_index_vals = rainfall.index.values
-    timestep_interval = (rain_index_vals[1] - rain_index_vals[0])
-    day_fraction = timestep_interval / np.timedelta64(24, 'h')
+    timestep_interval = rain_index_vals[1] - rain_index_vals[0]
+    day_fraction = timestep_interval / np.timedelta64(24, "h")
 
     # accumulate rainfall
-    accumulated_rainfall = rainfall.rolling(
-        rain_accum_period, closed='right').sum()
+    accumulated_rainfall = rainfall.rolling(rain_accum_period, closed="right").sum()
 
     # soiling rate
     soiling = np.ones_like(rainfall.values) * soiling_loss_rate * day_fraction
     soiling[0] = initial_soiling
     soiling = np.cumsum(soiling)
-    soiling = pd.Series(soiling, index=rainfall.index, name='soiling')
+    soiling = pd.Series(soiling, index=rainfall.index, name="soiling")
 
     # rainfall events that clean the panels
     rain_events = accumulated_rainfall > cleaning_threshold
 
     # grace periods windows during which ground is assumed damp, so no soiling
-    grace_windows = rain_events.rolling(grace_period, closed='right').sum() > 0
+    grace_windows = rain_events.rolling(grace_period, closed="right").sum() > 0
 
     # clean panels by subtracting soiling for indices in grace period windows
-    cleaning = pd.Series(float('NaN'), index=rainfall.index)
+    cleaning = pd.Series(float("NaN"), index=rainfall.index)
     cleaning.iloc[0] = 0.0
     cleaning[grace_windows] = soiling[grace_windows]
 

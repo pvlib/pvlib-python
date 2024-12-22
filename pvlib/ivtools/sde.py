@@ -10,8 +10,9 @@ import numpy as np
 from pvlib.ivtools.utils import _schumaker_qspline
 
 
-def fit_sandia_simple(voltage, current, v_oc=None, i_sc=None, v_mp_i_mp=None,
-                      vlim=0.2, ilim=0.1):
+def fit_sandia_simple(
+    voltage, current, v_oc=None, i_sc=None, v_mp_i_mp=None, vlim=0.2, ilim=0.1
+):
     r"""
     Fits the single diode equation (SDE) to an IV curve.
 
@@ -158,8 +159,7 @@ def fit_sandia_simple(voltage, current, v_oc=None, i_sc=None, v_mp_i_mp=None,
     beta0, beta1 = _sandia_beta0_beta1(voltage, current, vlim, v_oc)
 
     # Find beta3 and beta4 from the exponential portion of the IV curve
-    beta3, beta4 = _sandia_beta3_beta4(voltage, current, beta0, beta1, ilim,
-                                       i_sc)
+    beta3, beta4 = _sandia_beta3_beta4(voltage, current, beta0, beta1, ilim, i_sc)
 
     # calculate single diode parameters from regression coefficients
     return _sandia_simple_params(beta0, beta1, beta3, beta4, v_mp, i_mp, v_oc)
@@ -207,8 +207,9 @@ def _sandia_beta0_beta1(v, i, vlim, v_oc):
             beta1 = -coef[0].item()
             break
     if any(np.isnan([beta0, beta1])):
-        raise RuntimeError("Parameter extraction failed: beta0={}, beta1={}"
-                           .format(beta0, beta1))
+        raise RuntimeError(
+            "Parameter extraction failed: beta0={}, beta1={}".format(beta0, beta1)
+        )
     else:
         return beta0, beta1
 
@@ -219,14 +220,15 @@ def _sandia_beta3_beta4(voltage, current, beta0, beta1, ilim, i_sc):
     y = beta0 - beta1 * voltage - current
     x = np.array([np.ones_like(voltage), voltage, current]).T
     # Select points where y > ilim * i_sc to regress log(y) onto x
-    idx = (y > ilim * i_sc)
+    idx = y > ilim * i_sc
     result = np.linalg.lstsq(x[idx], np.log(y[idx]), rcond=None)
     coef = result[0]
     beta3 = coef[1].item()
     beta4 = coef[2].item()
     if any(np.isnan([beta3, beta4])):
-        raise RuntimeError("Parameter extraction failed: beta3={}, beta4={}"
-                           .format(beta3, beta4))
+        raise RuntimeError(
+            "Parameter extraction failed: beta3={}, beta4={}".format(beta3, beta4)
+        )
     else:
         return beta3, beta4
 
@@ -245,7 +247,7 @@ def _sandia_simple_params(beta0, beta1, beta3, beta4, v_mp, i_mp, v_oc):
         raise RuntimeError("Parameter extraction failed: I0 is undetermined.")
     elif (io_vmp > 0) and (io_voc > 0):
         io = 0.5 * (io_vmp + io_voc)
-    elif (io_vmp > 0):
+    elif io_vmp > 0:
         io = io_vmp
     else:  # io_voc > 0
         io = io_voc
@@ -253,8 +255,9 @@ def _sandia_simple_params(beta0, beta1, beta3, beta4, v_mp, i_mp, v_oc):
 
 
 def _calc_I0(voltage, current, iph, gsh, rs, nNsVth):
-    return (iph - current - gsh * (voltage + rs * current)) / \
-        np.expm1((voltage + rs * current) / nNsVth)
+    return (iph - current - gsh * (voltage + rs * current)) / np.expm1(
+        (voltage + rs * current) / nNsVth
+    )
 
 
 def _fit_sandia_cocontent(voltage, current, nsvth):
@@ -320,11 +323,11 @@ def _fit_sandia_cocontent(voltage, current, nsvth):
     """
 
     if len(current) != len(voltage):
-        raise ValueError("voltage and current should have the same "
-                         "length")
+        raise ValueError("voltage and current should have the same " "length")
     if len(voltage) < 6:
-        raise ValueError("at least 6 voltage points are required; ~50 are "
-                         "recommended")
+        raise ValueError(
+            "at least 6 voltage points are required; ~50 are " "recommended"
+        )
     isc = current[0]  # short circuit current
     voc = voltage[-1]  # open circuit voltage
 
@@ -341,22 +344,25 @@ def _fit_sandia_cocontent(voltage, current, nsvth):
 
     # Extract five parameter values from regression coefficients.
     # Equation 11, [3]
-    betagp = beta[3] * 2.
+    betagp = beta[3] * 2.0
 
     # Equation 12, [3]
-    betars = (np.sqrt(1. + 16. * beta[3] * beta[4]) - 1.) / (4. * beta[3])
+    betars = (np.sqrt(1.0 + 16.0 * beta[3] * beta[4]) - 1.0) / (4.0 * beta[3])
 
     # Equation 13, [3]
-    betan = (beta[0] * (np.sqrt(1. + 16. * beta[3] * beta[4]) - 1.) + 4. *
-             beta[1] * beta[3]) / (4. * beta[3] * nsvth)
+    betan = (
+        beta[0] * (np.sqrt(1.0 + 16.0 * beta[3] * beta[4]) - 1.0)
+        + 4.0 * beta[1] * beta[3]
+    ) / (4.0 * beta[3] * nsvth)
 
     # Single diode equation at Voc, approximating Iph + Io by Isc
     betaio = (isc - voc * betagp) / (np.exp(voc / (betan * nsvth)))
 
     # Single diode equation at Isc, using Rsh, Rs, n and Io that were
     # determined above
-    betaiph = isc - betaio + betaio * np.exp(isc / (betan * nsvth)) + \
-        isc * betars * betagp
+    betaiph = (
+        isc - betaio + betaio * np.exp(isc / (betan * nsvth)) + isc * betars * betagp
+    )
 
     iph = betaiph
     io = betaio
@@ -375,25 +381,29 @@ def _cocontent(v, c, isc, kflag):
     # with coefficients in input c, at the discrete sequence of knots in v
     xn = len(v)
     delx = v[1:] - v[:-1]
-    tmp = np.array([1. / 3., .5, 1.])
+    tmp = np.array([1.0 / 3.0, 0.5, 1.0])
     ss = np.tile(tmp, [xn - 1, 1])
     cc = c * ss  # cast coefficients to a convenient shape
     # compute integral on each interval
-    tmpint = np.sum(cc * np.array([delx ** 3, delx ** 2, delx]).T, 1)
-    tmpint = np.append(0., tmpint)
+    tmpint = np.sum(cc * np.array([delx**3, delx**2, delx]).T, 1)
+    tmpint = np.append(0.0, tmpint)
 
     # compute co-content = Int_0^V (Isc - I) dV
     scc = np.zeros(xn)
     # Use trapezoid rule for the first 5 intervals due to spline being
     # unreliable near the left endpoint
     scc[0:5] = isc * v[0:5] - np.cumsum(tmpint[0:5])  # by spline
-    scc[5:(xn - 5)] = isc * (v[5:(xn - 5)] - v[4]) - \
-        np.cumsum(tmpint[5:(xn - 5)]) + scc[4]
+    scc[5 : (xn - 5)] = (
+        isc * (v[5 : (xn - 5)] - v[4]) - np.cumsum(tmpint[5 : (xn - 5)]) + scc[4]
+    )
 
     # Use trapezoid rule for the last 5 intervals due to spline being
     # unreliable near the right endpoint
-    scc[(xn - 5):xn] = isc * (v[(xn - 5):xn] - v[xn - 6]) - \
-        np.cumsum(tmpint[(xn - 5):xn]) + scc[xn - 6]
+    scc[(xn - 5) : xn] = (
+        isc * (v[(xn - 5) : xn] - v[xn - 6])
+        - np.cumsum(tmpint[(xn - 5) : xn])
+        + scc[xn - 6]
+    )
 
     # For estimating diode equation parameters only use original data points,
     # not at any knots added by the quadratic spline fit
@@ -414,8 +424,9 @@ def _cocontent_regress(v, i, voc, isc, cci):
 
     tmpx_mean = np.mean(tmpx, axis=0)
     tmpx_std = np.std(tmpx, axis=0, ddof=1)
-    tmpx_zscore = (tmpx - np.tile(tmpx_mean, [tmpx_length, 1])) / \
-        np.tile(tmpx_std, [tmpx_length, 1])
+    tmpx_zscore = (tmpx - np.tile(tmpx_mean, [tmpx_length, 1])) / np.tile(
+        tmpx_std, [tmpx_length, 1]
+    )
 
     tmpx_d, tmpx_v = np.linalg.eig(np.cov(tmpx_zscore.T))
 
@@ -424,7 +435,7 @@ def _cocontent_regress(v, i, voc, isc, cci):
     ev1 = tmpx_v[:, idx[0]]
 
     # Second component set to be orthogonal and rotated counterclockwise by 90.
-    ev2 = np.dot(np.array([[0., -1.], [1., 0.]]), ev1)
+    ev2 = np.dot(np.array([[0.0, -1.0], [1.0, 0.0]]), ev1)
     r = np.array([ev1, ev2])  # principal components transformation
 
     s = np.dot(tmpx_zscore, r)
@@ -435,8 +446,16 @@ def _cocontent_regress(v, i, voc, isc, cci):
 
     # predictors. Shifting makes a constant term necessary in the regression
     # model
-    sx = np.vstack((s[:, 0], s[:, 1], s[:, 0] * s[:, 1], s[:, 0] * s[:, 0],
-                    s[:, 1] * s[:, 1], col1)).T
+    sx = np.vstack(
+        (
+            s[:, 0],
+            s[:, 1],
+            s[:, 0] * s[:, 1],
+            s[:, 0] * s[:, 0],
+            s[:, 1] * s[:, 1],
+            col1,
+        )
+    ).T
 
     gamma = np.linalg.lstsq(sx, scc, rcond=None)[0]
     # coefficients from regression in rotated coordinates
@@ -446,24 +465,45 @@ def _cocontent_regress(v, i, voc, isc, cci):
     # between [V' I' V'I' V'^2 I'^2] and sx, where prime ' indicates shifted
     # and scaled data. Used to translate from regression coefficients in
     # rotated coordinates to coefficients in initial V, I coordinates.
-    mb = np.array([[r[0, 0], r[1, 0], 0., 0., 0.], [r[0, 1], r[1, 1], 0., 0.,
-                                                    0.],
-                   [0., 0., r[0, 0] * r[1, 1] + r[0, 1] * r[1, 0], 2. *
-                    r[0, 0] * r[0, 1], 2. * r[1, 0] * r[1, 1]],
-                   [0., 0., r[0, 0] * r[1, 0], r[0, 0] ** 2., r[1, 0] ** 2.],
-                   [0., 0., r[0, 1] * r[1, 1], r[0, 1] ** 2., r[1, 1] ** 2.]])
+    mb = np.array(
+        [
+            [r[0, 0], r[1, 0], 0.0, 0.0, 0.0],
+            [r[0, 1], r[1, 1], 0.0, 0.0, 0.0],
+            [
+                0.0,
+                0.0,
+                r[0, 0] * r[1, 1] + r[0, 1] * r[1, 0],
+                2.0 * r[0, 0] * r[0, 1],
+                2.0 * r[1, 0] * r[1, 1],
+            ],
+            [0.0, 0.0, r[0, 0] * r[1, 0], r[0, 0] ** 2.0, r[1, 0] ** 2.0],
+            [0.0, 0.0, r[0, 1] * r[1, 1], r[0, 1] ** 2.0, r[1, 1] ** 2.0],
+        ]
+    )
 
     # matrix which is used to undo effect of shifting and scaling on regression
     # coefficients.
-    ma = np.array([[np.std(v, ddof=1), 0., np.std(v, ddof=1) *
-                    np.mean(isc - i), 2. * np.std(v, ddof=1) * np.mean(v),
-                   0.], [0., np.std(isc - i, ddof=1), np.std(isc - i, ddof=1)
-                         * np.mean(v), 0.,
-                   2. * np.std(isc - i, ddof=1) * np.mean(isc - i)],
-                   [0., 0., np.std(v, ddof=1) * np.std(isc - i, ddof=1), 0.,
-                    0.],
-                   [0., 0., 0., np.std(v, ddof=1) ** 2., 0.],
-                   [0., 0., 0., 0., np.std(isc - i, ddof=1) ** 2.]])
+    ma = np.array(
+        [
+            [
+                np.std(v, ddof=1),
+                0.0,
+                np.std(v, ddof=1) * np.mean(isc - i),
+                2.0 * np.std(v, ddof=1) * np.mean(v),
+                0.0,
+            ],
+            [
+                0.0,
+                np.std(isc - i, ddof=1),
+                np.std(isc - i, ddof=1) * np.mean(v),
+                0.0,
+                2.0 * np.std(isc - i, ddof=1) * np.mean(isc - i),
+            ],
+            [0.0, 0.0, np.std(v, ddof=1) * np.std(isc - i, ddof=1), 0.0, 0.0],
+            [0.0, 0.0, 0.0, np.std(v, ddof=1) ** 2.0, 0.0],
+            [0.0, 0.0, 0.0, 0.0, np.std(isc - i, ddof=1) ** 2.0],
+        ]
+    )
 
     # translate from coefficients in rotated space (gamma) to coefficients in
     # original coordinates (beta)

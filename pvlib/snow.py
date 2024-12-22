@@ -13,8 +13,8 @@ def _time_delta_in_hours(times):
     return delta.dt.total_seconds().div(3600)
 
 
-def fully_covered_nrel(snowfall, threshold_snowfall=1.):
-    '''
+def fully_covered_nrel(snowfall, threshold_snowfall=1.0):
+    """
     Calculates the timesteps when the row's slant height is fully covered
     by snow.
 
@@ -45,24 +45,31 @@ def fully_covered_nrel(snowfall, threshold_snowfall=1.):
     .. [2] Ryberg, D; Freeman, J. "Integration, Validation, and Application
        of a PV Snow Coverage Model in SAM" (2017) NREL Technical Report
        NREL/TP-6A20-68705
-    '''
+    """
     timestep = _time_delta_in_hours(snowfall.index)
     hourly_snow_rate = snowfall / timestep
     # if we can infer a time frequency, use first snowfall value
     # otherwise the first snowfall value is ignored
     freq = pd.infer_freq(snowfall.index)
     if freq is not None:
-        timedelta = pd.tseries.frequencies.to_offset(freq) / pd.Timedelta('1h')
+        timedelta = pd.tseries.frequencies.to_offset(freq) / pd.Timedelta("1h")
         hourly_snow_rate.iloc[0] = snowfall.iloc[0] / timedelta
     else:  # can't infer frequency from index
         hourly_snow_rate.iloc[0] = 0  # replaces NaN
     return hourly_snow_rate > threshold_snowfall
 
 
-def coverage_nrel(snowfall, poa_irradiance, temp_air, surface_tilt,
-                  initial_coverage=0, threshold_snowfall=1.,
-                  can_slide_coefficient=-80., slide_amount_coefficient=0.197):
-    '''
+def coverage_nrel(
+    snowfall,
+    poa_irradiance,
+    temp_air,
+    surface_tilt,
+    initial_coverage=0,
+    threshold_snowfall=1.0,
+    can_slide_coefficient=-80.0,
+    slide_amount_coefficient=0.197,
+):
+    """
     Calculates the fraction of the slant height of a row of modules covered by
     snow at every time step.
 
@@ -114,7 +121,7 @@ def coverage_nrel(snowfall, poa_irradiance, temp_air, surface_tilt,
     .. [2] Ryberg, D; Freeman, J. (2017). "Integration, Validation, and
        Application of a PV Snow Coverage Model in SAM" NREL Technical Report
        NREL/TP-6A20-68705
-    '''
+    """
 
     # find times with new snowfall
     new_snowfall = fully_covered_nrel(snowfall, threshold_snowfall)
@@ -124,11 +131,14 @@ def coverage_nrel(snowfall, poa_irradiance, temp_air, surface_tilt,
 
     # determine amount that snow can slide in each timestep
     can_slide = temp_air > poa_irradiance / can_slide_coefficient
-    slide_amt = slide_amount_coefficient * sind(surface_tilt) * \
-        _time_delta_in_hours(poa_irradiance.index)
-    slide_amt[~can_slide] = 0.
+    slide_amt = (
+        slide_amount_coefficient
+        * sind(surface_tilt)
+        * _time_delta_in_hours(poa_irradiance.index)
+    )
+    slide_amt[~can_slide] = 0.0
     # don't slide during snow events
-    slide_amt[new_snowfall] = 0.
+    slide_amt[new_snowfall] = 0.0
     # don't slide in the interval preceding the snowfall data
     slide_amt.iloc[0] = 0
 
@@ -148,7 +158,7 @@ def coverage_nrel(snowfall, poa_irradiance, temp_air, surface_tilt,
 
 
 def dc_loss_nrel(snow_coverage, num_strings):
-    '''
+    """
     Calculates the fraction of DC capacity lost due to snow coverage.
 
     DC capacity loss assumes that if a string is partially covered by snow,
@@ -183,12 +193,12 @@ def dc_loss_nrel(snow_coverage, num_strings):
     .. [1] Gilman, P. et al., (2018). "SAM Photovoltaic Model Technical
        Reference Update", NREL Technical Report NREL/TP-6A20-67399.
        Available at https://www.nrel.gov/docs/fy18osti/67399.pdf
-    '''
+    """
     return np.ceil(snow_coverage * num_strings) / num_strings
 
 
 def _townsend_effective_snow(snow_total, snow_events):
-    '''
+    """
     Calculates effective snow using the total snowfall received each month and
     the number of snowfall events each month.
 
@@ -211,16 +221,25 @@ def _townsend_effective_snow(snow_total, snow_events):
        update from two winters of measurements in the SIERRA. 37th IEEE
        Photovoltaic Specialists Conference, Seattle, WA, USA.
        :doi:`10.1109/PVSC.2011.6186627`
-    '''
+    """
     snow_events_no_zeros = np.maximum(snow_events, 1)
     effective_snow = 0.5 * snow_total * (1 + 1 / snow_events_no_zeros)
     return np.where(snow_events > 0, effective_snow, 0)
 
 
-def loss_townsend(snow_total, snow_events, surface_tilt, relative_humidity,
-                  temp_air, poa_global, slant_height, lower_edge_height,
-                  string_factor=1.0, angle_of_repose=40):
-    '''
+def loss_townsend(
+    snow_total,
+    snow_events,
+    surface_tilt,
+    relative_humidity,
+    temp_air,
+    poa_global,
+    slant_height,
+    lower_edge_height,
+    string_factor=1.0,
+    angle_of_repose=40,
+):
+    """
     Calculates monthly snow loss based on the Townsend monthly snow loss
     model.
 
@@ -288,13 +307,13 @@ def loss_townsend(snow_total, snow_events, surface_tilt, relative_humidity,
        update from two winters of measurements in the SIERRA. 37th IEEE
        Photovoltaic Specialists Conference, Seattle, WA, USA.
        :doi:`10.1109/PVSC.2011.6186627`
-    '''
+    """
 
     # unit conversions from cm and m to in, from C to K, and from % to fraction
     # doing this early to facilitate comparison of this code with [1]
     snow_total_inches = snow_total / 2.54  # to inches
-    relative_humidity_fraction = relative_humidity / 100.
-    poa_global_kWh = poa_global / 1000.
+    relative_humidity_fraction = relative_humidity / 100.0
+    poa_global_kWh = poa_global / 1000.0
     slant_height_inches = slant_height * 39.37
     lower_edge_height_inches = lower_edge_height * 39.37
     temp_air_kelvin = temp_air + 273.15
@@ -306,20 +325,14 @@ def loss_townsend(snow_total, snow_events, surface_tilt, relative_humidity,
     snow_events_prev = np.roll(snow_events, 1)
 
     effective_snow = _townsend_effective_snow(snow_total_inches, snow_events)
-    effective_snow_prev = _townsend_effective_snow(
-        snow_total_prev,
-        snow_events_prev
-    )
-    effective_snow_weighted = (
-        1 / 3 * effective_snow_prev
-        + 2 / 3 * effective_snow
-    )
+    effective_snow_prev = _townsend_effective_snow(snow_total_prev, snow_events_prev)
+    effective_snow_weighted = 1 / 3 * effective_snow_prev + 2 / 3 * effective_snow
 
     # the lower limit of 0.1 in^2 is per private communication with the model's
     # author. CWH 1/30/2023
     lower_edge_distance = np.clip(
-        lower_edge_height_inches**2 - effective_snow_weighted**2, a_min=0.1,
-        a_max=None)
+        lower_edge_height_inches**2 - effective_snow_weighted**2, a_min=0.1, a_max=None
+    )
     gamma = (
         slant_height_inches
         * effective_snow_weighted
@@ -340,7 +353,7 @@ def loss_townsend(snow_total, snow_events, surface_tilt, relative_humidity,
     loss_fraction = (
         C1
         * effective_snow_weighted
-        * cosd(surface_tilt)**2
+        * cosd(surface_tilt) ** 2
         * ground_interference_term
         * relative_humidity_fraction
         / temp_air_kelvin**2

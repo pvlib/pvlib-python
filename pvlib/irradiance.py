@@ -22,16 +22,19 @@ import warnings
 
 # Deprecation warning based on https://peps.python.org/pep-0562/
 def __getattr__(attr):
-    if attr == 'SURFACE_ALBEDOS':
-        warnings.warn(f"{attr} has been moved to the albedo module as of "
-                      "v0.11.0. Please use pvlib.albedo.SURFACE_ALBEDOS.",
-                      pvlibDeprecationWarning)
+    if attr == "SURFACE_ALBEDOS":
+        warnings.warn(
+            f"{attr} has been moved to the albedo module as of "
+            "v0.11.0. Please use pvlib.albedo.SURFACE_ALBEDOS.",
+            pvlibDeprecationWarning,
+        )
         return pvlib.albedo.SURFACE_ALBEDOS
     raise AttributeError(f"module {__name__!r} has no attribute {attr!r}")
 
 
-def get_extra_radiation(datetime_or_doy, solar_constant=1366.1,
-                        method='spencer', epoch_year=2014, **kwargs):
+def get_extra_radiation(
+    datetime_or_doy, solar_constant=1366.1, method="spencer", epoch_year=2014, **kwargs
+):
     """
     Determine extraterrestrial radiation from day of year.
 
@@ -83,28 +86,32 @@ def get_extra_radiation(datetime_or_doy, solar_constant=1366.1,
        Civil Engineers, Ed. R. G. Allen et al.
     """
 
-    to_doy, to_datetimeindex, to_output = \
-        _handle_extra_radiation_types(datetime_or_doy, epoch_year)
+    to_doy, to_datetimeindex, to_output = _handle_extra_radiation_types(
+        datetime_or_doy, epoch_year
+    )
 
     # consider putting asce and spencer methods in their own functions
     method = method.lower()
-    if method == 'asce':
-        B = solarposition._calculate_simple_day_angle(to_doy(datetime_or_doy),
-                                                      offset=0)
+    if method == "asce":
+        B = solarposition._calculate_simple_day_angle(to_doy(datetime_or_doy), offset=0)
         RoverR0sqrd = 1 + 0.033 * np.cos(B)
-    elif method == 'spencer':
+    elif method == "spencer":
         B = solarposition._calculate_simple_day_angle(to_doy(datetime_or_doy))
-        RoverR0sqrd = (1.00011 + 0.034221 * np.cos(B) + 0.00128 * np.sin(B) +
-                       0.000719 * np.cos(2 * B) + 7.7e-05 * np.sin(2 * B))
-    elif method == 'pyephem':
+        RoverR0sqrd = (
+            1.00011
+            + 0.034221 * np.cos(B)
+            + 0.00128 * np.sin(B)
+            + 0.000719 * np.cos(2 * B)
+            + 7.7e-05 * np.sin(2 * B)
+        )
+    elif method == "pyephem":
         times = to_datetimeindex(datetime_or_doy)
         RoverR0sqrd = solarposition.pyephem_earthsun_distance(times) ** (-2)
-    elif method == 'nrel':
+    elif method == "nrel":
         times = to_datetimeindex(datetime_or_doy)
-        RoverR0sqrd = \
-            solarposition.nrel_earthsun_distance(times, **kwargs) ** (-2)
+        RoverR0sqrd = solarposition.nrel_earthsun_distance(times, **kwargs) ** (-2)
     else:
-        raise ValueError('Invalid method: %s', method)
+        raise ValueError("Invalid method: %s", method)
 
     Ea = solar_constant * RoverR0sqrd
 
@@ -122,28 +129,32 @@ def _handle_extra_radiation_types(datetime_or_doy, epoch_year):
     # a better way to do it.
     if isinstance(datetime_or_doy, pd.DatetimeIndex):
         to_doy = tools._pandas_to_doy  # won't be evaluated unless necessary
-        def to_datetimeindex(x): return x                       # noqa: E306
+
+        def to_datetimeindex(x):
+            return x  # noqa: E306
+
         to_output = partial(pd.Series, index=datetime_or_doy)
     elif isinstance(datetime_or_doy, pd.Timestamp):
         to_doy = tools._pandas_to_doy
-        to_datetimeindex = \
-            tools._datetimelike_scalar_to_datetimeindex
+        to_datetimeindex = tools._datetimelike_scalar_to_datetimeindex
         to_output = tools._scalar_out
-    elif isinstance(datetime_or_doy,
-                    (datetime.date, datetime.datetime, np.datetime64)):
+    elif isinstance(datetime_or_doy, (datetime.date, datetime.datetime, np.datetime64)):
         to_doy = tools._datetimelike_scalar_to_doy
-        to_datetimeindex = \
-            tools._datetimelike_scalar_to_datetimeindex
+        to_datetimeindex = tools._datetimelike_scalar_to_datetimeindex
         to_output = tools._scalar_out
     elif np.isscalar(datetime_or_doy):  # ints and floats of various types
-        def to_doy(x): return x                                 # noqa: E306
-        to_datetimeindex = partial(tools._doy_to_datetimeindex,
-                                   epoch_year=epoch_year)
+
+        def to_doy(x):
+            return x  # noqa: E306
+
+        to_datetimeindex = partial(tools._doy_to_datetimeindex, epoch_year=epoch_year)
         to_output = tools._scalar_out
     else:  # assume that we have an array-like object of doy
-        def to_doy(x): return x                                 # noqa: E306
-        to_datetimeindex = partial(tools._doy_to_datetimeindex,
-                                   epoch_year=epoch_year)
+
+        def to_doy(x):
+            return x  # noqa: E306
+
+        to_datetimeindex = partial(tools._doy_to_datetimeindex, epoch_year=epoch_year)
         to_output = tools._array_out
 
     return to_doy, to_datetimeindex, to_output
@@ -176,16 +187,15 @@ def aoi_projection(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth):
         Dot product of panel normal and solar angle.
     """
 
-    projection = (
-        tools.cosd(surface_tilt) * tools.cosd(solar_zenith) +
-        tools.sind(surface_tilt) * tools.sind(solar_zenith) *
-        tools.cosd(solar_azimuth - surface_azimuth))
+    projection = tools.cosd(surface_tilt) * tools.cosd(solar_zenith) + tools.sind(
+        surface_tilt
+    ) * tools.sind(solar_zenith) * tools.cosd(solar_azimuth - surface_azimuth)
 
     # GH 1185
     projection = np.clip(projection, -1, 1)
 
     try:
-        projection.name = 'aoi_projection'
+        projection.name = "aoi_projection"
     except AttributeError:
         pass
 
@@ -216,20 +226,20 @@ def aoi(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth):
         Angle of incidence in degrees.
     """
 
-    projection = aoi_projection(surface_tilt, surface_azimuth,
-                                solar_zenith, solar_azimuth)
+    projection = aoi_projection(
+        surface_tilt, surface_azimuth, solar_zenith, solar_azimuth
+    )
     aoi_value = np.rad2deg(np.arccos(projection))
 
     try:
-        aoi_value.name = 'aoi'
+        aoi_value.name = "aoi"
     except AttributeError:
         pass
 
     return aoi_value
 
 
-def beam_component(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
-                   dni):
+def beam_component(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth, dni):
     """
     Calculates the beam component of the plane of array irradiance.
 
@@ -251,19 +261,29 @@ def beam_component(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
     beam : numeric
         Beam component
     """
-    beam = dni * aoi_projection(surface_tilt, surface_azimuth,
-                                solar_zenith, solar_azimuth)
+    beam = dni * aoi_projection(
+        surface_tilt, surface_azimuth, solar_zenith, solar_azimuth
+    )
     beam = np.maximum(beam, 0)
 
     return beam
 
 
-def get_total_irradiance(surface_tilt, surface_azimuth,
-                         solar_zenith, solar_azimuth,
-                         dni, ghi, dhi, dni_extra=None, airmass=None,
-                         albedo=0.25, surface_type=None,
-                         model='isotropic',
-                         model_perez='allsitescomposite1990'):
+def get_total_irradiance(
+    surface_tilt,
+    surface_azimuth,
+    solar_zenith,
+    solar_azimuth,
+    dni,
+    ghi,
+    dhi,
+    dni_extra=None,
+    airmass=None,
+    albedo=0.25,
+    surface_type=None,
+    model="isotropic",
+    model_perez="allsitescomposite1990",
+):
     r"""
     Determine total in-plane irradiance and its beam, sky diffuse and ground
     reflected components, using the specified sky diffuse irradiance model.
@@ -331,22 +351,38 @@ def get_total_irradiance(surface_tilt, surface_azimuth,
     """
 
     poa_sky_diffuse = get_sky_diffuse(
-        surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
-        dni, ghi, dhi, dni_extra=dni_extra, airmass=airmass, model=model,
-        model_perez=model_perez)
+        surface_tilt,
+        surface_azimuth,
+        solar_zenith,
+        solar_azimuth,
+        dni,
+        ghi,
+        dhi,
+        dni_extra=dni_extra,
+        airmass=airmass,
+        model=model,
+        model_perez=model_perez,
+    )
 
-    poa_ground_diffuse = get_ground_diffuse(surface_tilt, ghi, albedo,
-                                            surface_type)
+    poa_ground_diffuse = get_ground_diffuse(surface_tilt, ghi, albedo, surface_type)
     aoi_ = aoi(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth)
     irrads = poa_components(aoi_, dni, poa_sky_diffuse, poa_ground_diffuse)
     return irrads
 
 
-def get_sky_diffuse(surface_tilt, surface_azimuth,
-                    solar_zenith, solar_azimuth,
-                    dni, ghi, dhi, dni_extra=None, airmass=None,
-                    model='isotropic',
-                    model_perez='allsitescomposite1990'):
+def get_sky_diffuse(
+    surface_tilt,
+    surface_azimuth,
+    solar_zenith,
+    solar_azimuth,
+    dni,
+    ghi,
+    dhi,
+    dni_extra=None,
+    airmass=None,
+    model="isotropic",
+    model_perez="allsitescomposite1990",
+):
     r"""
     Determine in-plane sky diffuse irradiance component
     using the specified sky diffuse irradiance model.
@@ -416,41 +452,72 @@ def get_sky_diffuse(surface_tilt, surface_azimuth,
 
     model = model.lower()
 
-    if dni_extra is None and model in {'haydavies', 'reindl',
-                                       'perez', 'perez-driesse'}:
-        raise ValueError(f'dni_extra is required for model {model}')
+    if dni_extra is None and model in {"haydavies", "reindl", "perez", "perez-driesse"}:
+        raise ValueError(f"dni_extra is required for model {model}")
 
-    if model == 'isotropic':
+    if model == "isotropic":
         sky = isotropic(surface_tilt, dhi)
-    elif model == 'klucher':
-        sky = klucher(surface_tilt, surface_azimuth, dhi, ghi,
-                      solar_zenith, solar_azimuth)
-    elif model == 'haydavies':
-        sky = haydavies(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
-                        solar_zenith, solar_azimuth)
-    elif model == 'reindl':
-        sky = reindl(surface_tilt, surface_azimuth, dhi, dni, ghi, dni_extra,
-                     solar_zenith, solar_azimuth)
-    elif model == 'king':
+    elif model == "klucher":
+        sky = klucher(
+            surface_tilt, surface_azimuth, dhi, ghi, solar_zenith, solar_azimuth
+        )
+    elif model == "haydavies":
+        sky = haydavies(
+            surface_tilt,
+            surface_azimuth,
+            dhi,
+            dni,
+            dni_extra,
+            solar_zenith,
+            solar_azimuth,
+        )
+    elif model == "reindl":
+        sky = reindl(
+            surface_tilt,
+            surface_azimuth,
+            dhi,
+            dni,
+            ghi,
+            dni_extra,
+            solar_zenith,
+            solar_azimuth,
+        )
+    elif model == "king":
         sky = king(surface_tilt, dhi, ghi, solar_zenith)
-    elif model == 'perez':
+    elif model == "perez":
         if airmass is None:
             airmass = atmosphere.get_relative_airmass(solar_zenith)
-        sky = perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
-                    solar_zenith, solar_azimuth, airmass,
-                    model=model_perez)
-    elif model == 'perez-driesse':
+        sky = perez(
+            surface_tilt,
+            surface_azimuth,
+            dhi,
+            dni,
+            dni_extra,
+            solar_zenith,
+            solar_azimuth,
+            airmass,
+            model=model_perez,
+        )
+    elif model == "perez-driesse":
         # perez_driesse will calculate its own airmass if needed
-        sky = perez_driesse(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
-                            solar_zenith, solar_azimuth, airmass)
+        sky = perez_driesse(
+            surface_tilt,
+            surface_azimuth,
+            dhi,
+            dni,
+            dni_extra,
+            solar_zenith,
+            solar_azimuth,
+            airmass,
+        )
     else:
-        raise ValueError(f'invalid model selection {model}')
+        raise ValueError(f"invalid model selection {model}")
 
     return sky
 
 
 def poa_components(aoi, dni, poa_sky_diffuse, poa_ground_diffuse):
-    r'''
+    r"""
     Determine in-plane irradiance components.
 
     Combines DNI with sky diffuse and ground-reflected irradiance to calculate
@@ -490,18 +557,18 @@ def poa_components(aoi, dni, poa_sky_diffuse, poa_ground_diffuse):
     ------
     Negative beam irradiation due to aoi :math:`> 90^{\circ}` or AOI
     :math:`< 0^{\circ}` is set to zero.
-    '''
+    """
 
     poa_direct = np.maximum(dni * np.cos(np.radians(aoi)), 0)
     poa_diffuse = poa_sky_diffuse + poa_ground_diffuse
     poa_global = poa_direct + poa_diffuse
 
     irrads = OrderedDict()
-    irrads['poa_global'] = poa_global
-    irrads['poa_direct'] = poa_direct
-    irrads['poa_diffuse'] = poa_diffuse
-    irrads['poa_sky_diffuse'] = poa_sky_diffuse
-    irrads['poa_ground_diffuse'] = poa_ground_diffuse
+    irrads["poa_global"] = poa_global
+    irrads["poa_direct"] = poa_direct
+    irrads["poa_diffuse"] = poa_diffuse
+    irrads["poa_sky_diffuse"] = poa_sky_diffuse
+    irrads["poa_ground_diffuse"] = poa_ground_diffuse
 
     if isinstance(poa_direct, pd.Series):
         irrads = pd.DataFrame(irrads)
@@ -509,8 +576,8 @@ def poa_components(aoi, dni, poa_sky_diffuse, poa_ground_diffuse):
     return irrads
 
 
-def get_ground_diffuse(surface_tilt, ghi, albedo=.25, surface_type=None):
-    r'''
+def get_ground_diffuse(surface_tilt, ghi, albedo=0.25, surface_type=None):
+    r"""
     Estimate diffuse irradiance on a tilted surface from ground reflections.
 
     Ground diffuse irradiance is calculated as
@@ -563,7 +630,7 @@ def get_ground_diffuse(surface_tilt, ghi, albedo=.25, surface_type=None):
     .. [4] Payne, R. E. "Albedo of the Sea Surface". J. Atmos. Sci., 29,
        pp. 959–970, 1972.
        :doi:`10.1175/1520-0469(1972)029<0959:AOTSS>2.0.CO;2`
-    '''
+    """
 
     if surface_type is not None:
         albedo = pvlib.albedo.SURFACE_ALBEDOS[surface_type]
@@ -571,7 +638,7 @@ def get_ground_diffuse(surface_tilt, ghi, albedo=.25, surface_type=None):
     diffuse_irrad = ghi * albedo * (1 - np.cos(np.radians(surface_tilt))) * 0.5
 
     try:
-        diffuse_irrad.name = 'diffuse_ground'
+        diffuse_irrad.name = "diffuse_ground"
     except AttributeError:
         pass
 
@@ -579,7 +646,7 @@ def get_ground_diffuse(surface_tilt, ghi, albedo=.25, surface_type=None):
 
 
 def isotropic(surface_tilt, dhi):
-    r'''
+    r"""
     Determine diffuse irradiance from the sky on a tilted surface using
     the isotropic sky model.
 
@@ -620,15 +687,14 @@ def isotropic(surface_tilt, dhi):
        meaning, and significance of the isotropic sky model" 2020, Solar
        Energy vol. 201. pp. 8-12
        :doi:`10.1016/j.solener.2020.02.067`
-    '''
+    """
     sky_diffuse = dhi * (1 + tools.cosd(surface_tilt)) * 0.5
 
     return sky_diffuse
 
 
-def klucher(surface_tilt, surface_azimuth, dhi, ghi, solar_zenith,
-            solar_azimuth):
-    r'''
+def klucher(surface_tilt, surface_azimuth, dhi, ghi, solar_zenith, solar_azimuth):
+    r"""
     Determine diffuse irradiance from the sky on a tilted surface
     using the Klucher (1979) model.
 
@@ -698,15 +764,14 @@ def klucher(surface_tilt, surface_azimuth, dhi, ghi, solar_zenith,
        compute solar irradiance on inclined surfaces for building energy
        simulation" 2007, Solar Energy vol. 81. pp. 254-267
        :doi:`10.1016/j.solener.2006.03.009`
-    '''
+    """
 
     # zenith angle with respect to panel normal.
-    cos_tt = aoi_projection(surface_tilt, surface_azimuth,
-                            solar_zenith, solar_azimuth)
+    cos_tt = aoi_projection(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth)
     cos_tt = np.maximum(cos_tt, 0)  # GH 526
 
     # silence warning from 0 / 0
-    with np.errstate(invalid='ignore'):
+    with np.errstate(invalid="ignore"):
         F = 1 - ((dhi / ghi) ** 2)
 
     try:
@@ -717,17 +782,25 @@ def klucher(surface_tilt, surface_azimuth, dhi, ghi, solar_zenith,
 
     term1 = 0.5 * (1 + tools.cosd(surface_tilt))
     term2 = 1 + F * (tools.sind(0.5 * surface_tilt) ** 3)
-    term3 = 1 + F * (cos_tt ** 2) * (tools.sind(solar_zenith) ** 3)
+    term3 = 1 + F * (cos_tt**2) * (tools.sind(solar_zenith) ** 3)
 
     sky_diffuse = dhi * term1 * term2 * term3
 
     return sky_diffuse
 
 
-def haydavies(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
-              solar_zenith=None, solar_azimuth=None, projection_ratio=None,
-              return_components=False):
-    r'''
+def haydavies(
+    surface_tilt,
+    surface_azimuth,
+    dhi,
+    dni,
+    dni_extra,
+    solar_zenith=None,
+    solar_azimuth=None,
+    projection_ratio=None,
+    return_components=False,
+):
+    r"""
     Determine diffuse irradiance from the sky on a tilted surface using the
     Hay and Davies (1980) model.
 
@@ -826,12 +899,13 @@ def haydavies(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
        compute solar irradiance on inclined surfaces for building energy
        simulation" 2007, Solar Energy vol. 81. pp. 254-267
        :doi:`10.1016/j.solener.2006.03.009`
-    '''
+    """
 
     # if necessary, calculate ratio of titled and horizontal beam irradiance
     if projection_ratio is None:
-        cos_tt = aoi_projection(surface_tilt, surface_azimuth,
-                                solar_zenith, solar_azimuth)
+        cos_tt = aoi_projection(
+            surface_tilt, surface_azimuth, solar_zenith, solar_azimuth
+        )
         cos_tt = np.maximum(cos_tt, 0)  # GH 526
         cos_solar_zenith = tools.cosd(solar_zenith)
         Rb = cos_tt / np.maximum(cos_solar_zenith, 0.01745)  # GH 432
@@ -851,13 +925,14 @@ def haydavies(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
 
     if return_components:
         diffuse_components = OrderedDict()
-        diffuse_components['sky_diffuse'] = sky_diffuse
+        diffuse_components["sky_diffuse"] = sky_diffuse
 
         # Calculate the individual components
-        diffuse_components['isotropic'] = poa_isotropic
-        diffuse_components['circumsolar'] = poa_circumsolar
-        diffuse_components['horizon'] = np.where(
-            np.isnan(diffuse_components['isotropic']), np.nan, 0.)
+        diffuse_components["isotropic"] = poa_isotropic
+        diffuse_components["circumsolar"] = poa_circumsolar
+        diffuse_components["horizon"] = np.where(
+            np.isnan(diffuse_components["isotropic"]), np.nan, 0.0
+        )
 
         if isinstance(sky_diffuse, pd.Series):
             diffuse_components = pd.DataFrame(diffuse_components)
@@ -866,9 +941,10 @@ def haydavies(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
         return sky_diffuse
 
 
-def reindl(surface_tilt, surface_azimuth, dhi, dni, ghi, dni_extra,
-           solar_zenith, solar_azimuth):
-    r'''
+def reindl(
+    surface_tilt, surface_azimuth, dhi, dni, ghi, dni_extra, solar_zenith, solar_azimuth
+):
+    r"""
     Determine the diffuse irradiance from the sky on a tilted surface using
     the Reindl (1990) model.
 
@@ -953,10 +1029,9 @@ def reindl(surface_tilt, surface_azimuth, dhi, dni, ghi, dni_extra,
        compute solar irradiance on inclined surfaces for building energy
        simulation. Solar Energy 81(2), 254-267
        :doi:`10.1016/j.solener.2006.03.009`
-    '''
+    """
 
-    cos_tt = aoi_projection(surface_tilt, surface_azimuth,
-                            solar_zenith, solar_azimuth)
+    cos_tt = aoi_projection(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth)
     cos_tt = np.maximum(cos_tt, 0)  # GH 526
 
     # do not apply cos(zen) limit here (needed for HB below)
@@ -975,9 +1050,9 @@ def reindl(surface_tilt, surface_azimuth, dhi, dni, ghi, dni_extra,
     # these are the () and [] sub-terms of the second term of eqn 8
     term1 = 1 - AI
     term2 = 0.5 * (1 + tools.cosd(surface_tilt))
-    with np.errstate(invalid='ignore', divide='ignore'):
+    with np.errstate(invalid="ignore", divide="ignore"):
         hb_to_ghi = np.where(ghi == 0, 0, np.divide(HB, ghi))
-    term3 = 1 + np.sqrt(hb_to_ghi) * (tools.sind(0.5 * surface_tilt)**3)
+    term3 = 1 + np.sqrt(hb_to_ghi) * (tools.sind(0.5 * surface_tilt) ** 3)
     sky_diffuse = dhi * (AI * Rb + term1 * term2 * term3)
     sky_diffuse = np.maximum(sky_diffuse, 0)
 
@@ -985,7 +1060,7 @@ def reindl(surface_tilt, surface_azimuth, dhi, dni, ghi, dni_extra,
 
 
 def king(surface_tilt, dhi, ghi, solar_zenith):
-    '''
+    """
     Determine diffuse irradiance from the sky on a tilted surface using
     the King model.
 
@@ -1016,20 +1091,30 @@ def king(surface_tilt, dhi, ghi, solar_zenith):
     --------
     poa_sky_diffuse : numeric
         The diffuse component of the solar radiation.
-    '''
+    """
 
-    sky_diffuse = (dhi * (1 + tools.cosd(surface_tilt)) / 2 + ghi *
-                   (0.012 * solar_zenith - 0.04) *
-                   (1 - tools.cosd(surface_tilt)) / 2)
+    sky_diffuse = (
+        dhi * (1 + tools.cosd(surface_tilt)) / 2
+        + ghi * (0.012 * solar_zenith - 0.04) * (1 - tools.cosd(surface_tilt)) / 2
+    )
     sky_diffuse = np.maximum(sky_diffuse, 0)
 
     return sky_diffuse
 
 
-def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
-          solar_zenith, solar_azimuth, airmass,
-          model='allsitescomposite1990', return_components=False):
-    '''
+def perez(
+    surface_tilt,
+    surface_azimuth,
+    dhi,
+    dni,
+    dni_extra,
+    solar_zenith,
+    solar_azimuth,
+    airmass,
+    model="allsitescomposite1990",
+    return_components=False,
+):
+    """
     Determine diffuse irradiance from the sky on a tilted surface using
     one of the Perez models.
 
@@ -1141,7 +1226,7 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
 
     .. [4] Perez, R. et. al 1988. "The Development and Verification of the
        Perez Diffuse Radiation Model". SAND88-7030
-    '''
+    """
 
     kappa = 1.041  # for solar_zenith in radians
     z = np.radians(solar_zenith)  # convert to radians
@@ -1150,8 +1235,8 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
     delta = dhi * airmass / dni_extra
 
     # epsilon is the sky's "clearness"
-    with np.errstate(invalid='ignore'):
-        eps = ((dhi + dni) / dhi + kappa * (z ** 3)) / (1 + kappa * (z ** 3))
+    with np.errstate(invalid="ignore"):
+        eps = ((dhi + dni) / dhi + kappa * (z**3)) / (1 + kappa * (z**3))
 
     # numpy indexing below will not work with a Series
     if isinstance(eps, pd.Series):
@@ -1161,7 +1246,7 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
     # rules. 1 = overcast ... 8 = clear (these names really only make
     # sense for small zenith angles, but...) these values will
     # eventually be used as indicies for coeffecient look ups
-    ebin = np.digitize(eps, (0., 1.065, 1.23, 1.5, 1.95, 2.8, 4.5, 6.2))
+    ebin = np.digitize(eps, (0.0, 1.065, 1.23, 1.5, 1.95, 2.8, 4.5, 6.2))
     ebin = np.array(ebin)  # GH 642
     ebin[np.isnan(eps)] = 0
 
@@ -1178,13 +1263,12 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
     F1c = np.vstack((F1c, nans))
     F2c = np.vstack((F2c, nans))
 
-    F1 = (F1c[ebin, 0] + F1c[ebin, 1] * delta + F1c[ebin, 2] * z)
+    F1 = F1c[ebin, 0] + F1c[ebin, 1] * delta + F1c[ebin, 2] * z
     F1 = np.maximum(F1, 0)
 
-    F2 = (F2c[ebin, 0] + F2c[ebin, 1] * delta + F2c[ebin, 2] * z)
+    F2 = F2c[ebin, 0] + F2c[ebin, 1] * delta + F2c[ebin, 2] * z
 
-    A = aoi_projection(surface_tilt, surface_azimuth,
-                       solar_zenith, solar_azimuth)
+    A = aoi_projection(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth)
     A = np.maximum(A, 0)
 
     B = tools.cosd(solar_zenith)
@@ -1205,12 +1289,12 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
 
     if return_components:
         diffuse_components = OrderedDict()
-        diffuse_components['sky_diffuse'] = sky_diffuse
+        diffuse_components["sky_diffuse"] = sky_diffuse
 
         # Calculate the different components
-        diffuse_components['isotropic'] = dhi * term1
-        diffuse_components['circumsolar'] = dhi * term2
-        diffuse_components['horizon'] = dhi * term3
+        diffuse_components["isotropic"] = dhi * term1
+        diffuse_components["circumsolar"] = dhi * term2
+        diffuse_components["horizon"] = dhi * term3
 
         # Set values of components to 0 when sky_diffuse is 0
         mask = sky_diffuse == 0
@@ -1218,44 +1302,44 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
             diffuse_components = pd.DataFrame(diffuse_components)
             diffuse_components.loc[mask] = 0
         else:
-            diffuse_components = {k: np.where(mask, 0, v) for k, v in
-                                  diffuse_components.items()}
+            diffuse_components = {
+                k: np.where(mask, 0, v) for k, v in diffuse_components.items()
+            }
         return diffuse_components
     else:
         return sky_diffuse
 
 
 def _calc_delta(dhi, dni_extra, solar_zenith, airmass=None):
-    '''
+    """
     Compute the delta parameter, which represents sky dome "brightness"
     in the Perez and Perez-Driesse models.
 
     Helper function for perez_driesse transposition.
-    '''
+    """
     if airmass is None:
         # use the same airmass model as in the original perez work
-        airmass = atmosphere.get_relative_airmass(solar_zenith,
-                                                  'kastenyoung1989')
+        airmass = atmosphere.get_relative_airmass(solar_zenith, "kastenyoung1989")
 
-    max_airmass = atmosphere.get_relative_airmass(90, 'kastenyoung1989')
+    max_airmass = atmosphere.get_relative_airmass(90, "kastenyoung1989")
     airmass = np.where(solar_zenith >= 90, max_airmass, airmass)
 
     return dhi / (dni_extra / airmass)
 
 
 def _calc_zeta(dhi, dni, zenith):
-    '''
+    """
     Compute the zeta parameter, which represents sky dome "clearness"
     in the Perez-Driesse model.
 
     Helper function for perez_driesse transposition.
-    '''
+    """
     dhi = np.asarray(dhi)
     dni = np.asarray(dni)
 
     # first calculate what zeta would be without the kappa correction
     # using eq. 5 and eq. 13
-    with np.errstate(invalid='ignore'):
+    with np.errstate(invalid="ignore"):
         zeta = dni / (dhi + dni)
 
     zeta = np.where(dhi == 0, 0.0, zeta)
@@ -1269,43 +1353,67 @@ def _calc_zeta(dhi, dni, zenith):
 
 
 def _f(i, j, zeta):
-    '''
+    """
     Evaluate the quadratic splines corresponding to the
     allsitescomposite1990 Perez model look-up table.
 
     Helper function for perez_driesse transposition.
-    '''
+    """
     knots = np.array(
-        [0.000, 0.000, 0.000,
-         0.061, 0.187, 0.333, 0.487, 0.643, 0.778, 0.839,
-         1.000, 1.000, 1.000])
+        [
+            0.000,
+            0.000,
+            0.000,
+            0.061,
+            0.187,
+            0.333,
+            0.487,
+            0.643,
+            0.778,
+            0.839,
+            1.000,
+            1.000,
+            1.000,
+        ]
+    )
 
     coefs = np.array(
-        [[-0.053, +0.529, -0.028, -0.071, +0.061, -0.019],
-         [-0.008, +0.588, -0.062, -0.060, +0.072, -0.022],
-         [+0.131, +0.770, -0.167, -0.026, +0.106, -0.032],
-         [+0.328, +0.471, -0.216, +0.069, -0.105, -0.028],
-         [+0.557, +0.241, -0.300, +0.086, -0.085, -0.012],
-         [+0.861, -0.323, -0.355, +0.240, -0.467, -0.008],
-         [+1.212, -1.239, -0.444, +0.305, -0.797, +0.047],
-         [+1.099, -1.847, -0.365, +0.275, -1.132, +0.124],
-         [+0.544, +0.157, -0.213, +0.118, -1.455, +0.292],
-         [+0.544, +0.157, -0.213, +0.118, -1.455, +0.292],
-         [+0.000, +0.000, +0.000, +0.000, +0.000, +0.000],
-         [+0.000, +0.000, +0.000, +0.000, +0.000, +0.000],
-         [+0.000, +0.000, +0.000, +0.000, +0.000, +0.000]])
+        [
+            [-0.053, +0.529, -0.028, -0.071, +0.061, -0.019],
+            [-0.008, +0.588, -0.062, -0.060, +0.072, -0.022],
+            [+0.131, +0.770, -0.167, -0.026, +0.106, -0.032],
+            [+0.328, +0.471, -0.216, +0.069, -0.105, -0.028],
+            [+0.557, +0.241, -0.300, +0.086, -0.085, -0.012],
+            [+0.861, -0.323, -0.355, +0.240, -0.467, -0.008],
+            [+1.212, -1.239, -0.444, +0.305, -0.797, +0.047],
+            [+1.099, -1.847, -0.365, +0.275, -1.132, +0.124],
+            [+0.544, +0.157, -0.213, +0.118, -1.455, +0.292],
+            [+0.544, +0.157, -0.213, +0.118, -1.455, +0.292],
+            [+0.000, +0.000, +0.000, +0.000, +0.000, +0.000],
+            [+0.000, +0.000, +0.000, +0.000, +0.000, +0.000],
+            [+0.000, +0.000, +0.000, +0.000, +0.000, +0.000],
+        ]
+    )
 
     coefs = coefs.T.reshape((2, 3, 13))
 
-    tck = (knots, coefs[i-1, j-1], 2)
+    tck = (knots, coefs[i - 1, j - 1], 2)
 
     return splev(zeta, tck)
 
 
-def perez_driesse(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
-                  solar_zenith, solar_azimuth, airmass=None,
-                  return_components=False):
-    '''
+def perez_driesse(
+    surface_tilt,
+    surface_azimuth,
+    dhi,
+    dni,
+    dni_extra,
+    solar_zenith,
+    solar_azimuth,
+    airmass=None,
+    return_components=False,
+):
+    """
     Determine diffuse irradiance from the sky on a tilted surface using
     the continuous Perez-Driesse model.
 
@@ -1399,7 +1507,7 @@ def perez_driesse(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
     klucher
     reindl
     king
-    '''
+    """
     # Contributed by Anton Driesse (@adriesse), PV Performance Labs. Oct., 2023
 
     delta = _calc_delta(dhi, dni_extra, solar_zenith, airmass)
@@ -1416,8 +1524,7 @@ def perez_driesse(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
     # lines after this point are identical to the original perez function
     # with some checks removed
 
-    A = aoi_projection(surface_tilt, surface_azimuth,
-                       solar_zenith, solar_azimuth)
+    A = aoi_projection(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth)
     A = np.maximum(A, 0)
 
     B = tools.cosd(solar_zenith)
@@ -1432,12 +1539,12 @@ def perez_driesse(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
 
     if return_components:
         diffuse_components = OrderedDict()
-        diffuse_components['sky_diffuse'] = sky_diffuse
+        diffuse_components["sky_diffuse"] = sky_diffuse
 
         # Calculate the different components
-        diffuse_components['isotropic'] = dhi * term1
-        diffuse_components['circumsolar'] = dhi * term2
-        diffuse_components['horizon'] = dhi * term3
+        diffuse_components["isotropic"] = dhi * term1
+        diffuse_components["circumsolar"] = dhi * term2
+        diffuse_components["horizon"] = dhi * term3
 
         if isinstance(sky_diffuse, pd.Series):
             diffuse_components = pd.DataFrame(diffuse_components)
@@ -1447,42 +1554,62 @@ def perez_driesse(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
         return sky_diffuse
 
 
-def _poa_from_ghi(surface_tilt, surface_azimuth,
-                  solar_zenith, solar_azimuth,
-                  ghi,
-                  dni_extra, airmass, albedo):
-    '''
+def _poa_from_ghi(
+    surface_tilt,
+    surface_azimuth,
+    solar_zenith,
+    solar_azimuth,
+    ghi,
+    dni_extra,
+    airmass,
+    albedo,
+):
+    """
     Transposition function that includes decomposition of GHI using the
     continuous Erbs-Driesse model.
 
     Helper function for ghi_from_poa_driesse_2023.
-    '''
+    """
     # Contributed by Anton Driesse (@adriesse), PV Performance Labs. Nov., 2023
 
     erbsout = erbs_driesse(ghi, solar_zenith, dni_extra=dni_extra)
 
-    dni = erbsout['dni']
-    dhi = erbsout['dhi']
+    dni = erbsout["dni"]
+    dhi = erbsout["dhi"]
 
-    irrads = get_total_irradiance(surface_tilt, surface_azimuth,
-                                  solar_zenith, solar_azimuth,
-                                  dni, ghi, dhi,
-                                  dni_extra, airmass, albedo,
-                                  model='perez-driesse')
+    irrads = get_total_irradiance(
+        surface_tilt,
+        surface_azimuth,
+        solar_zenith,
+        solar_azimuth,
+        dni,
+        ghi,
+        dhi,
+        dni_extra,
+        airmass,
+        albedo,
+        model="perez-driesse",
+    )
 
-    return irrads['poa_global']
+    return irrads["poa_global"]
 
 
-def _ghi_from_poa(surface_tilt, surface_azimuth,
-                  solar_zenith, solar_azimuth,
-                  poa_global,
-                  dni_extra, airmass, albedo,
-                  xtol=0.01):
-    '''
+def _ghi_from_poa(
+    surface_tilt,
+    surface_azimuth,
+    solar_zenith,
+    solar_azimuth,
+    poa_global,
+    dni_extra,
+    airmass,
+    albedo,
+    xtol=0.01,
+):
+    """
     Reverse transposition function that uses the scalar bisection from scipy.
 
     Helper function for ghi_from_poa_driesse_2023.
-    '''
+    """
     # Contributed by Anton Driesse (@adriesse), PV Performance Labs. Nov., 2023
 
     # propagate nans and zeros quickly
@@ -1493,10 +1620,16 @@ def _ghi_from_poa(surface_tilt, surface_azimuth,
 
     # function whose root needs to be found
     def poa_error(ghi):
-        poa_hat = _poa_from_ghi(surface_tilt, surface_azimuth,
-                                solar_zenith, solar_azimuth,
-                                ghi,
-                                dni_extra, airmass, albedo)
+        poa_hat = _poa_from_ghi(
+            surface_tilt,
+            surface_azimuth,
+            solar_zenith,
+            solar_azimuth,
+            ghi,
+            dni_extra,
+            airmass,
+            albedo,
+        )
         return poa_hat - poa_global
 
     # calculate an upper bound for ghi using clearness index 1.25
@@ -1504,14 +1637,15 @@ def _ghi_from_poa(surface_tilt, surface_azimuth,
     ghi_high = np.maximum(10, 1.25 * ghi_clear)
 
     try:
-        result = bisect(poa_error,
-                        a=0,
-                        b=ghi_high,
-                        xtol=xtol,
-                        maxiter=25,
-                        full_output=True,
-                        disp=False,
-                        )
+        result = bisect(
+            poa_error,
+            a=0,
+            b=ghi_high,
+            xtol=xtol,
+            maxiter=25,
+            full_output=True,
+            disp=False,
+        )
     except ValueError:
         # this occurs when poa_error has the same sign at both end points
         ghi = np.nan
@@ -1525,13 +1659,19 @@ def _ghi_from_poa(surface_tilt, surface_azimuth,
     return ghi, conv, niter
 
 
-def ghi_from_poa_driesse_2023(surface_tilt, surface_azimuth,
-                              solar_zenith, solar_azimuth,
-                              poa_global,
-                              dni_extra, airmass=None, albedo=0.25,
-                              xtol=0.01,
-                              full_output=False):
-    '''
+def ghi_from_poa_driesse_2023(
+    surface_tilt,
+    surface_azimuth,
+    solar_zenith,
+    solar_azimuth,
+    poa_global,
+    dni_extra,
+    airmass=None,
+    albedo=0.25,
+    xtol=0.01,
+    full_output=False,
+):
+    """
     Estimate global horizontal irradiance (GHI) from global plane-of-array
     (POA) irradiance.  This reverse transposition algorithm uses a bisection
     search together with the continuous Perez-Driesse transposition and
@@ -1589,7 +1729,7 @@ def ghi_from_poa_driesse_2023(surface_tilt, surface_azimuth,
     perez_driesse
     erbs_driesse
     gti_dirint
-    '''
+    """
     # Contributed by Anton Driesse (@adriesse), PV Performance Labs. Nov., 2023
 
     if xtol <= 0:
@@ -1597,11 +1737,17 @@ def ghi_from_poa_driesse_2023(surface_tilt, surface_azimuth,
 
     ghi_from_poa_array = np.vectorize(_ghi_from_poa)
 
-    ghi, conv, niter = ghi_from_poa_array(surface_tilt, surface_azimuth,
-                                          solar_zenith, solar_azimuth,
-                                          poa_global,
-                                          dni_extra, airmass, albedo,
-                                          xtol=xtol)
+    ghi, conv, niter = ghi_from_poa_array(
+        surface_tilt,
+        surface_azimuth,
+        solar_zenith,
+        solar_azimuth,
+        poa_global,
+        dni_extra,
+        airmass,
+        albedo,
+        xtol=xtol,
+    )
 
     if isinstance(poa_global, pd.Series):
         ghi = pd.Series(ghi, poa_global.index)
@@ -1615,10 +1761,11 @@ def ghi_from_poa_driesse_2023(surface_tilt, surface_azimuth,
 
 
 @renamed_kwarg_warning(
-    since='0.11.2',
-    old_param_name='clearsky_ghi',
-    new_param_name='ghi_clear',
-    removal="0.13.0")
+    since="0.11.2",
+    old_param_name="clearsky_ghi",
+    new_param_name="ghi_clear",
+    removal="0.13.0",
+)
 def clearsky_index(ghi, ghi_clear, max_clearsky_index=2.0):
     """
     Calculate the clearsky index.
@@ -1648,8 +1795,7 @@ def clearsky_index(ghi, ghi_clear, max_clearsky_index=2.0):
     """
     clearsky_index = ghi / ghi_clear
     # set +inf, -inf, and nans to zero
-    clearsky_index = np.where(~np.isfinite(clearsky_index), 0,
-                              clearsky_index)
+    clearsky_index = np.where(~np.isfinite(clearsky_index), 0, clearsky_index)
     # but preserve nans in the input arrays
     input_is_nan = ~np.isfinite(ghi) | ~np.isfinite(ghi_clear)
     clearsky_index = np.where(input_is_nan, np.nan, clearsky_index)
@@ -1664,8 +1810,9 @@ def clearsky_index(ghi, ghi_clear, max_clearsky_index=2.0):
     return clearsky_index
 
 
-def clearness_index(ghi, solar_zenith, extra_radiation, min_cos_zenith=0.065,
-                    max_clearness_index=2.0):
+def clearness_index(
+    ghi, solar_zenith, extra_radiation, min_cos_zenith=0.065, max_clearness_index=2.0
+):
     """
     Calculate the clearness index.
 
@@ -1717,8 +1864,9 @@ def clearness_index(ghi, solar_zenith, extra_radiation, min_cos_zenith=0.065,
     return kt
 
 
-def clearness_index_zenith_independent(clearness_index, airmass,
-                                       max_clearness_index=2.0):
+def clearness_index_zenith_independent(
+    clearness_index, airmass, max_clearness_index=2.0
+):
     """
     Calculate the zenith angle independent clearness index.
 
@@ -1766,8 +1914,15 @@ def _kt_kt_prime_factor(airmass):
     return 1.031 * np.exp(-1.4 / (0.9 + 9.4 / airmass)) + 0.1
 
 
-def disc(ghi, solar_zenith, datetime_or_doy, pressure=101325,
-         min_cos_zenith=0.065, max_zenith=87, max_airmass=12):
+def disc(
+    ghi,
+    solar_zenith,
+    datetime_or_doy,
+    pressure=101325,
+    min_cos_zenith=0.065,
+    max_zenith=87,
+    max_airmass=12,
+):
     """
     Estimate Direct Normal Irradiance from Global Horizontal Irradiance
     using the DISC model.
@@ -1844,12 +1999,13 @@ def disc(ghi, solar_zenith, datetime_or_doy, pressure=101325,
 
     # this is the I0 calculation from the reference
     # SSC uses solar constant = 1367.0 (checked 2018 08 15)
-    I0 = get_extra_radiation(datetime_or_doy, 1370., 'spencer')
+    I0 = get_extra_radiation(datetime_or_doy, 1370.0, "spencer")
 
-    kt = clearness_index(ghi, solar_zenith, I0, min_cos_zenith=min_cos_zenith,
-                         max_clearness_index=1)
+    kt = clearness_index(
+        ghi, solar_zenith, I0, min_cos_zenith=min_cos_zenith, max_clearness_index=1
+    )
 
-    am = atmosphere.get_relative_airmass(solar_zenith, model='kasten1966')
+    am = atmosphere.get_relative_airmass(solar_zenith, model="kasten1966")
     if pressure is not None:
         am = atmosphere.get_absolute_airmass(am, pressure)
 
@@ -1860,9 +2016,9 @@ def disc(ghi, solar_zenith, datetime_or_doy, pressure=101325,
     dni = np.where(bad_values, 0, dni)
 
     output = OrderedDict()
-    output['dni'] = dni
-    output['kt'] = kt
-    output['airmass'] = am
+    output["dni"] = dni
+    output["kt"] = kt
+    output["airmass"] = am
 
     if isinstance(datetime_or_doy, pd.DatetimeIndex):
         output = pd.DataFrame(output, index=datetime_or_doy)
@@ -1894,30 +2050,39 @@ def _disc_kn(clearness_index, airmass, max_airmass=12):
 
     am = np.minimum(am, max_airmass)  # GH 450
 
-    is_cloudy = (kt <= 0.6)
+    is_cloudy = kt <= 0.6
     # Use Horner's method to compute polynomials efficiently
     a = np.where(
         is_cloudy,
-        0.512 + kt*(-1.56 + kt*(2.286 - 2.222*kt)),
-        -5.743 + kt*(21.77 + kt*(-27.49 + 11.56*kt)))
+        0.512 + kt * (-1.56 + kt * (2.286 - 2.222 * kt)),
+        -5.743 + kt * (21.77 + kt * (-27.49 + 11.56 * kt)),
+    )
     b = np.where(
-        is_cloudy,
-        0.37 + 0.962*kt,
-        41.4 + kt*(-118.5 + kt*(66.05 + 31.9*kt)))
+        is_cloudy, 0.37 + 0.962 * kt, 41.4 + kt * (-118.5 + kt * (66.05 + 31.9 * kt))
+    )
     c = np.where(
         is_cloudy,
-        -0.28 + kt*(0.932 - 2.048*kt),
-        -47.01 + kt*(184.2 + kt*(-222.0 + 73.81*kt)))
+        -0.28 + kt * (0.932 - 2.048 * kt),
+        -47.01 + kt * (184.2 + kt * (-222.0 + 73.81 * kt)),
+    )
 
-    delta_kn = a + b * np.exp(c*am)
+    delta_kn = a + b * np.exp(c * am)
 
-    Knc = 0.866 + am*(-0.122 + am*(0.0121 + am*(-0.000653 + 1.4e-05*am)))
+    Knc = 0.866 + am * (-0.122 + am * (0.0121 + am * (-0.000653 + 1.4e-05 * am)))
     Kn = Knc - delta_kn
     return Kn, am
 
 
-def dirint(ghi, solar_zenith, times, pressure=101325., use_delta_kt_prime=True,
-           temp_dew=None, min_cos_zenith=0.065, max_zenith=87):
+def dirint(
+    ghi,
+    solar_zenith,
+    times,
+    pressure=101325.0,
+    use_delta_kt_prime=True,
+    temp_dew=None,
+    min_cos_zenith=0.065,
+    max_zenith=87,
+):
     """
     Determine DNI from GHI using the DIRINT modification of the DISC
     model.
@@ -1991,39 +2156,39 @@ def dirint(ghi, solar_zenith, times, pressure=101325., use_delta_kt_prime=True,
        SERI/TR-215-3087, Golden, CO: Solar Energy Research Institute, 1987.
     """
 
-    disc_out = disc(ghi, solar_zenith, times, pressure=pressure,
-                    min_cos_zenith=min_cos_zenith, max_zenith=max_zenith)
-    airmass = disc_out['airmass']
-    kt = disc_out['kt']
+    disc_out = disc(
+        ghi,
+        solar_zenith,
+        times,
+        pressure=pressure,
+        min_cos_zenith=min_cos_zenith,
+        max_zenith=max_zenith,
+    )
+    airmass = disc_out["airmass"]
+    kt = disc_out["kt"]
 
-    kt_prime = clearness_index_zenith_independent(
-        kt, airmass, max_clearness_index=1)
-    delta_kt_prime = _delta_kt_prime_dirint(kt_prime, use_delta_kt_prime,
-                                            times)
+    kt_prime = clearness_index_zenith_independent(kt, airmass, max_clearness_index=1)
+    delta_kt_prime = _delta_kt_prime_dirint(kt_prime, use_delta_kt_prime, times)
     w = _temp_dew_dirint(temp_dew, times)
 
-    dirint_coeffs = _dirint_coeffs(times, kt_prime, solar_zenith, w,
-                                   delta_kt_prime)
+    dirint_coeffs = _dirint_coeffs(times, kt_prime, solar_zenith, w, delta_kt_prime)
 
     # Perez eqn 5
-    dni = disc_out['dni'] * dirint_coeffs
+    dni = disc_out["dni"] * dirint_coeffs
 
     return dni
 
 
-def _dirint_from_dni_ktprime(dni, kt_prime, solar_zenith, use_delta_kt_prime,
-                             temp_dew):
+def _dirint_from_dni_ktprime(dni, kt_prime, solar_zenith, use_delta_kt_prime, temp_dew):
     """
     Calculate DIRINT DNI from supplied DISC DNI and Kt'.
 
     Supports :py:func:`gti_dirint`
     """
     times = dni.index
-    delta_kt_prime = _delta_kt_prime_dirint(kt_prime, use_delta_kt_prime,
-                                            times)
+    delta_kt_prime = _delta_kt_prime_dirint(kt_prime, use_delta_kt_prime, times)
     w = _temp_dew_dirint(temp_dew, times)
-    dirint_coeffs = _dirint_coeffs(times, kt_prime, solar_zenith, w,
-                                   delta_kt_prime)
+    dirint_coeffs = _dirint_coeffs(times, kt_prime, solar_zenith, w, delta_kt_prime)
     dni_dirint = dni * dirint_coeffs
     return dni_dirint
 
@@ -2041,9 +2206,9 @@ def _delta_kt_prime_dirint(kt_prime, use_delta_kt_prime, times):
         # positions. Use kt_previous and kt_next to handle series of length 1
         kt_next.iloc[-1] = kt_previous.iloc[-1]
         kt_previous.iloc[0] = kt_next.iloc[0]
-        delta_kt_prime = 0.5 * ((kt_prime - kt_next).abs().add(
-                                (kt_prime - kt_previous).abs(),
-                                fill_value=0))
+        delta_kt_prime = 0.5 * (
+            (kt_prime - kt_next).abs().add((kt_prime - kt_previous).abs(), fill_value=0)
+        )
     else:
         # do not change unless also modifying _dirint_bins
         delta_kt_prime = pd.Series(-1, index=times)
@@ -2082,21 +2247,28 @@ def _dirint_coeffs(times, kt_prime, solar_zenith, w, delta_kt_prime):
     -------
     dirint_coeffs : array-like
     """
-    kt_prime_bin, zenith_bin, w_bin, delta_kt_prime_bin = \
-        _dirint_bins(times, kt_prime, solar_zenith, w, delta_kt_prime)
+    kt_prime_bin, zenith_bin, w_bin, delta_kt_prime_bin = _dirint_bins(
+        times, kt_prime, solar_zenith, w, delta_kt_prime
+    )
 
     # get the coefficients
     coeffs = _get_dirint_coeffs()
 
     # subtract 1 to account for difference between MATLAB-style bin
     # assignment and Python-style array lookup.
-    dirint_coeffs = coeffs[kt_prime_bin-1, zenith_bin-1,
-                           delta_kt_prime_bin-1, w_bin-1]
+    dirint_coeffs = coeffs[
+        kt_prime_bin - 1, zenith_bin - 1, delta_kt_prime_bin - 1, w_bin - 1
+    ]
 
     # convert unassigned bins to nan
-    dirint_coeffs = np.where((kt_prime_bin == 0) | (zenith_bin == 0) |
-                             (w_bin == 0) | (delta_kt_prime_bin == 0),
-                             np.nan, dirint_coeffs)
+    dirint_coeffs = np.where(
+        (kt_prime_bin == 0)
+        | (zenith_bin == 0)
+        | (w_bin == 0)
+        | (delta_kt_prime_bin == 0),
+        np.nan,
+        dirint_coeffs,
+    )
     return dirint_coeffs
 
 
@@ -2148,8 +2320,7 @@ def _dirint_bins(times, kt_prime, zenith, w, delta_kt_prime):
     # Create delta_kt_prime binning.
     delta_kt_prime_bin = pd.Series(0, index=times, dtype=np.int64)
     delta_kt_prime_bin[(delta_kt_prime >= 0) & (delta_kt_prime < 0.015)] = 1
-    delta_kt_prime_bin[(delta_kt_prime >= 0.015) &
-                       (delta_kt_prime < 0.035)] = 2
+    delta_kt_prime_bin[(delta_kt_prime >= 0.015) & (delta_kt_prime < 0.035)] = 2
     delta_kt_prime_bin[(delta_kt_prime >= 0.035) & (delta_kt_prime < 0.07)] = 3
     delta_kt_prime_bin[(delta_kt_prime >= 0.07) & (delta_kt_prime < 0.15)] = 4
     delta_kt_prime_bin[(delta_kt_prime >= 0.15) & (delta_kt_prime < 0.3)] = 5
@@ -2160,18 +2331,29 @@ def _dirint_bins(times, kt_prime, zenith, w, delta_kt_prime):
 
 
 @renamed_kwarg_warning(
-    since='0.11.2',
-    old_param_name='ghi_clearsky',
-    new_param_name='ghi_clear',
-    removal="0.13.0")
+    since="0.11.2",
+    old_param_name="ghi_clearsky",
+    new_param_name="ghi_clear",
+    removal="0.13.0",
+)
 @renamed_kwarg_warning(
-    since='0.11.2',
-    old_param_name='dni_clearsky',
-    new_param_name='dni_clear',
-    removal="0.13.0")
-def dirindex(ghi, ghi_clear, dni_clear, zenith, times, pressure=101325.,
-             use_delta_kt_prime=True, temp_dew=None, min_cos_zenith=0.065,
-             max_zenith=87):
+    since="0.11.2",
+    old_param_name="dni_clearsky",
+    new_param_name="dni_clear",
+    removal="0.13.0",
+)
+def dirindex(
+    ghi,
+    ghi_clear,
+    dni_clear,
+    zenith,
+    times,
+    pressure=101325.0,
+    use_delta_kt_prime=True,
+    temp_dew=None,
+    min_cos_zenith=0.065,
+    max_zenith=87,
+):
     """
     Determine DNI from GHI using the DIRINDEX model.
 
@@ -2251,30 +2433,52 @@ def dirindex(ghi, ghi_clear, dni_clear, zenith, times, pressure=101325.,
        irradiances: description and validation. Solar Energy, 73(5), 307-317.
     """
 
-    dni_dirint = dirint(ghi, zenith, times, pressure=pressure,
-                        use_delta_kt_prime=use_delta_kt_prime,
-                        temp_dew=temp_dew, min_cos_zenith=min_cos_zenith,
-                        max_zenith=max_zenith)
+    dni_dirint = dirint(
+        ghi,
+        zenith,
+        times,
+        pressure=pressure,
+        use_delta_kt_prime=use_delta_kt_prime,
+        temp_dew=temp_dew,
+        min_cos_zenith=min_cos_zenith,
+        max_zenith=max_zenith,
+    )
 
-    dni_dirint_clearsky = dirint(ghi_clear, zenith, times,
-                                 pressure=pressure,
-                                 use_delta_kt_prime=use_delta_kt_prime,
-                                 temp_dew=temp_dew,
-                                 min_cos_zenith=min_cos_zenith,
-                                 max_zenith=max_zenith)
+    dni_dirint_clearsky = dirint(
+        ghi_clear,
+        zenith,
+        times,
+        pressure=pressure,
+        use_delta_kt_prime=use_delta_kt_prime,
+        temp_dew=temp_dew,
+        min_cos_zenith=min_cos_zenith,
+        max_zenith=max_zenith,
+    )
 
     dni_dirindex = dni_clear * dni_dirint / dni_dirint_clearsky
 
-    dni_dirindex[dni_dirindex < 0] = 0.
+    dni_dirindex[dni_dirindex < 0] = 0.0
 
     return dni_dirindex
 
 
-def gti_dirint(poa_global, aoi, solar_zenith, solar_azimuth, times,
-               surface_tilt, surface_azimuth, pressure=101325.,
-               use_delta_kt_prime=True, temp_dew=None, albedo=.25,
-               model='perez', model_perez='allsitescomposite1990',
-               calculate_gt_90=True, max_iterations=30):
+def gti_dirint(
+    poa_global,
+    aoi,
+    solar_zenith,
+    solar_azimuth,
+    times,
+    surface_tilt,
+    surface_azimuth,
+    pressure=101325.0,
+    use_delta_kt_prime=True,
+    temp_dew=None,
+    albedo=0.25,
+    model="perez",
+    model_perez="allsitescomposite1990",
+    calculate_gt_90=True,
+    max_iterations=30,
+):
     """
     Determine GHI, DNI, DHI from POA global using the GTI DIRINT model.
 
@@ -2373,48 +2577,79 @@ def gti_dirint(poa_global, aoi, solar_zenith, solar_azimuth, times,
 
     # for AOI less than 90 degrees
     ghi, dni, dhi, kt_prime = _gti_dirint_lt_90(
-        poa_global, aoi, aoi_lt_90, solar_zenith, solar_azimuth, times,
-        surface_tilt, surface_azimuth, pressure=pressure,
-        use_delta_kt_prime=use_delta_kt_prime, temp_dew=temp_dew,
-        albedo=albedo, model=model, model_perez=model_perez,
-        max_iterations=max_iterations)
+        poa_global,
+        aoi,
+        aoi_lt_90,
+        solar_zenith,
+        solar_azimuth,
+        times,
+        surface_tilt,
+        surface_azimuth,
+        pressure=pressure,
+        use_delta_kt_prime=use_delta_kt_prime,
+        temp_dew=temp_dew,
+        albedo=albedo,
+        model=model,
+        model_perez=model_perez,
+        max_iterations=max_iterations,
+    )
 
     # for AOI greater than or equal to 90 degrees
     if calculate_gt_90:
         ghi_gte_90, dni_gte_90, dhi_gte_90 = _gti_dirint_gte_90(
-            poa_global, aoi, solar_zenith, solar_azimuth,
-            surface_tilt, times, kt_prime,
-            pressure=pressure, temp_dew=temp_dew, albedo=albedo)
+            poa_global,
+            aoi,
+            solar_zenith,
+            solar_azimuth,
+            surface_tilt,
+            times,
+            kt_prime,
+            pressure=pressure,
+            temp_dew=temp_dew,
+            albedo=albedo,
+        )
     else:
         ghi_gte_90, dni_gte_90, dhi_gte_90 = np.nan, np.nan, np.nan
 
     # put the AOI < 90 and AOI >= 90 conditions together
     output = OrderedDict()
-    output['ghi'] = ghi.where(aoi_lt_90, ghi_gte_90)
-    output['dni'] = dni.where(aoi_lt_90, dni_gte_90)
-    output['dhi'] = dhi.where(aoi_lt_90, dhi_gte_90)
+    output["ghi"] = ghi.where(aoi_lt_90, ghi_gte_90)
+    output["dni"] = dni.where(aoi_lt_90, dni_gte_90)
+    output["dhi"] = dhi.where(aoi_lt_90, dhi_gte_90)
 
     output = pd.DataFrame(output, index=times)
 
     return output
 
 
-def _gti_dirint_lt_90(poa_global, aoi, aoi_lt_90, solar_zenith, solar_azimuth,
-                      times, surface_tilt, surface_azimuth, pressure=101325.,
-                      use_delta_kt_prime=True, temp_dew=None, albedo=.25,
-                      model='perez', model_perez='allsitescomposite1990',
-                      max_iterations=30):
+def _gti_dirint_lt_90(
+    poa_global,
+    aoi,
+    aoi_lt_90,
+    solar_zenith,
+    solar_azimuth,
+    times,
+    surface_tilt,
+    surface_azimuth,
+    pressure=101325.0,
+    use_delta_kt_prime=True,
+    temp_dew=None,
+    albedo=0.25,
+    model="perez",
+    model_perez="allsitescomposite1990",
+    max_iterations=30,
+):
     """
     GTI-DIRINT model for AOI < 90 degrees. See Marion 2015 Section 2.1.
 
     See gti_dirint signature for parameter details.
     """
-    I0 = get_extra_radiation(times, 1370, 'spencer')
+    I0 = get_extra_radiation(times, 1370, "spencer")
     cos_zenith = tools.cosd(solar_zenith)
     # I0h as in Marion 2015 eqns 1, 3
     I0h = I0 * np.maximum(0.065, cos_zenith)
 
-    airmass = atmosphere.get_relative_airmass(solar_zenith, model='kasten1966')
+    airmass = atmosphere.get_relative_airmass(solar_zenith, model="kasten1966")
     airmass = atmosphere.get_absolute_airmass(airmass, pressure)
 
     # these coeffs and diff variables and the loop below
@@ -2438,7 +2673,6 @@ def _gti_dirint_lt_90(poa_global, aoi, aoi_lt_90, solar_zenith, solar_azimuth,
     poa_global_i = poa_global
 
     for iteration, coeff in enumerate(coeffs):
-
         # test if difference between modeled GTI and
         # measured GTI (poa_global) is less than 1 Wm⁻²
         # only test for aoi less than 90 deg
@@ -2453,13 +2687,14 @@ def _gti_dirint_lt_90(poa_global, aoi, aoi_lt_90, solar_zenith, solar_azimuth,
         disc_dni = np.maximum(_disc_kn(kt, airmass)[0] * I0, 0)
         kt_prime = clearness_index_zenith_independent(kt, airmass)
         # dirint DNI in Marion eqn 3
-        dni = _dirint_from_dni_ktprime(disc_dni, kt_prime, solar_zenith,
-                                       use_delta_kt_prime, temp_dew)
+        dni = _dirint_from_dni_ktprime(
+            disc_dni, kt_prime, solar_zenith, use_delta_kt_prime, temp_dew
+        )
 
         # calculate DHI using Marion eqn 3 (identify 1st term on RHS as GHI)
         # I0h has a minimum zenith projection, but multiplier of DNI does not
-        ghi = kt * I0h                  # Kt * I0 * max(0.065, cos(zen))
-        dhi = ghi - dni * cos_zenith    # no cos(zen) restriction here
+        ghi = kt * I0h  # Kt * I0 * max(0.065, cos(zen))
+        dhi = ghi - dni * cos_zenith  # no cos(zen) restriction here
 
         # following SSC code
         dni = np.maximum(dni, 0)
@@ -2470,11 +2705,21 @@ def _gti_dirint_lt_90(poa_global, aoi, aoi_lt_90, solar_zenith, solar_azimuth,
         # GTI-DIRINT uses perez transposition model, but we allow for
         # any model here
         all_irrad = get_total_irradiance(
-            surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
-            dni, ghi, dhi, dni_extra=I0, airmass=airmass,
-            albedo=albedo, model=model, model_perez=model_perez)
+            surface_tilt,
+            surface_azimuth,
+            solar_zenith,
+            solar_azimuth,
+            dni,
+            ghi,
+            dhi,
+            dni_extra=I0,
+            airmass=airmass,
+            albedo=albedo,
+            model=model,
+            model_perez=model_perez,
+        )
 
-        gti_model = all_irrad['poa_global']
+        gti_model = all_irrad["poa_global"]
 
         # calculate new diff
         diff = gti_model - poa_global
@@ -2508,50 +2753,62 @@ def _gti_dirint_lt_90(poa_global, aoi, aoi_lt_90, solar_zenith, solar_azimuth,
         # therefore we have exceeded max_iterations
         failed_points = best_diff[aoi_lt_90][~best_diff_lte_1_lt_90]
         warnings.warn(
-            ('%s points failed to converge after %s iterations. best_diff:\n%s'
-             % (len(failed_points), max_iterations, failed_points)),
-            RuntimeWarning)
+            (
+                "%s points failed to converge after %s iterations. best_diff:\n%s"
+                % (len(failed_points), max_iterations, failed_points)
+            ),
+            RuntimeWarning,
+        )
 
     # return the best data, whether or not the solution converged
     return best_ghi, best_dni, best_dhi, best_kt_prime
 
 
-def _gti_dirint_gte_90(poa_global, aoi, solar_zenith, solar_azimuth,
-                       surface_tilt, times, kt_prime,
-                       pressure=101325., temp_dew=None, albedo=.25):
+def _gti_dirint_gte_90(
+    poa_global,
+    aoi,
+    solar_zenith,
+    solar_azimuth,
+    surface_tilt,
+    times,
+    kt_prime,
+    pressure=101325.0,
+    temp_dew=None,
+    albedo=0.25,
+):
     """
     GTI-DIRINT model for AOI >= 90 degrees. See Marion 2015 Section 2.2.
 
     See gti_dirint signature for parameter details.
     """
-    kt_prime_gte_90 = _gti_dirint_gte_90_kt_prime(aoi, solar_zenith,
-                                                  solar_azimuth, times,
-                                                  kt_prime)
+    kt_prime_gte_90 = _gti_dirint_gte_90_kt_prime(
+        aoi, solar_zenith, solar_azimuth, times, kt_prime
+    )
 
-    I0 = get_extra_radiation(times, 1370, 'spencer')
-    airmass = atmosphere.get_relative_airmass(solar_zenith, model='kasten1966')
+    I0 = get_extra_radiation(times, 1370, "spencer")
+    airmass = atmosphere.get_relative_airmass(solar_zenith, model="kasten1966")
     airmass = atmosphere.get_absolute_airmass(airmass, pressure)
     kt = kt_prime_gte_90 * _kt_kt_prime_factor(airmass)
     disc_dni = np.maximum(_disc_kn(kt, airmass)[0] * I0, 0)
 
-    dni_gte_90 = _dirint_from_dni_ktprime(disc_dni, kt_prime, solar_zenith,
-                                          False, temp_dew)
+    dni_gte_90 = _dirint_from_dni_ktprime(
+        disc_dni, kt_prime, solar_zenith, False, temp_dew
+    )
 
     dni_gte_90_proj = dni_gte_90 * tools.cosd(solar_zenith)
     cos_surface_tilt = tools.cosd(surface_tilt)
 
     # isotropic sky plus ground diffuse
     dhi_gte_90 = (
-        (2 * poa_global - dni_gte_90_proj * albedo * (1 - cos_surface_tilt)) /
-        (1 + cos_surface_tilt + albedo * (1 - cos_surface_tilt)))
+        2 * poa_global - dni_gte_90_proj * albedo * (1 - cos_surface_tilt)
+    ) / (1 + cos_surface_tilt + albedo * (1 - cos_surface_tilt))
 
     ghi_gte_90 = dni_gte_90_proj + dhi_gte_90
 
     return ghi_gte_90, dni_gte_90, dhi_gte_90
 
 
-def _gti_dirint_gte_90_kt_prime(aoi, solar_zenith, solar_azimuth, times,
-                                kt_prime):
+def _gti_dirint_gte_90_kt_prime(aoi, solar_zenith, solar_azimuth, times, kt_prime):
     """
     Determine kt' values to be used in GTI-DIRINT AOI >= 90 deg case.
     See Marion 2015 Section 2.2.
@@ -2661,17 +2918,19 @@ def erbs(ghi, zenith, datetime_or_doy, min_cos_zenith=0.065, max_zenith=87):
 
     dni_extra = get_extra_radiation(datetime_or_doy)
 
-    kt = clearness_index(ghi, zenith, dni_extra, min_cos_zenith=min_cos_zenith,
-                         max_clearness_index=1)
+    kt = clearness_index(
+        ghi, zenith, dni_extra, min_cos_zenith=min_cos_zenith, max_clearness_index=1
+    )
 
     # For Kt <= 0.22, set the diffuse fraction
-    df = 1 - 0.09*kt
+    df = 1 - 0.09 * kt
 
     # For Kt > 0.22 and Kt <= 0.8, set the diffuse fraction
-    df = np.where((kt > 0.22) & (kt <= 0.8),
-                  0.9511 - 0.1604*kt + 4.388*kt**2 -
-                  16.638*kt**3 + 12.336*kt**4,
-                  df)
+    df = np.where(
+        (kt > 0.22) & (kt <= 0.8),
+        0.9511 - 0.1604 * kt + 4.388 * kt**2 - 16.638 * kt**3 + 12.336 * kt**4,
+        df,
+    )
 
     # For Kt > 0.8, set the diffuse fraction
     df = np.where(kt > 0.8, 0.165, df)
@@ -2685,9 +2944,9 @@ def erbs(ghi, zenith, datetime_or_doy, min_cos_zenith=0.065, max_zenith=87):
     dhi = np.where(bad_values, ghi, dhi)
 
     data = OrderedDict()
-    data['dni'] = dni
-    data['dhi'] = dhi
-    data['kt'] = kt
+    data["dni"] = dni
+    data["dhi"] = dhi
+    data["kt"] = kt
 
     if isinstance(datetime_or_doy, pd.DatetimeIndex):
         data = pd.DataFrame(data, index=datetime_or_doy)
@@ -2695,8 +2954,14 @@ def erbs(ghi, zenith, datetime_or_doy, min_cos_zenith=0.065, max_zenith=87):
     return data
 
 
-def erbs_driesse(ghi, zenith, datetime_or_doy=None, dni_extra=None,
-                 min_cos_zenith=0.065, max_zenith=87):
+def erbs_driesse(
+    ghi,
+    zenith,
+    datetime_or_doy=None,
+    dni_extra=None,
+    min_cos_zenith=0.065,
+    max_zenith=87,
+):
     r"""
     Estimate DNI and DHI from GHI using the continuous Erbs-Driesse model.
 
@@ -2779,15 +3044,16 @@ def erbs_driesse(ghi, zenith, datetime_or_doy=None, dni_extra=None,
     # Contributed by Anton Driesse (@adriesse), PV Performance Labs. Aug., 2023
 
     # central polynomial coefficients with float64 precision
-    p = [+12.26911439571261000,
-         -16.47050842469730700,
-         +04.24692671521831700,
-         -00.11390583806313881,
-         +00.94629663357100100]
+    p = [
+        +12.26911439571261000,
+        -16.47050842469730700,
+        +04.24692671521831700,
+        -00.11390583806313881,
+        +00.94629663357100100,
+    ]
 
     if datetime_or_doy is None and dni_extra is None:
-        raise ValueError('Either datetime_or_doy or dni_extra '
-                         'must be provided.')
+        raise ValueError("Either datetime_or_doy or dni_extra " "must be provided.")
 
     if dni_extra is None:
         dni_extra = get_extra_radiation(datetime_or_doy)
@@ -2795,8 +3061,9 @@ def erbs_driesse(ghi, zenith, datetime_or_doy=None, dni_extra=None,
     # negative ghi should not reach this point, but just in case
     ghi = np.maximum(0, ghi)
 
-    kt = clearness_index(ghi, zenith, dni_extra, min_cos_zenith=min_cos_zenith,
-                         max_clearness_index=1)
+    kt = clearness_index(
+        ghi, zenith, dni_extra, min_cos_zenith=min_cos_zenith, max_clearness_index=1
+    )
 
     # For all Kt, set the default diffuse fraction
     df = 1 - 0.09 * kt
@@ -2816,9 +3083,9 @@ def erbs_driesse(ghi, zenith, datetime_or_doy=None, dni_extra=None,
     dhi = np.where(bad_values, ghi, dhi)
 
     data = OrderedDict()
-    data['dni'] = dni
-    data['dhi'] = dhi
-    data['kt'] = kt
+    data["dni"] = dni
+    data["dhi"] = dhi
+    data["kt"] = kt
 
     if isinstance(datetime_or_doy, pd.DatetimeIndex):
         data = pd.DataFrame(data, index=datetime_or_doy)
@@ -2828,8 +3095,9 @@ def erbs_driesse(ghi, zenith, datetime_or_doy=None, dni_extra=None,
     return data
 
 
-def orgill_hollands(ghi, zenith, datetime_or_doy, dni_extra=None,
-                    min_cos_zenith=0.065, max_zenith=87):
+def orgill_hollands(
+    ghi, zenith, datetime_or_doy, dni_extra=None, min_cos_zenith=0.065, max_zenith=87
+):
     """Estimate DNI and DHI from GHI using the Orgill and Hollands model.
 
     The Orgill and Hollands model [1]_ estimates the diffuse fraction DF from
@@ -2883,15 +3151,15 @@ def orgill_hollands(ghi, zenith, datetime_or_doy, dni_extra=None,
     if dni_extra is None:
         dni_extra = get_extra_radiation(datetime_or_doy)
 
-    kt = clearness_index(ghi, zenith, dni_extra, min_cos_zenith=min_cos_zenith,
-                         max_clearness_index=1)
+    kt = clearness_index(
+        ghi, zenith, dni_extra, min_cos_zenith=min_cos_zenith, max_clearness_index=1
+    )
 
     # For Kt < 0.35, set the diffuse fraction
-    df = 1 - 0.249*kt
+    df = 1 - 0.249 * kt
 
     # For Kt >= 0.35 and Kt <= 0.75, set the diffuse fraction
-    df = np.where((kt >= 0.35) & (kt <= 0.75),
-                  1.557 - 1.84*kt, df)
+    df = np.where((kt >= 0.35) & (kt <= 0.75), 1.557 - 1.84 * kt, df)
 
     # For Kt > 0.75, set the diffuse fraction
     df = np.where(kt > 0.75, 0.177, df)
@@ -2905,9 +3173,9 @@ def orgill_hollands(ghi, zenith, datetime_or_doy, dni_extra=None,
     dhi = np.where(bad_values, ghi, dhi)
 
     data = OrderedDict()
-    data['dni'] = dni
-    data['dhi'] = dhi
-    data['kt'] = kt
+    data["dni"] = dni
+    data["dhi"] = dhi
+    data["kt"] = kt
 
     if isinstance(datetime_or_doy, pd.DatetimeIndex):
         data = pd.DataFrame(data, index=datetime_or_doy)
@@ -2915,8 +3183,15 @@ def orgill_hollands(ghi, zenith, datetime_or_doy, dni_extra=None,
     return data
 
 
-def boland(ghi, solar_zenith, datetime_or_doy, a_coeff=8.645, b_coeff=0.613,
-           min_cos_zenith=0.065, max_zenith=87):
+def boland(
+    ghi,
+    solar_zenith,
+    datetime_or_doy,
+    a_coeff=8.645,
+    b_coeff=0.613,
+    min_cos_zenith=0.065,
+    max_zenith=87,
+):
     r"""
     Estimate DNI and DHI from GHI using the Boland clearness index model.
 
@@ -2992,8 +3267,12 @@ def boland(ghi, solar_zenith, datetime_or_doy, a_coeff=8.645, b_coeff=0.613,
     dni_extra = get_extra_radiation(datetime_or_doy)
 
     kt = clearness_index(
-        ghi, solar_zenith, dni_extra, min_cos_zenith=min_cos_zenith,
-        max_clearness_index=1)
+        ghi,
+        solar_zenith,
+        dni_extra,
+        min_cos_zenith=min_cos_zenith,
+        max_clearness_index=1,
+    )
 
     # Boland equation
     df = 1.0 / (1.0 + np.exp(a_coeff * (kt - b_coeff)))
@@ -3010,9 +3289,9 @@ def boland(ghi, solar_zenith, datetime_or_doy, a_coeff=8.645, b_coeff=0.613,
     dhi = np.where(bad_values, ghi, dhi)
 
     data = OrderedDict()
-    data['dni'] = dni
-    data['dhi'] = dhi
-    data['kt'] = kt
+    data["dni"] = dni
+    data["dhi"] = dhi
+    data["kt"] = kt
 
     if isinstance(datetime_or_doy, pd.DatetimeIndex):
         data = pd.DataFrame(data, index=datetime_or_doy)
@@ -3020,9 +3299,8 @@ def boland(ghi, solar_zenith, datetime_or_doy, a_coeff=8.645, b_coeff=0.613,
     return data
 
 
-def campbell_norman(zenith, transmittance, pressure=101325.0,
-                    dni_extra=1367.0):
-    '''
+def campbell_norman(zenith, transmittance, pressure=101325.0, dni_extra=1367.0):
+    """
     Determine DNI, DHI, GHI from extraterrestrial flux, transmittance,
     and atmospheric pressure.
 
@@ -3052,21 +3330,21 @@ def campbell_norman(zenith, transmittance, pressure=101325.0,
     ----------
     .. [1] Campbell, G. S., J. M. Norman (1998) An Introduction to
        Environmental Biophysics. 2nd Ed. New York: Springer.
-    '''
+    """
 
     tau = transmittance
 
-    airmass = atmosphere.get_relative_airmass(zenith, model='simple')
+    airmass = atmosphere.get_relative_airmass(zenith, model="simple")
     airmass = atmosphere.get_absolute_airmass(airmass, pressure=pressure)
-    dni = dni_extra*tau**airmass
+    dni = dni_extra * tau**airmass
     cos_zen = tools.cosd(zenith)
     dhi = 0.3 * (1.0 - tau**airmass) * dni_extra * cos_zen
     ghi = dhi + dni * cos_zen
 
     irrads = OrderedDict()
-    irrads['ghi'] = ghi
-    irrads['dni'] = dni
-    irrads['dhi'] = dhi
+    irrads["ghi"] = ghi
+    irrads["dni"] = dni
+    irrads["dhi"] = dhi
 
     if isinstance(ghi, pd.Series):
         irrads = pd.DataFrame(irrads)
@@ -3075,7 +3353,7 @@ def campbell_norman(zenith, transmittance, pressure=101325.0,
 
 
 def _liujordan(zenith, transmittance, airmass, dni_extra=1367.0):
-    '''
+    """
     Determine DNI, DHI, GHI from extraterrestrial flux, transmittance,
     and optical air mass number.
 
@@ -3113,18 +3391,18 @@ def _liujordan(zenith, transmittance, airmass, dni_extra=1367.0):
     .. [2] Liu, B. Y., R. C. Jordan, (1960). "The interrelationship and
        characteristic distribution of direct, diffuse, and total solar
        radiation".  Solar Energy 4:1-19
-    '''
+    """
 
     tau = transmittance
 
-    dni = dni_extra*tau**airmass
+    dni = dni_extra * tau**airmass
     dhi = 0.3 * (1.0 - tau**airmass) * dni_extra * np.cos(np.radians(zenith))
     ghi = dhi + dni * np.cos(np.radians(zenith))
 
     irrads = OrderedDict()
-    irrads['ghi'] = ghi
-    irrads['dni'] = dni
-    irrads['dhi'] = dhi
+    irrads["ghi"] = ghi
+    irrads["dni"] = dni
+    irrads["dhi"] = dhi
 
     if isinstance(ghi, pd.Series):
         irrads = pd.DataFrame(irrads)
@@ -3133,7 +3411,7 @@ def _liujordan(zenith, transmittance, airmass, dni_extra=1367.0):
 
 
 def _get_perez_coefficients(perezmodel):
-    '''
+    """
     Find coefficients for the Perez model
 
     Parameters
@@ -3182,107 +3460,119 @@ def _get_perez_coefficients(perezmodel):
     .. [4] Perez, R. et. al 1988. "The Development and Verification of the
        Perez Diffuse Radiation Model". SAND88-7030
 
-    '''
+    """
     coeffdict = {
-        'allsitescomposite1990': [
-            [-0.0080,    0.5880,   -0.0620,   -0.0600,    0.0720,   -0.0220],
-            [0.1300,    0.6830,   -0.1510,   -0.0190,    0.0660,   -0.0290],
-            [0.3300,    0.4870,   -0.2210,    0.0550,   -0.0640,   -0.0260],
-            [0.5680,    0.1870,   -0.2950,    0.1090,   -0.1520,   -0.0140],
-            [0.8730,   -0.3920,   -0.3620,    0.2260,   -0.4620,    0.0010],
-            [1.1320,   -1.2370,   -0.4120,    0.2880,   -0.8230,    0.0560],
-            [1.0600,   -1.6000,   -0.3590,    0.2640,   -1.1270,    0.1310],
-            [0.6780,   -0.3270,   -0.2500,    0.1560,   -1.3770,    0.2510]],
-        'allsitescomposite1988': [
-            [-0.0180,    0.7050,   -0.071,   -0.0580,    0.1020,   -0.0260],
-            [0.1910,    0.6450,   -0.1710,    0.0120,    0.0090,   -0.0270],
-            [0.4400,    0.3780,   -0.2560,    0.0870,   -0.1040,   -0.0250],
-            [0.7560,   -0.1210,   -0.3460,    0.1790,   -0.3210,   -0.0080],
-            [0.9960,   -0.6450,   -0.4050,    0.2600,   -0.5900,    0.0170],
-            [1.0980,   -1.2900,   -0.3930,    0.2690,   -0.8320,    0.0750],
-            [0.9730,   -1.1350,   -0.3780,    0.1240,   -0.2580,    0.1490],
-            [0.6890,   -0.4120,   -0.2730,    0.1990,   -1.6750,    0.2370]],
-        'sandiacomposite1988': [
-            [-0.1960,    1.0840,   -0.0060,   -0.1140,    0.1800,   -0.0190],
-            [0.2360,    0.5190,   -0.1800,   -0.0110,    0.0200,   -0.0380],
-            [0.4540,    0.3210,   -0.2550,    0.0720,   -0.0980,   -0.0460],
-            [0.8660,   -0.3810,   -0.3750,    0.2030,   -0.4030,   -0.0490],
-            [1.0260,   -0.7110,   -0.4260,    0.2730,   -0.6020,   -0.0610],
-            [0.9780,   -0.9860,   -0.3500,    0.2800,   -0.9150,   -0.0240],
-            [0.7480,   -0.9130,   -0.2360,    0.1730,   -1.0450,    0.0650],
-            [0.3180,   -0.7570,    0.1030,    0.0620,   -1.6980,    0.2360]],
-        'usacomposite1988': [
-            [-0.0340,    0.6710,   -0.0590,   -0.0590,    0.0860,   -0.0280],
-            [0.2550,    0.4740,   -0.1910,    0.0180,   -0.0140,   -0.0330],
-            [0.4270,    0.3490,   -0.2450,    0.0930,   -0.1210,   -0.0390],
-            [0.7560,   -0.2130,   -0.3280,    0.1750,   -0.3040,   -0.0270],
-            [1.0200,   -0.8570,   -0.3850,    0.2800,   -0.6380,   -0.0190],
-            [1.0500,   -1.3440,   -0.3480,    0.2800,   -0.8930,    0.0370],
-            [0.9740,   -1.5070,   -0.3700,    0.1540,   -0.5680,    0.1090],
-            [0.7440,   -1.8170,   -0.2560,    0.2460,   -2.6180,    0.2300]],
-        'france1988': [
-            [0.0130,    0.7640,   -0.1000,   -0.0580,    0.1270,   -0.0230],
-            [0.0950,    0.9200,   -0.1520,         0,    0.0510,   -0.0200],
-            [0.4640,    0.4210,   -0.2800,    0.0640,   -0.0510,   -0.0020],
-            [0.7590,   -0.0090,   -0.3730,    0.2010,   -0.3820,    0.0100],
-            [0.9760,   -0.4000,   -0.4360,    0.2710,   -0.6380,    0.0510],
-            [1.1760,   -1.2540,   -0.4620,    0.2950,   -0.9750,    0.1290],
-            [1.1060,   -1.5630,   -0.3980,    0.3010,   -1.4420,    0.2120],
-            [0.9340,   -1.5010,   -0.2710,    0.4200,   -2.9170,    0.2490]],
-        'phoenix1988': [
-            [-0.0030,    0.7280,   -0.0970,   -0.0750,    0.1420,   -0.0430],
-            [0.2790,    0.3540,   -0.1760,    0.0300,   -0.0550,   -0.0540],
-            [0.4690,    0.1680,   -0.2460,    0.0480,   -0.0420,   -0.0570],
-            [0.8560,   -0.5190,   -0.3400,    0.1760,   -0.3800,   -0.0310],
-            [0.9410,   -0.6250,   -0.3910,    0.1880,   -0.3600,   -0.0490],
-            [1.0560,   -1.1340,   -0.4100,    0.2810,   -0.7940,   -0.0650],
-            [0.9010,   -2.1390,   -0.2690,    0.1180,   -0.6650,    0.0460],
-            [0.1070,    0.4810,    0.1430,   -0.1110,   -0.1370,    0.2340]],
-        'elmonte1988': [
-            [0.0270,    0.7010,   -0.1190,   -0.0580,    0.1070,  -0.0600],
-            [0.1810,    0.6710,   -0.1780,   -0.0790,    0.1940,  -0.0350],
-            [0.4760,    0.4070,   -0.2880,    0.0540,   -0.0320,  -0.0550],
-            [0.8750,   -0.2180,   -0.4030,    0.1870,   -0.3090,  -0.0610],
-            [1.1660,   -1.0140,   -0.4540,    0.2110,   -0.4100,  -0.0440],
-            [1.1430,   -2.0640,   -0.2910,    0.0970,   -0.3190,   0.0530],
-            [1.0940,   -2.6320,   -0.2590,    0.0290,   -0.4220,   0.1470],
-            [0.1550,    1.7230,    0.1630,   -0.1310,   -0.0190,   0.2770]],
-        'osage1988': [
-            [-0.3530,    1.4740,   0.0570,   -0.1750,    0.3120,   0.0090],
-            [0.3630,    0.2180,  -0.2120,    0.0190,   -0.0340,  -0.0590],
-            [-0.0310,    1.2620,  -0.0840,   -0.0820,    0.2310,  -0.0170],
-            [0.6910,    0.0390,  -0.2950,    0.0910,   -0.1310,  -0.0350],
-            [1.1820,   -1.3500,  -0.3210,    0.4080,   -0.9850,  -0.0880],
-            [0.7640,    0.0190,  -0.2030,    0.2170,   -0.2940,  -0.1030],
-            [0.2190,    1.4120,   0.2440,    0.4710,   -2.9880,   0.0340],
-            [3.5780,   22.2310, -10.7450,    2.4260,    4.8920,  -5.6870]],
-        'albuquerque1988': [
-            [0.0340,    0.5010,  -0.0940,   -0.0630,    0.1060,  -0.0440],
-            [0.2290,    0.4670,  -0.1560,   -0.0050,   -0.0190,  -0.0230],
-            [0.4860,    0.2410,  -0.2530,    0.0530,   -0.0640,  -0.0220],
-            [0.8740,   -0.3930,  -0.3970,    0.1810,   -0.3270,  -0.0370],
-            [1.1930,   -1.2960,  -0.5010,    0.2810,   -0.6560,  -0.0450],
-            [1.0560,   -1.7580,  -0.3740,    0.2260,   -0.7590,   0.0340],
-            [0.9010,   -4.7830,  -0.1090,    0.0630,   -0.9700,   0.1960],
-            [0.8510,   -7.0550,  -0.0530,    0.0600,   -2.8330,   0.3300]],
-        'capecanaveral1988': [
-            [0.0750,    0.5330,   -0.1240,  -0.0670,   0.0420,  -0.0200],
-            [0.2950,    0.4970,   -0.2180,  -0.0080,   0.0030,  -0.0290],
-            [0.5140,    0.0810,   -0.2610,   0.0750,  -0.1600,  -0.0290],
-            [0.7470,   -0.3290,   -0.3250,   0.1810,  -0.4160,  -0.0300],
-            [0.9010,   -0.8830,   -0.2970,   0.1780,  -0.4890,   0.0080],
-            [0.5910,   -0.0440,   -0.1160,   0.2350,  -0.9990,   0.0980],
-            [0.5370,   -2.4020,    0.3200,   0.1690,  -1.9710,   0.3100],
-            [-0.8050,    4.5460,    1.0720,  -0.2580,  -0.9500,    0.7530]],
-        'albany1988': [
-            [0.0120,    0.5540,   -0.0760, -0.0520,   0.0840,  -0.0290],
-            [0.2670,    0.4370,   -0.1940,  0.0160,   0.0220,  -0.0360],
-            [0.4200,    0.3360,   -0.2370,  0.0740,  -0.0520,  -0.0320],
-            [0.6380,   -0.0010,   -0.2810,  0.1380,  -0.1890,  -0.0120],
-            [1.0190,   -1.0270,   -0.3420,  0.2710,  -0.6280,   0.0140],
-            [1.1490,   -1.9400,   -0.3310,  0.3220,  -1.0970,   0.0800],
-            [1.4340,   -3.9940,   -0.4920,  0.4530,  -2.3760,   0.1170],
-            [1.0070,   -2.2920,   -0.4820,  0.3900,  -3.3680,   0.2290]], }
+        "allsitescomposite1990": [
+            [-0.0080, 0.5880, -0.0620, -0.0600, 0.0720, -0.0220],
+            [0.1300, 0.6830, -0.1510, -0.0190, 0.0660, -0.0290],
+            [0.3300, 0.4870, -0.2210, 0.0550, -0.0640, -0.0260],
+            [0.5680, 0.1870, -0.2950, 0.1090, -0.1520, -0.0140],
+            [0.8730, -0.3920, -0.3620, 0.2260, -0.4620, 0.0010],
+            [1.1320, -1.2370, -0.4120, 0.2880, -0.8230, 0.0560],
+            [1.0600, -1.6000, -0.3590, 0.2640, -1.1270, 0.1310],
+            [0.6780, -0.3270, -0.2500, 0.1560, -1.3770, 0.2510],
+        ],
+        "allsitescomposite1988": [
+            [-0.0180, 0.7050, -0.071, -0.0580, 0.1020, -0.0260],
+            [0.1910, 0.6450, -0.1710, 0.0120, 0.0090, -0.0270],
+            [0.4400, 0.3780, -0.2560, 0.0870, -0.1040, -0.0250],
+            [0.7560, -0.1210, -0.3460, 0.1790, -0.3210, -0.0080],
+            [0.9960, -0.6450, -0.4050, 0.2600, -0.5900, 0.0170],
+            [1.0980, -1.2900, -0.3930, 0.2690, -0.8320, 0.0750],
+            [0.9730, -1.1350, -0.3780, 0.1240, -0.2580, 0.1490],
+            [0.6890, -0.4120, -0.2730, 0.1990, -1.6750, 0.2370],
+        ],
+        "sandiacomposite1988": [
+            [-0.1960, 1.0840, -0.0060, -0.1140, 0.1800, -0.0190],
+            [0.2360, 0.5190, -0.1800, -0.0110, 0.0200, -0.0380],
+            [0.4540, 0.3210, -0.2550, 0.0720, -0.0980, -0.0460],
+            [0.8660, -0.3810, -0.3750, 0.2030, -0.4030, -0.0490],
+            [1.0260, -0.7110, -0.4260, 0.2730, -0.6020, -0.0610],
+            [0.9780, -0.9860, -0.3500, 0.2800, -0.9150, -0.0240],
+            [0.7480, -0.9130, -0.2360, 0.1730, -1.0450, 0.0650],
+            [0.3180, -0.7570, 0.1030, 0.0620, -1.6980, 0.2360],
+        ],
+        "usacomposite1988": [
+            [-0.0340, 0.6710, -0.0590, -0.0590, 0.0860, -0.0280],
+            [0.2550, 0.4740, -0.1910, 0.0180, -0.0140, -0.0330],
+            [0.4270, 0.3490, -0.2450, 0.0930, -0.1210, -0.0390],
+            [0.7560, -0.2130, -0.3280, 0.1750, -0.3040, -0.0270],
+            [1.0200, -0.8570, -0.3850, 0.2800, -0.6380, -0.0190],
+            [1.0500, -1.3440, -0.3480, 0.2800, -0.8930, 0.0370],
+            [0.9740, -1.5070, -0.3700, 0.1540, -0.5680, 0.1090],
+            [0.7440, -1.8170, -0.2560, 0.2460, -2.6180, 0.2300],
+        ],
+        "france1988": [
+            [0.0130, 0.7640, -0.1000, -0.0580, 0.1270, -0.0230],
+            [0.0950, 0.9200, -0.1520, 0, 0.0510, -0.0200],
+            [0.4640, 0.4210, -0.2800, 0.0640, -0.0510, -0.0020],
+            [0.7590, -0.0090, -0.3730, 0.2010, -0.3820, 0.0100],
+            [0.9760, -0.4000, -0.4360, 0.2710, -0.6380, 0.0510],
+            [1.1760, -1.2540, -0.4620, 0.2950, -0.9750, 0.1290],
+            [1.1060, -1.5630, -0.3980, 0.3010, -1.4420, 0.2120],
+            [0.9340, -1.5010, -0.2710, 0.4200, -2.9170, 0.2490],
+        ],
+        "phoenix1988": [
+            [-0.0030, 0.7280, -0.0970, -0.0750, 0.1420, -0.0430],
+            [0.2790, 0.3540, -0.1760, 0.0300, -0.0550, -0.0540],
+            [0.4690, 0.1680, -0.2460, 0.0480, -0.0420, -0.0570],
+            [0.8560, -0.5190, -0.3400, 0.1760, -0.3800, -0.0310],
+            [0.9410, -0.6250, -0.3910, 0.1880, -0.3600, -0.0490],
+            [1.0560, -1.1340, -0.4100, 0.2810, -0.7940, -0.0650],
+            [0.9010, -2.1390, -0.2690, 0.1180, -0.6650, 0.0460],
+            [0.1070, 0.4810, 0.1430, -0.1110, -0.1370, 0.2340],
+        ],
+        "elmonte1988": [
+            [0.0270, 0.7010, -0.1190, -0.0580, 0.1070, -0.0600],
+            [0.1810, 0.6710, -0.1780, -0.0790, 0.1940, -0.0350],
+            [0.4760, 0.4070, -0.2880, 0.0540, -0.0320, -0.0550],
+            [0.8750, -0.2180, -0.4030, 0.1870, -0.3090, -0.0610],
+            [1.1660, -1.0140, -0.4540, 0.2110, -0.4100, -0.0440],
+            [1.1430, -2.0640, -0.2910, 0.0970, -0.3190, 0.0530],
+            [1.0940, -2.6320, -0.2590, 0.0290, -0.4220, 0.1470],
+            [0.1550, 1.7230, 0.1630, -0.1310, -0.0190, 0.2770],
+        ],
+        "osage1988": [
+            [-0.3530, 1.4740, 0.0570, -0.1750, 0.3120, 0.0090],
+            [0.3630, 0.2180, -0.2120, 0.0190, -0.0340, -0.0590],
+            [-0.0310, 1.2620, -0.0840, -0.0820, 0.2310, -0.0170],
+            [0.6910, 0.0390, -0.2950, 0.0910, -0.1310, -0.0350],
+            [1.1820, -1.3500, -0.3210, 0.4080, -0.9850, -0.0880],
+            [0.7640, 0.0190, -0.2030, 0.2170, -0.2940, -0.1030],
+            [0.2190, 1.4120, 0.2440, 0.4710, -2.9880, 0.0340],
+            [3.5780, 22.2310, -10.7450, 2.4260, 4.8920, -5.6870],
+        ],
+        "albuquerque1988": [
+            [0.0340, 0.5010, -0.0940, -0.0630, 0.1060, -0.0440],
+            [0.2290, 0.4670, -0.1560, -0.0050, -0.0190, -0.0230],
+            [0.4860, 0.2410, -0.2530, 0.0530, -0.0640, -0.0220],
+            [0.8740, -0.3930, -0.3970, 0.1810, -0.3270, -0.0370],
+            [1.1930, -1.2960, -0.5010, 0.2810, -0.6560, -0.0450],
+            [1.0560, -1.7580, -0.3740, 0.2260, -0.7590, 0.0340],
+            [0.9010, -4.7830, -0.1090, 0.0630, -0.9700, 0.1960],
+            [0.8510, -7.0550, -0.0530, 0.0600, -2.8330, 0.3300],
+        ],
+        "capecanaveral1988": [
+            [0.0750, 0.5330, -0.1240, -0.0670, 0.0420, -0.0200],
+            [0.2950, 0.4970, -0.2180, -0.0080, 0.0030, -0.0290],
+            [0.5140, 0.0810, -0.2610, 0.0750, -0.1600, -0.0290],
+            [0.7470, -0.3290, -0.3250, 0.1810, -0.4160, -0.0300],
+            [0.9010, -0.8830, -0.2970, 0.1780, -0.4890, 0.0080],
+            [0.5910, -0.0440, -0.1160, 0.2350, -0.9990, 0.0980],
+            [0.5370, -2.4020, 0.3200, 0.1690, -1.9710, 0.3100],
+            [-0.8050, 4.5460, 1.0720, -0.2580, -0.9500, 0.7530],
+        ],
+        "albany1988": [
+            [0.0120, 0.5540, -0.0760, -0.0520, 0.0840, -0.0290],
+            [0.2670, 0.4370, -0.1940, 0.0160, 0.0220, -0.0360],
+            [0.4200, 0.3360, -0.2370, 0.0740, -0.0520, -0.0320],
+            [0.6380, -0.0010, -0.2810, 0.1380, -0.1890, -0.0120],
+            [1.0190, -1.0270, -0.3420, 0.2710, -0.6280, 0.0140],
+            [1.1490, -1.9400, -0.3310, 0.3220, -1.0970, 0.0800],
+            [1.4340, -3.9940, -0.4920, 0.4530, -2.3760, 0.1170],
+            [1.0070, -2.2920, -0.4820, 0.3900, -3.3680, 0.2290],
+        ],
+    }
 
     array = np.array(coeffdict[perezmodel])
 
@@ -3315,7 +3605,8 @@ def _get_dirint_coeffs():
         [0.830130, 0.830130, 0.171970, 0.841070, 0.457370],
         [0.548010, 0.548010, 0.478000, 0.966880, 1.036370],
         [0.548010, 0.548010, 1.000000, 3.012370, 1.976540],
-        [0.582690, 0.582690, 0.229720, 0.892710, 0.569950]]
+        [0.582690, 0.582690, 0.229720, 0.892710, 0.569950],
+    ]
 
     coeffs[1, 2, :, :] = [
         [0.131280, 0.131280, 0.385460, 0.511070, 0.127940],
@@ -3324,7 +3615,8 @@ def _get_dirint_coeffs():
         [0.090100, 0.184580, 0.260500, 0.687480, 0.579440],
         [0.131530, 0.131530, 0.370190, 1.380350, 1.052270],
         [1.116250, 1.116250, 0.928030, 3.525490, 2.316920],
-        [0.090100, 0.237000, 0.300040, 0.812470, 0.664970]]
+        [0.090100, 0.237000, 0.300040, 0.812470, 0.664970],
+    ]
 
     coeffs[1, 3, :, :] = [
         [0.587510, 0.130000, 0.400000, 0.537210, 0.832490],
@@ -3333,7 +3625,8 @@ def _get_dirint_coeffs():
         [0.421540, 0.753970, 0.750660, 3.706840, 0.983790],
         [0.706680, 0.373530, 1.245670, 0.864860, 1.992630],
         [4.864400, 0.117390, 0.265180, 0.359180, 3.310820],
-        [0.392080, 0.493290, 0.651560, 1.932780, 0.898730]]
+        [0.392080, 0.493290, 0.651560, 1.932780, 0.898730],
+    ]
 
     coeffs[1, 4, :, :] = [
         [0.126970, 0.126970, 0.126970, 0.126970, 0.126970],
@@ -3342,7 +3635,8 @@ def _get_dirint_coeffs():
         [4.000000, 3.000000, 2.000000, 0.975430, 1.965570],
         [12.494170, 12.494170, 8.000000, 5.083520, 8.792390],
         [21.744240, 21.744240, 21.744240, 21.744240, 21.744240],
-        [3.241680, 12.494170, 1.620760, 1.375250, 2.331620]]
+        [3.241680, 12.494170, 1.620760, 1.375250, 2.331620],
+    ]
 
     coeffs[1, 5, :, :] = [
         [0.126970, 0.126970, 0.126970, 0.126970, 0.126970],
@@ -3351,7 +3645,8 @@ def _get_dirint_coeffs():
         [4.000000, 3.000000, 2.000000, 0.975430, 1.965570],
         [12.494170, 12.494170, 8.000000, 5.083520, 8.792390],
         [21.744240, 21.744240, 21.744240, 21.744240, 21.744240],
-        [3.241680, 12.494170, 1.620760, 1.375250, 2.331620]]
+        [3.241680, 12.494170, 1.620760, 1.375250, 2.331620],
+    ]
 
     coeffs[1, 6, :, :] = [
         [0.126970, 0.126970, 0.126970, 0.126970, 0.126970],
@@ -3360,7 +3655,8 @@ def _get_dirint_coeffs():
         [4.000000, 3.000000, 2.000000, 0.975430, 1.965570],
         [12.494170, 12.494170, 8.000000, 5.083520, 8.792390],
         [21.744240, 21.744240, 21.744240, 21.744240, 21.744240],
-        [3.241680, 12.494170, 1.620760, 1.375250, 2.331620]]
+        [3.241680, 12.494170, 1.620760, 1.375250, 2.331620],
+    ]
 
     coeffs[2, 1, :, :] = [
         [0.337440, 0.337440, 0.969110, 1.097190, 1.116080],
@@ -3369,7 +3665,8 @@ def _get_dirint_coeffs():
         [0.584040, 0.584040, 0.847250, 0.914940, 1.289300],
         [0.337440, 0.337440, 0.310240, 1.435020, 1.852830],
         [0.337440, 0.337440, 1.015010, 1.097190, 2.117230],
-        [0.337440, 0.337440, 0.969110, 1.145730, 1.476400]]
+        [0.337440, 0.337440, 0.969110, 1.145730, 1.476400],
+    ]
 
     coeffs[2, 2, :, :] = [
         [0.300000, 0.300000, 0.700000, 1.100000, 0.796940],
@@ -3378,7 +3675,8 @@ def _get_dirint_coeffs():
         [0.746730, 0.399830, 0.470970, 0.986530, 0.785370],
         [0.575420, 0.936700, 1.649200, 1.495840, 1.335590],
         [1.319670, 4.002570, 1.276390, 2.644550, 2.518670],
-        [0.665190, 0.678910, 1.012360, 1.199940, 0.986580]]
+        [0.665190, 0.678910, 1.012360, 1.199940, 0.986580],
+    ]
 
     coeffs[2, 3, :, :] = [
         [0.378870, 0.974060, 0.500000, 0.491880, 0.665290],
@@ -3387,7 +3685,8 @@ def _get_dirint_coeffs():
         [0.119070, 0.365120, 0.560520, 0.793720, 0.802600],
         [0.781610, 0.837390, 1.270420, 1.537980, 1.292950],
         [1.152290, 1.152290, 1.492080, 1.245370, 2.177100],
-        [0.424660, 0.529550, 0.966910, 1.033460, 0.958730]]
+        [0.424660, 0.529550, 0.966910, 1.033460, 0.958730],
+    ]
 
     coeffs[2, 4, :, :] = [
         [0.310590, 0.714410, 0.252450, 0.500000, 0.607600],
@@ -3396,7 +3695,8 @@ def _get_dirint_coeffs():
         [0.719280, 0.698620, 0.657770, 1.190840, 0.681110],
         [0.426240, 1.464840, 0.678550, 1.157730, 0.978430],
         [2.501120, 1.789130, 1.387090, 2.394180, 2.394180],
-        [0.491640, 0.677610, 0.685610, 1.082400, 0.735410]]
+        [0.491640, 0.677610, 0.685610, 1.082400, 0.735410],
+    ]
 
     coeffs[2, 5, :, :] = [
         [0.597000, 0.500000, 0.300000, 0.310050, 0.413510],
@@ -3405,7 +3705,8 @@ def _get_dirint_coeffs():
         [0.401020, 0.559110, 0.403630, 1.016710, 0.671490],
         [0.400360, 0.750830, 0.842640, 1.802600, 1.023830],
         [3.315300, 1.510380, 2.443650, 1.638820, 2.133990],
-        [0.530790, 0.745850, 0.693050, 1.458040, 0.804500]]
+        [0.530790, 0.745850, 0.693050, 1.458040, 0.804500],
+    ]
 
     coeffs[2, 6, :, :] = [
         [0.597000, 0.500000, 0.300000, 0.310050, 0.800920],
@@ -3414,7 +3715,8 @@ def _get_dirint_coeffs():
         [0.401020, 0.559110, 0.403630, 1.016710, 0.898570],
         [0.400360, 0.750830, 0.842640, 1.802600, 3.400390],
         [3.315300, 1.510380, 2.443650, 1.638820, 2.508780],
-        [0.204340, 1.157740, 2.003080, 2.622080, 1.409380]]
+        [0.204340, 1.157740, 2.003080, 2.622080, 1.409380],
+    ]
 
     coeffs[3, 1, :, :] = [
         [1.242210, 1.242210, 1.242210, 1.242210, 1.242210],
@@ -3423,7 +3725,8 @@ def _get_dirint_coeffs():
         [1.053850, 1.053850, 1.399690, 1.084640, 1.233340],
         [1.151540, 1.151540, 1.118290, 1.531640, 1.411840],
         [1.494980, 1.494980, 1.700000, 1.800810, 1.671600],
-        [1.018450, 1.018450, 1.153600, 1.321890, 1.294670]]
+        [1.018450, 1.018450, 1.153600, 1.321890, 1.294670],
+    ]
 
     coeffs[3, 2, :, :] = [
         [0.700000, 0.700000, 1.023460, 0.700000, 0.945830],
@@ -3432,7 +3735,8 @@ def _get_dirint_coeffs():
         [1.095300, 1.075060, 1.176490, 1.139470, 1.096110],
         [1.201660, 1.201660, 1.438200, 1.256280, 1.198060],
         [1.525850, 1.525850, 1.869160, 1.985410, 1.911590],
-        [1.288220, 1.082810, 1.286370, 1.166170, 1.119330]]
+        [1.288220, 1.082810, 1.286370, 1.166170, 1.119330],
+    ]
 
     coeffs[3, 3, :, :] = [
         [0.600000, 1.029910, 0.859890, 0.550000, 0.813600],
@@ -3441,7 +3745,8 @@ def _get_dirint_coeffs():
         [0.526580, 0.932310, 0.908620, 0.983520, 0.988090],
         [1.036110, 1.100690, 0.848380, 1.035270, 1.042380],
         [1.048440, 1.652720, 0.900000, 2.350410, 1.082950],
-        [0.817410, 0.976160, 0.861300, 0.974780, 1.004580]]
+        [0.817410, 0.976160, 0.861300, 0.974780, 1.004580],
+    ]
 
     coeffs[3, 4, :, :] = [
         [0.782110, 0.564280, 0.600000, 0.600000, 0.665740],
@@ -3450,7 +3755,8 @@ def _get_dirint_coeffs():
         [0.709310, 0.872780, 0.908480, 0.953290, 0.844350],
         [0.863920, 0.947770, 0.876220, 1.078750, 0.936910],
         [1.280350, 0.866720, 0.769790, 1.078750, 0.975130],
-        [0.725420, 0.869970, 0.868810, 0.951190, 0.829220]]
+        [0.725420, 0.869970, 0.868810, 0.951190, 0.829220],
+    ]
 
     coeffs[3, 5, :, :] = [
         [0.791750, 0.654040, 0.483170, 0.409000, 0.597180],
@@ -3459,7 +3765,8 @@ def _get_dirint_coeffs():
         [0.637630, 0.767610, 0.925670, 0.990310, 0.847670],
         [0.736380, 0.946060, 1.117590, 1.029340, 0.947020],
         [1.180970, 0.850000, 1.050000, 0.950000, 0.888580],
-        [0.700560, 0.801440, 0.961970, 0.906140, 0.823880]]
+        [0.700560, 0.801440, 0.961970, 0.906140, 0.823880],
+    ]
 
     coeffs[3, 6, :, :] = [
         [0.500000, 0.500000, 0.586770, 0.470550, 0.629790],
@@ -3468,7 +3775,8 @@ def _get_dirint_coeffs():
         [0.554710, 0.734730, 0.985820, 0.915640, 0.898260],
         [0.712510, 1.205990, 0.909510, 1.078260, 0.885610],
         [1.899260, 1.559710, 1.000000, 1.150000, 1.120390],
-        [0.653880, 0.793120, 0.903320, 0.944070, 0.796130]]
+        [0.653880, 0.793120, 0.903320, 0.944070, 0.796130],
+    ]
 
     coeffs[4, 1, :, :] = [
         [1.000000, 1.000000, 1.050000, 1.170380, 1.178090],
@@ -3477,7 +3785,8 @@ def _get_dirint_coeffs():
         [1.201590, 1.201590, 0.993610, 1.109380, 1.126320],
         [1.065010, 1.065010, 0.828660, 0.939970, 1.017930],
         [1.065010, 1.065010, 0.623690, 1.119620, 1.132260],
-        [1.071570, 1.071570, 0.958070, 1.114130, 1.127110]]
+        [1.071570, 1.071570, 0.958070, 1.114130, 1.127110],
+    ]
 
     coeffs[4, 2, :, :] = [
         [0.950000, 0.973390, 0.852520, 1.092200, 1.096590],
@@ -3486,7 +3795,8 @@ def _get_dirint_coeffs():
         [1.032980, 1.034540, 0.968460, 1.032080, 1.015780],
         [0.900000, 0.977210, 0.945960, 1.008840, 0.969960],
         [0.600000, 0.750000, 0.750000, 0.844710, 0.899100],
-        [0.926800, 0.965030, 0.968520, 1.044910, 1.032310]]
+        [0.926800, 0.965030, 0.968520, 1.044910, 1.032310],
+    ]
 
     coeffs[4, 3, :, :] = [
         [0.850000, 1.029710, 0.961100, 1.055670, 1.009700],
@@ -3495,7 +3805,8 @@ def _get_dirint_coeffs():
         [0.775610, 0.909610, 0.927800, 0.987800, 0.952100],
         [1.000990, 0.881880, 0.875950, 0.949100, 0.893690],
         [0.902370, 0.875960, 0.807990, 0.942410, 0.917920],
-        [0.856580, 0.928270, 0.946820, 1.032260, 0.972990]]
+        [0.856580, 0.928270, 0.946820, 1.032260, 0.972990],
+    ]
 
     coeffs[4, 4, :, :] = [
         [0.750000, 0.857930, 0.983800, 1.056540, 0.980240],
@@ -3504,7 +3815,8 @@ def _get_dirint_coeffs():
         [0.800000, 0.914550, 0.908570, 0.999190, 0.915230],
         [0.778540, 0.800590, 0.799070, 0.902180, 0.851560],
         [0.680190, 0.317410, 0.507680, 0.388910, 0.646710],
-        [0.794920, 0.912780, 0.960830, 1.057110, 0.947950]]
+        [0.794920, 0.912780, 0.960830, 1.057110, 0.947950],
+    ]
 
     coeffs[4, 5, :, :] = [
         [0.750000, 0.833890, 0.867530, 1.059890, 0.932840],
@@ -3513,7 +3825,8 @@ def _get_dirint_coeffs():
         [0.802400, 0.955110, 0.911660, 1.045070, 0.944470],
         [0.884890, 0.766210, 0.885390, 0.859070, 0.818190],
         [0.615680, 0.700000, 0.850000, 0.624620, 0.669300],
-        [0.835570, 0.946150, 0.977090, 1.049350, 0.979970]]
+        [0.835570, 0.946150, 0.977090, 1.049350, 0.979970],
+    ]
 
     coeffs[4, 6, :, :] = [
         [0.689220, 0.809600, 0.900000, 0.789500, 0.853990],
@@ -3522,7 +3835,8 @@ def _get_dirint_coeffs():
         [0.843620, 0.981300, 0.951590, 0.946100, 0.966330],
         [0.694740, 0.814690, 0.572650, 0.400000, 0.726830],
         [0.211370, 0.671780, 0.416340, 0.297290, 0.498050],
-        [0.843540, 0.882330, 0.911760, 0.898420, 0.960210]]
+        [0.843540, 0.882330, 0.911760, 0.898420, 0.960210],
+    ]
 
     coeffs[5, 1, :, :] = [
         [1.054880, 1.075210, 1.068460, 1.153370, 1.069220],
@@ -3531,7 +3845,8 @@ def _get_dirint_coeffs():
         [0.920000, 0.950000, 0.978720, 1.020280, 0.984440],
         [0.850000, 0.908500, 0.839940, 0.985570, 0.962180],
         [0.800000, 0.800000, 0.810080, 0.950000, 0.961550],
-        [1.038590, 1.063200, 1.034440, 1.112780, 1.037800]]
+        [1.038590, 1.063200, 1.034440, 1.112780, 1.037800],
+    ]
 
     coeffs[5, 2, :, :] = [
         [1.017610, 1.028360, 1.058960, 1.133180, 1.045620],
@@ -3540,7 +3855,8 @@ def _get_dirint_coeffs():
         [0.847160, 0.935300, 0.930540, 0.955050, 0.946560],
         [0.880260, 0.867110, 0.874130, 0.972650, 0.883420],
         [0.627150, 0.627150, 0.700000, 0.774070, 0.845130],
-        [0.973700, 1.006240, 1.026190, 1.071960, 1.017240]]
+        [0.973700, 1.006240, 1.026190, 1.071960, 1.017240],
+    ]
 
     coeffs[5, 3, :, :] = [
         [1.028710, 1.017570, 1.025900, 1.081790, 1.024240],
@@ -3549,7 +3865,8 @@ def _get_dirint_coeffs():
         [0.900810, 0.901330, 0.928830, 0.979570, 0.913100],
         [0.761030, 0.845150, 0.805360, 0.936790, 0.853460],
         [0.626400, 0.546750, 0.730500, 0.850000, 0.689050],
-        [0.957630, 0.985480, 0.991790, 1.050220, 0.987900]]
+        [0.957630, 0.985480, 0.991790, 1.050220, 0.987900],
+    ]
 
     coeffs[5, 4, :, :] = [
         [0.992730, 0.993880, 1.017150, 1.059120, 1.017450],
@@ -3558,7 +3875,8 @@ def _get_dirint_coeffs():
         [0.828750, 0.868090, 0.834920, 0.905510, 0.871530],
         [0.781540, 0.782470, 0.767910, 0.764140, 0.795890],
         [0.743460, 0.693390, 0.514870, 0.630150, 0.715660],
-        [0.934760, 0.957870, 0.959640, 0.972510, 0.981640]]
+        [0.934760, 0.957870, 0.959640, 0.972510, 0.981640],
+    ]
 
     coeffs[5, 5, :, :] = [
         [0.965840, 0.941240, 0.987100, 1.022540, 1.011160],
@@ -3567,7 +3885,8 @@ def _get_dirint_coeffs():
         [0.811720, 0.869090, 0.812020, 0.850000, 0.821050],
         [0.682030, 0.679480, 0.632450, 0.746580, 0.738550],
         [0.668290, 0.445860, 0.500000, 0.678920, 0.696510],
-        [0.926940, 0.953350, 0.959050, 0.876210, 0.991490]]
+        [0.926940, 0.953350, 0.959050, 0.876210, 0.991490],
+    ]
 
     coeffs[5, 6, :, :] = [
         [0.948940, 0.997760, 0.850000, 0.826520, 0.998470],
@@ -3576,7 +3895,8 @@ def _get_dirint_coeffs():
         [1.000000, 0.746140, 0.751740, 0.598390, 0.725230],
         [0.922210, 0.500000, 0.376800, 0.517110, 0.548630],
         [0.500000, 0.450000, 0.429970, 0.404490, 0.539940],
-        [0.960430, 0.881630, 0.775640, 0.596350, 0.937680]]
+        [0.960430, 0.881630, 0.775640, 0.596350, 0.937680],
+    ]
 
     coeffs[6, 1, :, :] = [
         [1.030000, 1.040000, 1.000000, 1.000000, 1.049510],
@@ -3585,7 +3905,8 @@ def _get_dirint_coeffs():
         [1.050000, 0.790000, 0.880000, 0.820000, 0.951840],
         [1.000000, 0.530000, 0.440000, 0.710000, 0.928730],
         [0.540000, 0.470000, 0.500000, 0.550000, 0.773950],
-        [1.038270, 0.920180, 0.910930, 0.821140, 1.034560]]
+        [1.038270, 0.920180, 0.910930, 0.821140, 1.034560],
+    ]
 
     coeffs[6, 2, :, :] = [
         [1.041020, 0.997520, 0.961600, 1.000000, 1.035780],
@@ -3594,7 +3915,8 @@ def _get_dirint_coeffs():
         [0.951870, 0.850000, 0.748770, 0.700000, 0.883850],
         [0.900000, 0.823190, 0.727450, 0.600000, 0.839870],
         [0.850000, 0.805020, 0.692310, 0.500000, 0.788410],
-        [1.010090, 0.895270, 0.773030, 0.816280, 1.011680]]
+        [1.010090, 0.895270, 0.773030, 0.816280, 1.011680],
+    ]
 
     coeffs[6, 3, :, :] = [
         [1.022450, 1.004600, 0.983650, 1.000000, 1.032940],
@@ -3603,7 +3925,8 @@ def _get_dirint_coeffs():
         [0.816420, 0.885000, 0.644950, 0.817650, 0.865310],
         [0.742960, 0.765690, 0.561520, 0.700000, 0.827140],
         [0.643870, 0.596710, 0.474460, 0.600000, 0.651200],
-        [0.971740, 0.940560, 0.714880, 0.864380, 1.001650]]
+        [0.971740, 0.940560, 0.714880, 0.864380, 1.001650],
+    ]
 
     coeffs[6, 4, :, :] = [
         [0.995260, 0.977010, 1.000000, 1.000000, 1.035250],
@@ -3612,7 +3935,8 @@ def _get_dirint_coeffs():
         [0.873480, 0.873450, 0.751470, 0.850000, 0.863040],
         [0.761470, 0.702360, 0.638770, 0.750000, 0.783120],
         [0.734080, 0.650000, 0.600000, 0.650000, 0.715660],
-        [0.942160, 0.919100, 0.770340, 0.731170, 0.995180]]
+        [0.942160, 0.919100, 0.770340, 0.731170, 0.995180],
+    ]
 
     coeffs[6, 5, :, :] = [
         [0.952560, 0.916780, 0.920000, 0.900000, 1.005880],
@@ -3621,7 +3945,8 @@ def _get_dirint_coeffs():
         [0.868090, 0.807170, 0.823550, 0.600000, 0.844520],
         [0.769570, 0.719870, 0.650000, 0.550000, 0.733500],
         [0.580250, 0.650000, 0.600000, 0.500000, 0.628850],
-        [0.904770, 0.852650, 0.708370, 0.493730, 0.949030]]
+        [0.904770, 0.852650, 0.708370, 0.493730, 0.949030],
+    ]
 
     coeffs[6, 6, :, :] = [
         [0.911970, 0.800000, 0.800000, 0.800000, 0.956320],
@@ -3630,19 +3955,27 @@ def _get_dirint_coeffs():
         [0.648440, 0.600000, 0.641120, 0.500000, 0.695780],
         [0.570000, 0.550000, 0.598800, 0.400000, 0.560150],
         [0.475230, 0.500000, 0.518640, 0.339970, 0.520230],
-        [0.743440, 0.592190, 0.603060, 0.316930, 0.794390]]
+        [0.743440, 0.592190, 0.603060, 0.316930, 0.794390],
+    ]
 
     return coeffs[1:, 1:, :, :]
 
 
 @renamed_kwarg_warning(
-    since='0.11.2',
-    old_param_name='clearsky_dni',
-    new_param_name='dni_clear',
-    removal="0.13.0")
-def dni(ghi, dhi, zenith, dni_clear=None, clearsky_tolerance=1.1,
-        zenith_threshold_for_zero_dni=88.0,
-        zenith_threshold_for_clearsky_limit=80.0):
+    since="0.11.2",
+    old_param_name="clearsky_dni",
+    new_param_name="dni_clear",
+    removal="0.13.0",
+)
+def dni(
+    ghi,
+    dhi,
+    zenith,
+    dni_clear=None,
+    clearsky_tolerance=1.1,
+    zenith_threshold_for_zero_dni=88.0,
+    zenith_threshold_for_clearsky_limit=80.0,
+):
     """
     Determine DNI from GHI and DHI.
 
@@ -3696,11 +4029,11 @@ def dni(ghi, dhi, zenith, dni_clear=None, clearsky_tolerance=1.1,
     dni = (ghi - dhi) / tools.cosd(zenith)
 
     # cutoff negative values
-    dni[dni < 0] = float('nan')
+    dni[dni < 0] = float("nan")
 
     # set non-zero DNI values for zenith angles >=
     # zenith_threshold_for_zero_dni to NaN
-    dni[(zenith >= zenith_threshold_for_zero_dni) & (dni != 0)] = float('nan')
+    dni[(zenith >= zenith_threshold_for_zero_dni) & (dni != 0)] = float("nan")
 
     # correct DNI values for zenith angles greater or equal to the
     # zenith_threshold_for_clearsky_limit and smaller than the
@@ -3708,17 +4041,15 @@ def dni(ghi, dhi, zenith, dni_clear=None, clearsky_tolerance=1.1,
     # clearsky_tolerance)
     if dni_clear is not None:
         max_dni = dni_clear * clearsky_tolerance
-        dni[(zenith >= zenith_threshold_for_clearsky_limit) &
-            (zenith < zenith_threshold_for_zero_dni) &
-            (dni > max_dni)] = max_dni
+        dni[
+            (zenith >= zenith_threshold_for_clearsky_limit)
+            & (zenith < zenith_threshold_for_zero_dni)
+            & (dni > max_dni)
+        ] = max_dni
     return dni
 
 
-def complete_irradiance(solar_zenith,
-                        ghi=None,
-                        dhi=None,
-                        dni=None,
-                        dni_clear=None):
+def complete_irradiance(solar_zenith, ghi=None, dhi=None, dni=None, dni_clear=None):
     r"""
     Use the component sum equations to calculate the missing series, using
     the other available time series. One of the three parameters (ghi, dhi,
@@ -3758,13 +4089,13 @@ def complete_irradiance(solar_zenith,
         Pandas series of 'ghi', 'dhi', and 'dni' columns with datetime index
     """
     if ghi is not None and dhi is not None and dni is None:
-        dni = pvlib.irradiance.dni(ghi, dhi, solar_zenith,
-                                   dni_clear=dni_clear,
-                                   clearsky_tolerance=1.1)
+        dni = pvlib.irradiance.dni(
+            ghi, dhi, solar_zenith, dni_clear=dni_clear, clearsky_tolerance=1.1
+        )
     elif dni is not None and dhi is not None and ghi is None:
-        ghi = (dhi + dni * tools.cosd(solar_zenith))
+        ghi = dhi + dni * tools.cosd(solar_zenith)
     elif dni is not None and ghi is not None and dhi is None:
-        dhi = (ghi - dni * tools.cosd(solar_zenith))
+        dhi = ghi - dni * tools.cosd(solar_zenith)
     else:
         raise ValueError(
             "Please check that exactly one of ghi, dhi and dni parameters "
@@ -3772,9 +4103,7 @@ def complete_irradiance(solar_zenith,
         )
     # Merge the outputs into a master dataframe containing 'ghi', 'dhi',
     # and 'dni' columns
-    component_sum_df = pd.DataFrame({'ghi': ghi,
-                                     'dhi': dhi,
-                                     'dni': dni})
+    component_sum_df = pd.DataFrame({"ghi": ghi, "dhi": dhi, "dni": dni})
     return component_sum_df
 
 
@@ -3818,10 +4147,16 @@ def louche(ghi, solar_zenith, datetime_or_doy, max_zenith=90):
 
     Kt = clearness_index(ghi, solar_zenith, I0)
 
-    kb = -10.627*Kt**5 + 15.307*Kt**4 - 5.205 * \
-        Kt**3 + 0.994*Kt**2 - 0.059*Kt + 0.002
-    dni = kb*I0
-    dhi = ghi - dni*tools.cosd(solar_zenith)
+    kb = (
+        -10.627 * Kt**5
+        + 15.307 * Kt**4
+        - 5.205 * Kt**3
+        + 0.994 * Kt**2
+        - 0.059 * Kt
+        + 0.002
+    )
+    dni = kb * I0
+    dhi = ghi - dni * tools.cosd(solar_zenith)
 
     bad_values = (solar_zenith > max_zenith) | (ghi < 0) | (dni < 0)
     dni = np.where(bad_values, 0, dni)
@@ -3829,9 +4164,9 @@ def louche(ghi, solar_zenith, datetime_or_doy, max_zenith=90):
     dhi = np.where(bad_values, ghi, dhi)
 
     data = OrderedDict()
-    data['dni'] = dni
-    data['dhi'] = dhi
-    data['kt'] = Kt
+    data["dni"] = dni
+    data["dhi"] = dhi
+    data["kt"] = Kt
 
     if isinstance(datetime_or_doy, pd.DatetimeIndex):
         data = pd.DataFrame(data, index=datetime_or_doy)

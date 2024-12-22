@@ -10,14 +10,19 @@ import pvlib
 
 from pvlib._deprecation import deprecated
 
-APPARENT_ZENITH_MODELS = ('simple', 'kasten1966', 'kastenyoung1989',
-                          'gueymard1993', 'pickering2002')
-TRUE_ZENITH_MODELS = ('youngirvine1967', 'young1994')
+APPARENT_ZENITH_MODELS = (
+    "simple",
+    "kasten1966",
+    "kastenyoung1989",
+    "gueymard1993",
+    "pickering2002",
+)
+TRUE_ZENITH_MODELS = ("youngirvine1967", "young1994")
 AIRMASS_MODELS = APPARENT_ZENITH_MODELS + TRUE_ZENITH_MODELS
 
 
 def pres2alt(pressure):
-    '''
+    """
     Determine altitude from site pressure.
 
     Parameters
@@ -49,7 +54,7 @@ def pres2alt(pressure):
     -----------
     .. [1] "A Quick Derivation relating altitude to air pressure" from
        Portland State Aerospace Society, Version 1.03, 12/22/2004.
-    '''
+    """
 
     alt = 44331.5 - 4946.62 * pressure ** (0.190263)
 
@@ -57,7 +62,7 @@ def pres2alt(pressure):
 
 
 def alt2pres(altitude):
-    '''
+    """
     Determine site pressure from altitude.
 
     Parameters
@@ -89,15 +94,15 @@ def alt2pres(altitude):
     -----------
     .. [1] "A Quick Derivation relating altitude to air pressure" from
        Portland State Aerospace Society, Version 1.03, 12/22/2004.
-    '''
+    """
 
     press = 100 * ((44331.514 - altitude) / 11880.516) ** (1 / 0.1902632)
 
     return press
 
 
-def get_absolute_airmass(airmass_relative, pressure=101325.):
-    r'''
+def get_absolute_airmass(airmass_relative, pressure=101325.0):
+    r"""
     Determine absolute (pressure-adjusted) airmass from relative
     airmass and pressure.
 
@@ -127,15 +132,15 @@ def get_absolute_airmass(airmass_relative, pressure=101325.):
     .. [1] C. Gueymard, "Critical analysis and performance assessment of
        clear sky solar irradiance models using theoretical and measured
        data," Solar Energy, vol. 51, pp. 121-138, 1993.
-    '''
+    """
 
-    airmass_absolute = airmass_relative * pressure / 101325.
+    airmass_absolute = airmass_relative * pressure / 101325.0
 
     return airmass_absolute
 
 
-def get_relative_airmass(zenith, model='kastenyoung1989'):
-    '''
+def get_relative_airmass(zenith, model="kastenyoung1989"):
+    """
     Calculate relative (not pressure-adjusted) airmass at sea level.
 
     Parameter ``model`` allows selection of different airmass models.
@@ -212,7 +217,7 @@ def get_relative_airmass(zenith, model='kastenyoung1989'):
     .. [9] Matthew J. Reno, Clifford W. Hansen and Joshua S. Stein, "Global
        Horizontal Irradiance Clear Sky Models: Implementation and Analysis"
        Sandia Report, (2012).
-    '''
+    """
 
     # set zenith values greater than 90 to nans
     z = np.where(zenith > 90, np.nan, zenith)
@@ -220,33 +225,38 @@ def get_relative_airmass(zenith, model='kastenyoung1989'):
 
     model = model.lower()
 
-    if 'kastenyoung1989' == model:
-        am = (1.0 / (np.cos(zenith_rad) +
-              0.50572*((6.07995 + (90 - z)) ** - 1.6364)))
-    elif 'kasten1966' == model:
-        am = 1.0 / (np.cos(zenith_rad) + 0.15*((93.885 - z) ** - 1.253))
-    elif 'simple' == model:
+    if "kastenyoung1989" == model:
+        am = 1.0 / (np.cos(zenith_rad) + 0.50572 * ((6.07995 + (90 - z)) ** -1.6364))
+    elif "kasten1966" == model:
+        am = 1.0 / (np.cos(zenith_rad) + 0.15 * ((93.885 - z) ** -1.253))
+    elif "simple" == model:
         am = 1.0 / np.cos(zenith_rad)
-    elif 'pickering2002' == model:
-        am = (1.0 / (np.sin(np.radians(90 - z +
-              244.0 / (165 + 47.0 * (90 - z) ** 1.1)))))
-    elif 'youngirvine1967' == model:
+    elif "pickering2002" == model:
+        am = 1.0 / (np.sin(np.radians(90 - z + 244.0 / (165 + 47.0 * (90 - z) ** 1.1))))
+    elif "youngirvine1967" == model:
         sec_zen = 1.0 / np.cos(zenith_rad)
         am = sec_zen * (1 - 0.0012 * (sec_zen * sec_zen - 1))
-    elif 'young1994' == model:
-        am = ((1.002432*((np.cos(zenith_rad)) ** 2) +
-              0.148386*(np.cos(zenith_rad)) + 0.0096467) /
-              (np.cos(zenith_rad) ** 3 +
-              0.149864*(np.cos(zenith_rad) ** 2) +
-              0.0102963*(np.cos(zenith_rad)) + 0.000303978))
-    elif 'gueymard1993' == model:
-        am = (1.0 / (np.cos(zenith_rad) +
-              0.00176759*(z)*((94.37515 - z) ** - 1.21563)))
-    elif 'gueymard2003' == model:
-        am = (1.0 / (np.cos(zenith_rad) +
-              0.48353*(z**0.095846)/(96.741 - z)**1.754))
+    elif "young1994" == model:
+        am = (
+            1.002432 * ((np.cos(zenith_rad)) ** 2)
+            + 0.148386 * (np.cos(zenith_rad))
+            + 0.0096467
+        ) / (
+            np.cos(zenith_rad) ** 3
+            + 0.149864 * (np.cos(zenith_rad) ** 2)
+            + 0.0102963 * (np.cos(zenith_rad))
+            + 0.000303978
+        )
+    elif "gueymard1993" == model:
+        am = 1.0 / (
+            np.cos(zenith_rad) + 0.00176759 * (z) * ((94.37515 - z) ** -1.21563)
+        )
+    elif "gueymard2003" == model:
+        am = 1.0 / (
+            np.cos(zenith_rad) + 0.48353 * (z**0.095846) / (96.741 - z) ** 1.754
+        )
     else:
-        raise ValueError('%s is not a valid model for relativeairmass', model)
+        raise ValueError("%s is not a valid model for relativeairmass", model)
 
     if isinstance(zenith, pd.Series):
         am = pd.Series(am, index=zenith.index)
@@ -321,16 +331,26 @@ def gueymard94_pw(temp_air, relative_humidity):
     """
 
     T = temp_air + 273.15  # Convert to Kelvin                  # noqa: N806
-    RH = relative_humidity                                      # noqa: N806
+    RH = relative_humidity  # noqa: N806
 
     theta = T / 273.15
 
     # Eq. 1 from Keogh and Blakers
     pw = (
-        0.1 *
-        (0.4976 + 1.5265*theta + np.exp(13.6897*theta - 14.9188*(theta)**3)) *
-        (216.7*RH/(100*T)*np.exp(22.330 - 49.140*(100/T) -
-         10.922*(100/T)**2 - 0.39015*T/100)))
+        0.1
+        * (0.4976 + 1.5265 * theta + np.exp(13.6897 * theta - 14.9188 * (theta) ** 3))
+        * (
+            216.7
+            * RH
+            / (100 * T)
+            * np.exp(
+                22.330
+                - 49.140 * (100 / T)
+                - 10.922 * (100 / T) ** 2
+                - 0.39015 * T / 100
+            )
+        )
+    )
 
     pw = np.maximum(pw, 0.1)
 
@@ -405,9 +425,8 @@ def tdew_from_rh(temp_air, relative_humidity, coeff=(6.112, 17.62, 243.12)):
     # Substituting the Magnus equation and solving for dewpoint
 
     # First calculate ln(es/A)
-    ln_term = (
-        (coeff[1] * temp_air) / (coeff[2] + temp_air)
-        + np.log(relative_humidity/100)
+    ln_term = (coeff[1] * temp_air) / (coeff[2] + temp_air) + np.log(
+        relative_humidity / 100
     )
 
     # Then solve for dewpoint
@@ -417,8 +436,7 @@ def tdew_from_rh(temp_air, relative_humidity, coeff=(6.112, 17.62, 243.12)):
 
 
 first_solar_spectral_correction = deprecated(
-    since='0.10.0',
-    alternative='pvlib.spectrum.spectral_factor_firstsolar'
+    since="0.10.0", alternative="pvlib.spectrum.spectral_factor_firstsolar"
 )(pvlib.spectrum.spectral_factor_firstsolar)
 
 
@@ -533,16 +551,18 @@ def kasten96_lt(airmass_absolute, precipitable_water, aod_bb):
     # the optical air mass. The precision of these fits is better than 1% when
     # compared with Modtran simulations in the range 1 < am < 5 and
     # 0 < pwat < 5 cm at sea level" - P. Ineichen (2008)
-    delta_w = 0.112 * airmass_absolute ** (-0.55) * precipitable_water ** 0.34
+    delta_w = 0.112 * airmass_absolute ** (-0.55) * precipitable_water**0.34
     # broadband AOD
     delta_a = aod_bb
     # "Then using the Kasten pyrheliometric formula (1980, 1996), the Linke
     # turbidity at am = 2 can be written. The extension of the Linke turbidity
     # coefficient to other values of air mass was published by Ineichen and
     # Perez (2002)" - P. Ineichen (2008)
-    lt = -(9.4 + 0.9 * airmass_absolute) * np.log(
-        np.exp(-airmass_absolute * (delta_cda + delta_w + delta_a))
-    ) / airmass_absolute
+    lt = (
+        -(9.4 + 0.9 * airmass_absolute)
+        * np.log(np.exp(-airmass_absolute * (delta_cda + delta_w + delta_a)))
+        / airmass_absolute
+    )
     # filter out of extrapolated values
     return lt
 
@@ -612,26 +632,30 @@ def angstrom_alpha(aod1, lambda1, aod2, lambda2):
     --------
     pvlib.atmosphere.angstrom_aod_at_lambda
     """
-    return - np.log(aod1 / aod2) / np.log(lambda1 / lambda2)
+    return -np.log(aod1 / aod2) / np.log(lambda1 / lambda2)
 
 
 # Values of the Hellmann exponent
 HELLMANN_SURFACE_EXPONENTS = {
-    'unstable_air_above_open_water_surface': 0.06,
-    'neutral_air_above_open_water_surface': 0.10,
-    'stable_air_above_open_water_surface': 0.27,
-    'unstable_air_above_flat_open_coast': 0.11,
-    'neutral_air_above_flat_open_coast': 0.16,
-    'stable_air_above_flat_open_coast': 0.40,
-    'unstable_air_above_human_inhabited_areas': 0.27,
-    'neutral_air_above_human_inhabited_areas': 0.34,
-    'stable_air_above_human_inhabited_areas': 0.60,
+    "unstable_air_above_open_water_surface": 0.06,
+    "neutral_air_above_open_water_surface": 0.10,
+    "stable_air_above_open_water_surface": 0.27,
+    "unstable_air_above_flat_open_coast": 0.11,
+    "neutral_air_above_flat_open_coast": 0.16,
+    "stable_air_above_flat_open_coast": 0.40,
+    "unstable_air_above_human_inhabited_areas": 0.27,
+    "neutral_air_above_human_inhabited_areas": 0.34,
+    "stable_air_above_human_inhabited_areas": 0.60,
 }
 
 
-def windspeed_powerlaw(wind_speed_reference, height_reference,
-                       height_desired, exponent=None,
-                       surface_type=None):
+def windspeed_powerlaw(
+    wind_speed_reference,
+    height_reference,
+    height_desired,
+    exponent=None,
+    surface_type=None,
+):
     r"""
     Estimate wind speed for different heights.
 
@@ -755,14 +779,17 @@ def windspeed_powerlaw(wind_speed_reference, height_reference,
         pass
     else:
         raise ValueError(
-            "Either a 'surface_type' or an 'exponent' parameter must be given")
+            "Either a 'surface_type' or an 'exponent' parameter must be given"
+        )
 
     wind_speed = wind_speed_reference * (
-        (height_desired / height_reference) ** exponent)
+        (height_desired / height_reference) ** exponent
+    )
 
     # if wind speed is negative or complex return NaN
-    wind_speed = np.where(np.iscomplex(wind_speed) | (wind_speed < 0),
-                          np.nan, wind_speed)
+    wind_speed = np.where(
+        np.iscomplex(wind_speed) | (wind_speed < 0), np.nan, wind_speed
+    )
 
     if isinstance(wind_speed_reference, pd.Series):
         wind_speed = pd.Series(wind_speed, index=wind_speed_reference.index)

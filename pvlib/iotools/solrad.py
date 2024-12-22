@@ -7,26 +7,41 @@ import io
 
 # pvlib conventions
 BASE_HEADERS = (
-    'year', 'julian_day', 'month', 'day', 'hour', 'minute', 'decimal_time',
-    'solar_zenith', 'ghi', 'ghi_flag', 'dni', 'dni_flag', 'dhi', 'dhi_flag',
-    'uvb', 'uvb_flag', 'uvb_temp', 'uvb_temp_flag'
+    "year",
+    "julian_day",
+    "month",
+    "day",
+    "hour",
+    "minute",
+    "decimal_time",
+    "solar_zenith",
+    "ghi",
+    "ghi_flag",
+    "dni",
+    "dni_flag",
+    "dhi",
+    "dhi_flag",
+    "uvb",
+    "uvb_flag",
+    "uvb_temp",
+    "uvb_temp_flag",
 )
 
 # following README_SOLRAD.txt variable names for remaining
-STD_HEADERS = ('std_dw_psp', 'std_direct', 'std_diffuse', 'std_uvb')
+STD_HEADERS = ("std_dw_psp", "std_direct", "std_diffuse", "std_uvb")
 
 HEADERS = BASE_HEADERS + STD_HEADERS
 
-DPIR_HEADERS = ('dpir', 'dpir_flag', 'dpirc', 'dpirc_flag', 'dpird',
-                'dpird_flag')
+DPIR_HEADERS = ("dpir", "dpir_flag", "dpirc", "dpirc_flag", "dpird", "dpird_flag")
 
-MADISON_HEADERS = BASE_HEADERS + DPIR_HEADERS + STD_HEADERS + (
-    'std_dpir', 'std_dpirc', 'std_dpird')
+MADISON_HEADERS = (
+    BASE_HEADERS + DPIR_HEADERS + STD_HEADERS + ("std_dpir", "std_dpirc", "std_dpird")
+)
 
 
 # as specified in README_SOLRAD.txt file. excludes 1 space between columns
-WIDTHS = [4, 3] + 4*[2] + [6, 6] + 5*[7, 1] + 4*[9]
-MADISON_WIDTHS = [4, 3] + 4*[2] + [6, 6] + 8*[7, 1] + 7*[9]
+WIDTHS = [4, 3] + 4 * [2] + [6, 6] + 5 * [7, 1] + 4 * [9]
+MADISON_WIDTHS = [4, 3] + 4 * [2] + [6, 6] + 8 * [7, 1] + 7 * [9]
 # add 1 to make fields contiguous (required by pandas.read_fwf)
 WIDTHS = [w + 1 for w in WIDTHS]
 MADISON_WIDTHS = [w + 1 for w in MADISON_WIDTHS]
@@ -35,17 +50,63 @@ WIDTHS[-1] -= 1
 MADISON_WIDTHS[-1] -= 1
 
 DTYPES = [
-    'int64', 'int64', 'int64', 'int64', 'int64', 'int64', 'float64',
-    'float64', 'float64', 'int64', 'float64', 'int64', 'float64', 'int64',
-    'float64', 'int64', 'float64', 'int64', 'float64', 'float64',
-    'float64', 'float64']
+    "int64",
+    "int64",
+    "int64",
+    "int64",
+    "int64",
+    "int64",
+    "float64",
+    "float64",
+    "float64",
+    "int64",
+    "float64",
+    "int64",
+    "float64",
+    "int64",
+    "float64",
+    "int64",
+    "float64",
+    "int64",
+    "float64",
+    "float64",
+    "float64",
+    "float64",
+]
 
 MADISON_DTYPES = [
-    'int64', 'int64', 'int64', 'int64', 'int64', 'int64', 'float64', 'float64',
-    'float64', 'int64', 'float64', 'int64', 'float64', 'int64', 'float64',
-    'int64', 'float64', 'int64', 'float64', 'int64', 'float64', 'int64',
-    'float64', 'int64', 'float64', 'float64', 'float64', 'float64', 'float64',
-    'float64', 'float64']
+    "int64",
+    "int64",
+    "int64",
+    "int64",
+    "int64",
+    "int64",
+    "float64",
+    "float64",
+    "float64",
+    "int64",
+    "float64",
+    "int64",
+    "float64",
+    "int64",
+    "float64",
+    "int64",
+    "float64",
+    "int64",
+    "float64",
+    "int64",
+    "float64",
+    "int64",
+    "float64",
+    "int64",
+    "float64",
+    "float64",
+    "float64",
+    "float64",
+    "float64",
+    "float64",
+    "float64",
+]
 
 
 def read_solrad(filename):
@@ -96,7 +157,7 @@ def read_solrad(filename):
        Program. Bull. Amer. Meteor. Soc., 77, 2857-2864.
        :doi:`10.1175/1520-0477(1996)077<2857:TNISIS>2.0.CO;2`
     """
-    if 'msn' in str(filename):
+    if "msn" in str(filename):
         names = MADISON_HEADERS
         widths = MADISON_WIDTHS
         dtypes = MADISON_DTYPES
@@ -107,44 +168,60 @@ def read_solrad(filename):
 
     meta = {}
 
-    if str(filename).startswith('ftp') or str(filename).startswith('http'):
+    if str(filename).startswith("ftp") or str(filename).startswith("http"):
         response = requests.get(filename)
         response.raise_for_status()
         file_buffer = io.StringIO(response.content.decode())
     else:
-        with open(str(filename), 'r') as file_buffer:
+        with open(str(filename), "r") as file_buffer:
             file_buffer = io.StringIO(file_buffer.read())
 
     # The first line has the name of the station, and the second gives the
     # station's latitude, longitude, elevation above mean sea level in meters,
     # and the displacement in hours from local standard time.
-    meta['station_name'] = file_buffer.readline().strip()
+    meta["station_name"] = file_buffer.readline().strip()
 
     meta_line = file_buffer.readline().split()
-    meta['latitude'] = float(meta_line[0])
-    meta['longitude'] = float(meta_line[1])
-    meta['altitude'] = float(meta_line[2])
-    meta['TZ'] = int(meta_line[3])
+    meta["latitude"] = float(meta_line[0])
+    meta["longitude"] = float(meta_line[1])
+    meta["altitude"] = float(meta_line[2])
+    meta["TZ"] = int(meta_line[3])
 
     # read in data
-    data = pd.read_fwf(file_buffer, header=None, names=names,
-                       widths=widths, na_values=-9999.9, dtypes=dtypes)
+    data = pd.read_fwf(
+        file_buffer,
+        header=None,
+        names=names,
+        widths=widths,
+        na_values=-9999.9,
+        dtypes=dtypes,
+    )
 
     # set index
     # columns do not have leading 0s, so must zfill(2) to comply
     # with %m%d%H%M format
-    dts = data[['month', 'day', 'hour', 'minute']].astype(str).apply(
-        lambda x: x.str.zfill(2))
+    dts = (
+        data[["month", "day", "hour", "minute"]]
+        .astype(str)
+        .apply(lambda x: x.str.zfill(2))
+    )
     dtindex = pd.to_datetime(
-        data['year'].astype(str) + dts['month'] + dts['day'] + dts['hour'] +
-        dts['minute'], format='%Y%m%d%H%M', utc=True)
+        data["year"].astype(str)
+        + dts["month"]
+        + dts["day"]
+        + dts["hour"]
+        + dts["minute"],
+        format="%Y%m%d%H%M",
+        utc=True,
+    )
     data = data.set_index(dtindex)
 
     return data, meta
 
 
-def get_solrad(station, start, end,
-               url="https://gml.noaa.gov/aftp/data/radiation/solrad/"):
+def get_solrad(
+    station, start, end, url="https://gml.noaa.gov/aftp/data/radiation/solrad/"
+):
     """Request data from NOAA SOLRAD and read it into a Dataframe.
 
     A list of stations and their descriptions can be found in [1]_,
@@ -195,7 +272,7 @@ def get_solrad(station, start, end,
     end = pd.to_datetime(end)
 
     # Generate list of filenames
-    dates = pd.date_range(start.floor('d'), end, freq='d')
+    dates = pd.date_range(start.floor("d"), end, freq="d")
     station = station.lower()
     filenames = [
         f"{station}/{d.year}/{station}{d.strftime('%y')}{d.dayofyear:03}.dat"
@@ -210,12 +287,14 @@ def get_solrad(station, start, end,
         except requests.exceptions.HTTPError:
             warnings.warn(f"The following file was not found: {f}")
 
-    data = pd.concat(dfs, axis='rows')
+    data = pd.concat(dfs, axis="rows")
 
-    meta = {'station': station,
-            'filenames': filenames,
-            # all file should have the same metadata, so just merge in the
-            # metadata from the last file
-            **file_metadata}
+    meta = {
+        "station": station,
+        "filenames": filenames,
+        # all file should have the same metadata, so just merge in the
+        # metadata from the last file
+        **file_metadata,
+    }
 
     return data, meta

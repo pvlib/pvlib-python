@@ -7,8 +7,6 @@ import io
 import requests
 import pandas as pd
 from json import JSONDecodeError
-import warnings
-from pvlib._deprecation import pvlibDeprecationWarning
 
 NSRDB_API_BASE = "https://developer.nrel.gov"
 PSM_URL = NSRDB_API_BASE + "/api/nsrdb/v2/solar/psm3-2-2-download.csv"

@@ -2,7 +2,6 @@ import numpy as np
 import pytest
 from pvlib import pvsystem
 from pvlib.ivtools import sde
-from pvlib._deprecation import pvlibDeprecationWarning
 
 
 @pytest.fixture

@@ -11,7 +11,6 @@ import pytest
 from requests import HTTPError
 from io import StringIO
 import warnings
-from pvlib._deprecation import pvlibDeprecationWarning
 
 TMY_TEST_DATA = DATA_DIR / "test_psm3_tmy-2017.csv"
 YEAR_TEST_DATA = DATA_DIR / "test_psm3_2017.csv"

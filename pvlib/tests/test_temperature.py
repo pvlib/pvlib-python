@@ -6,7 +6,6 @@ from .conftest import DATA_DIR, assert_series_equal
 from numpy.testing import assert_allclose
 
 from pvlib import temperature, tools
-from pvlib._deprecation import pvlibDeprecationWarning
 
 import re
 

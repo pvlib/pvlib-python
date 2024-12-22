@@ -22,7 +22,6 @@ to use site-specific Perez transposition coefficients.
 # This example shows how the  :py:class:`~pvlib.modelchain.ModelChain` can
 # be adjusted to use a different set of Perez coefficients.
 
-import pandas as pd
 from pvlib.pvsystem import PVSystem
 from pvlib.modelchain import ModelChain
 from pvlib.temperature import TEMPERATURE_MODEL_PARAMETERS

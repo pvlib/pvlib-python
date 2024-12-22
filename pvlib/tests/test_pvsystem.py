@@ -306,7 +306,7 @@ def test_PVSystem_sapm_spectral_loss(sapm_module_params, mocker):
         sapm_module_params["A2"],
         sapm_module_params["A3"],
         sapm_module_params["A4"],
-)
+    )
     assert_allclose(out, 1, atol=0.5)
 
 

@@ -1542,7 +1542,7 @@ def test_infer_aoi_model(location, system_no_aoi, aoi_model):
                 # optional
                 'upper': 1.,
             }
-        ),  
+        ),
         (
             'interp',
             {

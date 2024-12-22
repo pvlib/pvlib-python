@@ -13,6 +13,7 @@ import os
 import warnings
 from importlib import reload
 
+import ephem
 import numpy as np
 import pandas as pd
 import scipy.optimize as so
@@ -484,7 +485,7 @@ def _ephem_to_timezone(date, tzinfo):
 
 def _ephem_setup(latitude, longitude, altitude, pressure, temperature,
                  horizon):
-    import ephem
+    
 
     # initialize a PyEphem observer
     obs = ephem.Observer()
@@ -541,11 +542,6 @@ def sun_rise_set_transit_ephem(times, latitude, longitude,
     --------
     pyephem
     """
-
-    try:
-        import ephem
-    except ImportError:
-        raise ImportError('PyEphem must be installed')
 
     # times must be localized
     if times.tz:
@@ -626,12 +622,6 @@ def pyephem(time, latitude, longitude, altitude=0., pressure=101325.,
     --------
     spa_python, spa_c, ephemeris
     """
-
-    # Written by Will Holmgren (@wholmgren), University of Arizona, 2014
-    try:
-        import ephem
-    except ImportError:
-        raise ImportError('PyEphem must be installed')
 
     time_utc = tools._pandas_to_utc(time)
 
@@ -933,7 +923,7 @@ def pyephem_earthsun_distance(time):
     pd.Series. Earth-sun distance in AU.
     """
 
-    import ephem
+    
 
     sun = ephem.Sun()
     earthsun = []

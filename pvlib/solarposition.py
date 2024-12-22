@@ -8,20 +8,14 @@ Calculate the solar position using a variety of methods/packages.
 # Tony Lorenzo (@alorenzo175), University of Arizona, 2015
 # Cliff hansen (@cwhanse), Sandia National Laboratories, 2018
 
-import os
 import datetime as dt
-try:
-    from importlib import reload
-except ImportError:
-    try:
-        from imp import reload
-    except ImportError:
-        pass
+import os
+import warnings
+from importlib import reload
 
 import numpy as np
 import pandas as pd
 import scipy.optimize as so
-import warnings
 
 from pvlib import atmosphere, tools
 from pvlib.tools import datetime_to_djd, djd_to_datetime
@@ -491,6 +485,7 @@ def _ephem_to_timezone(date, tzinfo):
 def _ephem_setup(latitude, longitude, altitude, pressure, temperature,
                  horizon):
     import ephem
+
     # initialize a PyEphem observer
     obs = ephem.Observer()
     obs.lat = str(latitude)

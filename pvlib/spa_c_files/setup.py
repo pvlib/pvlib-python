@@ -1,9 +1,9 @@
 # setup.py
 
 import os
-from distutils.core import setup
-from distutils.extension import Extension
+
 from Cython.Build import cythonize
+from setuptools import Extension, setup
 
 DIRNAME = os.path.dirname(__file__)
 

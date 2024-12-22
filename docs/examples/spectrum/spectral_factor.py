@@ -46,7 +46,8 @@ meteo = meteo.loc['2001-08-01':'2001-08-07']
 # spectral factor functions:
 #
 # - :py:func:`~pvlib.spectrum.spectral_factor_sapm`, which requires only
-#   the absolute airmass, :math:`AM_a`
+#   the absolute airmass, :math:`AM_a` and five SAPM coefficients :math:`A0` -
+#   :math:`A4`
 # - :py:func:`~pvlib.spectrum.spectral_factor_pvspec`, which requires
 #   :math:`AM_a` and the clearsky index, :math:`k_c`
 # - :py:func:`~pvlib.spectrum.spectral_factor_firstsolar`, which requires
@@ -104,7 +105,14 @@ w = meteo.precipitable_water
 module = pvlib.pvsystem.retrieve_sam('SandiaMod')['LG_LG290N1C_G3__2013_']
 #
 # Calculate M using the three models for an mc-Si PV module.
-m_sapm = pvlib.spectrum.spectral_factor_sapm(airmass_absolute, module)
+m_sapm = pvlib.spectrum.spectral_factor_sapm(
+    airmass_absolute,
+    module["A0"],
+    module["A1"],
+    module["A2"],
+    module["A3"],
+    module["A4"],
+)
 m_pvspec = pvlib.spectrum.spectral_factor_pvspec(airmass_absolute, kc,
                                                  'multisi')
 m_fs = pvlib.spectrum.spectral_factor_firstsolar(w, airmass_absolute,

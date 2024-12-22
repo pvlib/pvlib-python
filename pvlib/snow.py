@@ -155,6 +155,14 @@ def coverage_nrel(snowfall, poa_irradiance, temp_air, surface_tilt,
     # don't slide in the interval preceding the snowfall data
     slide_amt.iloc[0] = 0
 
+    if snow_depth is not None:
+        # all slides off if there is no snow on the ground
+        # described in [2] to avoid non-sliding snow for low-tilt systems.
+        # default threshold_depth of 1cm is from SAM's implementation and
+        # is different than the value of 0cm implied in [2].
+        # https://github.com.mcas-gov.ms/NREL/ssc/issues/1265
+        slide_amt[snow_depth < threshold_depth] = 1.
+
     # build time series of cumulative slide amounts
     sliding_period_ID = new_snowfall.cumsum()
     cumulative_sliding = slide_amt.groupby(sliding_period_ID).cumsum()
@@ -166,13 +174,13 @@ def coverage_nrel(snowfall, poa_irradiance, temp_air, surface_tilt,
     snow_coverage.ffill(inplace=True)
     snow_coverage -= cumulative_sliding
 
-    if snow_depth is not None:
-        # no coverage when there's no snow on the ground
-        # described in [2] to avoid non-sliding snow for low-tilt systems.
-        # default threshold_depth of 1cm is from SAM's implementation and
-        # is different than the value of 0cm implied in [2].
-        # https://github.com.mcas-gov.ms/NREL/ssc/issues/1265
-        snow_coverage[snow_depth < threshold_depth] = 0.
+    # if snow_depth is not None:
+    #     # no coverage when there's no snow on the ground
+    #     # described in [2] to avoid non-sliding snow for low-tilt systems.
+    #     # default threshold_depth of 1cm is from SAM's implementation and
+    #     # is different than the value of 0cm implied in [2].
+    #     # https://github.com.mcas-gov.ms/NREL/ssc/issues/1265
+    #     snow_coverage[snow_depth < threshold_depth] = 0.
     # clean up periods where row is completely uncovered
     return snow_coverage.clip(lower=0)
 

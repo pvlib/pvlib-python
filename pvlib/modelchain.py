@@ -782,14 +782,16 @@ class ModelChain:
                 self._aoi_model = self.schlick_aoi_loss
             else:
                 raise ValueError(model + ' is not a valid aoi loss model')
-        else:
-            # Assume callable model.
+        elif callable(model):
             self._aoi_model = partial(model, self)
+        else:
+            raise ValueError(model + ' is not a valid aoi loss model')
 
     def infer_aoi_model(self):
         """
-        Infer AOI model by checking for at least one required or optional
-        model parameter in module_parameter collected across all arrays.
+        Infer AOI model by checking for all required model paramters or at
+        least one optional model parameter in module_parameter collected
+        across all arrays.
         """
         module_parameters = tuple(
             array.module_parameters for array in self.system.arrays
@@ -797,47 +799,42 @@ class ModelChain:
         params = _common_keys(module_parameters)
         builtin_models = pvlib.iam._get_builtin_models()
 
-        if any(
-            param in params for
-            param in builtin_models['ashrae']["params_required"].union(
-                builtin_models['ashrae']["params_optional"]
-            )
+        if (builtin_models['ashrae']["params_required"] and (
+            builtin_models['ashrae']["params_required"] <= params)) or (
+            not builtin_models['ashrae']["params_required"] and
+            (builtin_models['ashrae']["params_optional"] & params)
         ):
             return self.ashrae_aoi_loss
 
-        if any(
-            param in params for
-            param in builtin_models['interp']["params_required"].union(
-                builtin_models['interp']["params_optional"]
-            )
+        if (builtin_models['interp']["params_required"] and (
+            builtin_models['interp']["params_required"] <= params)) or (
+            not builtin_models['interp']["params_required"] and
+            (builtin_models['interp']["params_optional"] & params)
         ):
             return self.interp_aoi_loss
 
-        if any(
-            param in params for
-            param in builtin_models['martin_ruiz']["params_required"].union(
-                builtin_models['martin_ruiz']["params_optional"]
-            )
+        if (builtin_models['martin_ruiz']["params_required"] and (
+            builtin_models['martin_ruiz']["params_required"] <= params)) or (
+            not builtin_models['martin_ruiz']["params_required"] and
+            (builtin_models['martin_ruiz']["params_optional"] & params)
         ):
             return self.martin_ruiz_aoi_loss
 
-        if any(
-            param in params for
-            param in builtin_models['physical']["params_required"].union(
-                builtin_models['physical']["params_optional"]
-            )
+        if (builtin_models['physical']["params_required"] and (
+            builtin_models['physical']["params_required"] <= params)) or (
+            not builtin_models['physical']["params_required"] and
+            (builtin_models['physical']["params_optional"] & params)
         ):
             return self.physical_aoi_loss
 
-        if any(
-            param in params for
-            param in builtin_models['sapm']["params_required"].union(
-                builtin_models['sapm']["params_optional"]
-            )
+        if (builtin_models['sapm']["params_required"] and (
+            builtin_models['sapm']["params_required"] <= params)) or (
+            not builtin_models['sapm']["params_required"] and
+            (builtin_models['sapm']["params_optional"] & params)
         ):
             return self.sapm_aoi_loss
 
-        # schlick model has no parameters to distinguish.
+        # schlick model has no parameters to distinguish, esp. from no_loss.
 
         raise ValueError(
             'could not infer AOI model from '
@@ -909,8 +906,10 @@ class ModelChain:
                 self._spectral_model = self.no_spectral_loss
             else:
                 raise ValueError(model + ' is not a valid spectral loss model')
-        else:
+        elif callable(model):
             self._spectral_model = partial(model, self)
+        else:
+            raise ValueError(model + ' is not a valid spectral loss model')
 
     def infer_spectral_model(self):
         """Infer spectral model from system attributes."""

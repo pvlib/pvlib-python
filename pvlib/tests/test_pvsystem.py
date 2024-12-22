@@ -284,7 +284,14 @@ def test_PVSystem_multi_array_sapm(sapm_module_params):
 def test_sapm_spectral_loss_deprecated(sapm_module_params):
     with pytest.warns(pvlibDeprecationWarning,
                       match='Use pvlib.spectrum.spectral_factor_sapm'):
-        pvsystem.sapm_spectral_loss(1, sapm_module_params)
+        pvsystem.sapm_spectral_loss(
+            1,
+            sapm_module_params["A0"],
+            sapm_module_params["A1"],
+            sapm_module_params["A2"],
+            sapm_module_params["A3"],
+            sapm_module_params["A4"],
+        )
 
 
 def test_PVSystem_sapm_spectral_loss(sapm_module_params, mocker):
@@ -292,8 +299,14 @@ def test_PVSystem_sapm_spectral_loss(sapm_module_params, mocker):
     system = pvsystem.PVSystem(module_parameters=sapm_module_params)
     airmass = 2
     out = system.sapm_spectral_loss(airmass)
-    spectrum.spectral_factor_sapm.assert_called_once_with(airmass,
-                                                          sapm_module_params)
+    spectrum.spectral_factor_sapm.assert_called_once_with(
+        airmass,
+        sapm_module_params["A0"],
+        sapm_module_params["A1"],
+        sapm_module_params["A2"],
+        sapm_module_params["A3"],
+        sapm_module_params["A4"],
+)
     assert_allclose(out, 1, atol=0.5)
 
 

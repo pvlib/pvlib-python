@@ -295,20 +295,19 @@ def spectral_factor_firstsolar(precipitable_water, airmass_absolute,
     return modifier
 
 
-def spectral_factor_sapm(airmass_absolute, module):
+def spectral_factor_sapm(airmass_absolute, A0, A1, A2, A3, A4):
     """
-    Calculates the spectral mismatch factor, :math:`f_1`,
-    using the Sandia Array Performance Model approach.
+    Calculates the spectral mismatch factor, :math:`f_1`, using the Sandia
+    Array Performance Model (SAPM) approach.
 
-    The SAPM spectral factor function is part of the broader Sandia Array
+    The SAPM incidence angle modifier is part of the broader Sandia Array
     Performance Model, which defines five points on an IV curve using empirical
     module-specific coefficients. Module coefficients for the SAPM are
-    available in the SAPM database and can be retrieved for use in the
-    ``module`` parameter through
-    :py:func:`pvlib.pvsystem.retrieve_sam()`. More details on the
-    SAPM can be found in [1]_, while a full description of the procedure to
-    determine the empirical model coefficients, including those for the SAPM
-    spectral correction, can be found in [2]_.
+    available in the SAPM database and can be retrieved for use through
+    :py:func:`pvlib.pvsystem.retrieve_sam()`. More details on the SAPM can be
+    found in [1]_, while a full description of the procedure to determine the
+    empirical model coefficients, including those for the SAPM spectral
+    correction, can be found in [2]_.
 
     Parameters
     ----------
@@ -317,10 +316,20 @@ def spectral_factor_sapm(airmass_absolute, module):
 
         Note: ``np.nan`` airmass values will result in 0 output.
 
-    module : dict-like
-        A dict, Series, or DataFrame defining the SAPM parameters.
-        Must contain keys `'A0'` through `'A4'`.
-        See the :py:func:`pvlib.pvsystem.sapm` notes section for more details.
+    A0 : float
+        The coefficient of the degree-0 polynomial term.
+
+    A1 : float
+        The coefficient of the degree-1 polynomial term.
+
+    A2 : float
+        The coefficient of the degree-2 polynomial term.
+
+    A3 : float
+        The coefficient of the degree-3 polynomial term.
+
+    A4 : float
+        The coefficient of the degree-4 polynomial term.
 
     Returns
     -------
@@ -330,7 +339,7 @@ def spectral_factor_sapm(airmass_absolute, module):
     Notes
     -----
     The SAPM spectral correction functions parameterises :math:`f_1` as a
-    fourth order polynomial function of absolute air mass:
+    fourth-order polynomial function of absolute air mass:
 
     .. math::
 
@@ -361,10 +370,7 @@ def spectral_factor_sapm(airmass_absolute, module):
 
     """
 
-    am_coeff = [module['A4'], module['A3'], module['A2'], module['A1'],
-                module['A0']]
-
-    spectral_loss = np.polyval(am_coeff, airmass_absolute)
+    spectral_loss = np.polyval([A4, A3, A2, A1, A0], airmass_absolute)
 
     spectral_loss = np.where(np.isnan(spectral_loss), 0, spectral_loss)
 

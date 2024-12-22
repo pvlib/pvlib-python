@@ -1499,30 +1499,66 @@ def test_aoi_model_user_func(sapm_dc_snl_ac_system, location, weather, mocker):
     assert mc.results.ac.iloc[1] < 1
 
 
-@pytest.mark.parametrize('aoi_model', [
+@pytest.mark.parametrize(
+    'aoi_model',
     # "schlick" omitted, cannot be distinguished from "no_loss" AOI model.
-    'ashrae', 'interp', 'martin_ruiz', 'physical', 'sapm'
-])
+    [
+        {'params': {'b': 0.025}},
+        {'params': {'iam_ref': (1., 0.85), 'theta_ref': (0., 80.)}},
+        {'params': {'a_r': 0.1}},
+        {'params': {'n': 1.5}},
+        {
+            'params': {
+                'B0': 1,
+                'B1': -0.002438,
+                'B2': 0.0003103,
+                'B3': -0.00001246,
+                'B4': 2.11E-07,
+                'B5': -1.36E-09,
+            }
+        },
+    ],
+    ids=['ashrae', 'interp', 'martin_ruiz', 'physical', 'sapm'],
+)
 def test_infer_aoi_model(location, system_no_aoi, aoi_model):
-    builtin_models = iam._get_builtin_models()[aoi_model]
-    params = builtin_models["params_required"].union(
-        builtin_models["params_optional"]
-    )
-    system_no_aoi.arrays[0].module_parameters.update({params.pop(): 1.0})
+    system_no_aoi.arrays[0].module_parameters.update(aoi_model["params"])
     mc = ModelChain(system_no_aoi, location, spectral_model='no_loss')
     assert isinstance(mc, ModelChain)
 
 
-@pytest.mark.parametrize('aoi_model,model_kwargs', [
-    # model_kwargs has both required and optional kwargs; test all
-    ('physical',
-     {'n': 1.526, 'K': 4.0, 'L': 0.002}),  # optional
-    ('interp',
-     {'theta_ref': (0, 75, 85, 90), 'iam_ref': (1, 0.8, 0.42, 0),  # required
-      'method': 'cubic', 'normalize': False})])  # optional
-def test_infer_aoi_model_with_extra_params(location, system_no_aoi, aoi_model,
-                                           model_kwargs, weather, mocker):
-    # test extra parameters not defined at iam._IAM_MODEL_PARAMS are passed
+@pytest.mark.parametrize(
+    'aoi_model,model_kwargs',
+    [
+        (
+            'sapm',
+            {
+                # required
+                'B0': 1,
+                'B1': -0.002438,
+                'B2': 0.0003103,
+                'B3': -0.00001246,
+                'B4': 2.11E-07,
+                'B5': -1.36E-09,
+                # optional
+                'upper': 1.,
+            }
+        ),  
+        (
+            'interp',
+            {
+                # required
+                'theta_ref': (0, 75, 85, 90),
+                'iam_ref': (1, 0.8, 0.42, 0),
+                # optional
+                'method': 'cubic',
+                'normalize': False,
+            }
+        )
+    ]
+)
+def test_infer_aoi_model_with_required_and_optional_params(
+    location, system_no_aoi, aoi_model, model_kwargs, weather, mocker
+):
     m = mocker.spy(iam, aoi_model)
     system_no_aoi.arrays[0].module_parameters.update(**model_kwargs)
     mc = ModelChain(system_no_aoi, location, spectral_model='no_loss')

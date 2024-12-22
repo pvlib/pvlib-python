@@ -633,9 +633,14 @@ class PVSystem:
             The SAPM spectral loss coefficient.
         """
         return tuple(
-            spectrum.spectral_factor_sapm(airmass_absolute,
-                                          array.module_parameters)
-            for array in self.arrays
+            spectrum.spectral_factor_sapm(
+                airmass_absolute,
+                array.module_parameters["A0"],
+                array.module_parameters["A1"],
+                array.module_parameters["A2"],
+                array.module_parameters["A3"],
+                array.module_parameters["A4"],
+            ) for array in self.arrays
         )
 
     @_unwrap_single_value
@@ -2390,7 +2395,14 @@ def sapm_effective_irradiance(poa_direct, poa_diffuse, airmass_absolute, aoi,
     pvlib.pvsystem.sapm
     """
 
-    F1 = spectrum.spectral_factor_sapm(airmass_absolute, module)
+    F1 = spectrum.spectral_factor_sapm(
+        airmass_absolute,
+        module["A0"],
+        module["A1"],
+        module["A2"],
+        module["A3"],
+        module["A4"],
+    )
     F2 = iam.sapm(
         aoi,
         module["B0"],

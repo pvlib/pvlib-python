@@ -17,66 +17,6 @@ from scipy.optimize import minimize
 from pvlib.tools import cosd, sind, acosd
 
 
-def _get_builtin_models():
-    """
-    Get builtin IAM models' usage information.
-
-    Returns
-    -------
-    info : dict
-        A dictionary of dictionaries keyed by builtin IAM model name, with
-        each model dictionary containing:
-
-        * 'func': callable
-            The callable model function
-        * 'params_required': set of str
-            The model function's required parameters
-        * 'params_optional': set of str
-            The model function's optional parameters
-
-    See Also
-    --------
-    pvlib.iam.ashrae
-    pvlib.iam.interp
-    pvlib.iam.martin_ruiz
-    pvlib.iam.physical
-    pvlib.iam.sapm
-    pvlib.iam.schlick
-    """
-    return {
-        'ashrae': {
-            'func': ashrae,
-            'params_required': set(),
-            'params_optional': {'b'},
-        },
-        'interp': {
-            'func': interp,
-            'params_required': {'theta_ref', 'iam_ref'},
-            'params_optional': {'method', 'normalize'},
-        },
-        'martin_ruiz': {
-            'func': martin_ruiz,
-            'params_required': set(),
-            'params_optional': {'a_r'},
-        },
-        'physical': {
-            'func': physical,
-            'params_required': set(),
-            'params_optional': {'n', 'K', 'L', 'n_ar'},
-        },
-        'sapm': {
-            'func': sapm,
-            'params_required': {'B0', 'B1', 'B2', 'B3', 'B4', 'B5'},
-            'params_optional': {'upper'},
-        },
-        'schlick': {
-            'func': schlick,
-            'params_required': set(),
-            'params_optional': set(),
-        },
-    }
-
-
 def ashrae(aoi, b=0.05):
     r"""
     Determine the incidence angle modifier using the ASHRAE transmission
@@ -370,7 +310,7 @@ def martin_ruiz(aoi, a_r=0.16):
 
 def martin_ruiz_diffuse(surface_tilt, a_r=0.16, c1=0.4244, c2=None):
     '''
-    Determine the incidence angle modifiers (iam) for diffuse sky and
+    Determine the incidence angle modifiers (IAM) for diffuse sky and
     ground-reflected irradiance using the Martin and Ruiz incident angle model.
 
     Parameters
@@ -557,7 +497,17 @@ def interp(aoi, theta_ref, iam_ref, method='linear', normalize=True):
 
 def sapm(aoi, B0, B1, B2, B3, B4, B5, upper=None):
     r"""
-    Determine the incidence angle modifier (IAM) using the SAPM model.
+    Caclulate the incidence angle modifier (IAM), :math:`f_2`, using the
+    Sandia Array Performance Model (SAPM).
+
+    The SAPM incidence angle modifier is part of the broader Sandia Array
+    Performance Model, which defines five points on an IV curve using empirical
+    module-specific coefficients. Module coefficients for the SAPM are
+    available in the SAPM database and can be retrieved for use through
+    :py:func:`pvlib.pvsystem.retrieve_sam()`. More details on the SAPM can be
+    found in [1]_, while a full description of the procedure to determine the
+    empirical model coefficients, including those for the SAPM incidence angle
+    modifier, can be found in [2]_.
 
     Parameters
     ----------
@@ -565,17 +515,23 @@ def sapm(aoi, B0, B1, B2, B3, B4, B5, upper=None):
         Angle of incidence in degrees. Negative input angles will return
         zeros.
 
-    B0 : The coefficient of the degree-0 polynomial term.
+    B0 : float
+        The coefficient of the degree-0 polynomial term.
 
-    B1 : The coefficient of the degree-1 polynomial term.
+    B1 : float
+        The coefficient of the degree-1 polynomial term.
 
-    B2 : The coefficient of the degree-2 polynomial term.
+    B2 : float
+        The coefficient of the degree-2 polynomial term.
 
-    B3 : The coefficient of the degree-3 polynomial term.
+    B3 : float
+        The coefficient of the degree-3 polynomial term.
 
-    B4 : The coefficient of the degree-4 polynomial term.
+    B4 : float
+        The coefficient of the degree-4 polynomial term.
 
-    B5 : The coefficient of the degree-5 polynomial term.
+    B5 : float
+        The coefficient of the degree-5 polynomial term.
 
     upper : float, optional
         Upper limit on the results. None means no upper limiting.
@@ -583,10 +539,22 @@ def sapm(aoi, B0, B1, B2, B3, B4, B5, upper=None):
     Returns
     -------
     iam : numeric
-        The SAPM angle of incidence loss coefficient, termed F2 in [1]_.
+        The SAPM angle of incidence loss coefficient, :math:`f_2` in [1]_.
 
     Notes
     -----
+    The SAPM spectral correction functions parameterises :math:`f_2` as a
+    fifth-order polynomial function of angle of incidence:
+
+    .. math::
+
+        f_2 = b_0 + b_1 AOI + b_2 AOI^2 + b_3 AOI^3 + b_4 AOI^4 + b_5 AOI^5.
+
+    where :math:`f_2` is the spectral mismatch factor, :math:`b_{0-5}` are
+    the module-specific coefficients, and :math:`AOI` is the angle of
+    incidence. More detail on how this incidence angle modifier function was
+    developed can be found in [3]_. Its measurement is described in [4]_.
+
     The SAPM [1]_ traditionally does not define an upper limit on the AOI
     loss function and values slightly exceeding 1 may exist for moderate
     angles of incidence (15-40 degrees). However, users may consider
@@ -594,17 +562,23 @@ def sapm(aoi, B0, B1, B2, B3, B4, B5, upper=None):
 
     References
     ----------
-    .. [1] King, D. et al, 2004, "Sandia Photovoltaic Array Performance
-       Model", SAND Report 3535, Sandia National Laboratories, Albuquerque,
-       NM.
-
-    .. [2] B.H. King et al, "Procedure to Determine Coefficients for the
-       Sandia Array Performance Model (SAPM)," SAND2016-5284, Sandia
-       National Laboratories (2016).
-
-    .. [3] B.H. King et al, "Recent Advancements in Outdoor Measurement
-       Techniques for Angle of Incidence Effects," 42nd IEEE PVSC (2015).
-       :doi:`10.1109/PVSC.2015.7355849`
+    .. [1] King, D., Kratochvil, J., and Boyson W. (2004), "Sandia
+           Photovoltaic Array Performance Model", (No. SAND2004-3535), Sandia
+           National Laboratories, Albuquerque, NM (United States).
+           :doi:`10.2172/919131`
+    .. [2] King, B., Hansen, C., Riley, D., Robinson, C., and Pratt, L.
+           (2016). Procedure to determine coefficients for the Sandia Array
+           Performance Model (SAPM) (No. SAND2016-5284). Sandia National
+           Laboratories, Albuquerque, NM (United States).
+           :doi:`10.2172/1256510`
+    .. [3] King, D., Kratochvil, J., and Boyson, W. "Measuring solar spectral
+           and angle-of-incidence effects on photovoltaic modules and solar
+           irradiance sensors." Conference Record of the 26th IEEE Potovoltaic
+           Specialists Conference (PVSC). IEEE, 1997.
+           :doi:`10.1109/PVSC.1997.654283`
+    .. [4] B.H. King et al, "Recent Advancements in Outdoor Measurement
+           Techniques for Angle of Incidence Effects," 42nd IEEE PVSC (2015).
+           :doi:`10.1109/PVSC.2015.7355849`
 
     See Also
     --------
@@ -1020,6 +994,66 @@ def schlick_diffuse(surface_tilt):
         cug = pd.Series(cug, surface_tilt.index)
 
     return cuk, cug
+
+
+def _get_builtin_models():
+    """
+    Get builtin IAM models' usage information.
+
+    Returns
+    -------
+    info : dict
+        A dictionary of dictionaries keyed by builtin IAM model name, with
+        each model dictionary containing:
+
+        * 'func': callable
+            The callable model function
+        * 'params_required': set of str
+            The model function's required parameters
+        * 'params_optional': set of str
+            The model function's optional parameters
+
+    See Also
+    --------
+    pvlib.iam.ashrae
+    pvlib.iam.interp
+    pvlib.iam.martin_ruiz
+    pvlib.iam.physical
+    pvlib.iam.sapm
+    pvlib.iam.schlick
+    """
+    return {
+        'ashrae': {
+            'func': ashrae,
+            'params_required': set(),
+            'params_optional': {'b'},
+        },
+        'interp': {
+            'func': interp,
+            'params_required': {'theta_ref', 'iam_ref'},
+            'params_optional': {'method', 'normalize'},
+        },
+        'martin_ruiz': {
+            'func': martin_ruiz,
+            'params_required': set(),
+            'params_optional': {'a_r'},
+        },
+        'physical': {
+            'func': physical,
+            'params_required': set(),
+            'params_optional': {'n', 'K', 'L', 'n_ar'},
+        },
+        'sapm': {
+            'func': sapm,
+            'params_required': {'B0', 'B1', 'B2', 'B3', 'B4', 'B5'},
+            'params_optional': {'upper'},
+        },
+        'schlick': {
+            'func': schlick,
+            'params_required': set(),
+            'params_optional': set(),
+        },
+    }
 
 
 def _get_fittable_or_convertable_model(builtin_model_name):

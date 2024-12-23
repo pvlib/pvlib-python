@@ -275,11 +275,12 @@ def test_localize_to_utc(input, expected):
     got = tools.localize_to_utc(**input)
 
     if isinstance(got, (pd.Series, pd.DataFrame)):
-        # Older pandas versions have wonky dtype check on index.
+        # Older pandas versions have wonky dtype equality check on timestamp
+        # index, so check the values as numpy.ndarray and indices one by one.
+        np.testing.assert_array_equal(got.to_numpy(), expected.to_numpy())
+
         for index_got, index_expected in zip(got.index, expected.index):
             assert index_got == index_expected
-
-        np.testing.assert_array_equal(got.to_numpy(), expected.to_numpy())
     else:
         assert got == expected
 

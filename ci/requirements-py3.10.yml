@@ -19,7 +19,7 @@ dependencies:
     - pytest-rerunfailures
     - conda-forge::pytest-remotedata  # version in default channel is old
     - python=3.10
-    - pytz
+    # - pytz
     - requests
     - scipy >= 1.6.0
     - statsmodels

@@ -1,21 +1,20 @@
 import calendar
 import datetime
 import warnings
+import zoneinfo
 
 import numpy as np
-import pandas as pd
-
-from .conftest import assert_frame_equal, assert_series_equal
 from numpy.testing import assert_allclose
+import pandas as pd
 import pytest
-import pytz
 
-from pvlib.location import Location
 from pvlib import solarposition, spa
-
-from .conftest import (
-    requires_ephem, requires_spa_c, requires_numba, requires_pandas_2_0
+from pvlib.location import Location
+from pvlib.tests.conftest import (
+    assert_frame_equal, assert_series_equal, requires_ephem, requires_spa_c,
+    requires_numba, requires_pandas_2_0,
 )
+
 
 # setup times and locations to be tested.
 times = pd.date_range(start=datetime.datetime(2014, 6, 24),
@@ -344,19 +343,16 @@ def test_pyephem_physical_dst(expected_solpos, golden):
 
 @requires_ephem
 def test_calc_time():
-    import pytz
     import math
     # validation from USNO solar position calculator online
 
     epoch = datetime.datetime(1970, 1, 1)
-    epoch_dt = pytz.utc.localize(epoch)
+    epoch_dt = epoch.replace(tzinfo=zoneinfo.ZoneInfo("UTC"))
 
     loc = tus
-    loc.pressure = 0
-    actual_time = pytz.timezone(loc.tz).localize(
-        datetime.datetime(2014, 10, 10, 8, 30))
-    lb = pytz.timezone(loc.tz).localize(datetime.datetime(2014, 10, 10, tol))
-    ub = pytz.timezone(loc.tz).localize(datetime.datetime(2014, 10, 10, 10))
+    actual_time = datetime.datetime(2014, 10, 10, 8, 30, tzinfo=loc.tz)
+    lb = datetime.datetime(2014, 10, 10, tol, tzinfo=loc.tz)
+    ub = datetime.datetime(2014, 10, 10, 10, tzinfo=loc.tz)
     alt = solarposition.calc_time(lb, ub, loc.latitude, loc.longitude,
                                   'alt', math.radians(24.7))
     az = solarposition.calc_time(lb, ub, loc.latitude, loc.longitude,
@@ -726,8 +722,11 @@ def test_hour_angle_with_tricky_timezones():
         '2014-09-07 02:00:00',
     ]).tz_localize('America/Santiago', nonexistent='shift_forward')
 
-    with pytest.raises(pytz.exceptions.NonExistentTimeError):
+    # should raise `pytz.exceptions.NonExistentTimeError`
+    with pytest.raises(Exception, match="2014-09-07 00:00:00") as exc_info:
         times.normalize()
+
+    assert exc_info.type.__name__ == "NonExistentTimeError"
 
     # should not raise `pytz.exceptions.NonExistentTimeError`
     solarposition.hour_angle(times, longitude, eot)
@@ -740,8 +739,14 @@ def test_hour_angle_with_tricky_timezones():
         '2014-11-02 02:00:00',
     ]).tz_localize('America/Havana', ambiguous=[True, True, False, False])
 
-    with pytest.raises(pytz.exceptions.AmbiguousTimeError):
+    # should raise `pytz.exceptions.AmbiguousTimeError`
+    with pytest.raises(
+        Exception,
+        match="Cannot infer dst time from 2014-11-02 00:00:00",
+    ) as exc_info:
         solarposition.hour_angle(times, longitude, eot)
+
+    assert exc_info.type.__name__ == "AmbiguousTimeError"
 
 
 def test_sun_rise_set_transit_geometric(expected_rise_set_spa, golden_mst):

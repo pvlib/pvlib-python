@@ -3,10 +3,11 @@ Collection of functions used in pvlib_python
 """
 
 import datetime as dt
+import warnings
+import zoneinfo
+
 import numpy as np
 import pandas as pd
-import pytz
-import warnings
 
 
 def cosd(angle):
@@ -119,7 +120,7 @@ def atand(number):
 
 def localize_to_utc(time, location):
     """
-    Converts or localizes a time series to UTC.
+    Converts time to UTC, localizing if necessary using location.
 
     Parameters
     ----------
@@ -129,17 +130,18 @@ def localize_to_utc(time, location):
 
     Returns
     -------
-    pandas object localized to UTC.
+    datetime.datetime or pandas object localized to UTC.
     """
     if isinstance(time, dt.datetime):
         if time.tzinfo is None:
-            time = pytz.timezone(location.tz).localize(time)
-        time_utc = time.astimezone(pytz.utc)
+            time = time.replace(tzinfo=location.tz)
+
+        time_utc = time.astimezone(zoneinfo.ZoneInfo("UTC"))
     else:
         try:
             time_utc = time.tz_convert('UTC')
         except TypeError:
-            time_utc = time.tz_localize(location.tz).tz_convert('UTC')
+            time_utc = time.tz_localize(str(location.tz)).tz_convert('UTC')
 
     return time_utc
 
@@ -160,11 +162,11 @@ def datetime_to_djd(time):
     """
 
     if time.tzinfo is None:
-        time_utc = pytz.utc.localize(time)
+        time_utc = time.replace(tzinfo=zoneinfo.ZoneInfo("UTC"))
     else:
-        time_utc = time.astimezone(pytz.utc)
+        time_utc = time.astimezone(zoneinfo.ZoneInfo("UTC"))
 
-    djd_start = pytz.utc.localize(dt.datetime(1899, 12, 31, 12))
+    djd_start = dt.datetime(1899, 12, 31, 12, tzinfo=zoneinfo.ZoneInfo("UTC"))
     djd = (time_utc - djd_start).total_seconds() * 1.0/(60 * 60 * 24)
 
     return djd
@@ -187,10 +189,10 @@ def djd_to_datetime(djd, tz='UTC'):
        The resultant datetime localized to tz
     """
 
-    djd_start = pytz.utc.localize(dt.datetime(1899, 12, 31, 12))
-
+    djd_start = dt.datetime(1899, 12, 31, 12, tzinfo=zoneinfo.ZoneInfo("UTC"))
     utc_time = djd_start + dt.timedelta(days=djd)
-    return utc_time.astimezone(pytz.timezone(tz))
+
+    return utc_time.astimezone(zoneinfo.ZoneInfo(tz))
 
 
 def _pandas_to_doy(pd_object):

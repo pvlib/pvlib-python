@@ -274,9 +274,11 @@ def test_normalize_max2one(data_in, expected):
 def test_localize_to_utc(input, expected):
     got = tools.localize_to_utc(**input)
 
-    # Pandas has wonky dtype check in Python 3.9.
     if isinstance(got, (pd.Series, pd.DataFrame)):
-        pd.testing.assert_index_equal(got.index, expected.index)
+        # Older pandas versions have wonky dtype check on index.
+        for index_got, index_expected in zip(got.index, expected.index):
+            assert index_got == index_expected
+
         np.testing.assert_array_equal(got.to_numpy(), expected.to_numpy())
     else:
         assert got == expected

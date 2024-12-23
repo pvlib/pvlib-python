@@ -8,7 +8,7 @@ import pandas as pd
 from .conftest import assert_frame_equal, assert_index_equal
 
 import pytest
-import pytz
+# import pytz
 
 import pvlib
 from pvlib import location
@@ -26,10 +26,17 @@ def test_location_all():
     Location(32.2, -111, 'US/Arizona', 700, 'Tucson')
 
 
-@pytest.mark.parametrize('tz', [
-    pytz.timezone('US/Arizona'), ZoneInfo('US/Arizona'), 'America/Phoenix',
-    -7, -7.0, datetime.timezone.utc
-])
+@pytest.mark.parametrize(
+    'tz',
+    [
+        # pytz.timezone('US/Arizona'),
+        ZoneInfo('US/Arizona'),
+        'America/Phoenix',
+        -7,
+        -7.0,
+        datetime.timezone.utc,
+    ]
+)
 def test_location_tz(tz):
     Location(32.2, -111, tz)
 

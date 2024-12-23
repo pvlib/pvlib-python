@@ -10,10 +10,10 @@ from zoneinfo import ZoneInfo
 
 import h5py
 import pandas as pd
-import pytz
+# import pytz
 
 from pvlib import atmosphere, clearsky, irradiance, solarposition
-from pvlib._deprecation import warn_deprecated
+# from pvlib._deprecation import warn_deprecated
 from pvlib.tools import _degrees_to_index
 
 
@@ -90,14 +90,14 @@ class Location:
             self.tz = tz
         elif isinstance(tz, datetime.timezone):
             self.tz = ZoneInfo(str(tz))
-        elif isinstance(tz, pytz.BaseTzInfo):
-            warn_deprecated(
-                "0.11.3",
-                message='pytz timezones are deprecated',
-                alternative='use zoneinfo.ZoneInfo from the standard library',
-                obj_type='function argument type',
-            )
-            self.tz = ZoneInfo(tz.zone)
+        # elif isinstance(tz, pytz.BaseTzInfo):
+        #     warn_deprecated(
+        #         "0.11.3",
+        #         message='pytz-based timezones are deprecated for locations',
+        #         alternative='use zoneinfo.ZoneInfo from the standard library',
+        #         obj_type='function argument type',
+        #     )
+        #     self.tz = ZoneInfo(tz.zone)
         else:
             raise TypeError(f'Invalid tz specification: {tz}')
 

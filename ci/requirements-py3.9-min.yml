@@ -9,7 +9,7 @@ dependencies:
     - pytest-mock
     - pytest-timeout
     - python=3.9
-    - pytz
+    # - pytz
     - requests
     - pip:
         - h5py==3.0.0

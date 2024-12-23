@@ -14,9 +14,6 @@ The source code for pvlib python is hosted on `GitHub
 <https://github.com/pvlib/pvlib-python>`_.
 Please see the :ref:`installation` page for installation help.
 
-
-Test :ref:`user_guide`
-
 For examples of how to use pvlib python, please see
 :ref:`package_overview` and the :ref:`example_gallery`.
 The documentation assumes general familiarity with

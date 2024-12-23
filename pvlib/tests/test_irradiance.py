@@ -15,7 +15,8 @@ from .conftest import (
     assert_frame_equal,
     assert_series_equal,
     requires_ephem,
-    requires_numba
+    requires_numba,
+    fail_on_pvlib_version,
 )
 
 from pvlib._deprecation import pvlibDeprecationWarning
@@ -1063,7 +1064,7 @@ def test_dirindex(times):
         np.array([0., 79.73860422, 1042.48031487, 257.20751138]),
         index=times
     )
-    dni_clearsky = pd.Series(
+    dni_clear = pd.Series(
         np.array([0., 316.1949056, 939.95469881, 646.22886049]),
         index=times
     )
@@ -1073,7 +1074,7 @@ def test_dirindex(times):
     )
     pressure = 93193.
     tdew = 10.
-    out = irradiance.dirindex(ghi, ghi_clearsky, dni_clearsky,
+    out = irradiance.dirindex(ghi, ghi_clearsky, dni_clear,
                               zenith, times, pressure=pressure,
                               temp_dew=tdew)
     dirint_close_values = irradiance.dirint(ghi, zenith, times,
@@ -1094,6 +1095,20 @@ def test_dirindex(times):
         equal_nan=True)
 
 
+@fail_on_pvlib_version("0.13")
+def test_dirindex_ghi_clearsky_deprecation():
+    times = pd.DatetimeIndex(['2014-06-24T18-1200'])
+    ghi = pd.Series([1038.62], index=times)
+    ghi_clearsky = pd.Series([1042.48031487], index=times)
+    dni_clearsky = pd.Series([939.95469881], index=times)
+    zenith = pd.Series([10.56413562], index=times)
+    pressure, tdew = 93193, 10
+    with pytest.warns(pvlibDeprecationWarning, match='ghi_clear'):
+        irradiance.dirindex(
+            ghi=ghi, ghi_clearsky=ghi_clearsky, dni_clear=dni_clearsky,
+            zenith=zenith, times=times, pressure=pressure, temp_dew=tdew)
+
+
 def test_dirindex_min_cos_zenith_max_zenith():
     # map out behavior under difficult conditions with various
     # limiting kwargs settings
@@ -1101,38 +1116,51 @@ def test_dirindex_min_cos_zenith_max_zenith():
     times = pd.DatetimeIndex(['2014-06-24T12-0700', '2014-06-24T18-0700'])
     ghi = pd.Series([0, 1], index=times)
     ghi_clearsky = pd.Series([0, 1], index=times)
-    dni_clearsky = pd.Series([0, 5], index=times)
+    dni_clear = pd.Series([0, 5], index=times)
     solar_zenith = pd.Series([90, 89.99], index=times)
 
-    out = irradiance.dirindex(ghi, ghi_clearsky, dni_clearsky, solar_zenith,
+    out = irradiance.dirindex(ghi, ghi_clearsky, dni_clear, solar_zenith,
                               times)
     expected = pd.Series([nan, nan], index=times)
     assert_series_equal(out, expected)
 
-    out = irradiance.dirindex(ghi, ghi_clearsky, dni_clearsky, solar_zenith,
+    out = irradiance.dirindex(ghi, ghi_clearsky, dni_clear, solar_zenith,
                               times, min_cos_zenith=0)
     expected = pd.Series([nan, nan], index=times)
     assert_series_equal(out, expected)
 
-    out = irradiance.dirindex(ghi, ghi_clearsky, dni_clearsky, solar_zenith,
+    out = irradiance.dirindex(ghi, ghi_clearsky, dni_clear, solar_zenith,
                               times, max_zenith=90)
     expected = pd.Series([nan, nan], index=times)
     assert_series_equal(out, expected)
 
-    out = irradiance.dirindex(ghi, ghi_clearsky, dni_clearsky, solar_zenith,
+    out = irradiance.dirindex(ghi, ghi_clearsky, dni_clear, solar_zenith,
                               times, min_cos_zenith=0, max_zenith=100)
     expected = pd.Series([nan, 5.], index=times)
     assert_series_equal(out, expected)
+
+
+@fail_on_pvlib_version("0.13")
+def test_dirindex_dni_clearsky_deprecation():
+    times = pd.DatetimeIndex(['2014-06-24T12-0700', '2014-06-24T18-0700'])
+    ghi = pd.Series([0, 1], index=times)
+    ghi_clearsky = pd.Series([0, 1], index=times)
+    dni_clear = pd.Series([0, 5], index=times)
+    solar_zenith = pd.Series([90, 89.99], index=times)
+    with pytest.warns(pvlibDeprecationWarning, match='dni_clear'):
+        irradiance.dirindex(ghi, ghi_clearsky, dni_clearsky=dni_clear,
+                            zenith=solar_zenith, times=times,
+                            min_cos_zenith=0)
 
 
 def test_dni():
     ghi = pd.Series([90, 100, 100, 100, 100])
     dhi = pd.Series([100, 90, 50, 50, 50])
     zenith = pd.Series([80, 100, 85, 70, 85])
-    clearsky_dni = pd.Series([50, 50, 200, 50, 300])
+    dni_clear = pd.Series([50, 50, 200, 50, 300])
 
     dni = irradiance.dni(ghi, dhi, zenith,
-                         clearsky_dni=clearsky_dni, clearsky_tolerance=2)
+                         dni_clear=dni_clear, clearsky_tolerance=2)
     assert_series_equal(dni,
                         pd.Series([float('nan'), float('nan'), 400,
                                    146.190220008, 573.685662283]))
@@ -1141,6 +1169,17 @@ def test_dni():
     assert_series_equal(dni,
                         pd.Series([float('nan'), float('nan'), 573.685662283,
                                    146.190220008, 573.685662283]))
+
+
+@fail_on_pvlib_version("0.13")
+def test_dni_dni_clearsky_deprecation():
+    ghi = pd.Series([90, 100, 100, 100, 100])
+    dhi = pd.Series([100, 90, 50, 50, 50])
+    zenith = pd.Series([80, 100, 85, 70, 85])
+    dni_clear = pd.Series([50, 50, 200, 50, 300])
+    with pytest.warns(pvlibDeprecationWarning, match='dni_clear'):
+        irradiance.dni(ghi, dhi, zenith,
+                       clearsky_dni=dni_clear, clearsky_tolerance=2)
 
 
 @pytest.mark.parametrize(
@@ -1233,6 +1272,13 @@ def test_clearsky_index():
     out = irradiance.clearsky_index(ghi_measured, ghi_modeled)
     expected = pd.Series([0.2, 0.5], index=times)
     assert_series_equal(out, expected)
+
+
+@fail_on_pvlib_version("0.13")
+def test_clearsky_index_clearsky_ghi_deprecation():
+    with pytest.warns(pvlibDeprecationWarning, match='ghi_clear'):
+        ghi, clearsky_ghi = 200, 300
+        irradiance.clearsky_index(ghi, clearsky_ghi=clearsky_ghi)
 
 
 def test_clearness_index():

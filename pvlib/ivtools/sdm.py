@@ -151,17 +151,17 @@ def fit_desoto(v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc, cells_in_series,
     i_sc: float
         Short-circuit current at reference conditions. [A]
     alpha_sc: float
-        The short-circuit current (i_sc) temperature coefficient of the
+        The short-circuit current (``i_sc``) temperature coefficient of the
         module. [A/K]
     beta_voc: float
-        The open-circuit voltage (v_oc) temperature coefficient of the
+        The open-circuit voltage (``v_oc``) temperature coefficient of the
         module. [V/K]
     cells_in_series: integer
         Number of cell in the module.
     EgRef: float, default 1.121 eV - value for silicon
         Energy of bandgap of semi-conductor used. [eV]
     dEgdT: float, default -0.0002677 - value for silicon
-        Variation of bandgap according to temperature. [eV/K]
+        Variation of bandgap according to temperature. [1/K]
     temp_ref: float, default 25
         Reference temperature condition. [C]
     irrad_ref: float, default 1000
@@ -194,7 +194,7 @@ def fit_desoto(v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc, cells_in_series,
         EgRef: float
             Energy of bandgap of semi-conductor used. [eV]
         dEgdT: float
-            Variation of bandgap according to temperature. [eV/K]
+            Variation of bandgap according to temperature. [1/K]
         irrad_ref: float
             Reference irradiance condition. [Wm⁻²]
         temp_ref: float
@@ -562,27 +562,34 @@ def fit_desoto_sandia(ivcurves, specs, const=None, maxiter=5, eps1=1.e-3):
     -------
     dict
         I_L_ref : float
-            light current at STC [A]
+            Light current at STC [A]
         I_o_ref : float
-            dark current at STC [A]
+            Dark current at STC [A]
         EgRef : float
-            effective band gap at STC [eV]
+            Effective band gap at STC [eV]
         R_s : float
-            series resistance at STC [ohm]
+            Series resistance at STC [ohm]
         R_sh_ref : float
-            shunt resistance at STC [ohm]
+            Shunt resistance at STC [ohm]
         cells_in_series : int
-            number of cells in series
+            Number of cells in series
         iph : array
-            light current for each IV curve [A]
+            Light current for each IV curve [A]
         io : array
-            dark current for each IV curve [A]
+            Dark current for each IV curve [A]
         rs : array
-            series resistance for each IV curve [ohm]
+            Series resistance for each IV curve [ohm]
         rsh : array
-            shunt resistance for each IV curve [ohm]
+            Shunt resistance for each IV curve [ohm]
+        a_ref : float
+            The product of the usual diode ideality factor (n, unitless),
+            number of cells in series (Ns), and cell thermal voltage at
+            reference conditions, in units of V.
+        dEgdT : float
+            The temperature dependence of the energy bandgap (Eg) at reference
+            conditions [1/K].
         u : array
-            boolean for each IV curve indicating that the parameter values
+            Boolean for each IV curve indicating that the parameter values
             are deemed reasonable by the private function ``_filter_params``
 
     Notes
@@ -871,7 +878,7 @@ def _extract_sdm_params(ee, tc, iph, io, rs, rsh, n, u, specs, const,
         params['R_sh_exp'] = R_sh_exp
 
     elif model == 'desoto':
-        dEgdT = 0.0002677
+        dEgdT = -0.0002677
         x_for_io = const['q'] / const['k'] * (
             1. / tok - 1. / tck[u] + dEgdT * (tc[u] - const['T0']) / tck[u])
 

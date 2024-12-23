@@ -1,5 +1,6 @@
 import datetime
 from unittest.mock import ANY
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 import numpy as np
 from numpy import nan
@@ -7,9 +8,7 @@ import pandas as pd
 from .conftest import assert_frame_equal, assert_index_equal
 
 import pytest
-
 import pytz
-from pytz.exceptions import UnknownTimeZoneError
 
 import pvlib
 from pvlib import location
@@ -28,15 +27,15 @@ def test_location_all():
 
 
 @pytest.mark.parametrize('tz', [
-    pytz.timezone('US/Arizona'), 'America/Phoenix',  -7, -7.0,
-    datetime.timezone.utc
+    pytz.timezone('US/Arizona'), ZoneInfo('US/Arizona'), 'America/Phoenix',
+    -7, -7.0, datetime.timezone.utc
 ])
 def test_location_tz(tz):
     Location(32.2, -111, tz)
 
 
 def test_location_invalid_tz():
-    with pytest.raises(UnknownTimeZoneError):
+    with pytest.raises(ZoneInfoNotFoundError):
         Location(32.2, -111, 'invalid')
 
 
@@ -58,8 +57,8 @@ def test_location_print_all():
     assert tus.__str__() == expected_str
 
 
-def test_location_print_pytz():
-    tus = Location(32.2, -111, pytz.timezone('US/Arizona'), 700, 'Tucson')
+def test_location_print_zoneinfo():
+    tus = Location(32.2, -111, ZoneInfo('US/Arizona'), 700, 'Tucson')
     expected_str = '\n'.join([
         'Location: ',
         '  name: Tucson',
@@ -215,7 +214,7 @@ def test_from_tmy_3():
     from pvlib.iotools import read_tmy3
     data, meta = read_tmy3(TMY3_TESTFILE, map_variables=True)
     loc = Location.from_tmy(meta, data)
-    assert loc.name is not None
+    assert loc.name != ""
     assert loc.altitude != 0
     assert loc.tz != 'UTC'
     assert_frame_equal(loc.weather, data)
@@ -226,7 +225,7 @@ def test_from_tmy_2():
     from pvlib.iotools import read_tmy2
     data, meta = read_tmy2(TMY2_TESTFILE)
     loc = Location.from_tmy(meta, data)
-    assert loc.name is not None
+    assert loc.name != ""
     assert loc.altitude != 0
     assert loc.tz != 'UTC'
     assert_frame_equal(loc.weather, data)
@@ -237,7 +236,7 @@ def test_from_epw():
     from pvlib.iotools import read_epw
     data, meta = read_epw(epw_testfile)
     loc = Location.from_epw(meta, data)
-    assert loc.name is not None
+    assert loc.name != ""
     assert loc.altitude != 0
     assert loc.tz != 'UTC'
     assert_frame_equal(loc.weather, data)

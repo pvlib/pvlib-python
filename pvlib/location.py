@@ -4,14 +4,16 @@ This module contains the Location class.
 
 # Will Holmgren, University of Arizona, 2014-2016.
 
-import pathlib
 import datetime
+import pathlib
+from zoneinfo import ZoneInfo
 
+import h5py
 import pandas as pd
 import pytz
-import h5py
 
-from pvlib import solarposition, clearsky, atmosphere, irradiance
+from pvlib import atmosphere, clearsky, irradiance, solarposition
+from pvlib._deprecation import warn_deprecated
 from pvlib.tools import _degrees_to_index
 
 
@@ -21,10 +23,12 @@ class Location:
     timezone, and altitude data associated with a particular
     geographic location. You can also assign a name to a location object.
 
-    Location objects have two timezone attributes:
+    Location objects have one timezone attribute:
 
-        * ``tz`` is a IANA timezone string.
-        * ``pytz`` is a pytz timezone object.
+        * ``tz`` is a IANA-compatible standard-library zoneinfo.ZoneInfo.
+
+    Thus, the passed timezone must be representable by one of the values in
+    zoneinfo.available_timezones().
 
     Location objects support the print method.
 
@@ -38,12 +42,12 @@ class Location:
         Positive is east of the prime meridian.
         Use decimal degrees notation.
 
-    tz : str, int, float, or pytz.timezone, default 'UTC'.
-        See
-        http://en.wikipedia.org/wiki/List_of_tz_database_time_zones
-        for a list of valid time zones.
-        pytz.timezone objects will be converted to strings.
-        ints and floats must be in hours from UTC.
+    tz : str, int, float, zoneinfo.ZoneInfo, datetime.timezone, or pytz timezone (deprecated), default 'UTC'.
+        See http://en.wikipedia.org/wiki/List_of_tz_database_time_zones for a
+        list of valid time zone strings, or use the function
+        zoneinfo.available_timezones().
+        ints and floats must be in hours N from UTC, and are converted to the
+        Etc/GMT+N or Etc/GMT-N format depending on the sign of N.
 
     altitude : float, optional
         Altitude from sea level in meters.
@@ -59,33 +63,43 @@ class Location:
     pvlib.pvsystem.PVSystem
     """
 
-    def __init__(self, latitude, longitude, tz='UTC', altitude=None,
-                 name=None):
+    def __init__(
+        self, latitude, longitude, tz='UTC', altitude=None, name=None
+    ):
+
+        if name is None:
+            name = ""
+
+        self.name = name
 
         self.latitude = latitude
         self.longitude = longitude
-
-        if isinstance(tz, str):
-            self.tz = tz
-            self.pytz = pytz.timezone(tz)
-        elif isinstance(tz, datetime.timezone):
-            self.tz = 'UTC'
-            self.pytz = pytz.UTC
-        elif isinstance(tz, datetime.tzinfo):
-            self.tz = tz.zone
-            self.pytz = tz
-        elif isinstance(tz, (int, float)):
-            self.tz = tz
-            self.pytz = pytz.FixedOffset(tz*60)
-        else:
-            raise TypeError('Invalid tz specification')
 
         if altitude is None:
             altitude = lookup_altitude(latitude, longitude)
 
         self.altitude = altitude
 
-        self.name = name
+        if isinstance(tz, str):
+            self.tz = ZoneInfo(tz)
+        elif isinstance(tz, int):
+            self.tz = ZoneInfo(f"Etc/GMT{-tz:+d}")
+        elif isinstance(tz, float):
+            self.tz = ZoneInfo(f"Etc/GMT{int(-tz):+d}")
+        elif isinstance(tz, ZoneInfo):
+            self.tz = tz
+        elif isinstance(tz, datetime.timezone):
+            self.tz = ZoneInfo(str(tz))
+        elif isinstance(tz, pytz.BaseTzInfo):
+            warn_deprecated(
+                "0.11.3",
+                message='pytz timezones are deprecated',
+                alternative='use zoneinfo.ZoneInfo from the standard library',
+                obj_type='function argument type',
+            )
+            self.tz = ZoneInfo(tz.zone)
+        else:
+            raise TypeError(f'Invalid tz specification: {tz}')
 
     def __repr__(self):
         attrs = ['name', 'latitude', 'longitude', 'altitude', 'tz']

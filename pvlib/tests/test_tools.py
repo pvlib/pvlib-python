@@ -298,9 +298,7 @@ def test_localize_to_utc(input, expected):
         ),
         (
             {
-                "time": datetime(
-                    1974, 6, 22, 23, 30, 15, tzinfo=ZoneInfo("UTC")
-                )
+                "time": datetime(1974, 6, 22, 23, 30, 15)
             },
             27201.47934027778,
         ),

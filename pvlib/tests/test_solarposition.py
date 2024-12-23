@@ -344,7 +344,6 @@ def test_pyephem_physical_dst(expected_solpos, golden):
 
 @requires_ephem
 def test_calc_time():
-    import pytz
     import math
     # validation from USNO solar position calculator online
 
@@ -352,7 +351,6 @@ def test_calc_time():
     epoch_dt = pytz.utc.localize(epoch)
 
     loc = tus
-    loc.pressure = 0
     actual_time = pytz.timezone(loc.tz).localize(
         datetime.datetime(2014, 10, 10, 8, 30))
     lb = pytz.timezone(loc.tz).localize(datetime.datetime(2014, 10, 10, tol))

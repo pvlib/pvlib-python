@@ -187,7 +187,9 @@ def read_surfrad(filename, map_variables=True):
     metadata["surfrad_version"] = int(metadata_list[-1])
     metadata["tz"] = "UTC"
 
-    data = pd.read_csv(file_buffer, sep=r"\s+", header=None, names=SURFRAD_COLUMNS)
+    data = pd.read_csv(
+        file_buffer, sep=r"\s+", header=None, names=SURFRAD_COLUMNS
+    )
     file_buffer.close()
 
     data = _format_index(data)

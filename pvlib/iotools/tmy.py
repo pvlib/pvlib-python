@@ -25,7 +25,11 @@ VARIABLE_MAP = {
 
 
 def read_tmy3(
-    filename, coerce_year=None, map_variables=None, recolumn=None, encoding=None
+    filename,
+    coerce_year=None,
+    map_variables=None,
+    recolumn=None,
+    encoding=None,
 ):
     """Read a TMY3 file into a pandas dataframe.
 
@@ -217,7 +221,9 @@ def read_tmy3(
     shifted_hour = data["Time (HH:MM)"].str.split(":").str[0].astype(int) % 24
     # shift the dates at midnight (24:00) so they correspond to the next day.
     # If midnight is specified as 00:00 do not shift date.
-    data_ymd[data["Time (HH:MM)"].str[:2] == "24"] += datetime.timedelta(days=1)  # noqa: E501
+    data_ymd[data["Time (HH:MM)"].str[:2] == "24"] += datetime.timedelta(
+        days=1
+    )  # noqa: E501
     # NOTE: as of pandas>=0.24 the pd.Series.array has a month attribute, but
     # in pandas-0.18.1, only DatetimeIndex has month, but indices are immutable
     # so we need to continue to work with the panda series of dates `data_ymd`
@@ -582,9 +588,8 @@ def _read_tmy2(string, columns, hdr_columns, fname):
                         )
                 else:
                     raise Exception(
-                        "WARNING: In {} Improper column DataFrame " '" %{} " '.format(
-                            __name__, marker
-                        )
+                        "WARNING: In {} Improper column DataFrame "
+                        '" %{} " '.format(__name__, marker)
                     )
 
                 part.append(val)
@@ -606,8 +611,8 @@ def _read_tmy2(string, columns, hdr_columns, fname):
                 )
             )
 
-    data = pd.DataFrame(axes, index=date, columns=columns.split(",")).tz_localize(
-        int(meta["TZ"] * 3600)
-    )
+    data = pd.DataFrame(
+        axes, index=date, columns=columns.split(",")
+    ).tz_localize(int(meta["TZ"] * 3600))
 
     return data, meta

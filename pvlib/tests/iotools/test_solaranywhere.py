@@ -41,7 +41,9 @@ def high_resolution_index():
 
 @pytest.fixture
 def tmy_index():
-    index = pd.date_range(start="2000-01-01 01:00-0500", periods=3 * 24, freq="1h")
+    index = pd.date_range(
+        start="2000-01-01 01:00-0500", periods=3 * 24, freq="1h"
+    )
     index.name = "ObservationTime"
     index.freq = None
     return index
@@ -227,7 +229,9 @@ def test_get_solaranywhere_missing_start_end(solaranywhere_api_key):
 
 @pytest.fixture
 def time_series_index():
-    index = pd.date_range(start="2019-12-31 19:02:30-05:00", periods=288, freq="5min")
+    index = pd.date_range(
+        start="2019-12-31 19:02:30-05:00", periods=288, freq="5min"
+    )
     index.name = "ObservationTime"
     index.freq = None
     return index

@@ -39,7 +39,12 @@ def _solar_projection_tangent(solar_zenith, solar_azimuth, surface_azimuth):
 
 
 def _unshaded_ground_fraction(
-    surface_tilt, surface_azimuth, solar_zenith, solar_azimuth, gcr, max_zenith=87
+    surface_tilt,
+    surface_azimuth,
+    solar_zenith,
+    solar_azimuth,
+    gcr,
+    max_zenith=87,
 ):
     r"""
     Calculate the fraction of the ground with incident direct irradiance.
@@ -85,7 +90,9 @@ def _unshaded_ground_fraction(
        Photovoltaic Specialists Conference (PVSC), 2019, pp. 1282-1287.
        :doi:`10.1109/PVSC40753.2019.8980572`.
     """
-    tan_phi = _solar_projection_tangent(solar_zenith, solar_azimuth, surface_azimuth)
+    tan_phi = _solar_projection_tangent(
+        solar_zenith, solar_azimuth, surface_azimuth
+    )
     f_gnd_beam = 1.0 - np.minimum(
         1.0, gcr * np.abs(cosd(surface_tilt) + sind(surface_tilt) * tan_phi)
     )

@@ -72,7 +72,16 @@ intersphinx_mapping = {
 
 # Enable hover tooltips
 hoverxref_auto_ref = True
-hoverxref_roles = ["class", "meth", "func", "ref", "term", "obj", "mod", "data"]
+hoverxref_roles = [
+    "class",
+    "meth",
+    "func",
+    "ref",
+    "term",
+    "obj",
+    "mod",
+    "data",
+]
 hoverxref_role_types = dict.fromkeys(hoverxref_roles, "tooltip")
 hoverxref_domains = ["py"]
 hoverxref_intersphinx = list(intersphinx_mapping.keys())
@@ -488,7 +497,11 @@ def make_github_url(file_name):
             target_url = URL_BASE + "docs/examples/" + example_file  # noqa: E501
         else:
             target_url = (
-                URL_BASE + "docs/examples/" + example_folder + "/" + example_file
+                URL_BASE
+                + "docs/examples/"
+                + example_folder
+                + "/"
+                + example_file
             )  # noqa: E501
 
     # is it an API autogen page?

@@ -64,7 +64,9 @@ def test_sr_to_qe(sr_and_eqe_fixture):
     )
     assert qe.name == "spectral_response"
     # series normalization
-    qe = spectrum.sr_to_qe(sr_and_eqe_fixture["spectral_response"] * 10, normalize=True)
+    qe = spectrum.sr_to_qe(
+        sr_and_eqe_fixture["spectral_response"] * 10, normalize=True
+    )
     pd.testing.assert_series_equal(
         qe,
         sr_and_eqe_fixture["quantum_efficiency"]

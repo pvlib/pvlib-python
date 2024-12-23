@@ -2,13 +2,21 @@ import pandas as pd
 import pytest
 import pvlib
 import requests
-from ..conftest import RERUNS, RERUNS_DELAY, assert_frame_equal, assert_index_equal
+from ..conftest import (
+    RERUNS,
+    RERUNS_DELAY,
+    assert_frame_equal,
+    assert_index_equal,
+)
 
 
 @pytest.fixture
 def hourly_index():
     hourly_index = pd.date_range(
-        start="2022-01-01 00:30+01:00", freq="60min", periods=24, name="dateTime"
+        start="2022-01-01 00:30+01:00",
+        freq="60min",
+        periods=24,
+        name="dateTime",
     )
     hourly_index.freq = None
     return hourly_index
@@ -17,7 +25,10 @@ def hourly_index():
 @pytest.fixture
 def hourly_index_start_utc():
     hourly_index_left_utc = pd.date_range(
-        start="2023-01-01 00:00+00:00", freq="30min", periods=24 * 2, name="dateTime"
+        start="2023-01-01 00:00+00:00",
+        freq="30min",
+        periods=24 * 2,
+        name="dateTime",
     )
     hourly_index_left_utc.freq = None
     return hourly_index_left_utc

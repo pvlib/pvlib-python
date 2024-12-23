@@ -65,14 +65,18 @@ def test_read_tmy3_map_variables_deprecating_warning():
 
 def test_read_tmy3_coerce_year():
     coerce_year = 1987
-    data, _ = tmy.read_tmy3(TMY3_TESTFILE, coerce_year=coerce_year, map_variables=False)
+    data, _ = tmy.read_tmy3(
+        TMY3_TESTFILE, coerce_year=coerce_year, map_variables=False
+    )
     assert (data.index[:-1].year == 1987).all()
     assert data.index[-1].year == 1988
 
 
 def test_read_tmy3_no_coerce_year():
     coerce_year = None
-    data, _ = tmy.read_tmy3(TMY3_TESTFILE, coerce_year=coerce_year, map_variables=False)
+    data, _ = tmy.read_tmy3(
+        TMY3_TESTFILE, coerce_year=coerce_year, map_variables=False
+    )
     assert 1997 and 1999 in data.index.year
     assert data.index[-2] == pd.Timestamp("1998-12-31 23:00:00-09:00")
     assert data.index[-1] == pd.Timestamp("1999-01-01 00:00:00-09:00")
@@ -101,7 +105,9 @@ def test_gh865_read_tmy3_feb_leapyear_hr24():
     assert data.index[1414] == pd.Timestamp("1996-02-28 23:00:00-0500")
     assert data.index[1415] == pd.Timestamp("1996-03-01 00:00:00-0500")
     # now check if it parses correctly when we try to coerce the year
-    data, _ = read_tmy3(TMY3_FEB_LEAPYEAR, coerce_year=1990, map_variables=False)
+    data, _ = read_tmy3(
+        TMY3_FEB_LEAPYEAR, coerce_year=1990, map_variables=False
+    )
     # if get's here w/o an error, then gh865 is fixed, but let's check anyway
     assert all(data.index[:-1].year == 1990)
     assert data.index[-1].year == 1991

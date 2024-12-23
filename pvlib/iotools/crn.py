@@ -151,7 +151,9 @@ def read_crn(filename, map_variables=True):
     # when our minimum pandas >= 1.2.0 (skip_blank_lines bug for <1.2.0).
     # As a workaround, parse all values as strings, then drop NaN, then cast
     # to the appropriate dtypes, and mask "sentinal" NaN (e.g. -9999.0)
-    data = pd.read_fwf(filename, header=None, names=HEADERS, widths=WIDTHS, dtype=str)
+    data = pd.read_fwf(
+        filename, header=None, names=HEADERS, widths=WIDTHS, dtype=str
+    )
 
     # drop empty (bad) lines
     data = data.dropna(axis=0, how="all")
@@ -168,7 +170,9 @@ def read_crn(filename, map_variables=True):
     # with %H%M format
     dts = data[["UTC_DATE", "UTC_TIME"]].astype(str)
     dtindex = pd.to_datetime(
-        dts["UTC_DATE"] + dts["UTC_TIME"].str.zfill(4), format="%Y%m%d%H%M", utc=True
+        dts["UTC_DATE"] + dts["UTC_TIME"].str.zfill(4),
+        format="%Y%m%d%H%M",
+        utc=True,
     )
     data = data.set_index(dtindex)
 

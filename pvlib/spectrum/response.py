@@ -178,7 +178,9 @@ def sr_to_qe(sr, wavelength=None, normalize=False):
                 + " or 'wavelength' must be provided"
             )
     quantum_efficiency = (
-        sr / wavelength * _PLANCK_BY_LIGHT_SPEED_OVER_ELEMENTAL_CHARGE_BY_BILLION
+        sr
+        / wavelength
+        * _PLANCK_BY_LIGHT_SPEED_OVER_ELEMENTAL_CHARGE_BY_BILLION
     )
 
     if normalize:
@@ -275,7 +277,9 @@ def qe_to_sr(qe, wavelength=None, normalize=False):
                 + " or 'wavelength' must be provided"
             )
     spectral_responsivity = (
-        qe * wavelength / _PLANCK_BY_LIGHT_SPEED_OVER_ELEMENTAL_CHARGE_BY_BILLION
+        qe
+        * wavelength
+        / _PLANCK_BY_LIGHT_SPEED_OVER_ELEMENTAL_CHARGE_BY_BILLION
     )
 
     if normalize:

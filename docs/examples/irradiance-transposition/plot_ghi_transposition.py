@@ -30,7 +30,9 @@ site = location.Location(lat, lon, tz=tz)
 # different locations
 def get_irradiance(site_location, date, tilt, surface_azimuth):
     # Creates one day's worth of 10 min intervals
-    times = pd.date_range(date, freq="10min", periods=6 * 24, tz=site_location.tz)
+    times = pd.date_range(
+        date, freq="10min", periods=6 * 24, tz=site_location.tz
+    )
     # Generate clearsky data using the Ineichen model, which is the default
     # The get_clearsky method returns a dataframe with values for GHI, DNI,
     # and DHI
@@ -48,7 +50,9 @@ def get_irradiance(site_location, date, tilt, surface_azimuth):
         solar_azimuth=solar_position["azimuth"],
     )
     # Return DataFrame with only GHI and POA
-    return pd.DataFrame({"GHI": clearsky["ghi"], "POA": POA_irradiance["poa_global"]})
+    return pd.DataFrame(
+        {"GHI": clearsky["ghi"], "POA": POA_irradiance["poa_global"]}
+    )
 
 
 # Get irradiance data for summer and winter solstice, assuming 25 degree tilt

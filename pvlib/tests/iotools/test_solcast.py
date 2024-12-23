@@ -10,7 +10,9 @@ import pytest
         (
             "live/radiation_and_weather",
             dict(
-                latitude=-33.856784, longitude=151.215297, output_parameters="dni,ghi"
+                latitude=-33.856784,
+                longitude=151.215297,
+                output_parameters="dni,ghi",
             ),
             "1234",
             {
@@ -58,7 +60,9 @@ def test__get_solcast(requests_mock, endpoint, params, api_key, json_response):
     pd.testing.assert_frame_equal(
         pvlib.iotools.solcast._get_solcast(endpoint, params, api_key, True),
         pvlib.iotools.solcast._solcast2pvlib(
-            pd.DataFrame.from_dict(json_response[list(json_response.keys())[0]])
+            pd.DataFrame.from_dict(
+                json_response[list(json_response.keys())[0]]
+            )
         ),
     )
 
@@ -129,13 +133,17 @@ def test_get_solcast_live(
         pd.testing.assert_frame_equal(
             function(**params, map_variables=map_variables)[0],
             pvlib.iotools.solcast._solcast2pvlib(
-                pd.DataFrame.from_dict(json_response[list(json_response.keys())[0]])
+                pd.DataFrame.from_dict(
+                    json_response[list(json_response.keys())[0]]
+                )
             ),
         )
     else:
         pd.testing.assert_frame_equal(
             function(**params, map_variables=map_variables)[0],
-            pd.DataFrame.from_dict(json_response[list(json_response.keys())[0]]),
+            pd.DataFrame.from_dict(
+                json_response[list(json_response.keys())[0]]
+            ),
         )
 
 
@@ -199,13 +207,17 @@ def test_get_solcast_tmy(
         pd.testing.assert_frame_equal(
             function(**params, map_variables=map_variables)[0],
             pvlib.iotools.solcast._solcast2pvlib(
-                pd.DataFrame.from_dict(json_response[list(json_response.keys())[0]])
+                pd.DataFrame.from_dict(
+                    json_response[list(json_response.keys())[0]]
+                )
             ),
         )
     else:
         pd.testing.assert_frame_equal(
             function(**params, map_variables=map_variables)[0],
-            pd.DataFrame.from_dict(json_response[list(json_response.keys())[0]]),
+            pd.DataFrame.from_dict(
+                json_response[list(json_response.keys())[0]]
+            ),
         )
 
 
@@ -383,13 +395,17 @@ def test_get_solcast_historic(
         pd.testing.assert_frame_equal(
             function(**params, map_variables=map_variables)[0],
             pvlib.iotools.solcast._solcast2pvlib(
-                pd.DataFrame.from_dict(json_response[list(json_response.keys())[0]])
+                pd.DataFrame.from_dict(
+                    json_response[list(json_response.keys())[0]]
+                )
             ),
         )
     else:
         pd.testing.assert_frame_equal(
             function(**params, map_variables=map_variables)[0],
-            pd.DataFrame.from_dict(json_response[list(json_response.keys())[0]]),
+            pd.DataFrame.from_dict(
+                json_response[list(json_response.keys())[0]]
+            ),
         )
 
 
@@ -460,13 +476,17 @@ def test_get_solcast_forecast(
         pd.testing.assert_frame_equal(
             function(**params, map_variables=map_variables)[0],
             pvlib.iotools.solcast._solcast2pvlib(
-                pd.DataFrame.from_dict(json_response[list(json_response.keys())[0]])
+                pd.DataFrame.from_dict(
+                    json_response[list(json_response.keys())[0]]
+                )
             ),
         )
     else:
         pd.testing.assert_frame_equal(
             function(**params, map_variables=map_variables)[0],
-            pd.DataFrame.from_dict(json_response[list(json_response.keys())[0]]),
+            pd.DataFrame.from_dict(
+                json_response[list(json_response.keys())[0]]
+            ),
         )
 
 

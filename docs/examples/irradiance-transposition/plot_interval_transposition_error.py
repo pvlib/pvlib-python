@@ -94,7 +94,9 @@ def transpose(irradiance, timeshift):
 
 # baseline: all calculations done at 1-second scale
 location = pvlib.location.Location(40, -80, tz="Etc/GMT+5")
-times = pd.date_range("2019-06-01 05:00", "2019-06-01 19:00", freq="1s", tz="Etc/GMT+5")
+times = pd.date_range(
+    "2019-06-01 05:00", "2019-06-01 19:00", freq="1s", tz="Etc/GMT+5"
+)
 solpos = location.get_solarposition(times)
 clearsky = location.get_clearsky(times, solar_position=solpos)
 poa_1s = transpose(clearsky, timeshift=0)  # no shift needed for 1s data
@@ -119,7 +121,9 @@ for timescale_minutes in [1, 5, 10, 15, 30, 60]:
     poa_avg_noshift = transpose(clearsky_avg, timeshift=0)
 
     # low-res interval averages of 1-second data, with half-interval shift
-    poa_avg_halfshift = transpose(clearsky_avg, timeshift=timescale_minutes / 2)
+    poa_avg_halfshift = transpose(
+        clearsky_avg, timeshift=timescale_minutes / 2
+    )
 
     df = pd.DataFrame(
         {

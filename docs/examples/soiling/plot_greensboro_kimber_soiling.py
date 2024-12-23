@@ -64,7 +64,9 @@ plt.hlines(
     linestyles="--",
 )
 plt.grid()
-plt.title(f"Kimber Soiling Model, dashed line shows threshold ({THRESHOLD}[mm])")
+plt.title(
+    f"Kimber Soiling Model, dashed line shows threshold ({THRESHOLD}[mm])"
+)
 plt.xlabel("timestamp")
 plt.ylabel("soiling build-up fraction [%] and daily rainfall [inches]")
 plt.legend(["daily rainfall [in]", "soiling [%]"])

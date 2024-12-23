@@ -12,7 +12,9 @@ class DetectClear:
     param_names = ["ndays"]
 
     def setup(self, ndays):
-        self.times = pd.date_range(start="20180601", freq="1min", periods=1440 * ndays)
+        self.times = pd.date_range(
+            start="20180601", freq="1min", periods=1440 * ndays
+        )
         self.lat = 35.1
         self.lon = -106.6
         self.solar_position = solarposition.get_solarposition(
@@ -22,7 +24,9 @@ class DetectClear:
             self.solar_position["apparent_elevation"]
         )
         self.clearsky = clearsky_df["ghi"]
-        measured_dni = clearsky_df["dni"].where((self.times.hour % 2).astype(bool), 0)
+        measured_dni = clearsky_df["dni"].where(
+            (self.times.hour % 2).astype(bool), 0
+        )
         cos_zen = np.cos(np.deg2rad(self.solar_position["apparent_zenith"]))
         self.measured = measured_dni * cos_zen + clearsky_df["dhi"]
         self.measured *= 0.98

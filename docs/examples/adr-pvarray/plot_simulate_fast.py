@@ -124,7 +124,9 @@ elapsed_pvs = timeit("run_pvsyst()", number=1, globals=globals())
 
 print("Elapsed time for the PVsyst model: %9.6f s" % elapsed_pvs)
 print("Elapsed time for the ADR    model: %9.6f s" % elapsed_adr)
-print("ADR acceleration ratio:           %9.0f x" % (elapsed_pvs / elapsed_adr))
+print(
+    "ADR acceleration ratio:           %9.0f x" % (elapsed_pvs / elapsed_adr)
+)
 
 # %%
 #

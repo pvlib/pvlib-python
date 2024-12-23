@@ -43,7 +43,9 @@ VARIABLE_MAP = [
 ]
 
 
-def get_solcast_tmy(latitude, longitude, api_key, map_variables=True, **kwargs):
+def get_solcast_tmy(
+    latitude, longitude, api_key, map_variables=True, **kwargs
+):
     """Get irradiance and weather for a
     Typical Meteorological Year (TMY) at a requested location.
 
@@ -107,7 +109,9 @@ def get_solcast_tmy(latitude, longitude, api_key, map_variables=True, **kwargs):
     pvlib.iotools.get_solcast_live
     """
 
-    params = dict(latitude=latitude, longitude=longitude, format="json", **kwargs)
+    params = dict(
+        latitude=latitude, longitude=longitude, format="json", **kwargs
+    )
 
     data = _get_solcast(
         endpoint="tmy/radiation_and_weather",
@@ -225,7 +229,9 @@ def get_solcast_historic(
     return data, {"latitude": latitude, "longitude": longitude}
 
 
-def get_solcast_forecast(latitude, longitude, api_key, map_variables=True, **kwargs):
+def get_solcast_forecast(
+    latitude, longitude, api_key, map_variables=True, **kwargs
+):
     """Get irradiance and weather forecasts from the present time
     up to 14 days ahead.
 
@@ -284,7 +290,9 @@ def get_solcast_forecast(latitude, longitude, api_key, map_variables=True, **kwa
     pvlib.iotools.get_solcast_live
     """
 
-    params = dict(latitude=latitude, longitude=longitude, format="json", **kwargs)
+    params = dict(
+        latitude=latitude, longitude=longitude, format="json", **kwargs
+    )
 
     data = _get_solcast(
         endpoint="forecast/radiation_and_weather",
@@ -296,7 +304,9 @@ def get_solcast_forecast(latitude, longitude, api_key, map_variables=True, **kwa
     return data, {"latitude": latitude, "longitude": longitude}
 
 
-def get_solcast_live(latitude, longitude, api_key, map_variables=True, **kwargs):
+def get_solcast_live(
+    latitude, longitude, api_key, map_variables=True, **kwargs
+):
     """Get irradiance and weather estimated actuals for near real-time
     and past 7 days.
 
@@ -364,7 +374,9 @@ def get_solcast_live(latitude, longitude, api_key, map_variables=True, **kwargs)
     pvlib.iotools.get_solcast_forecast
     """
 
-    params = dict(latitude=latitude, longitude=longitude, format="json", **kwargs)
+    params = dict(
+        latitude=latitude, longitude=longitude, format="json", **kwargs
+    )
 
     data = _get_solcast(
         endpoint="live/radiation_and_weather",
@@ -391,7 +403,8 @@ def _solcast2pvlib(data):
     # move from period_end to period_middle as per pvlib convention
 
     data["period_mid"] = (
-        pd.to_datetime(data.period_end) - pd.to_timedelta(data.period.values) / 2
+        pd.to_datetime(data.period_end)
+        - pd.to_timedelta(data.period.values) / 2
     )
     data = data.set_index("period_mid").drop(columns=["period_end", "period"])
 
@@ -399,7 +412,8 @@ def _solcast2pvlib(data):
     for variable in VARIABLE_MAP:
         if variable.solcast_name in data.columns:
             data.rename(
-                columns={variable.solcast_name: variable.pvlib_name}, inplace=True
+                columns={variable.solcast_name: variable.pvlib_name},
+                inplace=True,
             )
             data[variable.pvlib_name] = data[variable.pvlib_name].apply(
                 variable.conversion

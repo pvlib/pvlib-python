@@ -531,7 +531,8 @@ def get_pandas_index(*args):
         args list.
     """
     return next(
-        (a.index for a in args if isinstance(a, (pd.DataFrame, pd.Series))), None
+        (a.index for a in args if isinstance(a, (pd.DataFrame, pd.Series))),
+        None,
     )
 
 

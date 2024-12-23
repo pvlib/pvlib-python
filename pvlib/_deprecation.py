@@ -148,7 +148,9 @@ def _generate_deprecation_message(
         removal = "soon"
     elif removal:
         if pending:
-            raise ValueError("A pending deprecation cannot have a scheduled removal")
+            raise ValueError(
+                "A pending deprecation cannot have a scheduled removal"
+            )
         removal = "in {}".format(removal)
 
     if not message:
@@ -228,14 +230,27 @@ def warn_deprecated(
                             obj_type='module')
     """
     message = "\n" + _generate_deprecation_message(
-        since, message, name, alternative, pending, obj_type, addendum, removal=removal
+        since,
+        message,
+        name,
+        alternative,
+        pending,
+        obj_type,
+        addendum,
+        removal=removal,
     )
     category = PendingDeprecationWarning if pending else _projectWarning
     warnings.warn(message, category, stacklevel=2)
 
 
 def deprecated(
-    since, message="", name="", alternative="", pending=False, addendum="", removal=""
+    since,
+    message="",
+    name="",
+    alternative="",
+    pending=False,
+    addendum="",
+    removal="",
 ):
     """
     Decorator to mark a function or a class as deprecated.

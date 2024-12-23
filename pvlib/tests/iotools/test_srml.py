@@ -21,7 +21,9 @@ def test_read_srml():
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_read_srml_remote():
-    srml.read_srml("http://solardata.uoregon.edu/download/Archive/EUPO1801.txt")
+    srml.read_srml(
+        "http://solardata.uoregon.edu/download/Archive/EUPO1801.txt"
+    )
 
 
 def test_read_srml_columns_exist():
@@ -53,8 +55,16 @@ def test_read_srml_nans_exist():
 @pytest.mark.parametrize(
     "url,year,month",
     [
-        ("http://solardata.uoregon.edu/download/Archive/EUPO1801.txt", 2018, 1),
-        ("http://solardata.uoregon.edu/download/Archive/EUPO1612.txt", 2016, 12),
+        (
+            "http://solardata.uoregon.edu/download/Archive/EUPO1801.txt",
+            2018,
+            1,
+        ),
+        (
+            "http://solardata.uoregon.edu/download/Archive/EUPO1612.txt",
+            2016,
+            12,
+        ),
     ],
 )
 @pytest.mark.remote_data
@@ -84,7 +94,9 @@ def test__map_columns(column, expected):
 def test_get_srml():
     url = "http://solardata.uoregon.edu/download/Archive/EUPO1801.txt"
     file_data = srml.read_srml(url)
-    requested, _ = srml.get_srml(station="EU", start="2018-01-01", end="2018-01-31")
+    requested, _ = srml.get_srml(
+        station="EU", start="2018-01-01", end="2018-01-31"
+    )
     assert_frame_equal(file_data, requested)
 
 

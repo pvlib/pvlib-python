@@ -106,10 +106,14 @@ def test_sandia_multi(cec_inverter_parameters):
     vdcs = pd.Series(np.linspace(0, 50, 3))
     idcs = pd.Series(np.linspace(0, 11, 3)) / 2
     pdcs = idcs * vdcs
-    pacs = inverter.sandia_multi((vdcs, vdcs), (pdcs, pdcs), cec_inverter_parameters)
+    pacs = inverter.sandia_multi(
+        (vdcs, vdcs), (pdcs, pdcs), cec_inverter_parameters
+    )
     assert_series_equal(pacs, pd.Series([-0.020000, 132.004278, 250.000000]))
     # with lists instead of tuples
-    pacs = inverter.sandia_multi([vdcs, vdcs], [pdcs, pdcs], cec_inverter_parameters)
+    pacs = inverter.sandia_multi(
+        [vdcs, vdcs], [pdcs, pdcs], cec_inverter_parameters
+    )
     assert_series_equal(pacs, pd.Series([-0.020000, 132.004278, 250.000000]))
     # with arrays instead of tuples
     pacs = inverter.sandia_multi(

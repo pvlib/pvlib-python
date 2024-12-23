@@ -4,7 +4,8 @@ from pvlib.tests import conftest
 
 
 @pytest.mark.parametrize(
-    "function_name", ["assert_index_equal", "assert_series_equal", "assert_frame_equal"]
+    "function_name",
+    ["assert_index_equal", "assert_series_equal", "assert_frame_equal"],
 )
 @pytest.mark.parametrize("pd_version", ["1.0.0", "1.1.0"])
 @pytest.mark.parametrize("check_less_precise", [True, False])

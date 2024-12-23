@@ -34,7 +34,9 @@ import matplotlib.pyplot as plt
 PVLIB_DIR = pvlib.__path__[0]
 DATA_FILE = os.path.join(PVLIB_DIR, "data", "723170TYA.CSV")
 
-tmy, metadata = iotools.read_tmy3(DATA_FILE, coerce_year=1990, map_variables=True)
+tmy, metadata = iotools.read_tmy3(
+    DATA_FILE, coerce_year=1990, map_variables=True
+)
 
 weather_data = tmy[["ghi", "dhi", "dni", "temp_air", "wind_speed"]]
 
@@ -114,8 +116,12 @@ mc.run_model_from_poa(POA_irradiance_new_perez)
 ac_power_new_perez = mc.results.ac
 
 start, stop = "1990-05-05 06:00:00", "1990-05-05 19:00:00"
-plt.plot(ac_power_default.loc[start:stop], label="Default Composite Perez Model")
-plt.plot(ac_power_new_perez.loc[start:stop], label="Cape Canaveral Perez Model")
+plt.plot(
+    ac_power_default.loc[start:stop], label="Default Composite Perez Model"
+)
+plt.plot(
+    ac_power_new_perez.loc[start:stop], label="Cape Canaveral Perez Model"
+)
 plt.xticks(rotation=90)
 plt.ylabel("AC Power ($W$)")
 plt.legend()

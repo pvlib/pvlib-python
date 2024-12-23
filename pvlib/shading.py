@@ -234,7 +234,9 @@ def sky_diffuse_passias(masking_angle):
     return 1 - cosd(masking_angle / 2) ** 2
 
 
-def projected_solar_zenith_angle(solar_zenith, solar_azimuth, axis_tilt, axis_azimuth):
+def projected_solar_zenith_angle(
+    solar_zenith, solar_azimuth, axis_tilt, axis_azimuth
+):
     r"""
     Calculate projected solar zenith angle in degrees.
 
@@ -680,12 +682,14 @@ def direct_martinez(
         :doi:`10.1016/j.solmat.2010.07.029`.
     """  # Contributed by Echedey Luis, 2024
     beam_factor = (  # Eq. (6) of [1]
-        (1 - shaded_fraction) * (1 - np.ceil(shaded_blocks) / (1 + total_blocks))
+        (1 - shaded_fraction)
+        * (1 - np.ceil(shaded_blocks) / (1 + total_blocks))
     )
     return (  # Eq. (8) of [1]
         1
         - (
-            poa_direct * beam_factor + (poa_global - poa_direct)  # diffuse and albedo
+            poa_direct * beam_factor
+            + (poa_global - poa_direct)  # diffuse and albedo
         )
         / poa_global
     )

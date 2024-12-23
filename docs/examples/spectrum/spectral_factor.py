@@ -109,8 +109,12 @@ module = pvlib.pvsystem.retrieve_sam("SandiaMod")["LG_LG290N1C_G3__2013_"]
 #
 # Calculate M using the three models for an mc-Si PV module.
 m_sapm = pvlib.spectrum.spectral_factor_sapm(airmass_absolute, module)
-m_pvspec = pvlib.spectrum.spectral_factor_pvspec(airmass_absolute, kc, "multisi")
-m_fs = pvlib.spectrum.spectral_factor_firstsolar(w, airmass_absolute, "multisi")
+m_pvspec = pvlib.spectrum.spectral_factor_pvspec(
+    airmass_absolute, kc, "multisi"
+)
+m_fs = pvlib.spectrum.spectral_factor_firstsolar(
+    w, airmass_absolute, "multisi"
+)
 
 df_results = pd.concat([m_sapm, m_pvspec, m_fs], axis=1)
 df_results.columns = ["SAPM", "PVSPEC", "FS"]
@@ -127,7 +131,9 @@ df_results.plot(ax=ax1, legend=False)
 ax1.set_xlabel("Day")
 ax1.set_ylabel("Spectral mismatch (-)")
 ax1.set_ylim(0.85, 1.15)
-ax1.legend(loc="upper center", frameon=False, ncols=3, bbox_to_anchor=(0.5, 1.3))
+ax1.legend(
+    loc="upper center", frameon=False, ncols=3, bbox_to_anchor=(0.5, 1.3)
+)
 
 # We can also zoom in one one day, for example August 2nd.
 df_results.loc["2001-08-02"].plot(ax=ax2, legend=False)

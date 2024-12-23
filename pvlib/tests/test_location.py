@@ -29,7 +29,13 @@ def test_location_all():
 
 @pytest.mark.parametrize(
     "tz",
-    [pytz.timezone("US/Arizona"), "America/Phoenix", -7, -7.0, datetime.timezone.utc],
+    [
+        pytz.timezone("US/Arizona"),
+        "America/Phoenix",
+        -7,
+        -7.0,
+        datetime.timezone.utc,
+    ],
 )
 def test_location_tz(tz):
     Location(32.2, -111, tz)
@@ -98,7 +104,9 @@ def test_get_clearsky(mocker, times):
 
 def test_get_clearsky_ineichen_supply_linke(mocker):
     tus = Location(32.2, -111, "US/Arizona", 700)
-    times = pd.date_range(start="2014-06-24-0700", end="2014-06-25-0700", freq="3h")
+    times = pd.date_range(
+        start="2014-06-24-0700", end="2014-06-25-0700", freq="3h"
+    )
     mocker.spy(pvlib.clearsky, "ineichen")
     out = tus.get_clearsky(times, linke_turbidity=3)
     # we only care that the LT is passed in this test
@@ -116,7 +124,9 @@ def test_get_clearsky_haurwitz(times):
     tus = Location(32.2, -111, "US/Arizona", 700, "Tucson")
     clearsky = tus.get_clearsky(times, model="haurwitz")
     expected = pd.DataFrame(
-        data=np.array([[0.0], [242.30085588], [559.38247117], [384.6873791], [0.0]]),
+        data=np.array(
+            [[0.0], [242.30085588], [559.38247117], [384.6873791], [0.0]]
+        ),
         columns=["ghi"],
         index=times,
     )
@@ -171,7 +181,9 @@ def test_get_clearsky_simplified_solis_apparent_elevation(times):
 
 def test_get_clearsky_simplified_solis_dni_extra(times):
     tus = Location(32.2, -111, "US/Arizona", 700, "Tucson")
-    clearsky = tus.get_clearsky(times, model="simplified_solis", dni_extra=1370)
+    clearsky = tus.get_clearsky(
+        times, model="simplified_solis", dni_extra=1370
+    )
     expected = pd.DataFrame(
         data=np.array(
             [
@@ -191,7 +203,9 @@ def test_get_clearsky_simplified_solis_dni_extra(times):
 
 def test_get_clearsky_simplified_solis_pressure(times):
     tus = Location(32.2, -111, "US/Arizona", 700, "Tucson")
-    clearsky = tus.get_clearsky(times, model="simplified_solis", pressure=95000)
+    clearsky = tus.get_clearsky(
+        times, model="simplified_solis", pressure=95000
+    )
     expected = pd.DataFrame(
         data=np.array(
             [
@@ -346,7 +360,9 @@ def test_Location___repr__():
 
 @requires_ephem
 def test_get_sun_rise_set_transit(golden):
-    times = pd.DatetimeIndex(["2015-01-01 07:00:00", "2015-01-01 23:00:00"], tz="MST")
+    times = pd.DatetimeIndex(
+        ["2015-01-01 07:00:00", "2015-01-01 23:00:00"], tz="MST"
+    )
     result = golden.get_sun_rise_set_transit(times, method="pyephem")
     assert all(result.columns == ["sunrise", "sunset", "transit"])
 
@@ -357,13 +373,18 @@ def test_get_sun_rise_set_transit(golden):
     declination = declination_spencer71(dayofyear)
     eot = equation_of_time_spencer71(dayofyear)
     result = golden.get_sun_rise_set_transit(
-        times, method="geometric", declination=declination, equation_of_time=eot
+        times,
+        method="geometric",
+        declination=declination,
+        equation_of_time=eot,
     )
     assert all(result.columns == ["sunrise", "sunset", "transit"])
 
 
 def test_get_sun_rise_set_transit_valueerror(golden):
-    times = pd.DatetimeIndex(["2015-01-01 07:00:00", "2015-01-01 23:00:00"], tz="MST")
+    times = pd.DatetimeIndex(
+        ["2015-01-01 07:00:00", "2015-01-01 23:00:00"], tz="MST"
+    )
     with pytest.raises(ValueError):
         golden.get_sun_rise_set_transit(times, method="eyeball")
 

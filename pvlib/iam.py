@@ -177,8 +177,12 @@ def physical(aoi, n=1.526, K=4.0, L=0.002, *, n_ar=None):
 
     # reflectance of s-, p-polarized, and normal light by the first interface
     with np.errstate(divide="ignore", invalid="ignore"):
-        rho12_s = ((n1costheta1 - n2costheta2) / (n1costheta1 + n2costheta2)) ** 2
-        rho12_p = ((n1costheta2 - n2costheta1) / (n1costheta2 + n2costheta1)) ** 2
+        rho12_s = (
+            (n1costheta1 - n2costheta2) / (n1costheta1 + n2costheta2)
+        ) ** 2
+        rho12_p = (
+            (n1costheta2 - n2costheta1) / (n1costheta2 + n2costheta1)
+        ) ** 2
 
     rho12_0 = ((n1 - n2) / (n1 + n2)) ** 2
 
@@ -196,8 +200,12 @@ def physical(aoi, n=1.526, K=4.0, L=0.002, *, n_ar=None):
         n3costheta3 = n3 * costheta
 
         # reflectance by the second interface
-        rho23_s = ((n2costheta2 - n3costheta3) / (n2costheta2 + n3costheta3)) ** 2
-        rho23_p = ((n2costheta3 - n3costheta2) / (n2costheta3 + n3costheta2)) ** 2
+        rho23_s = (
+            (n2costheta2 - n3costheta3) / (n2costheta2 + n3costheta3)
+        ) ** 2
+        rho23_p = (
+            (n2costheta3 - n3costheta2) / (n2costheta3 + n3costheta2)
+        ) ** 2
         rho23_0 = ((n2 - n3) / (n2 + n3)) ** 2
 
         # transmittance through the coating, including internal reflections
@@ -477,10 +485,13 @@ def interp(aoi, theta_ref, iam_ref, method="linear", normalize=True):
 
     if np.any(np.less(iam_ref, 0)):
         raise ValueError(
-            "Negative value(s) found in 'iam_ref'. " "This is not physically possible."
+            "Negative value(s) found in 'iam_ref'. "
+            "This is not physically possible."
         )
 
-    interpolator = interp1d(theta_ref, iam_ref, kind=method, fill_value="extrapolate")
+    interpolator = interp1d(
+        theta_ref, iam_ref, kind=method, fill_value="extrapolate"
+    )
     aoi_input = aoi
 
     aoi = np.asanyarray(aoi)
@@ -952,11 +963,17 @@ def schlick_diffuse(surface_tilt):
 
 def _get_model(model_name):
     # check that model is implemented
-    model_dict = {"ashrae": ashrae, "martin_ruiz": martin_ruiz, "physical": physical}
+    model_dict = {
+        "ashrae": ashrae,
+        "martin_ruiz": martin_ruiz,
+        "physical": physical,
+    }
     try:
         model = model_dict[model_name]
     except KeyError:
-        raise NotImplementedError(f"The {model_name} model has not been " "implemented")
+        raise NotImplementedError(
+            f"The {model_name} model has not been " "implemented"
+        )
 
     return model
 
@@ -1065,12 +1082,18 @@ def _minimize(residual_function, guess, bounds, xtol):
         options = None
     with np.errstate(invalid="ignore"):
         optimize_result = minimize(
-            residual_function, guess, method="powell", bounds=bounds, options=options
+            residual_function,
+            guess,
+            method="powell",
+            bounds=bounds,
+            options=options,
         )
 
     if not optimize_result.success:
         try:
-            message = "Optimizer exited unsuccessfully:" + optimize_result.message
+            message = (
+                "Optimizer exited unsuccessfully:" + optimize_result.message
+            )
         except AttributeError:
             message = "Optimizer exited unsuccessfully: \
                        No message explaining the failure was returned. \
@@ -1100,7 +1123,12 @@ def _process_return(target_name, optimize_result):
 
 
 def convert(
-    source_name, source_params, target_name, weight=_sin_weight, fix_n=True, xtol=None
+    source_name,
+    source_params,
+    target_name,
+    weight=_sin_weight,
+    fix_n=True,
+    xtol=None,
 ):
     """
     Convert a source IAM model to a target IAM model.
@@ -1291,7 +1319,9 @@ def fit(measured_aoi, measured_iam, model_name, weight=_sin_weight, xtol=None):
 
         def residual_function(target_params):
             L, n = target_params
-            return _residual(measured_aoi, measured_iam, target, [n, 4, L], weight)
+            return _residual(
+                measured_aoi, measured_iam, target, [n, 4, L], weight
+            )
 
     # otherwise, target_name is martin_ruiz or ashrae
     else:
@@ -1299,7 +1329,9 @@ def fit(measured_aoi, measured_iam, model_name, weight=_sin_weight, xtol=None):
         guess = [0.05]
 
         def residual_function(target_param):
-            return _residual(measured_aoi, measured_iam, target, target_param, weight)
+            return _residual(
+                measured_aoi, measured_iam, target, target_param, weight
+            )
 
     optimize_result = _minimize(residual_function, guess, bounds, xtol)
 

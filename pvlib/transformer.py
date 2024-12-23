@@ -5,7 +5,9 @@ Transformer models calculate AC power output and losses at a given input power.
 """
 
 
-def simple_efficiency(input_power, no_load_loss, load_loss, transformer_rating):
+def simple_efficiency(
+    input_power, no_load_loss, load_loss, transformer_rating
+):
     r"""
     Calculate the power at the output terminal of the transformer
     after taking into account efficiency using a simple calculation.

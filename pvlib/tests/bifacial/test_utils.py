@@ -29,7 +29,9 @@ def test_system_fixed_tilt():
     c00 = (-2 - sqr3) / np.sqrt(1.25**2 + (2 + sqr3) ** 2)  # right edge row -1
     c01 = -sqr3 / np.sqrt(1.25**2 + sqr3**2)  # right edge row 0
     c02 = sqr3 / np.sqrt(0.75**2 + sqr3**2)  # left edge of row 0
-    c03 = (2 - sqr3) / np.sqrt(1.25**2 + (2 - sqr3) ** 2)  # right edge of row 1
+    c03 = (2 - sqr3) / np.sqrt(
+        1.25**2 + (2 - sqr3) ** 2
+    )  # right edge of row 1
     vf_0 = 0.5 * (c03 - c02 + c01 - c00)  # vf at point 0
     c10 = (-3 - sqr3) / np.sqrt(1.25**2 + (3 + sqr3) ** 2)  # right edge row -1
     c11 = (-1 - sqr3) / np.sqrt(1.25**2 + (1 + sqr3) ** 2)  # right edge row 0
@@ -78,7 +80,11 @@ def test__unshaded_ground_fraction(
     assert np.allclose(f_sky_beam_f, expected)
     # backside, should be the same as frontside
     f_sky_beam_b = utils._unshaded_ground_fraction(
-        180.0 - surface_tilt, surface_azimuth - 180.0, solar_zenith, solar_azimuth, gcr
+        180.0 - surface_tilt,
+        surface_azimuth - 180.0,
+        solar_zenith,
+        solar_azimuth,
+        gcr,
     )
     assert np.allclose(f_sky_beam_b, expected)
 
@@ -92,7 +98,12 @@ def test__vf_ground_sky_2d(test_system_fixed_tilt):
     assert np.allclose(vfs, vfs_gnd_sky, rtol=0.1)  # middle point vf is off
     # test with singleton x
     vf = utils.vf_ground_sky_2d(
-        ts["rotation"], ts["gcr"], pts[0], ts["pitch"], ts["height"], max_rows=1
+        ts["rotation"],
+        ts["gcr"],
+        pts[0],
+        ts["pitch"],
+        ts["height"],
+        max_rows=1,
     )
     assert np.isclose(vf, vfs_gnd_sky[0])
 
@@ -177,14 +188,18 @@ def test_vf_ground_2d_integ(test_system_fixed_tilt):
     ts, _, _ = test_system_fixed_tilt
     # with float input, check end position
     with np.errstate(invalid="ignore"):
-        vf = utils.vf_row_ground_2d_integ(ts["surface_tilt"], ts["gcr"], 0.0, 0.0)
+        vf = utils.vf_row_ground_2d_integ(
+            ts["surface_tilt"], ts["gcr"], 0.0, 0.0
+        )
     expected = utils.vf_row_ground_2d(ts["surface_tilt"], ts["gcr"], 0.0)
     assert np.isclose(vf, expected)
     # with array input
     fx0 = np.array([0.0, 0.5])
     fx1 = np.array([0.0, 0.8])
     with np.errstate(invalid="ignore"):
-        vf = utils.vf_row_ground_2d_integ(ts["surface_tilt"], ts["gcr"], fx0, fx1)
+        vf = utils.vf_row_ground_2d_integ(
+            ts["surface_tilt"], ts["gcr"], fx0, fx1
+        )
     phi = ground_angle(ts["surface_tilt"], ts["gcr"], fx0[0])
     y0 = 0.5 * (1 - cosd(phi - ts["surface_tilt"]))
     x = np.arange(fx0[1], fx1[1], 1e-4)

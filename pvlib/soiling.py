@@ -88,7 +88,8 @@ def hsu(
     dt_sec = np.append(dt_diff[0], dt_diff).astype("float64")
 
     horiz_mass_rate = (
-        pm2_5 * depo_veloc["2_5"] + np.maximum(pm10 - pm2_5, 0.0) * depo_veloc["10"]
+        pm2_5 * depo_veloc["2_5"]
+        + np.maximum(pm10 - pm2_5, 0.0) * depo_veloc["10"]
     ) * dt_sec
     tilted_mass_rate = horiz_mass_rate * cosd(surface_tilt)  # assuming no rain
 
@@ -196,7 +197,9 @@ def kimber(
     day_fraction = timestep_interval / np.timedelta64(24, "h")
 
     # accumulate rainfall
-    accumulated_rainfall = rainfall.rolling(rain_accum_period, closed="right").sum()
+    accumulated_rainfall = rainfall.rolling(
+        rain_accum_period, closed="right"
+    ).sum()
 
     # soiling rate
     soiling = np.ones_like(rainfall.values) * soiling_loss_rate * day_fraction

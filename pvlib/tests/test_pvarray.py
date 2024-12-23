@@ -73,5 +73,7 @@ def test_huld():
     expected = pd.Series([pdc0, exp_100, 0])
     res = pvarray.huld(eff_irr, tm, pdc0, k=(1, 1, 1, 1, 1, 1))
     assert_series_equal(res, expected)
-    with pytest.raises(ValueError, match="Either k or cell_type must be specified"):
+    with pytest.raises(
+        ValueError, match="Either k or cell_type must be specified"
+    ):
         res = pvarray.huld(1000, 25, 100)

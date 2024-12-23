@@ -167,13 +167,17 @@ def singleaxis(
 
         # backtrack angle using [1], Eq. 14
         with np.errstate(invalid="ignore"):
-            omega_correction = np.degrees(-np.sign(omega_ideal) * np.arccos(temp))
+            omega_correction = np.degrees(
+                -np.sign(omega_ideal) * np.arccos(temp)
+            )
 
         # NOTE: in the middle of the day, arccos(temp) is out of range because
         # there's no row-to-row shade to avoid, & backtracking is unnecessary
         # [1], Eqs. 15-16
         with np.errstate(invalid="ignore"):
-            tracker_theta = omega_ideal + np.where(temp < 1, omega_correction, 0)
+            tracker_theta = omega_ideal + np.where(
+                temp < 1, omega_correction, 0
+            )
     else:
         tracker_theta = omega_ideal
 
@@ -251,7 +255,9 @@ def calc_surface_orientation(tracker_theta, axis_tilt=0, axis_azimuth=0):
 
         # clip(..., -1, +1) to prevent arcsin(1 + epsilon) issues:
         azimuth_delta = asind(
-            np.clip(sind(tracker_theta) / sind(surface_tilt), a_min=-1, a_max=1)
+            np.clip(
+                sind(tracker_theta) / sind(surface_tilt), a_min=-1, a_max=1
+            )
         )
         # Combine Eqs 2, 3, and 4:
         azimuth_delta = np.where(
@@ -363,7 +369,8 @@ def _calc_beta_c(v, dg, ba):
     """
     vnorm = np.sqrt(np.dot(v, v))
     beta_c = np.arcsin(
-        ((v[0] * cosd(dg) - v[1] * sind(dg)) * sind(ba) + v[2] * cosd(ba)) / vnorm
+        ((v[0] * cosd(dg) - v[1] * sind(dg)) * sind(ba) + v[2] * cosd(ba))
+        / vnorm
     )
     return beta_c
 

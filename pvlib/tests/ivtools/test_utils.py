@@ -27,7 +27,21 @@ def ivcurve():
         ]
     )
     current = np.array(
-        [7.0, 6.0, 6.0, 5.0, 4.0, 3.0, 2.7, 2.5, np.nan, 0.5, -1.0, 0.0, np.nan]
+        [
+            7.0,
+            6.0,
+            6.0,
+            5.0,
+            4.0,
+            3.0,
+            2.7,
+            2.5,
+            np.nan,
+            0.5,
+            -1.0,
+            0.0,
+            np.nan,
+        ]
     )
     return voltage, current
 

@@ -139,7 +139,9 @@ def test__fit_sandia_cocontent_fail():
     # tests for ValueError
     exc_text = "voltage and current should have the same length"
     with pytest.raises(ValueError, match=exc_text):
-        sde._fit_sandia_cocontent(np.array([0.0, 1.0, 2.0]), np.array([4.0, 3.0]), 2.0)
+        sde._fit_sandia_cocontent(
+            np.array([0.0, 1.0, 2.0]), np.array([4.0, 3.0]), 2.0
+        )
     exc_text = "at least 6 voltage points are required; ~50 are recommended"
     with pytest.raises(ValueError, match=exc_text):
         sde._fit_sandia_cocontent(

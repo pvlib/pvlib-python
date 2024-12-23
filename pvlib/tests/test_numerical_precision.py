@@ -81,7 +81,9 @@ def generate_numerical_precision():  # pragma: no cover
     grad2i = -c / nnsvt
     grad2v = -grad2i * rs
     grad2p = (
-        grad_v * grad + v * (grad2i / grad_v - grad_i * grad2v / grad_v**2) + grad_i
+        grad_v * grad
+        + v * (grad2i / grad_v - grad_i * grad2v / grad_v**2)
+        + grad_i
     )
     # generate exact values
     data = dict(zip((il, io, rs, rsh, nnsvt), ARGS))

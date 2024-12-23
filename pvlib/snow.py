@@ -325,13 +325,19 @@ def loss_townsend(
     snow_events_prev = np.roll(snow_events, 1)
 
     effective_snow = _townsend_effective_snow(snow_total_inches, snow_events)
-    effective_snow_prev = _townsend_effective_snow(snow_total_prev, snow_events_prev)
-    effective_snow_weighted = 1 / 3 * effective_snow_prev + 2 / 3 * effective_snow
+    effective_snow_prev = _townsend_effective_snow(
+        snow_total_prev, snow_events_prev
+    )
+    effective_snow_weighted = (
+        1 / 3 * effective_snow_prev + 2 / 3 * effective_snow
+    )
 
     # the lower limit of 0.1 in^2 is per private communication with the model's
     # author. CWH 1/30/2023
     lower_edge_distance = np.clip(
-        lower_edge_height_inches**2 - effective_snow_weighted**2, a_min=0.1, a_max=None
+        lower_edge_height_inches**2 - effective_snow_weighted**2,
+        a_min=0.1,
+        a_max=None,
     )
     gamma = (
         slant_height_inches

@@ -80,7 +80,9 @@ def test_get_absolute_airmass():
 def test_gueymard94_pw():
     temp_air = np.array([0, 20, 40])
     relative_humidity = np.array([0, 30, 100])
-    temps_humids = np.array(list(itertools.product(temp_air, relative_humidity)))
+    temps_humids = np.array(
+        list(itertools.product(temp_air, relative_humidity))
+    )
     pws = atmosphere.gueymard94_pw(temps_humids[:, 0], temps_humids[:, 1])
 
     expected = np.array(
@@ -147,14 +149,20 @@ def test_rh_from_tdew():
     temperature_ambient = pd.Series([20.0, 25.0, 30.0, 15.0, 10.0])
 
     # Calculate relative humidity using pandas series as input
-    rh_series = atmosphere.rh_from_tdew(temp_air=temperature_ambient, temp_dew=dewpoint)
+    rh_series = atmosphere.rh_from_tdew(
+        temp_air=temperature_ambient, temp_dew=dewpoint
+    )
 
-    pd.testing.assert_series_equal(rh_series, relative_humidity_wmo, check_names=False)
+    pd.testing.assert_series_equal(
+        rh_series, relative_humidity_wmo, check_names=False
+    )
 
     # Calulate relative humidity using pandas series as input
     # with AEKR coefficients
     rh_series_aekr = atmosphere.rh_from_tdew(
-        temp_air=temperature_ambient, temp_dew=dewpoint, coeff=(6.1094, 17.625, 243.04)
+        temp_air=temperature_ambient,
+        temp_dew=dewpoint,
+        coeff=(6.1094, 17.625, 243.04),
     )
 
     pd.testing.assert_series_equal(
@@ -207,7 +215,9 @@ def test_tdew_from_rh():
         temp_air=temperature_ambient, relative_humidity=relative_humidity_wmo
     )
 
-    pd.testing.assert_series_equal(dewpoint_series, dewpoint, check_names=False)
+    pd.testing.assert_series_equal(
+        dewpoint_series, dewpoint, check_names=False
+    )
 
     # test as series with AEKR coefficients
     dewpoint_series_aekr = atmosphere.tdew_from_rh(
@@ -216,7 +226,9 @@ def test_tdew_from_rh():
         coeff=(6.1094, 17.625, 243.04),
     )
 
-    pd.testing.assert_series_equal(dewpoint_series_aekr, dewpoint, check_names=False)
+    pd.testing.assert_series_equal(
+        dewpoint_series_aekr, dewpoint, check_names=False
+    )
 
     # test as numpy array
     dewpoint_array = atmosphere.tdew_from_rh(
@@ -237,7 +249,8 @@ def test_tdew_from_rh():
 
 def test_first_solar_spectral_correction_deprecated():
     with pytest.warns(
-        pvlibDeprecationWarning, match="Use pvlib.spectrum.spectral_factor_firstsolar"
+        pvlibDeprecationWarning,
+        match="Use pvlib.spectrum.spectral_factor_firstsolar",
     ):
         atmosphere.first_solar_spectral_correction(1, 1, "cdte")
 
@@ -314,7 +327,9 @@ def test_windspeed_powerlaw_ndarray(windspeeds_data_powerlaw):
         windspeeds_data_powerlaw["height_desired"],
         surface_type="unstable_air_above_open_water_surface",
     )
-    assert_allclose(windspeeds_data_powerlaw["wind_calc"].to_numpy(), result_surface)
+    assert_allclose(
+        windspeeds_data_powerlaw["wind_calc"].to_numpy(), result_surface
+    )
     # test wind speed estimation by passing in the exponent corresponding
     # to the surface_type above
     result_exponent = atmosphere.windspeed_powerlaw(
@@ -323,7 +338,9 @@ def test_windspeed_powerlaw_ndarray(windspeeds_data_powerlaw):
         windspeeds_data_powerlaw["height_desired"],
         exponent=0.06,
     )
-    assert_allclose(windspeeds_data_powerlaw["wind_calc"].to_numpy(), result_exponent)
+    assert_allclose(
+        windspeeds_data_powerlaw["wind_calc"].to_numpy(), result_exponent
+    )
 
 
 def test_windspeed_powerlaw_series(windspeeds_data_powerlaw):
@@ -341,7 +358,8 @@ def test_windspeed_powerlaw_series(windspeeds_data_powerlaw):
 def test_windspeed_powerlaw_invalid():
     with pytest.raises(
         ValueError,
-        match="Either a 'surface_type' or an " "'exponent' parameter must be given",
+        match="Either a 'surface_type' or an "
+        "'exponent' parameter must be given",
     ):
         # no exponent or surface_type given
         atmosphere.windspeed_powerlaw(
@@ -349,7 +367,8 @@ def test_windspeed_powerlaw_invalid():
         )
     with pytest.raises(
         ValueError,
-        match="Either a 'surface_type' or an " "'exponent' parameter must be given",
+        match="Either a 'surface_type' or an "
+        "'exponent' parameter must be given",
     ):
         # no exponent or surface_type given
         atmosphere.windspeed_powerlaw(

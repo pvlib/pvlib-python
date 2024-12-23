@@ -13,7 +13,9 @@ from scipy.optimize import curve_fit
 from scipy.special import exp10
 
 
-def pvefficiency_adr(effective_irradiance, temp_cell, k_a, k_d, tc_d, k_rs, k_rsh):
+def pvefficiency_adr(
+    effective_irradiance, temp_cell, k_a, k_d, tc_d, k_rs, k_rsh
+):
     """
     Calculate PV module efficiency using the ADR model.
 
@@ -236,8 +238,22 @@ def _infer_k_huld(cell_type, pdc0):
     # multiplied by pdc0
     huld_params = {
         "csi": (-0.017237, -0.040465, -0.004702, 0.000149, 0.000170, 0.000005),
-        "cis": (-0.005554, -0.038724, -0.003723, -0.000905, -0.001256, 0.000001),
-        "cdte": (-0.046689, -0.072844, -0.002262, 0.000276, 0.000159, -0.000006),
+        "cis": (
+            -0.005554,
+            -0.038724,
+            -0.003723,
+            -0.000905,
+            -0.001256,
+            0.000001,
+        ),
+        "cdte": (
+            -0.046689,
+            -0.072844,
+            -0.002262,
+            0.000276,
+            0.000159,
+            -0.000006,
+        ),
     }
     k = tuple([x * pdc0 for x in huld_params[cell_type.lower()]])
     return k

@@ -96,7 +96,10 @@ orientation = tracking.singleaxis(
 )  # a common ground coverage ratio
 
 poa_irradiance = calculate_poa(
-    tmy, solar_position, orientation["surface_tilt"], orientation["surface_azimuth"]
+    tmy,
+    solar_position,
+    orientation["surface_tilt"],
+    orientation["surface_azimuth"],
 )
 df_monthly["SAT-0.4"] = poa_irradiance.resample("m").sum()
 

@@ -59,7 +59,9 @@ class Location:
     pvlib.pvsystem.PVSystem
     """
 
-    def __init__(self, latitude, longitude, tz="UTC", altitude=None, name=None):
+    def __init__(
+        self, latitude, longitude, tz="UTC", altitude=None, name=None
+    ):
         self.latitude = latitude
         self.longitude = longitude
 
@@ -172,7 +174,9 @@ class Location:
 
         return new_object
 
-    def get_solarposition(self, times, pressure=None, temperature=12, **kwargs):
+    def get_solarposition(
+        self, times, pressure=None, temperature=12, **kwargs
+    ):
         """
         Uses the :py:func:`pvlib.solarposition.get_solarposition` function
         to calculate the solar zenith, azimuth, etc. at this location.
@@ -209,7 +213,12 @@ class Location:
         )
 
     def get_clearsky(
-        self, times, model="ineichen", solar_position=None, dni_extra=None, **kwargs
+        self,
+        times,
+        model="ineichen",
+        solar_position=None,
+        dni_extra=None,
+        **kwargs,
     ):
         """
         Calculate the clear sky estimates of GHI, DNI, and/or DHI
@@ -281,7 +290,10 @@ class Location:
             cs = clearsky.haurwitz(apparent_zenith)
         elif model == "simplified_solis":
             cs = clearsky.simplified_solis(
-                apparent_elevation, pressure=pressure, dni_extra=dni_extra, **kwargs
+                apparent_elevation,
+                pressure=pressure,
+                dni_extra=dni_extra,
+                **kwargs,
             )
         else:
             raise ValueError(
@@ -291,7 +303,9 @@ class Location:
 
         return cs
 
-    def get_airmass(self, times=None, solar_position=None, model="kastenyoung1989"):
+    def get_airmass(
+        self, times=None, solar_position=None, model="kastenyoung1989"
+    ):
         """
         Calculate the relative and absolute airmass.
 
@@ -332,7 +346,9 @@ class Location:
         airmass_relative = atmosphere.get_relative_airmass(zenith, model)
 
         pressure = atmosphere.alt2pres(self.altitude)
-        airmass_absolute = atmosphere.get_absolute_airmass(airmass_relative, pressure)
+        airmass_absolute = atmosphere.get_absolute_airmass(
+            airmass_relative, pressure
+        )
 
         airmass = pd.DataFrame(index=solar_position.index)
         airmass["airmass_relative"] = airmass_relative

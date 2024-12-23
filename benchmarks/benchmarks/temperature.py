@@ -21,7 +21,9 @@ class SAPM:
         if Version(pvlib.__version__) >= Version("0.7.0"):
             kwargs = pvlib.temperature.TEMPERATURE_MODEL_PARAMETERS["sapm"]
             kwargs = kwargs["open_rack_glass_glass"]
-            self.sapm_cell_wrapper = partial(pvlib.temperature.sapm_cell, **kwargs)
+            self.sapm_cell_wrapper = partial(
+                pvlib.temperature.sapm_cell, **kwargs
+            )
         else:
             sapm_celltemp = pvlib.pvsystem.sapm_celltemp
 

@@ -28,7 +28,9 @@ from pvlib._deprecation import pvlibDeprecationWarning
 @pytest.fixture
 def times():
     # must include night values
-    return pd.date_range(start="20140624", freq="6h", periods=4, tz="US/Arizona")
+    return pd.date_range(
+        start="20140624", freq="6h", periods=4, tz="US/Arizona"
+    )
 
 
 @pytest.fixture
@@ -101,7 +103,12 @@ def ephem_data(times):
 @pytest.fixture
 def dni_et():
     return np.array(
-        [1321.1655834833093, 1321.1655834833093, 1321.1655834833093, 1321.1655834833093]
+        [
+            1321.1655834833093,
+            1321.1655834833093,
+            1321.1655834833093,
+            1321.1655834833093,
+        ]
     )
 
 
@@ -135,7 +142,8 @@ value = 1383.636203
     ],
 )
 @pytest.mark.parametrize(
-    "method", ["asce", "spencer", "nrel", pytest.param("pyephem", marks=requires_ephem)]
+    "method",
+    ["asce", "spencer", "nrel", pytest.param("pyephem", marks=requires_ephem)],
 )
 def test_get_extra_radiation(testval, expected, method):
     out = irradiance.get_extra_radiation(testval, method=method)
@@ -157,7 +165,9 @@ def test_get_extra_radiation_nrel_numba(times):
         )
         # and reset to no-numba state
         irradiance.get_extra_radiation(times, method="nrel")
-    assert_allclose(result, [1322.332316, 1322.296282, 1322.261205, 1322.227091])
+    assert_allclose(
+        result, [1322.332316, 1322.296282, 1322.261205, 1322.227091]
+    )
 
 
 def test_get_extra_radiation_invalid():
@@ -176,7 +186,9 @@ def test_get_ground_diffuse_simple_series(irrad_data):
 
 
 def test_get_ground_diffuse_albedo_0(irrad_data):
-    ground_irrad = irradiance.get_ground_diffuse(40, irrad_data["ghi"], albedo=0)
+    ground_irrad = irradiance.get_ground_diffuse(
+        40, irrad_data["ghi"], albedo=0
+    )
     assert (0 == ground_irrad).all()
 
 
@@ -192,11 +204,15 @@ def test_get_ground_diffuse_albedo_series(times):
 
 def test_grounddiffuse_albedo_invalid_surface(irrad_data):
     with pytest.raises(KeyError):
-        irradiance.get_ground_diffuse(40, irrad_data["ghi"], surface_type="invalid")
+        irradiance.get_ground_diffuse(
+            40, irrad_data["ghi"], surface_type="invalid"
+        )
 
 
 def test_get_ground_diffuse_albedo_surface(irrad_data):
-    result = irradiance.get_ground_diffuse(40, irrad_data["ghi"], surface_type="sand")
+    result = irradiance.get_ground_diffuse(
+        40, irrad_data["ghi"], surface_type="sand"
+    )
     assert_allclose(result, [0, 3.731058, 48.778813, 12.035025], atol=1e-4)
 
 
@@ -320,9 +336,15 @@ def test_haydavies_components(irrad_data, ephem_data, dni_et):
         ephem_data["azimuth"].values[-1],
         return_components=True,
     )
-    assert_allclose(result["sky_diffuse"], expected["sky_diffuse"].iloc[-1], atol=1e-4)
-    assert_allclose(result["isotropic"], expected["isotropic"].iloc[-1], atol=1e-4)
-    assert_allclose(result["circumsolar"], expected["circumsolar"].iloc[-1], atol=1e-4)
+    assert_allclose(
+        result["sky_diffuse"], expected["sky_diffuse"].iloc[-1], atol=1e-4
+    )
+    assert_allclose(
+        result["isotropic"], expected["isotropic"].iloc[-1], atol=1e-4
+    )
+    assert_allclose(
+        result["circumsolar"], expected["circumsolar"].iloc[-1], atol=1e-4
+    )
     assert_allclose(result["horizon"], expected["horizon"].iloc[-1], atol=1e-4)
     assert isinstance(result, dict)
 
@@ -363,7 +385,8 @@ def test_perez(irrad_data, ephem_data, dni_et, relative_airmass):
         relative_airmass,
     )
     expected = pd.Series(
-        np.array([0.0, 31.46046871, np.nan, 45.45539877]), index=irrad_data.index
+        np.array([0.0, 31.46046871, np.nan, 45.45539877]),
+        index=irrad_data.index,
     )
     assert_series_equal(out, expected, check_less_precise=2)
 
@@ -442,7 +465,9 @@ def test_perez_components(irrad_data, ephem_data, dni_et, relative_airmass):
     assert_series_equal(sum_components, expected_for_sum, check_less_precise=2)
 
 
-def test_perez_driesse_components(irrad_data, ephem_data, dni_et, relative_airmass):
+def test_perez_driesse_components(
+    irrad_data, ephem_data, dni_et, relative_airmass
+):
     dni = irrad_data["dni"].copy()
     dni.iloc[2] = np.nan
     out = irradiance.perez_driesse(
@@ -499,7 +524,14 @@ def test_perez_negative_horizon():
                 [1.869315, 1.859981, 2.044429, 2.544943, 3.900136],
             ]
         ).T,
-        columns=["dni", "dhi", "solar_zenith", "solar_azimuth", "dni_extra", "airmass"],
+        columns=[
+            "dni",
+            "dhi",
+            "solar_zenith",
+            "solar_azimuth",
+            "dni_extra",
+            "airmass",
+        ],
         index=times,
     )
 
@@ -557,7 +589,9 @@ def test_perez_arrays(irrad_data, ephem_data, dni_et, relative_airmass):
     assert isinstance(out, np.ndarray)
 
 
-def test_perez_driesse_arrays(irrad_data, ephem_data, dni_et, relative_airmass):
+def test_perez_driesse_arrays(
+    irrad_data, ephem_data, dni_et, relative_airmass
+):
     dni = irrad_data["dni"].copy()
     dni.iloc[2] = np.nan
     out = irradiance.perez_driesse(
@@ -604,7 +638,15 @@ def test_perez_driesse_scalar():
 
 @pytest.mark.parametrize(
     "model",
-    ["isotropic", "klucher", "haydavies", "reindl", "king", "perez", "perez-driesse"],
+    [
+        "isotropic",
+        "klucher",
+        "haydavies",
+        "reindl",
+        "king",
+        "perez",
+        "perez-driesse",
+    ],
 )
 def test_sky_diffuse_zenith_close_to_90(model):
     # GH 432
@@ -626,7 +668,16 @@ def test_sky_diffuse_zenith_close_to_90(model):
 def test_get_sky_diffuse_model_invalid():
     with pytest.raises(ValueError):
         irradiance.get_sky_diffuse(
-            30, 180, 0, 180, 1000, 1100, 100, dni_extra=1360, airmass=1, model="invalid"
+            30,
+            180,
+            0,
+            180,
+            1000,
+            1100,
+            100,
+            dni_extra=1360,
+            airmass=1,
+            model="invalid",
         )
 
 
@@ -655,7 +706,8 @@ def test_get_sky_diffuse_missing_airmass(irrad_data, ephem_data, dni_et):
         model="perez",
     )
     expected = pd.Series(
-        np.array([0.0, 31.46046871, np.nan, 45.45539877]), index=irrad_data.index
+        np.array([0.0, 31.46046871, np.nan, 45.45539877]),
+        index=irrad_data.index,
     )
     assert_series_equal(out, expected, check_less_precise=2)
 
@@ -675,7 +727,9 @@ def test_campbell_norman():
     assert_frame_equal(out, expected)
 
 
-def test_get_total_irradiance(irrad_data, ephem_data, dni_et, relative_airmass):
+def test_get_total_irradiance(
+    irrad_data, ephem_data, dni_et, relative_airmass
+):
     models = [
         "isotropic",
         "klucher",
@@ -712,7 +766,15 @@ def test_get_total_irradiance(irrad_data, ephem_data, dni_et, relative_airmass):
 
 @pytest.mark.parametrize(
     "model",
-    ["isotropic", "klucher", "haydavies", "reindl", "king", "perez", "perez-driesse"],
+    [
+        "isotropic",
+        "klucher",
+        "haydavies",
+        "reindl",
+        "king",
+        "perez",
+        "perez-driesse",
+    ],
 )
 def test_get_total_irradiance_albedo(
     irrad_data, ephem_data, dni_et, relative_airmass, model
@@ -743,7 +805,15 @@ def test_get_total_irradiance_albedo(
 
 @pytest.mark.parametrize(
     "model",
-    ["isotropic", "klucher", "haydavies", "reindl", "king", "perez", "perez-driesse"],
+    [
+        "isotropic",
+        "klucher",
+        "haydavies",
+        "reindl",
+        "king",
+        "perez",
+        "perez-driesse",
+    ],
 )
 def test_get_total_irradiance_scalars(model):
     total = irradiance.get_total_irradiance(
@@ -781,7 +851,15 @@ def test_get_total_irradiance_missing_dni_extra():
 
 def test_get_total_irradiance_missing_airmass():
     total = irradiance.get_total_irradiance(
-        32, 180, 10, 180, dni=1000, ghi=1100, dhi=100, dni_extra=1400, model="perez"
+        32,
+        180,
+        10,
+        180,
+        dni=1000,
+        ghi=1100,
+        dhi=100,
+        dni_extra=1400,
+        model="perez",
     )
     assert list(total.keys()) == [
         "poa_global",
@@ -793,8 +871,12 @@ def test_get_total_irradiance_missing_airmass():
 
 
 def test_poa_components(irrad_data, ephem_data, dni_et, relative_airmass):
-    aoi = irradiance.aoi(40, 180, ephem_data["apparent_zenith"], ephem_data["azimuth"])
-    gr_sand = irradiance.get_ground_diffuse(40, irrad_data["ghi"], surface_type="sand")
+    aoi = irradiance.aoi(
+        40, 180, ephem_data["apparent_zenith"], ephem_data["azimuth"]
+    )
+    gr_sand = irradiance.get_ground_diffuse(
+        40, irrad_data["ghi"], surface_type="sand"
+    )
     diff_perez = irradiance.perez(
         40,
         180,
@@ -805,14 +887,28 @@ def test_poa_components(irrad_data, ephem_data, dni_et, relative_airmass):
         ephem_data["azimuth"],
         relative_airmass,
     )
-    out = irradiance.poa_components(aoi, irrad_data["dni"], diff_perez, gr_sand)
+    out = irradiance.poa_components(
+        aoi, irrad_data["dni"], diff_perez, gr_sand
+    )
     expected = pd.DataFrame(
         np.array(
             [
                 [0.0, -0.0, 0.0, 0.0, 0.0],
                 [35.19456561, 0.0, 35.19456561, 31.4635077, 3.73105791],
-                [956.18253696, 798.31939281, 157.86314414, 109.08433162, 48.77881252],
-                [90.99624896, 33.50143401, 57.49481495, 45.45978964, 12.03502531],
+                [
+                    956.18253696,
+                    798.31939281,
+                    157.86314414,
+                    109.08433162,
+                    48.77881252,
+                ],
+                [
+                    90.99624896,
+                    33.50143401,
+                    57.49481495,
+                    45.45978964,
+                    12.03502531,
+                ],
             ]
         ),
         columns=[
@@ -830,9 +926,15 @@ def test_poa_components(irrad_data, ephem_data, dni_et, relative_airmass):
 @pytest.mark.parametrize(
     "pressure,expected",
     [
-        (93193, [[830.46567, 0.79742, 0.93505], [676.18340, 0.63782, 3.02102]]),
+        (
+            93193,
+            [[830.46567, 0.79742, 0.93505], [676.18340, 0.63782, 3.02102]],
+        ),
         (None, [[868.72425, 0.79742, 1.01664], [680.73800, 0.63782, 3.28463]]),
-        (101325, [[868.72425, 0.79742, 1.01664], [680.73800, 0.63782, 3.28463]]),
+        (
+            101325,
+            [[868.72425, 0.79742, 1.01664], [680.73800, 0.63782, 3.28463]],
+        ),
     ],
 )
 def test_disc_value(pressure, expected):
@@ -857,9 +959,14 @@ def test_disc_overirradiance():
     ghi = np.array([3000])
     solar_zenith = np.full_like(ghi, 0)
     times = pd.date_range(
-        start="2016-07-19 12:00:00", freq="1s", periods=len(ghi), tz="America/Phoenix"
+        start="2016-07-19 12:00:00",
+        freq="1s",
+        periods=len(ghi),
+        tz="America/Phoenix",
     )
-    out = irradiance.disc(ghi=ghi, solar_zenith=solar_zenith, datetime_or_doy=times)
+    out = irradiance.disc(
+        ghi=ghi, solar_zenith=solar_zenith, datetime_or_doy=times
+    )
     expected = pd.DataFrame(
         np.array([[8.72544336e02, 1.00000000e00, 9.99493933e-01]]),
         columns=columns,
@@ -875,7 +982,9 @@ def test_disc_min_cos_zenith_max_zenith():
     times = pd.DatetimeIndex(["2016-07-19 06:11:00"], tz="America/Phoenix")
     out = irradiance.disc(ghi=1.0, solar_zenith=89.99, datetime_or_doy=times)
     expected = pd.DataFrame(
-        np.array([[0.00000000e00, 1.16046346e-02, 12.0]]), columns=columns, index=times
+        np.array([[0.00000000e00, 1.16046346e-02, 12.0]]),
+        columns=columns,
+        index=times,
     )
     assert_frame_equal(out, expected)
 
@@ -919,7 +1028,9 @@ def test_disc_min_cos_zenith_max_zenith():
         max_airmass=100,
     )
     expected = pd.DataFrame(
-        np.array([[0.00000000e00, 1.0, 36.39544757]]), columns=columns, index=times
+        np.array([[0.00000000e00, 1.0, 36.39544757]]),
+        columns=columns,
+        index=times,
     )
     assert_frame_equal(out, expected)
 
@@ -950,7 +1061,9 @@ def test_disc_min_cos_zenith_max_zenith():
         max_airmass=100,
     )
     expected = pd.DataFrame(
-        np.array([[7.21238390e03, 1.0, 3.63954476e01]]), columns=columns, index=times
+        np.array([[7.21238390e03, 1.0, 3.63954476e01]]),
+        columns=columns,
+        index=times,
     )
     assert_frame_equal(out, expected)
 
@@ -968,13 +1081,17 @@ def test_dirint_nans():
     times = pd.date_range(start="2014-06-24T12-0700", periods=5, freq="6h")
     ghi = pd.Series([np.nan, 1038.62, 1038.62, 1038.62, 1038.62], index=times)
     zenith = pd.Series([10.567, np.nan, 10.567, 10.567, 10.567], index=times)
-    pressure = pd.Series([93193.0, 93193.0, np.nan, 93193.0, 93193.0], index=times)
+    pressure = pd.Series(
+        [93193.0, 93193.0, np.nan, 93193.0, 93193.0], index=times
+    )
     temp_dew = pd.Series([10, 10, 10, np.nan, 10], index=times)
     dirint_data = irradiance.dirint(
         ghi, zenith, times, pressure=pressure, temp_dew=temp_dew
     )
     assert_almost_equal(
-        dirint_data.values, np.array([np.nan, np.nan, np.nan, np.nan, 893.1]), 1
+        dirint_data.values,
+        np.array([np.nan, np.nan, np.nan, np.nan, 893.1]),
+        1,
     )
 
 
@@ -983,7 +1100,9 @@ def test_dirint_tdew():
     ghi = pd.Series([1038.62, 254.53], index=times)
     zenith = pd.Series([10.567, 72.469], index=times)
     pressure = 93193.0
-    dirint_data = irradiance.dirint(ghi, zenith, times, pressure=pressure, temp_dew=10)
+    dirint_data = irradiance.dirint(
+        ghi, zenith, times, pressure=pressure, temp_dew=10
+    )
     assert_almost_equal(dirint_data.values, np.array([882.1, 672.6]), 1)
 
 
@@ -1025,11 +1144,15 @@ def test_dirint_min_cos_zenith_max_zenith():
     expected = pd.Series([0.0, 0.0], index=times, name="dni")
     assert_series_equal(out, expected, check_less_precise=True)
 
-    out = irradiance.dirint(ghi, solar_zenith, times, min_cos_zenith=0, max_zenith=90)
+    out = irradiance.dirint(
+        ghi, solar_zenith, times, min_cos_zenith=0, max_zenith=90
+    )
     expected = pd.Series([0.0, 144.264507], index=times, name="dni")
     assert_series_equal(out, expected, check_less_precise=True)
 
-    out = irradiance.dirint(ghi, solar_zenith, times, min_cos_zenith=0, max_zenith=100)
+    out = irradiance.dirint(
+        ghi, solar_zenith, times, min_cos_zenith=0, max_zenith=100
+    )
     expected = pd.Series([0.0, 144.264507], index=times, name="dni")
     assert_series_equal(out, expected, check_less_precise=True)
 
@@ -1047,7 +1170,12 @@ def test_ghi_from_poa_driesse(mocker):
 
     # test core function
     output = irradiance.ghi_from_poa_driesse_2023(
-        surface_tilt, surface_azimuth, zenith, azimuth, poa_global, dni_extra=1366.1
+        surface_tilt,
+        surface_azimuth,
+        zenith,
+        azimuth,
+        poa_global,
+        dni_extra=1366.1,
     )
 
     expected = [22.089, 304.088, 931.143]
@@ -1057,7 +1185,12 @@ def test_ghi_from_poa_driesse(mocker):
     poa_global = pd.Series([20, 300, 1000], index=times)
 
     output = irradiance.ghi_from_poa_driesse_2023(
-        surface_tilt, surface_azimuth, zenith, azimuth, poa_global, dni_extra=1366.1
+        surface_tilt,
+        surface_azimuth,
+        zenith,
+        azimuth,
+        poa_global,
+        dni_extra=1366.1,
     )
 
     assert isinstance(output, pd.Series)
@@ -1368,7 +1501,9 @@ def test_erbs_min_cos_zenith_max_zenith():
     out = irradiance.erbs(
         ghi=1.0, zenith=89.99999, datetime_or_doy=times, min_cos_zenith=0
     )
-    expected = pd.DataFrame(np.array([[0.0, 1.0, 1.0]]), columns=columns, index=times)
+    expected = pd.DataFrame(
+        np.array([[0.0, 1.0, 1.0]]), columns=columns, index=times
+    )
     assert_frame_equal(out, expected)
 
     # 4-5 9s will produce bad behavior without max_zenith limit
@@ -1384,7 +1519,11 @@ def test_erbs_min_cos_zenith_max_zenith():
 
     # 1-2 9s will produce bad behavior without either limit
     out = irradiance.erbs(
-        ghi=1.0, zenith=89.99, datetime_or_doy=times, min_cos_zenith=0, max_zenith=100
+        ghi=1.0,
+        zenith=89.99,
+        datetime_or_doy=times,
+        min_cos_zenith=0,
+        max_zenith=100,
     )
     expected = pd.DataFrame(
         np.array([[4.78419761e03, 1.65000000e-01, 1.00000000e00]]),
@@ -1426,23 +1565,41 @@ def test_dirindex(times):
         np.array([0.0, 316.1949056, 939.95469881, 646.22886049]), index=times
     )
     zenith = pd.Series(
-        np.array([124.0390863, 82.85457044, 10.56413562, 72.41687122]), index=times
+        np.array([124.0390863, 82.85457044, 10.56413562, 72.41687122]),
+        index=times,
     )
     pressure = 93193.0
     tdew = 10.0
     out = irradiance.dirindex(
-        ghi, ghi_clearsky, dni_clear, zenith, times, pressure=pressure, temp_dew=tdew
+        ghi,
+        ghi_clearsky,
+        dni_clear,
+        zenith,
+        times,
+        pressure=pressure,
+        temp_dew=tdew,
     )
     dirint_close_values = irradiance.dirint(
-        ghi, zenith, times, pressure=pressure, use_delta_kt_prime=True, temp_dew=tdew
+        ghi,
+        zenith,
+        times,
+        pressure=pressure,
+        use_delta_kt_prime=True,
+        temp_dew=tdew,
     ).values
     expected_out = np.array([np.nan, 0.0, 748.31562800, 630.73752100])
 
     tolerance = 1e-8
-    assert np.allclose(out, expected_out, rtol=tolerance, atol=0, equal_nan=True)
+    assert np.allclose(
+        out, expected_out, rtol=tolerance, atol=0, equal_nan=True
+    )
     tol_dirint = 0.2
     assert np.allclose(
-        out.values, dirint_close_values, rtol=tol_dirint, atol=0, equal_nan=True
+        out.values,
+        dirint_close_values,
+        rtol=tol_dirint,
+        atol=0,
+        equal_nan=True,
     )
 
 
@@ -1476,7 +1633,9 @@ def test_dirindex_min_cos_zenith_max_zenith():
     dni_clear = pd.Series([0, 5], index=times)
     solar_zenith = pd.Series([90, 89.99], index=times)
 
-    out = irradiance.dirindex(ghi, ghi_clearsky, dni_clear, solar_zenith, times)
+    out = irradiance.dirindex(
+        ghi, ghi_clearsky, dni_clear, solar_zenith, times
+    )
     expected = pd.Series([nan, nan], index=times)
     assert_series_equal(out, expected)
 
@@ -1529,16 +1688,27 @@ def test_dni():
     zenith = pd.Series([80, 100, 85, 70, 85])
     dni_clear = pd.Series([50, 50, 200, 50, 300])
 
-    dni = irradiance.dni(ghi, dhi, zenith, dni_clear=dni_clear, clearsky_tolerance=2)
+    dni = irradiance.dni(
+        ghi, dhi, zenith, dni_clear=dni_clear, clearsky_tolerance=2
+    )
     assert_series_equal(
-        dni, pd.Series([float("nan"), float("nan"), 400, 146.190220008, 573.685662283])
+        dni,
+        pd.Series(
+            [float("nan"), float("nan"), 400, 146.190220008, 573.685662283]
+        ),
     )
 
     dni = irradiance.dni(ghi, dhi, zenith)
     assert_series_equal(
         dni,
         pd.Series(
-            [float("nan"), float("nan"), 573.685662283, 146.190220008, 573.685662283]
+            [
+                float("nan"),
+                float("nan"),
+                573.685662283,
+                146.190220008,
+                573.685662283,
+            ]
         ),
     )
 
@@ -1550,7 +1720,9 @@ def test_dni_dni_clearsky_deprecation():
     zenith = pd.Series([80, 100, 85, 70, 85])
     dni_clear = pd.Series([50, 50, 200, 50, 300])
     with pytest.warns(pvlibDeprecationWarning, match="dni_clear"):
-        irradiance.dni(ghi, dhi, zenith, clearsky_dni=dni_clear, clearsky_tolerance=2)
+        irradiance.dni(
+            ghi, dhi, zenith, clearsky_dni=dni_clear, clearsky_tolerance=2
+        )
 
 
 @pytest.mark.parametrize(
@@ -1572,7 +1744,9 @@ def test_aoi_and_aoi_projection(
     aoi_expected,
     aoi_proj_expected,
 ):
-    aoi = irradiance.aoi(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth)
+    aoi = irradiance.aoi(
+        surface_tilt, surface_azimuth, solar_zenith, solar_azimuth
+    )
     assert_allclose(aoi, aoi_expected, atol=1e-5)
 
     aoi_projection = irradiance.aoi_projection(
@@ -1595,7 +1769,9 @@ def test_aoi_projection_precision():
     # arrays
     zeniths = np.array([zenith])
     azimuths = np.array([azimuth])
-    projections = irradiance.aoi_projection(zeniths, azimuths, zeniths, azimuths)
+    projections = irradiance.aoi_projection(
+        zeniths, azimuths, zeniths, azimuths
+    )
     assert all(projections <= 1)
     assert all(np.isclose(projections, 1))
     assert projections.dtype == np.dtype("float64")
@@ -1684,7 +1860,9 @@ def test_clearness_index():
     assert_allclose(out, expected, atol=0.001)
     # specify min_cos_zenith
     with np.errstate(invalid="ignore", divide="ignore"):
-        out = irradiance.clearness_index(ghi, solar_zenith, 1400, min_cos_zenith=0)
+        out = irradiance.clearness_index(
+            ghi, solar_zenith, 1400, min_cos_zenith=0
+        )
     expected = np.array(
         [
             [0.0, nan, 2.0, 2.0],
@@ -1695,7 +1873,9 @@ def test_clearness_index():
     )
     assert_allclose(out, expected, atol=0.001)
     # specify max_clearness_index
-    out = irradiance.clearness_index(ghi, solar_zenith, 1370, max_clearness_index=0.82)
+    out = irradiance.clearness_index(
+        ghi, solar_zenith, 1370, max_clearness_index=0.82
+    )
     expected = np.array(
         [
             [0.0, 0.0, 0.011, 0.82],
@@ -1736,7 +1916,9 @@ def test_clearness_index():
 def test_clearness_index_zenith_independent(airmass_kt):
     clearness_index = np.array([-1, 0, 0.1, 1])
     clearness_index, airmass_kt = np.meshgrid(clearness_index, airmass_kt)
-    out = irradiance.clearness_index_zenith_independent(clearness_index, airmass_kt)
+    out = irradiance.clearness_index_zenith_independent(
+        clearness_index, airmass_kt
+    )
     expected = np.array(
         [
             [0.0, 0.0, 0.1, 1.0],
@@ -1767,7 +1949,9 @@ def test_clearness_index_zenith_independent(airmass_kt):
     times = pd.date_range(start="20180601", periods=2, freq="12h")
     clearness_index = pd.Series([0, 0.5], index=times)
     airmass = pd.Series([np.nan, 2], index=times)
-    out = irradiance.clearness_index_zenith_independent(clearness_index, airmass)
+    out = irradiance.clearness_index_zenith_independent(
+        clearness_index, airmass
+    )
     expected = pd.Series([np.nan, 0.553744437562], index=times)
     assert_series_equal(out, expected)
 
@@ -1785,7 +1969,10 @@ def test_complete_irradiance():
     )
     # Define the solar position and clearsky dataframe
     solar_position = pd.DataFrame(
-        {"apparent_zenith": [71.7303262449161, 59.369], "zenith": [71.7764, 59.395]},
+        {
+            "apparent_zenith": [71.7303262449161, 59.369],
+            "zenith": [71.7764, 59.395],
+        },
         index=pd.DatetimeIndex(
             ["2010-07-05 07:00:00-0700", "2010-07-05 08:00:00-0700"]
         ),
@@ -1896,7 +2083,9 @@ def test_diffuse_par_spitters():
     )
     solar_zenith = solar_zenith.ravel()
     global_diffuse_fraction = global_diffuse_fraction.ravel()
-    result = irradiance.diffuse_par_spitters(solar_zenith, global_diffuse_fraction)
+    result = irradiance.diffuse_par_spitters(
+        solar_zenith, global_diffuse_fraction
+    )
     expected = np.array([
         0.01300, 0.01290, 0.01226, 0.01118, 0.01125, 0.01189, 0.01293, 0.01300,
         0.12970, 0.12874, 0.12239, 0.11174, 0.11236, 0.11868, 0.12905, 0.12970,

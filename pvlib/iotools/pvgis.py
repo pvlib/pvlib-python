@@ -244,7 +244,9 @@ def get_pvgis_hourly(
             start if isinstance(start, int) else pd.to_datetime(start).year
         )  # noqa: E501
     if end is not None:
-        params["endyear"] = end if isinstance(end, int) else pd.to_datetime(end).year  # noqa: E501
+        params["endyear"] = (
+            end if isinstance(end, int) else pd.to_datetime(end).year
+        )  # noqa: E501
     if peakpower is not None:
         params["peakpower"] = peakpower
 
@@ -262,7 +264,9 @@ def get_pvgis_hourly(
             raise requests.HTTPError(err_msg["message"])
 
     return read_pvgis_hourly(
-        io.StringIO(res.text), pvgis_format=outputformat, map_variables=map_variables
+        io.StringIO(res.text),
+        pvgis_format=outputformat,
+        map_variables=map_variables,
     )
 
 
@@ -403,10 +407,14 @@ def read_pvgis_hourly(filename, pvgis_format=None, map_variables=True):
     # CSV: use _parse_pvgis_hourly_csv()
     if outputformat == "csv":
         try:
-            pvgis_data = _parse_pvgis_hourly_csv(filename, map_variables=map_variables)
+            pvgis_data = _parse_pvgis_hourly_csv(
+                filename, map_variables=map_variables
+            )
         except AttributeError:  # str/path has no .read() attribute
             with open(str(filename), "r") as fbuf:
-                pvgis_data = _parse_pvgis_hourly_csv(fbuf, map_variables=map_variables)
+                pvgis_data = _parse_pvgis_hourly_csv(
+                    fbuf, map_variables=map_variables
+                )
         return pvgis_data
 
     # raise exception if pvgis format isn't in ['csv', 'json']
@@ -429,11 +437,16 @@ def _coerce_and_roll_tmy(tmy_data, tz, year):
         tz = 0
         tzname = pytz.timezone("UTC")
     new_index = pd.DatetimeIndex(
-        [timestamp.replace(year=year, tzinfo=tzname) for timestamp in tmy_data.index],
+        [
+            timestamp.replace(year=year, tzinfo=tzname)
+            for timestamp in tmy_data.index
+        ],
         name=f"time({tzname})",
     )
     new_tmy_data = pd.DataFrame(
-        np.roll(tmy_data, tz, axis=0), columns=tmy_data.columns, index=new_index
+        np.roll(tmy_data, tz, axis=0),
+        columns=tmy_data.columns,
+        index=new_index,
     )
     return new_tmy_data
 
@@ -579,7 +592,9 @@ def _parse_pvgis_tmy_json(src):
     meta = src["meta"]
     months_selected = src["outputs"]["months_selected"]
     data = pd.DataFrame(src["outputs"]["tmy_hourly"])
-    data.index = pd.to_datetime(data["time(UTC)"], format="%Y%m%d:%H%M", utc=True)
+    data.index = pd.to_datetime(
+        data["time(UTC)"], format="%Y%m%d:%H%M", utc=True
+    )
     data = data.drop("time(UTC)", axis=1)
     return data, months_selected, inputs, meta
 
@@ -620,7 +635,9 @@ def _parse_pvgis_tmy_csv(src):
 
 def _parse_pvgis_tmy_basic(src):
     data = pd.read_csv(src)
-    data.index = pd.to_datetime(data["time(UTC)"], format="%Y%m%d:%H%M", utc=True)
+    data.index = pd.to_datetime(
+        data["time(UTC)"], format="%Y%m%d:%H%M", utc=True
+    )
     data = data.drop("time(UTC)", axis=1)
     return data, None, None, None
 

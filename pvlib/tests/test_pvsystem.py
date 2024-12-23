@@ -45,17 +45,21 @@ def test_PVSystem_multi_array_get_iam():
     system = pvsystem.PVSystem(
         arrays=[
             pvsystem.Array(
-                mount=pvsystem.FixedMount(0, 180), module_parameters=model_params
+                mount=pvsystem.FixedMount(0, 180),
+                module_parameters=model_params,
             ),
             pvsystem.Array(
-                mount=pvsystem.FixedMount(0, 180), module_parameters=model_params
+                mount=pvsystem.FixedMount(0, 180),
+                module_parameters=model_params,
             ),
         ]
     )
     iam = system.get_iam((1, 5), iam_model="ashrae")
     assert len(iam) == 2
     assert iam[0] != iam[1]
-    with pytest.raises(ValueError, match="Length mismatch for per-array parameter"):
+    with pytest.raises(
+        ValueError, match="Length mismatch for per-array parameter"
+    ):
         system.get_iam((1,), iam_model="ashrae")
 
 
@@ -162,7 +166,9 @@ def test_retrieve_sam_databases():
 
 def test_sapm(sapm_module_params):
     times = pd.date_range(start="2015-01-01", periods=5, freq="12h")
-    effective_irradiance = pd.Series([-1000, 500, 1100, np.nan, 1000], index=times)
+    effective_irradiance = pd.Series(
+        [-1000, 500, 1100, np.nan, 1000], index=times
+    )
     temp_cell = pd.Series([10, 25, 50, 25, np.nan], index=times)
 
     out = pvsystem.sapm(effective_irradiance, temp_cell, sapm_module_params)
@@ -222,7 +228,9 @@ def test_sapm(sapm_module_params):
         assert_allclose(out[k], v, atol=1e-4)
 
     # just make sure it works with Series input
-    pvsystem.sapm(effective_irradiance, temp_cell, pd.Series(sapm_module_params))
+    pvsystem.sapm(
+        effective_irradiance, temp_cell, pd.Series(sapm_module_params)
+    )
 
 
 def test_PVSystem_sapm(sapm_module_params, mocker):
@@ -241,10 +249,12 @@ def test_PVSystem_multi_array_sapm(sapm_module_params):
     system = pvsystem.PVSystem(
         arrays=[
             pvsystem.Array(
-                pvsystem.FixedMount(0, 180), module_parameters=sapm_module_params
+                pvsystem.FixedMount(0, 180),
+                module_parameters=sapm_module_params,
             ),
             pvsystem.Array(
-                pvsystem.FixedMount(0, 180), module_parameters=sapm_module_params
+                pvsystem.FixedMount(0, 180),
+                module_parameters=sapm_module_params,
             ),
         ]
     )
@@ -253,19 +263,25 @@ def test_PVSystem_multi_array_sapm(sapm_module_params):
     sapm_one, sapm_two = system.sapm(effective_irradiance, temp_cell)
     assert sapm_one["p_mp"] != sapm_two["p_mp"]
     sapm_one_flip, sapm_two_flip = system.sapm(
-        (effective_irradiance[1], effective_irradiance[0]), (temp_cell[1], temp_cell[0])
+        (effective_irradiance[1], effective_irradiance[0]),
+        (temp_cell[1], temp_cell[0]),
     )
     assert sapm_one_flip["p_mp"] == sapm_two["p_mp"]
     assert sapm_two_flip["p_mp"] == sapm_one["p_mp"]
-    with pytest.raises(ValueError, match="Length mismatch for per-array parameter"):
+    with pytest.raises(
+        ValueError, match="Length mismatch for per-array parameter"
+    ):
         system.sapm(effective_irradiance, 10)
-    with pytest.raises(ValueError, match="Length mismatch for per-array parameter"):
+    with pytest.raises(
+        ValueError, match="Length mismatch for per-array parameter"
+    ):
         system.sapm(500, temp_cell)
 
 
 def test_sapm_spectral_loss_deprecated(sapm_module_params):
     with pytest.warns(
-        pvlibDeprecationWarning, match="Use pvlib.spectrum.spectral_factor_sapm"
+        pvlibDeprecationWarning,
+        match="Use pvlib.spectrum.spectral_factor_sapm",
     ):
         pvsystem.sapm_spectral_loss(1, sapm_module_params)
 
@@ -275,7 +291,9 @@ def test_PVSystem_sapm_spectral_loss(sapm_module_params, mocker):
     system = pvsystem.PVSystem(module_parameters=sapm_module_params)
     airmass = 2
     out = system.sapm_spectral_loss(airmass)
-    spectrum.spectral_factor_sapm.assert_called_once_with(airmass, sapm_module_params)
+    spectrum.spectral_factor_sapm.assert_called_once_with(
+        airmass, sapm_module_params
+    )
     assert_allclose(out, 1, atol=0.5)
 
 
@@ -283,10 +301,12 @@ def test_PVSystem_multi_array_sapm_spectral_loss(sapm_module_params):
     system = pvsystem.PVSystem(
         arrays=[
             pvsystem.Array(
-                pvsystem.FixedMount(0, 180), module_parameters=sapm_module_params
+                pvsystem.FixedMount(0, 180),
+                module_parameters=sapm_module_params,
             ),
             pvsystem.Array(
-                pvsystem.FixedMount(0, 180), module_parameters=sapm_module_params
+                pvsystem.FixedMount(0, 180),
+                module_parameters=sapm_module_params,
             ),
         ]
     )
@@ -365,7 +385,12 @@ def test_PVSystem_multi_array_first_solar_spectral_loss():
             np.array([np.nan, np.nan, 1081.1574]),
         ),
         (
-            [pd.Series([1000]), pd.Series([100]), pd.Series([1.1]), pd.Series([10])],
+            [
+                pd.Series([1000]),
+                pd.Series([100]),
+                pd.Series([1.1]),
+                pd.Series([10]),
+            ],
             pd.Series([1081.1574]),
         ),
     ],
@@ -409,10 +434,12 @@ def test_PVSystem_multi_array_sapm_effective_irradiance(sapm_module_params):
     system = pvsystem.PVSystem(
         arrays=[
             pvsystem.Array(
-                pvsystem.FixedMount(0, 180), module_parameters=sapm_module_params
+                pvsystem.FixedMount(0, 180),
+                module_parameters=sapm_module_params,
             ),
             pvsystem.Array(
-                pvsystem.FixedMount(0, 180), module_parameters=sapm_module_params
+                pvsystem.FixedMount(0, 180),
+                module_parameters=sapm_module_params,
             ),
         ]
     )
@@ -462,13 +489,21 @@ def two_array_system(pvsyst_module_params, cec_module_params):
 
 @pytest.mark.parametrize(
     "poa_direct, poa_diffuse, aoi",
-    [(20, (10, 10), (20, 20)), ((20, 20), (10,), (20, 20)), ((20, 20), (10, 10), 20)],
+    [
+        (20, (10, 10), (20, 20)),
+        ((20, 20), (10,), (20, 20)),
+        ((20, 20), (10, 10), 20),
+    ],
 )
 def test_PVSystem_sapm_effective_irradiance_value_error(
     poa_direct, poa_diffuse, aoi, two_array_system
 ):
-    with pytest.raises(ValueError, match="Length mismatch for per-array parameter"):
-        two_array_system.sapm_effective_irradiance(poa_direct, poa_diffuse, 10, aoi)
+    with pytest.raises(
+        ValueError, match="Length mismatch for per-array parameter"
+    ):
+        two_array_system.sapm_effective_irradiance(
+            poa_direct, poa_diffuse, 10, aoi
+        )
 
 
 def test_PVSystem_sapm_celltemp(mocker):
@@ -480,7 +515,9 @@ def test_PVSystem_sapm_celltemp(mocker):
     irrads = 1000
     winds = 1
     out = system.get_cell_temperature(irrads, temps, winds, model="sapm")
-    temperature.sapm_cell.assert_called_once_with(irrads, temps, winds, a, b, deltaT)
+    temperature.sapm_cell.assert_called_once_with(
+        irrads, temps, winds, a, b, deltaT
+    )
     assert_allclose(out, 57, atol=1)
 
 
@@ -515,14 +552,18 @@ def test_PVSystem_multi_array_sapm_celltemp_different_arrays():
     system = pvsystem.PVSystem(
         arrays=[
             pvsystem.Array(
-                pvsystem.FixedMount(0, 180), temperature_model_parameters=temp_model_one
+                pvsystem.FixedMount(0, 180),
+                temperature_model_parameters=temp_model_one,
             ),
             pvsystem.Array(
-                pvsystem.FixedMount(0, 180), temperature_model_parameters=temp_model_two
+                pvsystem.FixedMount(0, 180),
+                temperature_model_parameters=temp_model_two,
             ),
         ]
     )
-    temp_one, temp_two = system.get_cell_temperature((1000, 1000), 25, 1, model="sapm")
+    temp_one, temp_two = system.get_cell_temperature(
+        (1000, 1000), 25, 1, model="sapm"
+    )
     assert temp_one != temp_two
 
 
@@ -545,7 +586,9 @@ def test_PVSystem_pvsyst_celltemp(mocker):
     irrad = 800
     temp = 45
     wind = 0.5
-    out = system.get_cell_temperature(irrad, temp, wind_speed=wind, model="pvsyst")
+    out = system.get_cell_temperature(
+        irrad, temp, wind_speed=wind, model="pvsyst"
+    )
     temperature.pvsyst_cell.assert_called_once_with(
         irrad,
         temp,
@@ -597,7 +640,10 @@ def test_PVSystem_noct_celltemp(mocker):
     assert_allclose(out, expected)
     # different types
     out = system.get_cell_temperature(
-        np.array(poa_global), np.array(temp_air), np.array(wind_speed), model="noct_sam"
+        np.array(poa_global),
+        np.array(temp_air),
+        np.array(wind_speed),
+        model="noct_sam",
     )
     assert_allclose(out, expected)
     dr = pd.date_range(
@@ -612,25 +658,42 @@ def test_PVSystem_noct_celltemp(mocker):
     assert_series_equal(out, pd.Series(index=dr, data=expected))
     # now use optional arguments
     temp_model_params.update(
-        {"transmittance_absorptance": 0.8, "array_height": 2, "mount_standoff": 2.0}
+        {
+            "transmittance_absorptance": 0.8,
+            "array_height": 2,
+            "mount_standoff": 2.0,
+        }
     )
     expected = 60.477703576
     system = pvsystem.PVSystem(temperature_model_parameters=temp_model_params)
     out = system.get_cell_temperature(
-        poa_global, temp_air, wind_speed, effective_irradiance=1100.0, model="noct_sam"
+        poa_global,
+        temp_air,
+        wind_speed,
+        effective_irradiance=1100.0,
+        model="noct_sam",
     )
     assert_allclose(out, expected)
 
 
 def test_PVSystem_noct_celltemp_error():
-    poa_global, temp_air, wind_speed, module_efficiency = (1000.0, 25.0, 1.0, 0.2)
+    poa_global, temp_air, wind_speed, module_efficiency = (
+        1000.0,
+        25.0,
+        1.0,
+        0.2,
+    )
     temp_model_params = {"module_efficiency": module_efficiency}
     system = pvsystem.PVSystem(temperature_model_parameters=temp_model_params)
     with pytest.raises(KeyError):
-        system.get_cell_temperature(poa_global, temp_air, wind_speed, model="noct_sam")
+        system.get_cell_temperature(
+            poa_global, temp_air, wind_speed, model="noct_sam"
+        )
 
 
-@pytest.mark.parametrize("model", ["faiman", "pvsyst", "sapm", "fuentes", "noct_sam"])
+@pytest.mark.parametrize(
+    "model", ["faiman", "pvsyst", "sapm", "fuentes", "noct_sam"]
+)
 def test_PVSystem_multi_array_celltemp_functions(model, two_array_system):
     times = pd.date_range(start="2020-08-25 11:00", freq="h", periods=3)
     irrad_one = pd.Series(1000, index=times)
@@ -644,7 +707,9 @@ def test_PVSystem_multi_array_celltemp_functions(model, two_array_system):
     assert (temp_one != temp_two).all()
 
 
-@pytest.mark.parametrize("model", ["faiman", "pvsyst", "sapm", "fuentes", "noct_sam"])
+@pytest.mark.parametrize(
+    "model", ["faiman", "pvsyst", "sapm", "fuentes", "noct_sam"]
+)
 def test_PVSystem_multi_array_celltemp_multi_temp(model, two_array_system):
     times = pd.date_range(start="2020-08-25 11:00", freq="h", periods=3)
     irrad = pd.Series(1000, index=times)
@@ -662,7 +727,9 @@ def test_PVSystem_multi_array_celltemp_multi_temp(model, two_array_system):
     assert_series_equal(temp_two, temp_one_swtich)
 
 
-@pytest.mark.parametrize("model", ["faiman", "pvsyst", "sapm", "fuentes", "noct_sam"])
+@pytest.mark.parametrize(
+    "model", ["faiman", "pvsyst", "sapm", "fuentes", "noct_sam"]
+)
 def test_PVSystem_multi_array_celltemp_multi_wind(model, two_array_system):
     times = pd.date_range(start="2020-08-25 11:00", freq="h", periods=3)
     irrad = pd.Series(1000, index=times)
@@ -686,33 +753,63 @@ def test_PVSystem_get_cell_temperature_invalid():
         system.get_cell_temperature(1000, 25, 1, "not_a_model")
 
 
-@pytest.mark.parametrize("model", ["faiman", "pvsyst", "sapm", "fuentes", "noct_sam"])
+@pytest.mark.parametrize(
+    "model", ["faiman", "pvsyst", "sapm", "fuentes", "noct_sam"]
+)
 def test_PVSystem_multi_array_celltemp_temp_too_short(model, two_array_system):
-    with pytest.raises(ValueError, match="Length mismatch for per-array parameter"):
-        two_array_system.get_cell_temperature((1000, 1000), (1,), 1, model=model)
+    with pytest.raises(
+        ValueError, match="Length mismatch for per-array parameter"
+    ):
+        two_array_system.get_cell_temperature(
+            (1000, 1000), (1,), 1, model=model
+        )
 
 
-@pytest.mark.parametrize("model", ["faiman", "pvsyst", "sapm", "fuentes", "noct_sam"])
+@pytest.mark.parametrize(
+    "model", ["faiman", "pvsyst", "sapm", "fuentes", "noct_sam"]
+)
 def test_PVSystem_multi_array_celltemp_temp_too_long(model, two_array_system):
-    with pytest.raises(ValueError, match="Length mismatch for per-array parameter"):
-        two_array_system.get_cell_temperature((1000, 1000), (1, 1, 1), 1, model=model)
+    with pytest.raises(
+        ValueError, match="Length mismatch for per-array parameter"
+    ):
+        two_array_system.get_cell_temperature(
+            (1000, 1000), (1, 1, 1), 1, model=model
+        )
 
 
-@pytest.mark.parametrize("model", ["faiman", "pvsyst", "sapm", "fuentes", "noct_sam"])
+@pytest.mark.parametrize(
+    "model", ["faiman", "pvsyst", "sapm", "fuentes", "noct_sam"]
+)
 def test_PVSystem_multi_array_celltemp_wind_too_short(model, two_array_system):
-    with pytest.raises(ValueError, match="Length mismatch for per-array parameter"):
-        two_array_system.get_cell_temperature((1000, 1000), 25, (1,), model=model)
+    with pytest.raises(
+        ValueError, match="Length mismatch for per-array parameter"
+    ):
+        two_array_system.get_cell_temperature(
+            (1000, 1000), 25, (1,), model=model
+        )
 
 
-@pytest.mark.parametrize("model", ["faiman", "pvsyst", "sapm", "fuentes", "noct_sam"])
+@pytest.mark.parametrize(
+    "model", ["faiman", "pvsyst", "sapm", "fuentes", "noct_sam"]
+)
 def test_PVSystem_multi_array_celltemp_wind_too_long(model, two_array_system):
-    with pytest.raises(ValueError, match="Length mismatch for per-array parameter"):
-        two_array_system.get_cell_temperature((1000, 1000), 25, (1, 1, 1), model=model)
+    with pytest.raises(
+        ValueError, match="Length mismatch for per-array parameter"
+    ):
+        two_array_system.get_cell_temperature(
+            (1000, 1000), 25, (1, 1, 1), model=model
+        )
 
 
-@pytest.mark.parametrize("model", ["faiman", "pvsyst", "sapm", "fuentes", "noct_sam"])
-def test_PVSystem_multi_array_celltemp_poa_length_mismatch(model, two_array_system):
-    with pytest.raises(ValueError, match="Length mismatch for per-array parameter"):
+@pytest.mark.parametrize(
+    "model", ["faiman", "pvsyst", "sapm", "fuentes", "noct_sam"]
+)
+def test_PVSystem_multi_array_celltemp_poa_length_mismatch(
+    model, two_array_system
+):
+    with pytest.raises(
+        ValueError, match="Length mismatch for per-array parameter"
+    ):
         two_array_system.get_cell_temperature(1000, 25, 1, model=model)
 
 
@@ -730,7 +827,9 @@ def test_PVSystem_fuentes_celltemp(mocker):
     assert_series_equal(spy.call_args[0][1], temps)
     assert_series_equal(spy.call_args[0][2], winds)
     assert spy.call_args[0][3] == noct_installed
-    assert_series_equal(out, pd.Series([52.85, 55.85, 55.85], index, name="tmod"))
+    assert_series_equal(
+        out, pd.Series([52.85, 55.85, 55.85], index, name="tmod")
+    )
 
 
 def test_PVSystem_fuentes_module_height(mocker):
@@ -764,7 +863,9 @@ def test_Array__infer_temperature_model_params():
         module_parameters={},
         module_type="glass_polymer",
     )
-    expected = temperature.TEMPERATURE_MODEL_PARAMETERS["pvsyst"]["freestanding"]
+    expected = temperature.TEMPERATURE_MODEL_PARAMETERS["pvsyst"][
+        "freestanding"
+    ]
     assert expected == array._infer_temperature_model_params()
     array = pvsystem.Array(
         mount=FixedMount(0, 180, racking_model="insulated"),
@@ -776,7 +877,9 @@ def test_Array__infer_temperature_model_params():
 
 
 def test_Array__infer_cell_type():
-    array = pvsystem.Array(mount=pvsystem.FixedMount(0, 180), module_parameters={})
+    array = pvsystem.Array(
+        mount=pvsystem.FixedMount(0, 180), module_parameters={}
+    )
     assert array._infer_cell_type() is None
 
 
@@ -860,7 +963,8 @@ def test_calcparams_desoto_returns_correct_Python_type(
     )
 
     assert all(
-        _calcparams_correct_Python_type_check(a, numeric_args.values()) for a in out
+        _calcparams_correct_Python_type_check(a, numeric_args.values())
+        for a in out
     )
 
 
@@ -888,7 +992,8 @@ def test_calcparams_cec_returns_correct_Python_type(
     )
 
     assert all(
-        _calcparams_correct_Python_type_check(a, numeric_args.values()) for a in out
+        _calcparams_correct_Python_type_check(a, numeric_args.values())
+        for a in out
     )
 
 
@@ -917,7 +1022,8 @@ def test_calcparams_pvsyst_returns_correct_Python_type(
     )
 
     assert all(
-        _calcparams_correct_Python_type_check(a, numeric_args.values()) for a in out
+        _calcparams_correct_Python_type_check(a, numeric_args.values())
+        for a in out
     )
 
 
@@ -990,7 +1096,10 @@ def test_calcparams_pvsyst_all_scalars(pvsyst_module_params):
 def test_calcparams_desoto(cec_module_params):
     times = pd.date_range(start="2015-01-01", periods=3, freq="12h")
     df = pd.DataFrame(
-        {"effective_irradiance": [0.0, 800.0, 800.0], "temp_cell": [25, 25, 50]},
+        {
+            "effective_irradiance": [0.0, 800.0, 800.0],
+            "temp_cell": [25, 25, 50],
+        },
         index=times,
     )
 
@@ -1011,23 +1120,32 @@ def test_calcparams_desoto(cec_module_params):
         IL, pd.Series([0.0, 6.036, 6.096], index=times), check_less_precise=3
     )
     assert_series_equal(
-        I0, pd.Series([0.0, 1.94e-9, 7.419e-8], index=times), check_less_precise=3
+        I0,
+        pd.Series([0.0, 1.94e-9, 7.419e-8], index=times),
+        check_less_precise=3,
     )
     assert_series_equal(
         Rs, pd.Series([0.094, 0.094, 0.094], index=times), check_less_precise=3
     )
     assert_series_equal(
-        Rsh, pd.Series([np.inf, 19.65, 19.65], index=times), check_less_precise=3
+        Rsh,
+        pd.Series([np.inf, 19.65, 19.65], index=times),
+        check_less_precise=3,
     )
     assert_series_equal(
-        nNsVth, pd.Series([0.473, 0.473, 0.5127], index=times), check_less_precise=3
+        nNsVth,
+        pd.Series([0.473, 0.473, 0.5127], index=times),
+        check_less_precise=3,
     )
 
 
 def test_calcparams_cec(cec_module_params):
     times = pd.date_range(start="2015-01-01", periods=3, freq="12h")
     df = pd.DataFrame(
-        {"effective_irradiance": [0.0, 800.0, 800.0], "temp_cell": [25, 25, 50]},
+        {
+            "effective_irradiance": [0.0, 800.0, 800.0],
+            "temp_cell": [25, 25, 50],
+        },
         index=times,
     )
 
@@ -1049,16 +1167,22 @@ def test_calcparams_cec(cec_module_params):
         IL, pd.Series([0.0, 6.036, 6.0896], index=times), check_less_precise=3
     )
     assert_series_equal(
-        I0, pd.Series([0.0, 1.94e-9, 7.419e-8], index=times), check_less_precise=3
+        I0,
+        pd.Series([0.0, 1.94e-9, 7.419e-8], index=times),
+        check_less_precise=3,
     )
     assert_series_equal(
         Rs, pd.Series([0.094, 0.094, 0.094], index=times), check_less_precise=3
     )
     assert_series_equal(
-        Rsh, pd.Series([np.inf, 19.65, 19.65], index=times), check_less_precise=3
+        Rsh,
+        pd.Series([np.inf, 19.65, 19.65], index=times),
+        check_less_precise=3,
     )
     assert_series_equal(
-        nNsVth, pd.Series([0.473, 0.473, 0.5127], index=times), check_less_precise=3
+        nNsVth,
+        pd.Series([0.473, 0.473, 0.5127], index=times),
+        check_less_precise=3,
     )
 
 
@@ -1102,7 +1226,8 @@ def test_calcparams_cec_extra_params_propagation(cec_module_params, mocker):
 def test_calcparams_pvsyst(pvsyst_module_params):
     times = pd.date_range(start="2015-01-01", periods=2, freq="12h")
     df = pd.DataFrame(
-        {"effective_irradiance": [0.0, 800.0], "temp_cell": [25, 50]}, index=times
+        {"effective_irradiance": [0.0, 800.0], "temp_cell": [25, 50]},
+        index=times,
     )
 
     IL, I0, Rs, Rsh, nNsVth = pvsystem.calcparams_pvsyst(
@@ -1120,9 +1245,15 @@ def test_calcparams_pvsyst(pvsyst_module_params):
         EgRef=pvsyst_module_params["EgRef"],
     )
 
-    assert_series_equal(IL.round(decimals=3), pd.Series([0.0, 4.8200], index=times))
-    assert_series_equal(I0.round(decimals=3), pd.Series([0.0, 1.47e-7], index=times))
-    assert_series_equal(Rs.round(decimals=3), pd.Series([0.500, 0.500], index=times))
+    assert_series_equal(
+        IL.round(decimals=3), pd.Series([0.0, 4.8200], index=times)
+    )
+    assert_series_equal(
+        I0.round(decimals=3), pd.Series([0.0, 1.47e-7], index=times)
+    )
+    assert_series_equal(
+        Rs.round(decimals=3), pd.Series([0.500, 0.500], index=times)
+    )
     assert_series_equal(
         Rsh.round(decimals=3), pd.Series([1000.0, 305.757], index=times)
     )
@@ -1139,7 +1270,9 @@ def test_PVSystem_calcparams_desoto(cec_module_params, mocker):
     system = pvsystem.PVSystem(module_parameters=module_parameters)
     effective_irradiance = np.array([0, 800])
     temp_cell = 25
-    IL, I0, Rs, Rsh, nNsVth = system.calcparams_desoto(effective_irradiance, temp_cell)
+    IL, I0, Rs, Rsh, nNsVth = system.calcparams_desoto(
+        effective_irradiance, temp_cell
+    )
     pvsystem.calcparams_desoto.assert_called_once_with(
         effective_irradiance,
         temp_cell,
@@ -1166,7 +1299,9 @@ def test_PVSystem_calcparams_pvsyst(pvsyst_module_params, mocker):
     system = pvsystem.PVSystem(module_parameters=module_parameters)
     effective_irradiance = np.array([0, 800])
     temp_cell = np.array([25, 50])
-    IL, I0, Rs, Rsh, nNsVth = system.calcparams_pvsyst(effective_irradiance, temp_cell)
+    IL, I0, Rs, Rsh, nNsVth = system.calcparams_pvsyst(
+        effective_irradiance, temp_cell
+    )
     pvsystem.calcparams_pvsyst.assert_called_once_with(
         effective_irradiance,
         temp_cell,
@@ -1199,7 +1334,9 @@ def test_PVSystem_calcparams_pvsyst(pvsyst_module_params, mocker):
     ],
 )
 def test_PVSystem_multi_array_calcparams(calcparams, two_array_system):
-    params_one, params_two = calcparams(two_array_system, (1000, 500), (30, 20))
+    params_one, params_two = calcparams(
+        two_array_system, (1000, 500), (30, 20)
+    )
     assert params_one != params_two
 
 
@@ -1218,7 +1355,9 @@ def test_PVSystem_multi_array_calcparams(calcparams, two_array_system):
 def test_PVSystem_multi_array_calcparams_value_error(
     calcparams, irrad, celltemp, two_array_system
 ):
-    with pytest.raises(ValueError, match="Length mismatch for per-array parameter"):
+    with pytest.raises(
+        ValueError, match="Length mismatch for per-array parameter"
+    ):
         calcparams(two_array_system, irrad, celltemp)
 
 
@@ -1261,7 +1400,10 @@ def test_PVSystem_multi_array_calcparams_value_error(
             "I0": np.array([6.0e-7, 6.0e-7]),
             "IL": np.array([7.0, 7.0]),
             "V_expected": np.array(
-                [0.5 * (np.log(7.0 + 6.0e-7) - np.log(6.0e-7)), 7.5049875193450521]
+                [
+                    0.5 * (np.log(7.0 + 6.0e-7) - np.log(6.0e-7)),
+                    7.5049875193450521,
+                ]
             ),
         },
         {  # Can handle mixed inputs with a rank-2 array with infinite shunt
@@ -1338,7 +1480,9 @@ def test_PVSystem_multi_array_calcparams_value_error(
             "Rs": 1.065,
             "nNsVth": np.array([2.89, 2.89, 2.681527737715915]),
             "I": 0.0,
-            "I0": np.array([7.05196029e-08, 7.05196029e-08, 1.8739027472625636e-09]),
+            "I0": np.array(
+                [7.05196029e-08, 7.05196029e-08, 1.8739027472625636e-09]
+            ),
             "IL": np.array([10.491262, 10.491262, 5.1366949999999996]),
             "V_expected": np.array(
                 [
@@ -1389,7 +1533,9 @@ def test_i_from_v_from_i(fixture_v_from_i):
     # Convergence criteria
     atol = 1.0e-11
 
-    I_expected = pvsystem.i_from_v(V, IL, I0, Rs, Rsh, nNsVth, method="lambertw")
+    I_expected = pvsystem.i_from_v(
+        V, IL, I0, Rs, Rsh, nNsVth, method="lambertw"
+    )
     assert_allclose(current, I_expected, atol=atol)
 
     current = pvsystem.i_from_v(V, IL, I0, Rs, Rsh, nNsVth)
@@ -1468,7 +1614,8 @@ def test_i_from_v_from_i(fixture_v_from_i):
                 [
                     7.0,
                     7.0
-                    - 6.0e-7 * np.expm1((np.log(7.0 + 6.0e-7) - np.log(6.0e-7)) / 2.0),
+                    - 6.0e-7
+                    * np.expm1((np.log(7.0 + 6.0e-7) - np.log(6.0e-7)) / 2.0),
                     0.0,
                 ]
             ),
@@ -1522,10 +1669,18 @@ def test_i_from_v_size():
     with pytest.raises(ValueError):
         pvsystem.i_from_v([7.5] * 3, 7.0, 6e-7, [0.1] * 2, 20, 0.5)
     with pytest.raises(ValueError):
-        pvsystem.i_from_v([7.5] * 3, 7.0, 6e-7, [0.1] * 2, 20, 0.5, method="brentq")
+        pvsystem.i_from_v(
+            [7.5] * 3, 7.0, 6e-7, [0.1] * 2, 20, 0.5, method="brentq"
+        )
     with pytest.raises(ValueError):
         pvsystem.i_from_v(
-            [7.5] * 3, np.array([7.0, 7.0]), 6e-7, 0.1, 20, 0.5, method="newton"
+            [7.5] * 3,
+            np.array([7.0, 7.0]),
+            6e-7,
+            0.1,
+            20,
+            0.5,
+            method="newton",
         )
 
 
@@ -1533,10 +1688,18 @@ def test_v_from_i_size():
     with pytest.raises(ValueError):
         pvsystem.v_from_i([3.0] * 3, 7.0, 6e-7, [0.1] * 2, 20, 0.5)
     with pytest.raises(ValueError):
-        pvsystem.v_from_i([3.0] * 3, 7.0, 6e-7, [0.1] * 2, 20, 0.5, method="brentq")
+        pvsystem.v_from_i(
+            [3.0] * 3, 7.0, 6e-7, [0.1] * 2, 20, 0.5, method="brentq"
+        )
     with pytest.raises(ValueError):
         pvsystem.v_from_i(
-            [3.0] * 3, np.array([7.0, 7.0]), 6e-7, [0.1], 20, 0.5, method="newton"
+            [3.0] * 3,
+            np.array([7.0, 7.0]),
+            6e-7,
+            [0.1],
+            20,
+            0.5,
+            method="newton",
         )
 
 
@@ -1588,7 +1751,11 @@ def test_mpp_recombination():
     expected_imp = pvsyst_fs_495["I_mp_ref"]
     expected_vmp = pvsyst_fs_495["V_mp_ref"]
     expected_pmp = expected_imp * expected_vmp
-    expected = {"i_mp": expected_imp, "v_mp": expected_vmp, "p_mp": expected_pmp}
+    expected = {
+        "i_mp": expected_imp,
+        "v_mp": expected_vmp,
+        "p_mp": expected_pmp,
+    }
     assert isinstance(out, dict)
     for k, v in out.items():
         assert np.isclose(v, expected[k], 0.01)
@@ -1716,7 +1883,11 @@ def test_singlediode_array():
     assert_allclose(sd["v_mp"], expected_v, atol=1e-8)
 
     sd = pvsystem.singlediode(
-        photocurrent, saturation_current, resistance_series, resistance_shunt, nNsVth
+        photocurrent,
+        saturation_current,
+        resistance_series,
+        resistance_shunt,
+        nNsVth,
     )
     expected = pvsystem.i_from_v(
         sd["v_mp"],
@@ -1831,7 +2002,9 @@ def test_scale_voltage_current_power():
 def test_PVSystem_scale_voltage_current_power(mocker):
     data = None
     system = pvsystem.PVSystem(modules_per_string=2, strings_per_inverter=3)
-    m = mocker.patch("pvlib.pvsystem.scale_voltage_current_power", autospec=True)
+    m = mocker.patch(
+        "pvlib.pvsystem.scale_voltage_current_power", autospec=True
+    )
     system.scale_voltage_current_power(data)
     m.assert_called_once_with(data, voltage=2, current=3)
 
@@ -1848,13 +2021,20 @@ def test_PVSystem_multi_scale_voltage_current_power(mocker):
             ),
         ]
     )
-    m = mocker.patch("pvlib.pvsystem.scale_voltage_current_power", autospec=True)
+    m = mocker.patch(
+        "pvlib.pvsystem.scale_voltage_current_power", autospec=True
+    )
     system.scale_voltage_current_power(data)
     m.assert_has_calls(
-        [mock.call(1, voltage=2, current=3), mock.call(2, voltage=3, current=5)],
+        [
+            mock.call(1, voltage=2, current=3),
+            mock.call(2, voltage=3, current=5),
+        ],
         any_order=True,
     )
-    with pytest.raises(ValueError, match="Length mismatch for per-array parameter"):
+    with pytest.raises(
+        ValueError, match="Length mismatch for per-array parameter"
+    ):
         system.scale_voltage_current_power(None)
 
 
@@ -1888,11 +2068,17 @@ def test_PVSystem_get_ac_sandia_multi(cec_inverter_parameters, mocker):
     pacs = system.get_ac("sandia", (pdcs, pdcs), v_dc=(vdcs, vdcs))
     inv_fun.assert_called_once()
     assert_series_equal(pacs, pd.Series([-0.020000, 132.004308, 250.000000]))
-    with pytest.raises(ValueError, match="Length mismatch for per-array parameter"):
+    with pytest.raises(
+        ValueError, match="Length mismatch for per-array parameter"
+    ):
         system.get_ac("sandia", vdcs, (pdcs, pdcs))
-    with pytest.raises(ValueError, match="Length mismatch for per-array parameter"):
+    with pytest.raises(
+        ValueError, match="Length mismatch for per-array parameter"
+    ):
         system.get_ac("sandia", vdcs, (pdcs,))
-    with pytest.raises(ValueError, match="Length mismatch for per-array parameter"):
+    with pytest.raises(
+        ValueError, match="Length mismatch for per-array parameter"
+    ):
         system.get_ac("sandia", (vdcs, vdcs), (pdcs, pdcs, pdcs))
 
 
@@ -1939,17 +2125,26 @@ def test_PVSystem_get_ac_pvwatts_multi(
         pacs = system.get_ac("pvwatts", (pdcs, pdcs))
         assert_series_equal(pacs, exp)
     assert inverter.pvwatts_multi.call_count == 2
-    with pytest.raises(ValueError, match="Length mismatch for per-array parameter"):
+    with pytest.raises(
+        ValueError, match="Length mismatch for per-array parameter"
+    ):
         system.get_ac("pvwatts", (pdcs,))
-    with pytest.raises(ValueError, match="Length mismatch for per-array parameter"):
+    with pytest.raises(
+        ValueError, match="Length mismatch for per-array parameter"
+    ):
         system.get_ac("pvwatts", pdcs)
-    with pytest.raises(ValueError, match="Length mismatch for per-array parameter"):
+    with pytest.raises(
+        ValueError, match="Length mismatch for per-array parameter"
+    ):
         system.get_ac("pvwatts", (pdcs, pdcs, pdcs))
 
 
 @pytest.mark.parametrize("model", ["sandia", "adr", "pvwatts"])
 def test_PVSystem_get_ac_single_array_tuple_input(
-    model, pvwatts_system_defaults, cec_inverter_parameters, adr_inverter_parameters
+    model,
+    pvwatts_system_defaults,
+    cec_inverter_parameters,
+    adr_inverter_parameters,
 ):
     vdcs = {
         "sandia": pd.Series(np.linspace(0, 50, 3)),
@@ -1992,7 +2187,9 @@ def test_PVSystem_get_ac_adr(adr_inverter_parameters, mocker):
     assert_series_equal(
         pacs, pd.Series([np.nan, 1161.5745, 1116.4459, 382.6679, np.nan])
     )
-    inverter.adr.assert_called_once_with(vdcs, pdcs, system.inverter_parameters)
+    inverter.adr.assert_called_once_with(
+        vdcs, pdcs, system.inverter_parameters
+    )
 
 
 def test_PVSystem_get_ac_adr_multi(adr_inverter_parameters):
@@ -2004,7 +2201,9 @@ def test_PVSystem_get_ac_adr_multi(adr_inverter_parameters):
         inverter_parameters=adr_inverter_parameters,
     )
     pdcs = pd.Series([135, 1232, 1170, 420, 551])
-    with pytest.raises(ValueError, match="The adr inverter function cannot be used"):
+    with pytest.raises(
+        ValueError, match="The adr inverter function cannot be used"
+    ):
         system.get_ac(model="adr", p_dc=pdcs)
 
 
@@ -2043,8 +2242,12 @@ def test_PVSystem_get_aoi():
 def test_PVSystem_multiple_array_get_aoi():
     system = pvsystem.PVSystem(
         arrays=[
-            pvsystem.Array(pvsystem.FixedMount(surface_tilt=15, surface_azimuth=135)),
-            pvsystem.Array(pvsystem.FixedMount(surface_tilt=32, surface_azimuth=135)),
+            pvsystem.Array(
+                pvsystem.FixedMount(surface_tilt=15, surface_azimuth=135)
+            ),
+            pvsystem.Array(
+                pvsystem.FixedMount(surface_tilt=32, surface_azimuth=135)
+            ),
         ]
     )
     aoi_one, aoi_two = system.get_aoi(30, 225)
@@ -2065,7 +2268,8 @@ def solar_pos():
 def test_PVSystem_get_irradiance(solar_pos):
     system = pvsystem.PVSystem(surface_tilt=32, surface_azimuth=135)
     irrads = pd.DataFrame(
-        {"dni": [900, 0], "ghi": [600, 0], "dhi": [100, 0]}, index=solar_pos.index
+        {"dni": [900, 0], "ghi": [600, 0], "dhi": [100, 0]},
+        index=solar_pos.index,
     )
 
     irradiance = system.get_irradiance(
@@ -2078,7 +2282,13 @@ def test_PVSystem_get_irradiance(solar_pos):
     expected = pd.DataFrame(
         data=np.array(
             [
-                [883.65494055, 745.86141676, 137.79352379, 126.397131, 11.39639279],
+                [
+                    883.65494055,
+                    745.86141676,
+                    137.79352379,
+                    126.397131,
+                    11.39639279,
+                ],
                 [0.0, -0.0, 0.0, 0.0, 0.0],
             ]
         ),
@@ -2116,7 +2326,12 @@ def test_PVSystem_get_irradiance_float():
 def test_PVSystem_get_irradiance_albedo(solar_pos):
     system = pvsystem.PVSystem(surface_tilt=32, surface_azimuth=135)
     irrads = pd.DataFrame(
-        {"dni": [900, 0], "ghi": [600, 0], "dhi": [100, 0], "albedo": [0.5, 0.5]},
+        {
+            "dni": [900, 0],
+            "ghi": [600, 0],
+            "dhi": [100, 0],
+            "albedo": [0.5, 0.5],
+        },
         index=solar_pos.index,
     )
     # albedo as a Series
@@ -2131,7 +2346,13 @@ def test_PVSystem_get_irradiance_albedo(solar_pos):
     expected = pd.DataFrame(
         data=np.array(
             [
-                [895.05134334, 745.86141676, 149.18992658, 126.397131, 22.79279558],
+                [
+                    895.05134334,
+                    745.86141676,
+                    149.18992658,
+                    126.397131,
+                    22.79279558,
+                ],
                 [0.0, -0.0, 0.0, 0.0, 0.0],
             ]
         ),
@@ -2152,7 +2373,8 @@ def test_PVSystem_get_irradiance_model(mocker, solar_pos):
     spy_haydavies = mocker.spy(irradiance, "haydavies")
     system = pvsystem.PVSystem(surface_tilt=32, surface_azimuth=135)
     irrads = pd.DataFrame(
-        {"dni": [900, 0], "ghi": [600, 0], "dhi": [100, 0]}, index=solar_pos.index
+        {"dni": [900, 0], "ghi": [600, 0], "dhi": [100, 0]},
+        index=solar_pos.index,
     )
     system.get_irradiance(
         solar_pos["apparent_zenith"],
@@ -2177,11 +2399,14 @@ def test_PVSystem_multi_array_get_irradiance(solar_pos):
     array_one = pvsystem.Array(
         pvsystem.FixedMount(surface_tilt=32, surface_azimuth=135)
     )
-    array_two = pvsystem.Array(pvsystem.FixedMount(surface_tilt=5, surface_azimuth=150))
+    array_two = pvsystem.Array(
+        pvsystem.FixedMount(surface_tilt=5, surface_azimuth=150)
+    )
     system = pvsystem.PVSystem(arrays=[array_one, array_two])
 
     irrads = pd.DataFrame(
-        {"dni": [900, 0], "ghi": [600, 0], "dhi": [100, 0]}, index=solar_pos.index
+        {"dni": [900, 0], "ghi": [600, 0], "dhi": [100, 0]},
+        index=solar_pos.index,
     )
     array_one_expected = array_one.get_irradiance(
         solar_pos["apparent_zenith"],
@@ -2204,8 +2429,12 @@ def test_PVSystem_multi_array_get_irradiance(solar_pos):
         irrads["ghi"],
         irrads["dhi"],
     )
-    assert_frame_equal(array_one_irrad, array_one_expected, check_less_precise=2)
-    assert_frame_equal(array_two_irrad, array_two_expected, check_less_precise=2)
+    assert_frame_equal(
+        array_one_irrad, array_one_expected, check_less_precise=2
+    )
+    assert_frame_equal(
+        array_two_irrad, array_two_expected, check_less_precise=2
+    )
 
 
 def test_PVSystem_multi_array_get_irradiance_multi_irrad(solar_pos):
@@ -2221,10 +2450,12 @@ def test_PVSystem_multi_array_get_irradiance_multi_irrad(solar_pos):
     system = pvsystem.PVSystem(arrays=[array_one, array_two])
 
     irrads = pd.DataFrame(
-        {"dni": [900, 0], "ghi": [600, 0], "dhi": [100, 0]}, index=solar_pos.index
+        {"dni": [900, 0], "ghi": [600, 0], "dhi": [100, 0]},
+        index=solar_pos.index,
     )
     irrads_two = pd.DataFrame(
-        {"dni": [0, 900], "ghi": [0, 600], "dhi": [0, 100]}, index=solar_pos.index
+        {"dni": [0, 900], "ghi": [0, 600], "dhi": [0, 100]},
+        index=solar_pos.index,
     )
     array_irrad = system.get_irradiance(
         solar_pos["apparent_zenith"],
@@ -2258,7 +2489,9 @@ def test_PVSystem_multi_array_get_irradiance_multi_irrad(solar_pos):
     assert not array_irrad[0].equals(array_irrad[1])
     assert_frame_equal(array_irrad[0], array_one_expected)
     assert_frame_equal(array_irrad[1], array_two_expected)
-    with pytest.raises(ValueError, match="Length mismatch for per-array parameter"):
+    with pytest.raises(
+        ValueError, match="Length mismatch for per-array parameter"
+    ):
         system.get_irradiance(
             solar_pos["apparent_zenith"],
             solar_pos["azimuth"],
@@ -2278,9 +2511,12 @@ def test_PVSystem_multi_array_get_irradiance_multi_irrad(solar_pos):
 
 
 def test_Array_get_irradiance(solar_pos):
-    array = pvsystem.Array(pvsystem.FixedMount(surface_tilt=32, surface_azimuth=135))
+    array = pvsystem.Array(
+        pvsystem.FixedMount(surface_tilt=32, surface_azimuth=135)
+    )
     irrads = pd.DataFrame(
-        {"dni": [900, 0], "ghi": [600, 0], "dhi": [100, 0]}, index=solar_pos.index
+        {"dni": [900, 0], "ghi": [600, 0], "dhi": [100, 0]},
+        index=solar_pos.index,
     )
     # defaults for kwargs
     modeled = array.get_irradiance(
@@ -2293,7 +2529,13 @@ def test_Array_get_irradiance(solar_pos):
     expected = pd.DataFrame(
         data=np.array(
             [
-                [883.65494055, 745.86141676, 137.79352379, 126.397131, 11.39639279],
+                [
+                    883.65494055,
+                    745.86141676,
+                    137.79352379,
+                    126.397131,
+                    11.39639279,
+                ],
                 [0.0, -0.0, 0.0, 0.0, 0.0],
             ]
         ),
@@ -2358,9 +2600,12 @@ def test_PVSystem___repr__():
 def test_PVSystem_multi_array___repr__():
     system = pvsystem.PVSystem(
         arrays=[
-            pvsystem.Array(pvsystem.FixedMount(surface_tilt=30, surface_azimuth=100)),
             pvsystem.Array(
-                pvsystem.FixedMount(surface_tilt=20, surface_azimuth=220), name="foo"
+                pvsystem.FixedMount(surface_tilt=30, surface_azimuth=100)
+            ),
+            pvsystem.Array(
+                pvsystem.FixedMount(surface_tilt=20, surface_azimuth=220),
+                name="foo",
             ),
         ],
         inverter="blarg",
@@ -2425,7 +2670,9 @@ def test_pvwatts_dc_arrays():
     irrad_trans = np.array([np.nan, 900, 900])
     temp_cell = np.array([30, np.nan, 30])
     irrad_trans, temp_cell = np.meshgrid(irrad_trans, temp_cell)
-    expected = np.array([[nan, 88.65, 88.65], [nan, nan, nan], [nan, 88.65, 88.65]])
+    expected = np.array(
+        [[nan, 88.65, 88.65], [nan, nan, nan], [nan, 88.65, 88.65]]
+    )
     out = pvsystem.pvwatts_dc(irrad_trans, temp_cell, 100, -0.003)
     assert_allclose(out, expected, equal_nan=True)
 
@@ -2463,7 +2710,8 @@ def pvwatts_system_defaults():
     module_parameters = {"pdc0": 100, "gamma_pdc": -0.003}
     inverter_parameters = {"pdc0": 90}
     system = pvsystem.PVSystem(
-        module_parameters=module_parameters, inverter_parameters=inverter_parameters
+        module_parameters=module_parameters,
+        inverter_parameters=inverter_parameters,
     )
     return system
 
@@ -2473,7 +2721,8 @@ def pvwatts_system_kwargs():
     module_parameters = {"pdc0": 100, "gamma_pdc": -0.003, "temp_ref": 20}
     inverter_parameters = {"pdc0": 90, "eta_inv_nom": 0.95, "eta_inv_ref": 1.0}
     system = pvsystem.PVSystem(
-        module_parameters=module_parameters, inverter_parameters=inverter_parameters
+        module_parameters=module_parameters,
+        inverter_parameters=inverter_parameters,
     )
     return system
 
@@ -2503,13 +2752,23 @@ def test_PVSystem_pvwatts_dc_kwargs(pvwatts_system_kwargs, mocker):
 
 
 def test_PVSystem_multiple_array_pvwatts_dc():
-    array_one_module_parameters = {"pdc0": 100, "gamma_pdc": -0.003, "temp_ref": 20}
+    array_one_module_parameters = {
+        "pdc0": 100,
+        "gamma_pdc": -0.003,
+        "temp_ref": 20,
+    }
     array_one = pvsystem.Array(
-        pvsystem.FixedMount(0, 180), module_parameters=array_one_module_parameters
+        pvsystem.FixedMount(0, 180),
+        module_parameters=array_one_module_parameters,
     )
-    array_two_module_parameters = {"pdc0": 150, "gamma_pdc": -0.002, "temp_ref": 25}
+    array_two_module_parameters = {
+        "pdc0": 150,
+        "gamma_pdc": -0.002,
+        "temp_ref": 25,
+    }
     array_two = pvsystem.Array(
-        pvsystem.FixedMount(0, 180), module_parameters=array_two_module_parameters
+        pvsystem.FixedMount(0, 180),
+        module_parameters=array_two_module_parameters,
     )
     system = pvsystem.PVSystem(arrays=[array_one, array_two])
     irrad_one = 900
@@ -2582,7 +2841,9 @@ def test_PVSystem_num_arrays():
 
 
 def test_PVSystem_at_least_one_array():
-    with pytest.raises(ValueError, match="PVSystem must have at least one Array"):
+    with pytest.raises(
+        ValueError, match="PVSystem must have at least one Array"
+    ):
         pvsystem.PVSystem(arrays=[])
 
 
@@ -2598,7 +2859,10 @@ def test_combine_loss_factors():
     test_index = pd.date_range(start="1990/01/01T12:00", periods=365, freq="d")
     loss_1 = pd.Series(0.10, index=test_index)
     loss_2 = pd.Series(
-        0.05, index=pd.date_range(start="1990/01/01T12:00", periods=365 * 2, freq="d")
+        0.05,
+        index=pd.date_range(
+            start="1990/01/01T12:00", periods=365 * 2, freq="d"
+        ),
     )
     loss_3 = pd.Series(
         0.02, index=pd.date_range(start="1990/01/01", periods=12, freq="MS")
@@ -2693,7 +2957,11 @@ def test_PVSystem_dc_ohms_from_percent(mocker):
     out = system.dc_ohms_from_percent()
 
     pvsystem.dc_ohms_from_percent.assert_called_once_with(
-        dc_ohmic_percent=3, vmp_ref=38, imp_ref=8, modules_per_string=1, strings=1
+        dc_ohmic_percent=3,
+        vmp_ref=38,
+        imp_ref=8,
+        modules_per_string=1,
+        strings=1,
     )
 
     assert_allclose(out, expected)
@@ -2717,7 +2985,11 @@ def test_Array_dc_ohms_from_percent(mocker):
     )
     out = array.dc_ohms_from_percent()
     pvsystem.dc_ohms_from_percent.assert_called_with(
-        dc_ohmic_percent=3, vmp_ref=38, imp_ref=8, modules_per_string=1, strings=1
+        dc_ohmic_percent=3,
+        vmp_ref=38,
+        imp_ref=8,
+        modules_per_string=1,
+        strings=1,
     )
     assert_allclose(out, expected)
 
@@ -2728,7 +3000,11 @@ def test_Array_dc_ohms_from_percent(mocker):
     )
     out = array.dc_ohms_from_percent()
     pvsystem.dc_ohms_from_percent.assert_called_with(
-        dc_ohmic_percent=3, vmp_ref=38, imp_ref=8, modules_per_string=1, strings=1
+        dc_ohmic_percent=3,
+        vmp_ref=38,
+        imp_ref=8,
+        modules_per_string=1,
+        strings=1,
     )
     assert_allclose(out, expected)
 
@@ -2740,7 +3016,11 @@ def test_Array_dc_ohms_from_percent(mocker):
     out = array.dc_ohms_from_percent()
 
     pvsystem.dc_ohms_from_percent.assert_called_with(
-        dc_ohmic_percent=3, vmp_ref=38, imp_ref=8, modules_per_string=1, strings=1
+        dc_ohmic_percent=3,
+        vmp_ref=38,
+        imp_ref=8,
+        modules_per_string=1,
+        strings=1,
     )
     assert_allclose(out, expected)
 
@@ -2756,7 +3036,8 @@ def test_Array_dc_ohms_from_percent(mocker):
         ),
     ):
         array = pvsystem.Array(
-            pvsystem.FixedMount(0, 180), array_losses_parameters={"dc_ohmic_percent": 3}
+            pvsystem.FixedMount(0, 180),
+            array_losses_parameters={"dc_ohmic_percent": 3},
         )
         out = array.dc_ohms_from_percent()
 

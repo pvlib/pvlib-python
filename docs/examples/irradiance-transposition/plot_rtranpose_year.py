@@ -62,7 +62,9 @@ from pvlib.irradiance import (
 PVLIB_DIR = pvlib.__path__[0]
 DATA_FILE = os.path.join(PVLIB_DIR, "data", "723170TYA.CSV")
 
-tmy, metadata = iotools.read_tmy3(DATA_FILE, coerce_year=1990, map_variables=True)
+tmy, metadata = iotools.read_tmy3(
+    DATA_FILE, coerce_year=1990, map_variables=True
+)
 
 df = pd.DataFrame(
     {

@@ -156,7 +156,13 @@ def _empty_dataframe_from_logical_records(logical_records):
 
 
 def get_bsrn(
-    station, start, end, username, password, logical_records=("0100",), save_path=None
+    station,
+    start,
+    end,
+    username,
+    password,
+    logical_records=("0100",),
+    save_path=None,
 ):
     """
     Retrieve ground measured irradiance data from the BSRN FTP server.
@@ -255,7 +261,9 @@ def get_bsrn(
 
     # Generate list files to download based on start/end (SSSMMYY.dat.gz)
     filenames = (
-        pd.date_range(start, end.replace(day=1) + pd.DateOffset(months=1), freq="1M")
+        pd.date_range(
+            start, end.replace(day=1) + pd.DateOffset(months=1), freq="1M"
+        )
         .strftime(f"{station}%m%y.dat.gz")
         .tolist()
     )
@@ -305,7 +313,9 @@ def get_bsrn(
     if not dfs:  # If no files were found
         warnings.warn("No files were available for the specified timeframe.")
     elif non_existing_files:  # If only some files were missing
-        warnings.warn(f"The following files were not found: {non_existing_files}")  # noqa: E501
+        warnings.warn(
+            f"The following files were not found: {non_existing_files}"
+        )  # noqa: E501
 
     # Concatenate monthly dataframes to one dataframe
     if len(dfs):
@@ -383,7 +393,9 @@ def parse_bsrn(fbuf, logical_records=("0100",)):
         else:
             horizon += [int(i) for i in line.split()]
     horizon = (
-        pd.Series(horizon[1::2], horizon[::2], name="horizon_elevation", dtype=int)
+        pd.Series(
+            horizon[1::2], horizon[::2], name="horizon_elevation", dtype=int
+        )
         .drop(-1, errors="ignore")
         .sort_index()
     )
@@ -405,7 +417,9 @@ def parse_bsrn(fbuf, logical_records=("0100",)):
 
     for lr in logical_records:
         if lr not in ["0100", "0300", "0500"]:
-            raise ValueError(f"Logical record {lr} not in " "['0100', '0300','0500'].")
+            raise ValueError(
+                f"Logical record {lr} not in " "['0100', '0300','0500']."
+            )
     dfs = []  # Initialize empty list for dataframe
 
     # Parse LR0100 - basic measurements including GHI, DNI, DHI and temperature

@@ -157,17 +157,23 @@ def test_spectral_factor_firstsolar_range():
     )
     expected = np.array([0.96080878, 1.03055092, np.nan])
     assert_allclose(out, expected, atol=1e-3)
-    with pytest.warns(UserWarning, match="High precipitable water values " "replaced"):
+    with pytest.warns(
+        UserWarning, match="High precipitable water values " "replaced"
+    ):
         out = spectrum.spectral_factor_firstsolar(
             6, 1.5, max_precipitable_water=5, module_type="monosi"
         )
-    with pytest.warns(UserWarning, match="Low precipitable water values " "replaced"):
+    with pytest.warns(
+        UserWarning, match="Low precipitable water values " "replaced"
+    ):
         out = spectrum.spectral_factor_firstsolar(
             np.array([0, 3, 8]), np.array([1, 3, 5]), module_type="monosi"
         )
     expected = np.array([0.96080878, 1.03055092, 1.04932727])
     assert_allclose(out, expected, atol=1e-3)
-    with pytest.warns(UserWarning, match="Low precipitable water values " "replaced"):
+    with pytest.warns(
+        UserWarning, match="Low precipitable water values " "replaced"
+    ):
         out = spectrum.spectral_factor_firstsolar(
             0.2, 1.5, min_precipitable_water=1, module_type="monosi"
         )
@@ -194,7 +200,10 @@ def test_spectral_factor_sapm(sapm_module_params, airmass, expected):
     "module_type,expected",
     [
         ("asi", np.array([0.9108, 0.9897, 0.9707, 1.0265, 1.0798, 0.9537])),
-        ("perovskite", np.array([0.9422, 0.9932, 0.9868, 1.0183, 1.0604, 0.9737])),
+        (
+            "perovskite",
+            np.array([0.9422, 0.9932, 0.9868, 1.0183, 1.0604, 0.9737]),
+        ),
         ("cdte", np.array([0.9824, 1.0000, 1.0065, 1.0117, 1.042, 0.9979])),
         ("multisi", np.array([0.9907, 0.9979, 1.0203, 1.0081, 1.0058, 1.019])),
         ("monosi", np.array([0.9935, 0.9987, 1.0264, 1.0074, 0.9999, 1.0263])),
@@ -205,7 +214,9 @@ def test_spectral_factor_caballero(module_type, expected):
     ams = np.array([3.0, 1.5, 3.0, 1.5, 1.5, 3.0])
     aods = np.array([1.0, 1.0, 0.02, 0.02, 0.08, 0.08])
     pws = np.array([1.42, 1.42, 1.42, 1.42, 4.0, 1.0])
-    out = spectrum.spectral_factor_caballero(pws, ams, aods, module_type=module_type)
+    out = spectrum.spectral_factor_caballero(
+        pws, ams, aods, module_type=module_type
+    )
     assert np.allclose(expected, out, atol=1e-3)
 
 
@@ -255,7 +266,9 @@ def test_spectral_factor_caballero_supplied_redundant():
 def test_spectral_factor_caballero_supplied_ambiguous():
     # Error when specifying neither module_type nor coefficients
     with pytest.raises(ValueError):
-        spectrum.spectral_factor_caballero(1, 1, 1, module_type=None, coefficients=None)
+        spectrum.spectral_factor_caballero(
+            1, 1, 1, module_type=None, coefficients=None
+        )
 
 
 @pytest.mark.parametrize(
@@ -264,7 +277,10 @@ def test_spectral_factor_caballero_supplied_ambiguous():
         ("asi", np.array([1.15534029, 1.1123772, 1.08286684, 1.01915462])),
         ("fs-2", np.array([1.0694323, 1.04948777, 1.03556288, 0.9881471])),
         ("fs-4", np.array([1.05234725, 1.037771, 1.0275516, 0.98820533])),
-        ("multisi", np.array([1.03310403, 1.02391703, 1.01744833, 0.97947605])),
+        (
+            "multisi",
+            np.array([1.03310403, 1.02391703, 1.01744833, 0.97947605]),
+        ),
         ("monosi", np.array([1.03225083, 1.02335353, 1.01708734, 0.97950110])),
         ("cigs", np.array([1.01475834, 1.01143927, 1.00909094, 0.97852966])),
     ],
@@ -282,8 +298,14 @@ def test_spectral_factor_pvspec(module_type, expected):
         ("asi", pd.Series([1.15534029, 1.1123772, 1.08286684, 1.01915462])),
         ("fs-2", pd.Series([1.0694323, 1.04948777, 1.03556288, 0.9881471])),
         ("fs-4", pd.Series([1.05234725, 1.037771, 1.0275516, 0.98820533])),
-        ("multisi", pd.Series([1.03310403, 1.02391703, 1.01744833, 0.97947605])),
-        ("monosi", pd.Series([1.03225083, 1.02335353, 1.01708734, 0.97950110])),
+        (
+            "multisi",
+            pd.Series([1.03310403, 1.02391703, 1.01744833, 0.97947605]),
+        ),
+        (
+            "monosi",
+            pd.Series([1.03225083, 1.02335353, 1.01708734, 0.97950110]),
+        ),
         ("cigs", pd.Series([1.01475834, 1.01143927, 1.00909094, 0.97852966])),
     ],
 )
@@ -315,7 +337,9 @@ def test_spectral_factor_pvspec_supplied_redundant():
 def test_spectral_factor_pvspec_supplied_ambiguous():
     # Error when specifying neither module_type nor coefficients
     with pytest.raises(ValueError, match="No valid input provided"):
-        spectrum.spectral_factor_pvspec(1.5, 0.8, module_type=None, coefficients=None)
+        spectrum.spectral_factor_pvspec(
+            1.5, 0.8, module_type=None, coefficients=None
+        )
 
 
 @pytest.mark.parametrize(
@@ -367,4 +391,6 @@ def test_spectral_factor_jrc_supplied_redundant():
 def test_spectral_factor_jrc_supplied_ambiguous():
     # Error when specifying neither module_type nor coefficients
     with pytest.raises(ValueError, match="No valid input provided"):
-        spectrum.spectral_factor_jrc(1.0, 0.8, module_type=None, coefficients=None)
+        spectrum.spectral_factor_jrc(
+            1.0, 0.8, module_type=None, coefficients=None
+        )

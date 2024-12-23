@@ -903,7 +903,10 @@ def spectrl2(
     spectrum_et = _SPECTRL2_COEFFS["spectral_irradiance_et"][:, np.newaxis]
 
     optical_thickness = pvlib.atmosphere.angstrom_aod_at_lambda(
-        aod0=aerosol_turbidity_500nm, lambda0=500, alpha=alpha, lambda1=wavelength
+        aod0=aerosol_turbidity_500nm,
+        lambda0=500,
+        alpha=alpha,
+        lambda1=wavelength,
     )  # Eq 2-7
 
     # Eq 3-16

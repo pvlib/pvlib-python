@@ -16,7 +16,8 @@ extensions = []
 spa_sources = ["pvlib/spa_c_files/spa.c", "pvlib/spa_c_files/spa_py.c"]
 spa_depends = ["pvlib/spa_c_files/spa.h"]
 spa_all_file_paths = map(
-    lambda x: os.path.join(os.path.dirname(__file__), x), spa_sources + spa_depends
+    lambda x: os.path.join(os.path.dirname(__file__), x),
+    spa_sources + spa_depends,
 )
 
 if all(map(os.path.exists, spa_all_file_paths)):

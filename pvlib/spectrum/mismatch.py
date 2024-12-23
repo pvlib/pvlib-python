@@ -88,9 +88,9 @@ def calc_spectral_mismatch_field(sr, e_sun, e_ref=None):
 
     # get the reference spectrum at wavelengths matching the measured spectra
     if e_ref is None:
-        e_ref = pvlib.spectrum.get_reference_spectra(wavelengths=e_sun.T.index)[
-            "global"
-        ]
+        e_ref = pvlib.spectrum.get_reference_spectra(
+            wavelengths=e_sun.T.index
+        )["global"]
 
     # interpolate the sr at the wavelengths of the spectra
     # reference spectrum wavelengths may differ if e_ref is from caller
@@ -324,7 +324,8 @@ def spectral_factor_firstsolar(
         pass
     elif module_type is None and coefficients is None:
         raise TypeError(
-            "No valid input provided, both module_type and " + "coefficients are None"
+            "No valid input provided, both module_type and "
+            + "coefficients are None"
         )
     else:
         raise TypeError(
@@ -412,7 +413,13 @@ def spectral_factor_sapm(airmass_absolute, module):
 
     """
 
-    am_coeff = [module["A4"], module["A3"], module["A2"], module["A1"], module["A0"]]
+    am_coeff = [
+        module["A4"],
+        module["A3"],
+        module["A2"],
+        module["A1"],
+        module["A0"],
+    ]
 
     spectral_loss = np.polyval(am_coeff, airmass_absolute)
 
@@ -427,7 +434,11 @@ def spectral_factor_sapm(airmass_absolute, module):
 
 
 def spectral_factor_caballero(
-    precipitable_water, airmass_absolute, aod500, module_type=None, coefficients=None
+    precipitable_water,
+    airmass_absolute,
+    aod500,
+    module_type=None,
+    coefficients=None,
 ):
     r"""
     Estimate a technology-specific spectral mismatch modifier from
@@ -489,7 +500,8 @@ def spectral_factor_caballero(
         raise ValueError("Must provide either `module_type` or `coefficients`")
     if module_type is not None and coefficients is not None:
         raise ValueError(
-            "Only one of `module_type` and `coefficients` should " "be provided"
+            "Only one of `module_type` and `coefficients` should "
+            "be provided"
         )
 
     # Experimental coefficients from [1]_.
@@ -722,7 +734,9 @@ def spectral_factor_pvspec(
     return mismatch
 
 
-def spectral_factor_jrc(airmass, clearsky_index, module_type=None, coefficients=None):
+def spectral_factor_jrc(
+    airmass, clearsky_index, module_type=None, coefficients=None
+):
     r"""
     Estimate a technology-specific spectral mismatch modifier from
     airmass and clear sky index using the JRC model.

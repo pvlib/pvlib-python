@@ -33,7 +33,9 @@ arrays = [
 ]
 loc = location.Location(40, -80)
 system = pvsystem.PVSystem(arrays=arrays, inverter_parameters=dict(pdc0=3))
-mc = modelchain.ModelChain(system, loc, aoi_model="physical", spectral_model="no_loss")
+mc = modelchain.ModelChain(
+    system, loc, aoi_model="physical", spectral_model="no_loss"
+)
 
 times = pd.date_range(
     "2019-01-01 06:00", "2019-01-01 18:00", freq="5min", tz="Etc/GMT+5"

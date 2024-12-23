@@ -119,7 +119,9 @@ def _poa_ground_pv(poa_ground, gcr, surface_tilt):
     return poa_ground * vf_integ
 
 
-def _shaded_fraction(solar_zenith, solar_azimuth, surface_tilt, surface_azimuth, gcr):
+def _shaded_fraction(
+    solar_zenith, solar_azimuth, surface_tilt, surface_azimuth, gcr
+):
     """
     Calculate fraction (from the bottom) of row slant height that is shaded
     from direct irradiance by the row in front toward the sun.
@@ -394,7 +396,9 @@ def get_irradiance_poa(
     poa_diffuse = poa_gnd_pv + poa_sky_pv
     # beam on plane, make an array for consistency with poa_diffuse
     poa_beam = np.atleast_1d(
-        beam_component(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth, dni)
+        beam_component(
+            surface_tilt, surface_azimuth, solar_zenith, solar_azimuth, dni
+        )
     )
     poa_direct = poa_beam * (1 - f_x) * iam  # direct only on the unshaded part
     poa_global = poa_direct + poa_diffuse

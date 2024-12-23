@@ -183,7 +183,10 @@ ax = plot_curves(
 def interpolate(df, i):
     """convenience wrapper around scipy.interpolate.interp1d"""
     f_interp = interp1d(
-        np.flipud(df["i"]), np.flipud(df["v"]), kind="linear", fill_value="extrapolate"
+        np.flipud(df["i"]),
+        np.flipud(df["v"]),
+        kind="linear",
+        fill_value="extrapolate",
     )
     return f_interp(i)
 
@@ -243,9 +246,13 @@ def simulate_module(
     # find the fraction of shade in the border row
     partial_shade_fraction = 1 - (shaded_fraction * nrow - nrow_full_shade)
 
-    df_lit = simulate_full_curve(cell_parameters, poa_diffuse + poa_direct, Tcell)
+    df_lit = simulate_full_curve(
+        cell_parameters, poa_diffuse + poa_direct, Tcell
+    )
     df_partial = simulate_full_curve(
-        cell_parameters, poa_diffuse + partial_shade_fraction * poa_direct, Tcell
+        cell_parameters,
+        poa_diffuse + partial_shade_fraction * poa_direct,
+        Tcell,
     )
     df_shaded = simulate_full_curve(cell_parameters, poa_diffuse, Tcell)
     # build a list of IV curves for a single column of cells (half a substring)
@@ -319,7 +326,11 @@ for diffuse_fraction in np.linspace(0, 1, 11):
             shaded_fraction=shaded_fraction,
         )
         data.append(
-            {"fd": diffuse_fraction, "fs": shaded_fraction, "pmp": find_pmp(df)}
+            {
+                "fd": diffuse_fraction,
+                "fs": shaded_fraction,
+                "pmp": find_pmp(df),
+            }
         )
 
 results = pd.DataFrame(data)

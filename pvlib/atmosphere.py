@@ -226,13 +226,17 @@ def get_relative_airmass(zenith, model="kastenyoung1989"):
     model = model.lower()
 
     if "kastenyoung1989" == model:
-        am = 1.0 / (np.cos(zenith_rad) + 0.50572 * ((6.07995 + (90 - z)) ** -1.6364))
+        am = 1.0 / (
+            np.cos(zenith_rad) + 0.50572 * ((6.07995 + (90 - z)) ** -1.6364)
+        )
     elif "kasten1966" == model:
         am = 1.0 / (np.cos(zenith_rad) + 0.15 * ((93.885 - z) ** -1.253))
     elif "simple" == model:
         am = 1.0 / np.cos(zenith_rad)
     elif "pickering2002" == model:
-        am = 1.0 / (np.sin(np.radians(90 - z + 244.0 / (165 + 47.0 * (90 - z) ** 1.1))))
+        am = 1.0 / (
+            np.sin(np.radians(90 - z + 244.0 / (165 + 47.0 * (90 - z) ** 1.1)))
+        )
     elif "youngirvine1967" == model:
         sec_zen = 1.0 / np.cos(zenith_rad)
         am = sec_zen * (1 - 0.0012 * (sec_zen * sec_zen - 1))
@@ -249,11 +253,13 @@ def get_relative_airmass(zenith, model="kastenyoung1989"):
         )
     elif "gueymard1993" == model:
         am = 1.0 / (
-            np.cos(zenith_rad) + 0.00176759 * (z) * ((94.37515 - z) ** -1.21563)
+            np.cos(zenith_rad)
+            + 0.00176759 * (z) * ((94.37515 - z) ** -1.21563)
         )
     elif "gueymard2003" == model:
         am = 1.0 / (
-            np.cos(zenith_rad) + 0.48353 * (z**0.095846) / (96.741 - z) ** 1.754
+            np.cos(zenith_rad)
+            + 0.48353 * (z**0.095846) / (96.741 - z) ** 1.754
         )
     else:
         raise ValueError("%s is not a valid model for relativeairmass", model)
@@ -338,7 +344,11 @@ def gueymard94_pw(temp_air, relative_humidity):
     # Eq. 1 from Keogh and Blakers
     pw = (
         0.1
-        * (0.4976 + 1.5265 * theta + np.exp(13.6897 * theta - 14.9188 * (theta) ** 3))
+        * (
+            0.4976
+            + 1.5265 * theta
+            + np.exp(13.6897 * theta - 14.9188 * (theta) ** 3)
+        )
         * (
             216.7
             * RH

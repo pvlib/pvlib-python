@@ -34,7 +34,10 @@ def _get_acis(start, end, params, map_variables, url, **kwargs):
         **params,  # endpoint-specific parameters
     }
     response = requests.post(
-        url, json=params, headers={"Content-Type": "application/json"}, **kwargs
+        url,
+        json=params,
+        headers={"Content-Type": "application/json"},
+        **kwargs,
     )
     response.raise_for_status()
     payload = response.json()
@@ -519,15 +522,29 @@ def get_acis_available_stations(
     )
     params = {
         "bbox": bbox,
-        "meta": ("name,state,sids,sid_dates,ll,elev," "uid,county,climdiv,tzo,network"),
+        "meta": (
+            "name,state,sids,sid_dates,ll,elev,"
+            "uid,county,climdiv,tzo,network"
+        ),
     }
     if start is not None and end is not None:
-        params["elems"] = ["maxt", "mint", "avgt", "obst", "pcpn", "snow", "snwd"]
+        params["elems"] = [
+            "maxt",
+            "mint",
+            "avgt",
+            "obst",
+            "pcpn",
+            "snow",
+            "snwd",
+        ]
         params["sdate"] = pd.to_datetime(start).strftime("%Y-%m-%d")
         params["edate"] = pd.to_datetime(end).strftime("%Y-%m-%d")
 
     response = requests.post(
-        url, json=params, headers={"Content-Type": "application/json"}, **kwargs
+        url,
+        json=params,
+        headers={"Content-Type": "application/json"},
+        **kwargs,
     )
     response.raise_for_status()
     payload = response.json()
@@ -537,8 +554,8 @@ def get_acis_available_stations(
     metadata = payload["meta"]
     for station_record in metadata:
         station_record["altitude"] = station_record.pop("elev")
-        station_record["longitude"], station_record["latitude"] = station_record.pop(
-            "ll"
+        station_record["longitude"], station_record["latitude"] = (
+            station_record.pop("ll")
         )
 
     df = pd.DataFrame(metadata)

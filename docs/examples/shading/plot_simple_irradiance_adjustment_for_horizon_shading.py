@@ -161,7 +161,8 @@ dni_comparison = pd.DataFrame(
 
 # Plot results
 poa_global_comparison.plot(
-    title="POA-Global: Before and after Horizon Adjustment", ylabel="Irradiance"
+    title="POA-Global: Before and after Horizon Adjustment",
+    ylabel="Irradiance",
 )
 dni_comparison.plot(
     title="DNI: Before and after Horizon Adjustment", ylabel="Irradiance"

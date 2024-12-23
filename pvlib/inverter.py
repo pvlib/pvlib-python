@@ -406,7 +406,11 @@ def pvwatts(pdc, pdc0, eta_inv_nom=0.96, eta_inv_ref=0.9637):
     eta = (
         eta_inv_nom
         / eta_inv_ref
-        * (-0.0162 * zeta - np.divide(0.0059, zeta, out=eta, where=pdc_neq_0) + 0.9858)
+        * (
+            -0.0162 * zeta
+            - np.divide(0.0059, zeta, out=eta, where=pdc_neq_0)
+            + 0.9858
+        )
     )  # noQA: W503
 
     power_ac = eta * pdc
@@ -519,7 +523,9 @@ def fit_sandia(ac_power, dc_power, dc_voltage, dc_voltage_level, p_ac_0, p_nt):
 
     # empty dataframe to contain intermediate variables
     coeffs = pd.DataFrame(
-        index=voltage_levels, columns=["a", "b", "c", "p_dc", "p_s0"], data=np.nan
+        index=voltage_levels,
+        columns=["a", "b", "c", "p_dc", "p_s0"],
+        data=np.nan,
     )
 
     def solve_quad(a, b, c):

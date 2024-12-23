@@ -28,8 +28,20 @@ def _obj_test_golden_sect(params, loc):
     "params, lb, ub, expected, func",
     [
         ({"c": 1.0, "n": 1.0}, 0.0, 1.0, 0.5, _obj_test_golden_sect),
-        ({"c": 1e6, "n": 6.0}, 0.0, 1.0, 0.07230200263994839, _obj_test_golden_sect),
-        ({"c": 0.2, "n": 0.3}, 0.0, 100.0, 89.14332727531685, _obj_test_golden_sect),
+        (
+            {"c": 1e6, "n": 6.0},
+            0.0,
+            1.0,
+            0.07230200263994839,
+            _obj_test_golden_sect,
+        ),
+        (
+            {"c": 0.2, "n": 0.3},
+            0.0,
+            100.0,
+            89.14332727531685,
+            _obj_test_golden_sect,
+        ),
     ],
 )
 def test__golden_sect_DataFrame(params, lb, ub, expected, func):
@@ -51,21 +63,27 @@ def test__golden_sect_DataFrame_vector():
     lower = np.array([0.0, 0.001])
     upper = np.array([1.1, 1.2])
     expected = np.array([0.5, 0.25])
-    v, x = tools._golden_sect_DataFrame(params, lower, upper, _obj_test_golden_sect)
+    v, x = tools._golden_sect_DataFrame(
+        params, lower, upper, _obj_test_golden_sect
+    )
     assert np.allclose(x, expected, atol=1e-8)
     # some upper and lower bounds equal
     params = {"c": np.array([1.0, 2.0, 1.0]), "n": np.array([1.0, 1.0, 1.0])}
     lower = np.array([0.0, 0.001, 1.0])
     upper = np.array([1.0, 1.2, 1.0])
     expected = np.array([0.5, 0.25, 1.0])  # x values for maxima
-    v, x = tools._golden_sect_DataFrame(params, lower, upper, _obj_test_golden_sect)
+    v, x = tools._golden_sect_DataFrame(
+        params, lower, upper, _obj_test_golden_sect
+    )
     assert np.allclose(x, expected, atol=1e-8)
     # all upper and lower bounds equal, arrays of length 1
     params = {"c": np.array([1.0]), "n": np.array([1.0])}
     lower = np.array([1.0])
     upper = np.array([1.0])
     expected = np.array([1.0])  # x values for maxima
-    v, x = tools._golden_sect_DataFrame(params, lower, upper, _obj_test_golden_sect)
+    v, x = tools._golden_sect_DataFrame(
+        params, lower, upper, _obj_test_golden_sect
+    )
     assert np.allclose(x, expected, atol=1e-8)
 
 
@@ -75,21 +93,30 @@ def test__golden_sect_DataFrame_nans():
     lower = np.array([0.0, 0.001, np.nan])
     upper = np.array([1.1, 1.2, 1.0])
     expected = np.array([0.5, 0.25, np.nan])
-    v, x = tools._golden_sect_DataFrame(params, lower, upper, _obj_test_golden_sect)
+    v, x = tools._golden_sect_DataFrame(
+        params, lower, upper, _obj_test_golden_sect
+    )
     assert np.allclose(x, expected, atol=1e-8, equal_nan=True)
     # nan in function values
-    params = {"c": np.array([1.0, 2.0, np.nan]), "n": np.array([1.0, 1.0, 1.0])}
+    params = {
+        "c": np.array([1.0, 2.0, np.nan]),
+        "n": np.array([1.0, 1.0, 1.0]),
+    }
     lower = np.array([0.0, 0.001, 0.0])
     upper = np.array([1.1, 1.2, 1.0])
     expected = np.array([0.5, 0.25, np.nan])
-    v, x = tools._golden_sect_DataFrame(params, lower, upper, _obj_test_golden_sect)
+    v, x = tools._golden_sect_DataFrame(
+        params, lower, upper, _obj_test_golden_sect
+    )
     assert np.allclose(x, expected, atol=1e-8, equal_nan=True)
     # all nan in bounds
     params = {"c": np.array([1.0, 2.0, 1.0]), "n": np.array([1.0, 1.0, 1.0])}
     lower = np.array([np.nan, np.nan, np.nan])
     upper = np.array([1.1, 1.2, 1.0])
     expected = np.array([np.nan, np.nan, np.nan])
-    v, x = tools._golden_sect_DataFrame(params, lower, upper, _obj_test_golden_sect)
+    v, x = tools._golden_sect_DataFrame(
+        params, lower, upper, _obj_test_golden_sect
+    )
     assert np.allclose(x, expected, atol=1e-8, equal_nan=True)
 
 
@@ -157,7 +184,10 @@ def test_get_pandas_index(args, args_idx):
     "data_in,expected",
     [
         (np.array([1, 2, 3, 4, 5]), np.array([0.2, 0.4, 0.6, 0.8, 1])),
-        (np.array([[0, 1, 2], [0, 3, 6]]), np.array([[0, 0.5, 1], [0, 0.5, 1]])),
+        (
+            np.array([[0, 1, 2], [0, 3, 6]]),
+            np.array([[0, 0.5, 1], [0, 0.5, 1]]),
+        ),
         (pd.Series([1, 2, 3, 4, 5]), pd.Series([0.2, 0.4, 0.6, 0.8, 1])),
         (
             pd.DataFrame({"a": [0, 1, 2], "b": [0, 2, 8]}),

@@ -29,7 +29,9 @@ def bsrn_credentials():
 
 @pytest.fixture
 def expected_index():
-    return pd.date_range(start="20160601", periods=43200, freq="1min", tz="UTC")
+    return pd.date_range(
+        start="20160601", periods=43200, freq="1min", tz="UTC"
+    )
 
 
 @pytest.mark.parametrize(
@@ -65,7 +67,9 @@ def test_read_bsrn_logical_records(expected_index):
 def test_read_bsrn_bad_logical_record():
     # Test if ValueError is raised if an unsupported logical record is passed
     with pytest.raises(ValueError, match="not in"):
-        read_bsrn(DATA_DIR / "bsrn-lr0100-pay0616.dat", logical_records=["dummy"])
+        read_bsrn(
+            DATA_DIR / "bsrn-lr0100-pay0616.dat", logical_records=["dummy"]
+        )
 
 
 def test_read_bsrn_logical_records_not_found():

@@ -21,7 +21,14 @@ from pvlib.tools import _build_kwargs
 # keys that are used to detect input data and assign data to appropriate
 # ModelChain attribute
 # for ModelChain.weather
-WEATHER_KEYS = ("ghi", "dhi", "dni", "wind_speed", "temp_air", "precipitable_water")
+WEATHER_KEYS = (
+    "ghi",
+    "dhi",
+    "dni",
+    "wind_speed",
+    "temp_air",
+    "precipitable_water",
+)
 
 # for ModelChain.total_irrad
 POA_KEYS = ("poa_global", "poa_direct", "poa_diffuse")
@@ -191,14 +198,18 @@ class ModelChainResult:
     incidence (degrees); see :py:func:`~pvlib.irradiance.aoi` for details.
     """
 
-    aoi_modifier: Optional[PerArray[Union[pd.Series, float]]] = field(default=None)
+    aoi_modifier: Optional[PerArray[Union[pd.Series, float]]] = field(
+        default=None
+    )
     """Series (or tuple of Series, one for each array) containing angle of
     incidence modifier (unitless) calculated by ``ModelChain.aoi_model``,
     which reduces direct irradiance for reflections;
     see :py:meth:`~pvlib.pvsystem.PVSystem.get_iam` for details.
     """
 
-    spectral_modifier: Optional[PerArray[Union[pd.Series, float]]] = field(default=None)
+    spectral_modifier: Optional[PerArray[Union[pd.Series, float]]] = field(
+        default=None
+    )
     """Series (or tuple of Series, one for each array) containing spectral
     modifier (unitless) calculated by ``ModelChain.spectral_model``, which
     adjusts broadband plane-of-array irradiance for spectral content.
@@ -215,7 +226,9 @@ class ModelChainResult:
     reflections and spectral content.
     """
 
-    dc: Optional[PerArray[Union[pd.Series, pd.DataFrame]]] = field(default=None)
+    dc: Optional[PerArray[Union[pd.Series, pd.DataFrame]]] = field(
+        default=None
+    )
     """Series or DataFrame (or tuple of Series or DataFrame, one for
     each array) containing DC power (W) for each array, calculated by
     ``ModelChain.dc_model``.
@@ -655,7 +668,14 @@ class ModelChain:
         )
         if {"A0", "A1", "C7"} <= params:
             return self.sapm, "sapm"
-        elif {"a_ref", "I_L_ref", "I_o_ref", "R_sh_ref", "R_s", "Adjust"} <= params:
+        elif {
+            "a_ref",
+            "I_L_ref",
+            "I_o_ref",
+            "R_sh_ref",
+            "R_s",
+            "Adjust",
+        } <= params:
             return self.cec, "cec"
         elif {"a_ref", "I_L_ref", "I_o_ref", "R_sh_ref", "R_s"} <= params:
             return self.desoto, "desoto"
@@ -710,8 +730,12 @@ class ModelChain:
             self.results.cell_temperature,
             unwrap=False,
         )
-        self.results.diode_params = tuple(itertools.starmap(_make_diode_params, params))
-        self.results.dc = tuple(itertools.starmap(self.system.singlediode, params))
+        self.results.diode_params = tuple(
+            itertools.starmap(_make_diode_params, params)
+        )
+        self.results.dc = tuple(
+            itertools.starmap(self.system.singlediode, params)
+        )
         self.results.dc = self.system.scale_voltage_current_power(
             self.results.dc, unwrap=False
         )
@@ -1172,7 +1196,8 @@ class ModelChain:
         def _eff_irrad(module_parameters, total_irrad, spect_mod, aoi_mod):
             fd = module_parameters.get("FD", 1.0)
             return spect_mod * (
-                total_irrad["poa_direct"] * aoi_mod + fd * total_irrad["poa_diffuse"]
+                total_irrad["poa_direct"] * aoi_mod
+                + fd * total_irrad["poa_diffuse"]
             )
 
         if isinstance(self.results.total_irrad, tuple):
@@ -1340,7 +1365,8 @@ class ModelChain:
         Assign airmass
         """
         self.results.airmass = self.location.get_airmass(
-            solar_position=self.results.solar_position, model=self.airmass_model
+            solar_position=self.results.solar_position,
+            model=self.airmass_model,
         )
         return self
 
@@ -1414,7 +1440,9 @@ class ModelChain:
             If input data is provided for each array, pass True. If a
             single input data is provided for all arrays, pass False.
         """
-        self.results._singleton_tuples = self.system.num_arrays == 1 and per_array_data
+        self.results._singleton_tuples = (
+            self.system.num_arrays == 1 and per_array_data
+        )
 
     def _assign_weather(self, data):
         def _build_weather(data):
@@ -1543,7 +1571,9 @@ class ModelChain:
         it has the same length as the number of Arrays, but we do not want
         to fail if the input is not a tuple.
         """
-        if (not strict or self.system.num_arrays == 1) and not isinstance(data, tuple):
+        if (not strict or self.system.num_arrays == 1) and not isinstance(
+            data, tuple
+        ):
             return
         if strict and not isinstance(data, tuple):
             raise TypeError(
@@ -1596,7 +1626,9 @@ class ModelChain:
         self._check_multiple_input(data)
         self._assign_weather(data)
 
-        self._verify_df(data, required=["poa_global", "poa_direct", "poa_diffuse"])
+        self._verify_df(
+            data, required=["poa_global", "poa_direct", "poa_diffuse"]
+        )
         self._assign_total_irrad(data)
 
         self._prep_inputs_solar_pos(data)
@@ -1689,7 +1721,9 @@ class ModelChain:
         )
         # find where cell or module temperature is specified in input data
         given_cell_temperature = tuple(
-            itertools.starmap(self._get_cell_temperature, zip(data, poa, t_mod_params))
+            itertools.starmap(
+                self._get_cell_temperature, zip(data, poa, t_mod_params)
+            )
         )
         # If cell temperature has been specified for all arrays return
         # immediately and do not try to compute it.

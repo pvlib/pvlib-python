@@ -340,10 +340,14 @@ def haurwitz(apparent_zenith):
     ghi_clear = np.zeros_like(apparent_zenith.values)
     cos_zen_gte_0 = cos_zenith > 0
     ghi_clear[cos_zen_gte_0] = (
-        1098.0 * cos_zenith[cos_zen_gte_0] * np.exp(-0.059 / cos_zenith[cos_zen_gte_0])
+        1098.0
+        * cos_zenith[cos_zen_gte_0]
+        * np.exp(-0.059 / cos_zenith[cos_zen_gte_0])
     )
 
-    df_out = pd.DataFrame(index=apparent_zenith.index, data=ghi_clear, columns=["ghi"])
+    df_out = pd.DataFrame(
+        index=apparent_zenith.index, data=ghi_clear, columns=["ghi"]
+    )
 
     return df_out
 
@@ -616,7 +620,9 @@ def _calc_stats(data, samples_per_window, sample_interval, H):
 
 def _slope_nstd_windowed(slopes, data, H, samples_per_window, sample_interval):
     with np.errstate(divide="ignore", invalid="ignore"):
-        nstd = slopes[H[:-1,]].std(ddof=1, axis=0) / data.values[H].mean(axis=0)
+        nstd = slopes[H[:-1,]].std(ddof=1, axis=0) / data.values[H].mean(
+            axis=0
+        )
     return _to_centered_series(nstd, data.index, samples_per_window)
 
 
@@ -634,7 +640,10 @@ def _line_length_windowed(data, H, samples_per_window, sample_interval):
 
 def _to_centered_series(vals, idx, samples_per_window):
     vals = np.pad(
-        vals, ((0, len(idx) - len(vals)),), mode="constant", constant_values=np.nan
+        vals,
+        ((0, len(idx) - len(vals)),),
+        mode="constant",
+        constant_values=np.nan,
     )
     shift = samples_per_window // 2  # align = 'center' only
     return pd.Series(index=idx, data=vals).shift(shift)
@@ -690,9 +699,13 @@ def _clearsky_get_threshold(sample_interval):
     window_length = np.interp(sample_interval, data_freq, [50, 60, 90, 120])
     mean_diff = np.interp(sample_interval, data_freq, [75, 75, 75, 75])
     max_diff = np.interp(sample_interval, data_freq, [60, 65, 75, 90])
-    lower_line_length = np.interp(sample_interval, data_freq, [-45, -45, -45, -45])
+    lower_line_length = np.interp(
+        sample_interval, data_freq, [-45, -45, -45, -45]
+    )
     upper_line_length = np.interp(sample_interval, data_freq, [80, 80, 80, 80])
-    var_diff = np.interp(sample_interval, data_freq, [0.005, 0.01, 0.032, 0.07])
+    var_diff = np.interp(
+        sample_interval, data_freq, [0.005, 0.01, 0.032, 0.07]
+    )
     slope_dev = np.interp(sample_interval, data_freq, [50, 60, 75, 96])
 
     return (
@@ -880,7 +893,9 @@ def detect_clearsky(
         ) = _clearsky_get_threshold(sample_interval)
 
         # recalculate samples_per_window using returned window_length
-        _, samples_per_window = tools._get_sample_intervals(times, window_length)
+        _, samples_per_window = tools._get_sample_intervals(
+            times, window_length
+        )
 
     # check that we have enough data to produce a nonempty hankel matrix
     if len(times) < samples_per_window:
@@ -891,7 +906,8 @@ def detect_clearsky(
 
     # generate matrix of integers for creating windows with indexing
     H = hankel(
-        np.arange(samples_per_window), np.arange(samples_per_window - 1, len(times))
+        np.arange(samples_per_window),
+        np.arange(samples_per_window - 1, len(times)),
     )
 
     # calculate measurement statistics
@@ -921,7 +937,9 @@ def detect_clearsky(
         )
 
         line_diff = meas_line_length - clear_line_length
-        slope_max_diff = _max_diff_windowed(meas - scaled_clear, H, samples_per_window)
+        slope_max_diff = _max_diff_windowed(
+            meas - scaled_clear, H, samples_per_window
+        )
         # evaluate comparison criteria
         c1 = np.abs(meas_mean - alpha * clear_mean) < mean_diff
         c2 = np.abs(meas_max - alpha * clear_max) < max_diff
@@ -934,7 +952,9 @@ def detect_clearsky(
         # create array to return
         clear_samples = np.full_like(meas, False, dtype="bool")
         # find the samples contained in any window classified as clear
-        idx = _clear_sample_index(clear_windows, samples_per_window, "center", H)
+        idx = _clear_sample_index(
+            clear_windows, samples_per_window, "center", H
+        )
         clear_samples[idx] = True
 
         # find a new alpha
@@ -953,7 +973,8 @@ def detect_clearsky(
         import warnings
 
         warnings.warn(
-            "rescaling failed to converge after %s iterations" % max_iterations,
+            "rescaling failed to converge after %s iterations"
+            % max_iterations,
             RuntimeWarning,
         )
 
@@ -1069,7 +1090,9 @@ def bird(
     airmass = airmass_relative
     # Bird clear sky model
     am_press = atmosphere.get_absolute_airmass(airmass, pressure)
-    t_rayleigh = np.exp(-0.0903 * am_press**0.84 * (1.0 + am_press - am_press**1.01))
+    t_rayleigh = np.exp(
+        -0.0903 * am_press**0.84 * (1.0 + am_press - am_press**1.01)
+    )
     am_o3 = ozone * airmass
     t_ozone = (
         1.0

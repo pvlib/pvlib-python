@@ -407,7 +407,9 @@ def _schumaker_qspline(x, y):
     r = np.sum(w)
 
     if r > 0.0:
-        xk[(n + q - 1) : (n + q + r - 1)] = tmpx2[w] + aa[w] * delx[w] / diffs[w]
+        xk[(n + q - 1) : (n + q + r - 1)] = (
+            tmpx2[w] + aa[w] * delx[w] / diffs[w]
+        )
         uu[(n + q - 1) : (n + q + r - 1), :] = np.array(
             [tmpx[w], tmpx2[w], tmpy[w], tmps[w], tmps2[w], delta[w]]
         ).T
@@ -418,7 +420,9 @@ def _schumaker_qspline(x, y):
     ss = np.sum(z)
 
     if ss > 0.0:
-        xk[(n + q + r - 1) : (n + q + r + ss - 1)] = tmpx[z] + b[z] * delx[z] / diffs[z]
+        xk[(n + q + r - 1) : (n + q + r + ss - 1)] = (
+            tmpx[z] + b[z] * delx[z] / diffs[z]
+        )
         uu[(n + q + r - 1) : (n + q + r + ss - 1), :] = np.array(
             [tmpx[z], tmpx2[z], tmpy[z], tmps[z], tmps2[z], delta[z]]
         ).T
@@ -439,13 +443,22 @@ def _schumaker_qspline(x, y):
         2 * uu[(n - 1) : (n + q + r + ss - 1), 5]
         - uu[(n - 1) : (n + q + r + ss - 1), 4]
     ) + (
-        uu[(n - 1) : (n + q + r + ss - 1), 4] - uu[(n - 1) : (n + q + r + ss - 1), 3]
-    ) * (xk[(n - 1) : (n + q + r + ss - 1)] - uu[(n - 1) : (n + q + r + ss - 1), 0]) / (
-        uu[(n - 1) : (n + q + r + ss - 1), 1] - uu[(n - 1) : (n + q + r + ss - 1), 0]
+        uu[(n - 1) : (n + q + r + ss - 1), 4]
+        - uu[(n - 1) : (n + q + r + ss - 1), 3]
+    ) * (
+        xk[(n - 1) : (n + q + r + ss - 1)]
+        - uu[(n - 1) : (n + q + r + ss - 1), 0]
+    ) / (
+        uu[(n - 1) : (n + q + r + ss - 1), 1]
+        - uu[(n - 1) : (n + q + r + ss - 1), 0]
     )
     eta[(n - 1) : (n + q + r + ss - 1)] = (
-        sbar[(n - 1) : (n + q + r + ss - 1)] - uu[(n - 1) : (n + q + r + ss - 1), 3]
-    ) / (xk[(n - 1) : (n + q + r + ss - 1)] - uu[(n - 1) : (n + q + r + ss - 1), 0])
+        sbar[(n - 1) : (n + q + r + ss - 1)]
+        - uu[(n - 1) : (n + q + r + ss - 1), 3]
+    ) / (
+        xk[(n - 1) : (n + q + r + ss - 1)]
+        - uu[(n - 1) : (n + q + r + ss - 1), 0]
+    )
 
     # constant term for polynomial for intervals with internal knots
     a[: (n - 1), 2][~u] = uu[: (n - 1), 2][~u]
@@ -455,16 +468,25 @@ def _schumaker_qspline(x, y):
     a[(n - 1) : (n + q + r + ss - 1), 2] = (
         uu[(n - 1) : (n + q + r + ss - 1), 2]
         + uu[(n - 1) : (n + q + r + ss - 1), 3]
-        * (xk[(n - 1) : (n + q + r + ss - 1)] - uu[(n - 1) : (n + q + r + ss - 1), 0])
+        * (
+            xk[(n - 1) : (n + q + r + ss - 1)]
+            - uu[(n - 1) : (n + q + r + ss - 1), 0]
+        )
         + 0.5
         * eta[(n - 1) : (n + q + r + ss - 1)]
-        * (xk[(n - 1) : (n + q + r + ss - 1)] - uu[(n - 1) : (n + q + r + ss - 1), 0])
+        * (
+            xk[(n - 1) : (n + q + r + ss - 1)]
+            - uu[(n - 1) : (n + q + r + ss - 1), 0]
+        )
         ** 2.0
     )
     a[(n - 1) : (n + q + r + ss - 1), 1] = sbar[(n - 1) : (n + q + r + ss - 1)]
     a[(n - 1) : (n + q + r + ss - 1), 0] = (
         0.5
-        * (uu[(n - 1) : (n + q + r + ss - 1), 4] - sbar[(n - 1) : (n + q + r + ss - 1)])
+        * (
+            uu[(n - 1) : (n + q + r + ss - 1), 4]
+            - sbar[(n - 1) : (n + q + r + ss - 1)]
+        )
         / (
             uu[(n - 1) : (n + q + r + ss - 1), 1]
             - uu[(n - 1) : (n + q + r + ss - 1), 0]
@@ -594,7 +616,9 @@ def astm_e1036(
     # only consider real roots
     roots = roots.real[abs(roots.imag) < 1e-5]
     # only consider roots in the relevant part of the domain
-    roots = roots[(roots < filtered["v"].max()) & (roots > filtered["v"].min())]
+    roots = roots[
+        (roots < filtered["v"].max()) & (roots > filtered["v"].min())
+    ]
     vmp = roots[np.argmax(mp_fit(roots))]
     pmp = mp_fit(vmp)
     # Imp isn't mentioned for update in the

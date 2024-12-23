@@ -87,7 +87,11 @@ iam_ar_coating = marion_diffuse("physical", tilts, n=1.3, K=0)
 # incidence angle modifier on module tilt.
 
 plt.plot(
-    tilts, iam_ar_coating["sky"], c="b", marker="^", label="$F_{sky}$, AR coated, n=1.3"
+    tilts,
+    iam_ar_coating["sky"],
+    c="b",
+    marker="^",
+    label="$F_{sky}$, AR coated, n=1.3",
 )
 plt.plot(
     tilts,

@@ -46,7 +46,10 @@ WATER_ROUGHNESS_COEFFS = {
 
 
 def inland_water_dvoracek(
-    solar_elevation, surface_condition=None, color_coeff=None, wave_roughness_coeff=None
+    solar_elevation,
+    surface_condition=None,
+    color_coeff=None,
+    wave_roughness_coeff=None,
 ):
     r"""
     Estimation of albedo for inland water bodies.
@@ -158,9 +161,13 @@ def inland_water_dvoracek(
             " `wave_roughness_coeff`."
         )
 
-    solar_elevation_positive = np.where(solar_elevation < 0, 0, solar_elevation)
+    solar_elevation_positive = np.where(
+        solar_elevation < 0, 0, solar_elevation
+    )
 
-    albedo = color_coeff ** (wave_roughness_coeff * sind(solar_elevation_positive) + 1)
+    albedo = color_coeff ** (
+        wave_roughness_coeff * sind(solar_elevation_positive) + 1
+    )
 
     if isinstance(solar_elevation, pd.Series):
         albedo = pd.Series(albedo, index=solar_elevation.index)

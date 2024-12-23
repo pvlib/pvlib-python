@@ -111,13 +111,18 @@ def test_fit_desoto():
         "irrad_ref": 1000,
         "temp_ref": 25,
     }
-    assert np.allclose(pd.Series(result), pd.Series(result_expected), rtol=1e-4)
+    assert np.allclose(
+        pd.Series(result), pd.Series(result_expected), rtol=1e-4
+    )
 
 
 def test_fit_desoto_init_guess(mocker):
     init_guess_array = np.array([9.4, 3.0e-10, 0.3, 125.0, 1.6])
     init_guess = {
-        k: v for k, v in zip(["IL_0", "Io_0", "Rs_0", "Rsh_0", "a_0"], init_guess_array)
+        k: v
+        for k, v in zip(
+            ["IL_0", "Io_0", "Rs_0", "Rsh_0", "a_0"], init_guess_array
+        )
     }
     spy = mocker.spy(optimize, "root")
     result, _ = sdm.fit_desoto(
@@ -170,7 +175,9 @@ def test_fit_desoto_sandia(cec_params_cansol_cs5p_220p):
     params = cec_params_cansol_cs5p_220p["params"]
     params.pop("Adjust")
     specs = cec_params_cansol_cs5p_220p["specs"]
-    effective_irradiance = np.array([400.0, 500.0, 600.0, 700.0, 800.0, 900.0, 1000.0])
+    effective_irradiance = np.array(
+        [400.0, 500.0, 600.0, 700.0, 800.0, 900.0, 1000.0]
+    )
     temp_cell = np.array([15.0, 25.0, 35.0, 45.0])
     ee = np.tile(effective_irradiance, len(temp_cell))
     tc = np.repeat(temp_cell, len(effective_irradiance))
@@ -198,7 +205,9 @@ def test_fit_desoto_sandia(cec_params_cansol_cs5p_220p):
     modeled["R_sh_ref"] = result["R_sh_ref"]
     expected = pd.Series(params)
     assert np.allclose(
-        modeled[params.keys()].values, expected[params.keys()].values, rtol=5e-2
+        modeled[params.keys()].values,
+        expected[params.keys()].values,
+        rtol=5e-2,
     )
     assert_allclose(result["dEgdT"], -0.0002677)
     assert_allclose(result["EgRef"], 1.3112547292120638)
@@ -207,8 +216,12 @@ def test_fit_desoto_sandia(cec_params_cansol_cs5p_220p):
 
 def _read_iv_curves_for_test(datafile, npts):
     """read constants and npts IV curves from datafile"""
-    iv_specs = dict.fromkeys(["cells_in_series", "alpha_sc", "beta_voc", "descr"])
-    ivcurves = dict.fromkeys(["i_sc", "i_mp", "v_mp", "v_oc", "poa", "tc", "ee"])
+    iv_specs = dict.fromkeys(
+        ["cells_in_series", "alpha_sc", "beta_voc", "descr"]
+    )
+    ivcurves = dict.fromkeys(
+        ["i_sc", "i_mp", "v_mp", "v_oc", "poa", "tc", "ee"]
+    )
 
     infilen = DATA_DIR / datafile
     with infilen.open(mode="r") as f:
@@ -267,7 +280,9 @@ def _read_pvsyst_expected(datafile):
     """Read Pvsyst model parameters and diode equation values for each
     IV curve
     """
-    pvsyst_specs = dict.fromkeys(["cells_in_series", "alpha_sc", "beta_voc", "descr"])
+    pvsyst_specs = dict.fromkeys(
+        ["cells_in_series", "alpha_sc", "beta_voc", "descr"]
+    )
     # order required to match file being read
     paramlist = [
         "I_L_ref",
@@ -347,11 +362,21 @@ def test_fit_pvsyst_sandia(npts=3000):
     iv_res = pvsystem.singlediode(*param_res)
 
     # assertions
-    assert np.allclose(ivcurves["p_mp"], iv_res["p_mp"], equal_nan=True, rtol=0.038)
-    assert np.allclose(ivcurves["v_mp"], iv_res["v_mp"], equal_nan=True, rtol=0.029)
-    assert np.allclose(ivcurves["i_mp"], iv_res["i_mp"], equal_nan=True, rtol=0.021)
-    assert np.allclose(ivcurves["i_sc"], iv_res["i_sc"], equal_nan=True, rtol=0.003)
-    assert np.allclose(ivcurves["v_oc"], iv_res["v_oc"], equal_nan=True, rtol=0.019)
+    assert np.allclose(
+        ivcurves["p_mp"], iv_res["p_mp"], equal_nan=True, rtol=0.038
+    )
+    assert np.allclose(
+        ivcurves["v_mp"], iv_res["v_mp"], equal_nan=True, rtol=0.029
+    )
+    assert np.allclose(
+        ivcurves["i_mp"], iv_res["i_mp"], equal_nan=True, rtol=0.021
+    )
+    assert np.allclose(
+        ivcurves["i_sc"], iv_res["i_sc"], equal_nan=True, rtol=0.003
+    )
+    assert np.allclose(
+        ivcurves["v_oc"], iv_res["v_oc"], equal_nan=True, rtol=0.019
+    )
     # cells_in_series, alpha_sc, beta_voc, descr
     assert all((iv_specs[k] == pvsyst_specs[k]) for k in iv_specs.keys())
     # I_L_ref, I_o_ref, EgRef, R_sh_ref, R_sh_0, R_sh_exp, R_s, gamma_ref,
@@ -411,7 +436,9 @@ def test_fit_pvsyst_sandia(npts=3000):
         (2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 0.0, np.nan),
     ],
 )
-def test__update_rsh_fixed_pt_nans(vmp, imp, iph, io, rs, rsh, nnsvth, expected):
+def test__update_rsh_fixed_pt_nans(
+    vmp, imp, iph, io, rs, rsh, nnsvth, expected
+):
     outrsh = sdm._update_rsh_fixed_pt(vmp, imp, iph, io, rs, rsh, nnsvth)
     assert np.all(np.isnan(outrsh))
 

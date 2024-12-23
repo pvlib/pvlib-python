@@ -42,7 +42,9 @@ def test_inland_water_dvoracek_ndarray():
 
 
 def test_inland_water_dvoracek_series():
-    times = pd.date_range(start="2015-01-01 00:00", end="2015-01-02 00:00", freq="6h")
+    times = pd.date_range(
+        start="2015-01-01 00:00", end="2015-01-02 00:00", freq="6h"
+    )
     solar_elevs = pd.Series([-50, 0, 20, 60, 90], index=times)
     color_coeffs = pd.Series([0.1, 0.1, 0.2, 0.3, 0.4], index=times)
     roughness_coeffs = pd.Series([0.1, 0.3, 0.8, 1.5, 2], index=times)
@@ -56,7 +58,9 @@ def test_inland_water_dvoracek_series():
 
 
 def test_inland_water_dvoracek_series_mix_with_array():
-    times = pd.date_range(start="2015-01-01 00:00", end="2015-01-01 06:00", freq="6h")
+    times = pd.date_range(
+        start="2015-01-01 00:00", end="2015-01-01 06:00", freq="6h"
+    )
     solar_elevs = pd.Series([45, 60], index=times)
     color_coeffs = 0.13
     roughness_coeffs = 0.29
@@ -94,4 +98,6 @@ def test_inland_water_dvoracek_invalid():
         "be chosen or a combination of `color_coeff` and"
         " `wave_roughness_coeff`.",
     ):  # only one coeff given
-        albedo.inland_water_dvoracek(solar_elevation=45, wave_roughness_coeff=0.29)
+        albedo.inland_water_dvoracek(
+            solar_elevation=45, wave_roughness_coeff=0.29
+        )

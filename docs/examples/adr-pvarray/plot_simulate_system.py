@@ -29,7 +29,9 @@ from pvlib.pvarray import pvefficiency_adr
 PVLIB_DIR = pvlib.__path__[0]
 DATA_FILE = os.path.join(PVLIB_DIR, "data", "723170TYA.CSV")
 
-tmy, metadata = iotools.read_tmy3(DATA_FILE, coerce_year=1990, map_variables=True)
+tmy, metadata = iotools.read_tmy3(
+    DATA_FILE, coerce_year=1990, map_variables=True
+)
 
 df = pd.DataFrame(
     {
@@ -60,7 +62,13 @@ TILT = metadata["latitude"]
 ORIENT = 180
 
 total_irrad = get_total_irradiance(
-    TILT, ORIENT, solpos.apparent_zenith, solpos.azimuth, df.dni, df.ghi, df.dhi
+    TILT,
+    ORIENT,
+    solpos.apparent_zenith,
+    solpos.azimuth,
+    df.dni,
+    df.ghi,
+    df.dhi,
 )
 
 df["poa_global"] = total_irrad.poa_global
@@ -70,7 +78,9 @@ df["poa_global"] = total_irrad.poa_global
 # Estimate the expected operating temperature of the PV modules
 #
 
-df["temp_pv"] = pvlib.temperature.faiman(df.poa_global, df.temp_air, df.wind_speed)
+df["temp_pv"] = pvlib.temperature.faiman(
+    df.poa_global, df.temp_air, df.wind_speed
+)
 
 # %%
 #

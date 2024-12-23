@@ -33,7 +33,11 @@ def __getattr__(attr):
 
 
 def get_extra_radiation(
-    datetime_or_doy, solar_constant=1366.1, method="spencer", epoch_year=2014, **kwargs
+    datetime_or_doy,
+    solar_constant=1366.1,
+    method="spencer",
+    epoch_year=2014,
+    **kwargs,
 ):
     """
     Determine extraterrestrial radiation from day of year.
@@ -93,7 +97,9 @@ def get_extra_radiation(
     # consider putting asce and spencer methods in their own functions
     method = method.lower()
     if method == "asce":
-        B = solarposition._calculate_simple_day_angle(to_doy(datetime_or_doy), offset=0)
+        B = solarposition._calculate_simple_day_angle(
+            to_doy(datetime_or_doy), offset=0
+        )
         RoverR0sqrd = 1 + 0.033 * np.cos(B)
     elif method == "spencer":
         B = solarposition._calculate_simple_day_angle(to_doy(datetime_or_doy))
@@ -109,7 +115,9 @@ def get_extra_radiation(
         RoverR0sqrd = solarposition.pyephem_earthsun_distance(times) ** (-2)
     elif method == "nrel":
         times = to_datetimeindex(datetime_or_doy)
-        RoverR0sqrd = solarposition.nrel_earthsun_distance(times, **kwargs) ** (-2)
+        RoverR0sqrd = solarposition.nrel_earthsun_distance(
+            times, **kwargs
+        ) ** (-2)
     else:
         raise ValueError("Invalid method: %s", method)
 
@@ -138,7 +146,9 @@ def _handle_extra_radiation_types(datetime_or_doy, epoch_year):
         to_doy = tools._pandas_to_doy
         to_datetimeindex = tools._datetimelike_scalar_to_datetimeindex
         to_output = tools._scalar_out
-    elif isinstance(datetime_or_doy, (datetime.date, datetime.datetime, np.datetime64)):
+    elif isinstance(
+        datetime_or_doy, (datetime.date, datetime.datetime, np.datetime64)
+    ):
         to_doy = tools._datetimelike_scalar_to_doy
         to_datetimeindex = tools._datetimelike_scalar_to_datetimeindex
         to_output = tools._scalar_out
@@ -147,14 +157,18 @@ def _handle_extra_radiation_types(datetime_or_doy, epoch_year):
         def to_doy(x):
             return x  # noqa: E306
 
-        to_datetimeindex = partial(tools._doy_to_datetimeindex, epoch_year=epoch_year)
+        to_datetimeindex = partial(
+            tools._doy_to_datetimeindex, epoch_year=epoch_year
+        )
         to_output = tools._scalar_out
     else:  # assume that we have an array-like object of doy
 
         def to_doy(x):
             return x  # noqa: E306
 
-        to_datetimeindex = partial(tools._doy_to_datetimeindex, epoch_year=epoch_year)
+        to_datetimeindex = partial(
+            tools._doy_to_datetimeindex, epoch_year=epoch_year
+        )
         to_output = tools._array_out
 
     return to_doy, to_datetimeindex, to_output
@@ -187,9 +201,11 @@ def aoi_projection(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth):
         Dot product of panel normal and solar angle.
     """
 
-    projection = tools.cosd(surface_tilt) * tools.cosd(solar_zenith) + tools.sind(
-        surface_tilt
-    ) * tools.sind(solar_zenith) * tools.cosd(solar_azimuth - surface_azimuth)
+    projection = tools.cosd(surface_tilt) * tools.cosd(
+        solar_zenith
+    ) + tools.sind(surface_tilt) * tools.sind(solar_zenith) * tools.cosd(
+        solar_azimuth - surface_azimuth
+    )
 
     # GH 1185
     projection = np.clip(projection, -1, 1)
@@ -239,7 +255,9 @@ def aoi(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth):
     return aoi_value
 
 
-def beam_component(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth, dni):
+def beam_component(
+    surface_tilt, surface_azimuth, solar_zenith, solar_azimuth, dni
+):
     """
     Calculates the beam component of the plane of array irradiance.
 
@@ -364,7 +382,9 @@ def get_total_irradiance(
         model_perez=model_perez,
     )
 
-    poa_ground_diffuse = get_ground_diffuse(surface_tilt, ghi, albedo, surface_type)
+    poa_ground_diffuse = get_ground_diffuse(
+        surface_tilt, ghi, albedo, surface_type
+    )
     aoi_ = aoi(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth)
     irrads = poa_components(aoi_, dni, poa_sky_diffuse, poa_ground_diffuse)
     return irrads
@@ -452,14 +472,24 @@ def get_sky_diffuse(
 
     model = model.lower()
 
-    if dni_extra is None and model in {"haydavies", "reindl", "perez", "perez-driesse"}:
+    if dni_extra is None and model in {
+        "haydavies",
+        "reindl",
+        "perez",
+        "perez-driesse",
+    }:
         raise ValueError(f"dni_extra is required for model {model}")
 
     if model == "isotropic":
         sky = isotropic(surface_tilt, dhi)
     elif model == "klucher":
         sky = klucher(
-            surface_tilt, surface_azimuth, dhi, ghi, solar_zenith, solar_azimuth
+            surface_tilt,
+            surface_azimuth,
+            dhi,
+            ghi,
+            solar_zenith,
+            solar_azimuth,
         )
     elif model == "haydavies":
         sky = haydavies(
@@ -693,7 +723,9 @@ def isotropic(surface_tilt, dhi):
     return sky_diffuse
 
 
-def klucher(surface_tilt, surface_azimuth, dhi, ghi, solar_zenith, solar_azimuth):
+def klucher(
+    surface_tilt, surface_azimuth, dhi, ghi, solar_zenith, solar_azimuth
+):
     r"""
     Determine diffuse irradiance from the sky on a tilted surface
     using the Klucher (1979) model.
@@ -767,7 +799,9 @@ def klucher(surface_tilt, surface_azimuth, dhi, ghi, solar_zenith, solar_azimuth
     """
 
     # zenith angle with respect to panel normal.
-    cos_tt = aoi_projection(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth)
+    cos_tt = aoi_projection(
+        surface_tilt, surface_azimuth, solar_zenith, solar_azimuth
+    )
     cos_tt = np.maximum(cos_tt, 0)  # GH 526
 
     # silence warning from 0 / 0
@@ -942,7 +976,14 @@ def haydavies(
 
 
 def reindl(
-    surface_tilt, surface_azimuth, dhi, dni, ghi, dni_extra, solar_zenith, solar_azimuth
+    surface_tilt,
+    surface_azimuth,
+    dhi,
+    dni,
+    ghi,
+    dni_extra,
+    solar_zenith,
+    solar_azimuth,
 ):
     r"""
     Determine the diffuse irradiance from the sky on a tilted surface using
@@ -1031,7 +1072,9 @@ def reindl(
        :doi:`10.1016/j.solener.2006.03.009`
     """
 
-    cos_tt = aoi_projection(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth)
+    cos_tt = aoi_projection(
+        surface_tilt, surface_azimuth, solar_zenith, solar_azimuth
+    )
     cos_tt = np.maximum(cos_tt, 0)  # GH 526
 
     # do not apply cos(zen) limit here (needed for HB below)
@@ -1095,7 +1138,10 @@ def king(surface_tilt, dhi, ghi, solar_zenith):
 
     sky_diffuse = (
         dhi * (1 + tools.cosd(surface_tilt)) / 2
-        + ghi * (0.012 * solar_zenith - 0.04) * (1 - tools.cosd(surface_tilt)) / 2
+        + ghi
+        * (0.012 * solar_zenith - 0.04)
+        * (1 - tools.cosd(surface_tilt))
+        / 2
     )
     sky_diffuse = np.maximum(sky_diffuse, 0)
 
@@ -1268,7 +1314,9 @@ def perez(
 
     F2 = F2c[ebin, 0] + F2c[ebin, 1] * delta + F2c[ebin, 2] * z
 
-    A = aoi_projection(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth)
+    A = aoi_projection(
+        surface_tilt, surface_azimuth, solar_zenith, solar_azimuth
+    )
     A = np.maximum(A, 0)
 
     B = tools.cosd(solar_zenith)
@@ -1319,7 +1367,9 @@ def _calc_delta(dhi, dni_extra, solar_zenith, airmass=None):
     """
     if airmass is None:
         # use the same airmass model as in the original perez work
-        airmass = atmosphere.get_relative_airmass(solar_zenith, "kastenyoung1989")
+        airmass = atmosphere.get_relative_airmass(
+            solar_zenith, "kastenyoung1989"
+        )
 
     max_airmass = atmosphere.get_relative_airmass(90, "kastenyoung1989")
     airmass = np.where(solar_zenith >= 90, max_airmass, airmass)
@@ -1524,7 +1574,9 @@ def perez_driesse(
     # lines after this point are identical to the original perez function
     # with some checks removed
 
-    A = aoi_projection(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth)
+    A = aoi_projection(
+        surface_tilt, surface_azimuth, solar_zenith, solar_azimuth
+    )
     A = np.maximum(A, 0)
 
     B = tools.cosd(solar_zenith)
@@ -1811,7 +1863,11 @@ def clearsky_index(ghi, ghi_clear, max_clearsky_index=2.0):
 
 
 def clearness_index(
-    ghi, solar_zenith, extra_radiation, min_cos_zenith=0.065, max_clearness_index=2.0
+    ghi,
+    solar_zenith,
+    extra_radiation,
+    min_cos_zenith=0.065,
+    max_clearness_index=2.0,
 ):
     """
     Calculate the clearness index.
@@ -2002,7 +2058,11 @@ def disc(
     I0 = get_extra_radiation(datetime_or_doy, 1370.0, "spencer")
 
     kt = clearness_index(
-        ghi, solar_zenith, I0, min_cos_zenith=min_cos_zenith, max_clearness_index=1
+        ghi,
+        solar_zenith,
+        I0,
+        min_cos_zenith=min_cos_zenith,
+        max_clearness_index=1,
     )
 
     am = atmosphere.get_relative_airmass(solar_zenith, model="kasten1966")
@@ -2058,7 +2118,9 @@ def _disc_kn(clearness_index, airmass, max_airmass=12):
         -5.743 + kt * (21.77 + kt * (-27.49 + 11.56 * kt)),
     )
     b = np.where(
-        is_cloudy, 0.37 + 0.962 * kt, 41.4 + kt * (-118.5 + kt * (66.05 + 31.9 * kt))
+        is_cloudy,
+        0.37 + 0.962 * kt,
+        41.4 + kt * (-118.5 + kt * (66.05 + 31.9 * kt)),
     )
     c = np.where(
         is_cloudy,
@@ -2068,7 +2130,9 @@ def _disc_kn(clearness_index, airmass, max_airmass=12):
 
     delta_kn = a + b * np.exp(c * am)
 
-    Knc = 0.866 + am * (-0.122 + am * (0.0121 + am * (-0.000653 + 1.4e-05 * am)))
+    Knc = 0.866 + am * (
+        -0.122 + am * (0.0121 + am * (-0.000653 + 1.4e-05 * am))
+    )
     Kn = Knc - delta_kn
     return Kn, am
 
@@ -2167,11 +2231,17 @@ def dirint(
     airmass = disc_out["airmass"]
     kt = disc_out["kt"]
 
-    kt_prime = clearness_index_zenith_independent(kt, airmass, max_clearness_index=1)
-    delta_kt_prime = _delta_kt_prime_dirint(kt_prime, use_delta_kt_prime, times)
+    kt_prime = clearness_index_zenith_independent(
+        kt, airmass, max_clearness_index=1
+    )
+    delta_kt_prime = _delta_kt_prime_dirint(
+        kt_prime, use_delta_kt_prime, times
+    )
     w = _temp_dew_dirint(temp_dew, times)
 
-    dirint_coeffs = _dirint_coeffs(times, kt_prime, solar_zenith, w, delta_kt_prime)
+    dirint_coeffs = _dirint_coeffs(
+        times, kt_prime, solar_zenith, w, delta_kt_prime
+    )
 
     # Perez eqn 5
     dni = disc_out["dni"] * dirint_coeffs
@@ -2179,16 +2249,22 @@ def dirint(
     return dni
 
 
-def _dirint_from_dni_ktprime(dni, kt_prime, solar_zenith, use_delta_kt_prime, temp_dew):
+def _dirint_from_dni_ktprime(
+    dni, kt_prime, solar_zenith, use_delta_kt_prime, temp_dew
+):
     """
     Calculate DIRINT DNI from supplied DISC DNI and Kt'.
 
     Supports :py:func:`gti_dirint`
     """
     times = dni.index
-    delta_kt_prime = _delta_kt_prime_dirint(kt_prime, use_delta_kt_prime, times)
+    delta_kt_prime = _delta_kt_prime_dirint(
+        kt_prime, use_delta_kt_prime, times
+    )
     w = _temp_dew_dirint(temp_dew, times)
-    dirint_coeffs = _dirint_coeffs(times, kt_prime, solar_zenith, w, delta_kt_prime)
+    dirint_coeffs = _dirint_coeffs(
+        times, kt_prime, solar_zenith, w, delta_kt_prime
+    )
     dni_dirint = dni * dirint_coeffs
     return dni_dirint
 
@@ -2207,7 +2283,9 @@ def _delta_kt_prime_dirint(kt_prime, use_delta_kt_prime, times):
         kt_next.iloc[-1] = kt_previous.iloc[-1]
         kt_previous.iloc[0] = kt_next.iloc[0]
         delta_kt_prime = 0.5 * (
-            (kt_prime - kt_next).abs().add((kt_prime - kt_previous).abs(), fill_value=0)
+            (kt_prime - kt_next)
+            .abs()
+            .add((kt_prime - kt_previous).abs(), fill_value=0)
         )
     else:
         # do not change unless also modifying _dirint_bins
@@ -2320,7 +2398,9 @@ def _dirint_bins(times, kt_prime, zenith, w, delta_kt_prime):
     # Create delta_kt_prime binning.
     delta_kt_prime_bin = pd.Series(0, index=times, dtype=np.int64)
     delta_kt_prime_bin[(delta_kt_prime >= 0) & (delta_kt_prime < 0.015)] = 1
-    delta_kt_prime_bin[(delta_kt_prime >= 0.015) & (delta_kt_prime < 0.035)] = 2
+    delta_kt_prime_bin[
+        (delta_kt_prime >= 0.015) & (delta_kt_prime < 0.035)
+    ] = 2
     delta_kt_prime_bin[(delta_kt_prime >= 0.035) & (delta_kt_prime < 0.07)] = 3
     delta_kt_prime_bin[(delta_kt_prime >= 0.07) & (delta_kt_prime < 0.15)] = 4
     delta_kt_prime_bin[(delta_kt_prime >= 0.15) & (delta_kt_prime < 0.3)] = 5
@@ -2808,7 +2888,9 @@ def _gti_dirint_gte_90(
     return ghi_gte_90, dni_gte_90, dhi_gte_90
 
 
-def _gti_dirint_gte_90_kt_prime(aoi, solar_zenith, solar_azimuth, times, kt_prime):
+def _gti_dirint_gte_90_kt_prime(
+    aoi, solar_zenith, solar_azimuth, times, kt_prime
+):
     """
     Determine kt' values to be used in GTI-DIRINT AOI >= 90 deg case.
     See Marion 2015 Section 2.2.
@@ -2919,7 +3001,11 @@ def erbs(ghi, zenith, datetime_or_doy, min_cos_zenith=0.065, max_zenith=87):
     dni_extra = get_extra_radiation(datetime_or_doy)
 
     kt = clearness_index(
-        ghi, zenith, dni_extra, min_cos_zenith=min_cos_zenith, max_clearness_index=1
+        ghi,
+        zenith,
+        dni_extra,
+        min_cos_zenith=min_cos_zenith,
+        max_clearness_index=1,
     )
 
     # For Kt <= 0.22, set the diffuse fraction
@@ -3053,7 +3139,9 @@ def erbs_driesse(
     ]
 
     if datetime_or_doy is None and dni_extra is None:
-        raise ValueError("Either datetime_or_doy or dni_extra " "must be provided.")
+        raise ValueError(
+            "Either datetime_or_doy or dni_extra " "must be provided."
+        )
 
     if dni_extra is None:
         dni_extra = get_extra_radiation(datetime_or_doy)
@@ -3062,7 +3150,11 @@ def erbs_driesse(
     ghi = np.maximum(0, ghi)
 
     kt = clearness_index(
-        ghi, zenith, dni_extra, min_cos_zenith=min_cos_zenith, max_clearness_index=1
+        ghi,
+        zenith,
+        dni_extra,
+        min_cos_zenith=min_cos_zenith,
+        max_clearness_index=1,
     )
 
     # For all Kt, set the default diffuse fraction
@@ -3096,7 +3188,12 @@ def erbs_driesse(
 
 
 def orgill_hollands(
-    ghi, zenith, datetime_or_doy, dni_extra=None, min_cos_zenith=0.065, max_zenith=87
+    ghi,
+    zenith,
+    datetime_or_doy,
+    dni_extra=None,
+    min_cos_zenith=0.065,
+    max_zenith=87,
 ):
     """Estimate DNI and DHI from GHI using the Orgill and Hollands model.
 
@@ -3152,7 +3249,11 @@ def orgill_hollands(
         dni_extra = get_extra_radiation(datetime_or_doy)
 
     kt = clearness_index(
-        ghi, zenith, dni_extra, min_cos_zenith=min_cos_zenith, max_clearness_index=1
+        ghi,
+        zenith,
+        dni_extra,
+        min_cos_zenith=min_cos_zenith,
+        max_clearness_index=1,
     )
 
     # For Kt < 0.35, set the diffuse fraction
@@ -3299,7 +3400,9 @@ def boland(
     return data
 
 
-def campbell_norman(zenith, transmittance, pressure=101325.0, dni_extra=1367.0):
+def campbell_norman(
+    zenith, transmittance, pressure=101325.0, dni_extra=1367.0
+):
     """
     Determine DNI, DHI, GHI from extraterrestrial flux, transmittance,
     and atmospheric pressure.
@@ -4049,7 +4152,9 @@ def dni(
     return dni
 
 
-def complete_irradiance(solar_zenith, ghi=None, dhi=None, dni=None, dni_clear=None):
+def complete_irradiance(
+    solar_zenith, ghi=None, dhi=None, dni=None, dni_clear=None
+):
     r"""
     Use the component sum equations to calculate the missing series, using
     the other available time series. One of the three parameters (ghi, dhi,

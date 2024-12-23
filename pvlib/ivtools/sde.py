@@ -159,7 +159,9 @@ def fit_sandia_simple(
     beta0, beta1 = _sandia_beta0_beta1(voltage, current, vlim, v_oc)
 
     # Find beta3 and beta4 from the exponential portion of the IV curve
-    beta3, beta4 = _sandia_beta3_beta4(voltage, current, beta0, beta1, ilim, i_sc)
+    beta3, beta4 = _sandia_beta3_beta4(
+        voltage, current, beta0, beta1, ilim, i_sc
+    )
 
     # calculate single diode parameters from regression coefficients
     return _sandia_simple_params(beta0, beta1, beta3, beta4, v_mp, i_mp, v_oc)
@@ -208,7 +210,9 @@ def _sandia_beta0_beta1(v, i, vlim, v_oc):
             break
     if any(np.isnan([beta0, beta1])):
         raise RuntimeError(
-            "Parameter extraction failed: beta0={}, beta1={}".format(beta0, beta1)
+            "Parameter extraction failed: beta0={}, beta1={}".format(
+                beta0, beta1
+            )
         )
     else:
         return beta0, beta1
@@ -227,7 +231,9 @@ def _sandia_beta3_beta4(voltage, current, beta0, beta1, ilim, i_sc):
     beta4 = coef[2].item()
     if any(np.isnan([beta3, beta4])):
         raise RuntimeError(
-            "Parameter extraction failed: beta3={}, beta4={}".format(beta3, beta4)
+            "Parameter extraction failed: beta3={}, beta4={}".format(
+                beta3, beta4
+            )
         )
     else:
         return beta3, beta4
@@ -361,7 +367,10 @@ def _fit_sandia_cocontent(voltage, current, nsvth):
     # Single diode equation at Isc, using Rsh, Rs, n and Io that were
     # determined above
     betaiph = (
-        isc - betaio + betaio * np.exp(isc / (betan * nsvth)) + isc * betars * betagp
+        isc
+        - betaio
+        + betaio * np.exp(isc / (betan * nsvth))
+        + isc * betars * betagp
     )
 
     iph = betaiph
@@ -394,7 +403,9 @@ def _cocontent(v, c, isc, kflag):
     # unreliable near the left endpoint
     scc[0:5] = isc * v[0:5] - np.cumsum(tmpint[0:5])  # by spline
     scc[5 : (xn - 5)] = (
-        isc * (v[5 : (xn - 5)] - v[4]) - np.cumsum(tmpint[5 : (xn - 5)]) + scc[4]
+        isc * (v[5 : (xn - 5)] - v[4])
+        - np.cumsum(tmpint[5 : (xn - 5)])
+        + scc[4]
     )
 
     # Use trapezoid rule for the last 5 intervals due to spline being

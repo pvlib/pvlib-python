@@ -6,10 +6,12 @@ from ..conftest import DATA_DIR, RERUNS, RERUNS_DELAY
 
 testfile = DATA_DIR / "surfrad-slv16001.dat"
 network_testfile = (
-    "ftp://aftp.cmdl.noaa.gov/data/radiation/surfrad/" "Alamosa_CO/2016/slv16001.dat"
+    "ftp://aftp.cmdl.noaa.gov/data/radiation/surfrad/"
+    "Alamosa_CO/2016/slv16001.dat"
 )
 https_testfile = (
-    "https://gml.noaa.gov/aftp/data/radiation/surfrad/" "Alamosa_CO/2016/slv16001.dat"
+    "https://gml.noaa.gov/aftp/data/radiation/surfrad/"
+    "Alamosa_CO/2016/slv16001.dat"
 )
 
 

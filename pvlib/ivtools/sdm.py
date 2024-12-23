@@ -112,7 +112,8 @@ def fit_cec_sam(
         from PySAM import PySSC
     except ImportError:
         raise ImportError(
-            "Requires NREL's PySAM package at " "https://pypi.org/project/NREL-PySAM/."
+            "Requires NREL's PySAM package at "
+            "https://pypi.org/project/NREL-PySAM/."
         )
 
     datadict = {
@@ -132,7 +133,9 @@ def fit_cec_sam(
 
     result = PySSC.ssc_sim_from_dict(datadict)
     if result["cmod_success"] == 1:
-        return tuple([result[k] for k in ["Il", "Io", "Rs", "Rsh", "a", "Adj"]])
+        return tuple(
+            [result[k] for k in ["Il", "Io", "Rs", "Rsh", "a", "Adj"]]
+        )
     else:
         raise RuntimeError("Parameter estimation failed")
 
@@ -266,7 +269,8 @@ def fit_desoto(
             init[key] = init_guess[key]
         else:
             raise ValueError(
-                f"'{key}' is not a valid name;" f" allowed values are {init_guess_keys}"
+                f"'{key}' is not a valid name;"
+                f" allowed values are {init_guess_keys}"
             )
     # params_i : initial values vector
     params_i = np.array([init[k] for k in init_guess_keys])
@@ -282,7 +286,9 @@ def fit_desoto(
     if optimize_result.success:
         sdm_params = optimize_result.x
     else:
-        raise RuntimeError("Parameter estimation failed:\n" + optimize_result.message)
+        raise RuntimeError(
+            "Parameter estimation failed:\n" + optimize_result.message
+        )
 
     # results
     return (
@@ -337,13 +343,15 @@ def _system_of_equations_desoto(params, specs):
     y[1] = -IL + Io * np.expm1(Voc / a) + Voc / Rsh
 
     # 3rd equation - Imp & Vmp - eq(5) in [1]
-    y[2] = Imp - IL + Io * np.expm1((Vmp + Imp * Rs) / a) + (Vmp + Imp * Rs) / Rsh
+    y[2] = (
+        Imp - IL + Io * np.expm1((Vmp + Imp * Rs) / a) + (Vmp + Imp * Rs) / Rsh
+    )
 
     # 4th equation - Pmp derivated=0 - eq23.2.6 in [2]
     # caution: eq(6) in [1] has a sign error
-    y[3] = Imp - Vmp * ((Io / a) * np.exp((Vmp + Imp * Rs) / a) + 1.0 / Rsh) / (
-        1.0 + (Io * Rs / a) * np.exp((Vmp + Imp * Rs) / a) + Rs / Rsh
-    )
+    y[3] = Imp - Vmp * (
+        (Io / a) * np.exp((Vmp + Imp * Rs) / a) + 1.0 / Rsh
+    ) / (1.0 + (Io * Rs / a) * np.exp((Vmp + Imp * Rs) / a) + Rs / Rsh)
 
     # 5th equation - open-circuit T2 - eq (4) at temperature T2 in [1]
     T2 = Tref + 2
@@ -351,7 +359,9 @@ def _system_of_equations_desoto(params, specs):
     a2 = a * T2 / Tref  # eq (8) in [1]
     IL2 = IL + alpha_sc * (T2 - Tref)  # eq (11) in [1]
     Eg2 = EgRef * (1 + dEgdT * (T2 - Tref))  # eq (10) in [1]
-    Io2 = Io * (T2 / Tref) ** 3 * np.exp(1 / k * (EgRef / Tref - Eg2 / T2))  # eq (9)
+    Io2 = (
+        Io * (T2 / Tref) ** 3 * np.exp(1 / k * (EgRef / Tref - Eg2 / T2))
+    )  # eq (9)
     y[4] = -IL2 + Io2 * np.expm1(Voc2 / a2) + Voc2 / Rsh  # eq (4) at T2
 
     return y
@@ -709,7 +719,11 @@ def fit_desoto_sandia(ivcurves, specs, const=None, maxiter=5, eps1=1.0e-3):
     )
     # Add parameters estimated in this function
     desoto["a_ref"] = (
-        n0 * specs["cells_in_series"] * const["k"] / const["q"] * (const["T0"] + 273.15)
+        n0
+        * specs["cells_in_series"]
+        * const["k"]
+        / const["q"]
+        * (const["T0"] + 273.15)
     )
     desoto["cells_in_series"] = specs["cells_in_series"]
 
@@ -799,7 +813,9 @@ def _initial_iv_params(ivcurves, ee, voc, isc, rsh, nnsvth):
             # Initial estimate of Iph, evaluate the single diode model at
             # Isc [5] Step 3a; [6] Step 3d
             iph[j] = (
-                isc[j] + io[j] * np.expm1(isc[j] / nnsvth[j]) + isc[j] * rs[j] / rsh[j]
+                isc[j]
+                + io[j] * np.expm1(isc[j] / nnsvth[j])
+                + isc[j] * rs[j] / rsh[j]
             )
 
         else:
@@ -950,7 +966,11 @@ def _extract_sdm_params(ee, tc, iph, io, rs, rsh, n, u, specs, const, model):
         x_for_io = (
             const["q"]
             / const["k"]
-            * (1.0 / tok - 1.0 / tck[u] + dEgdT * (tc[u] - const["T0"]) / tck[u])
+            * (
+                1.0 / tok
+                - 1.0 / tck[u]
+                + dEgdT * (tc[u] - const["T0"]) / tck[u]
+            )
         )
 
         # Estimate R_sh_ref
@@ -1067,7 +1087,9 @@ def _rsh_pvsyst(x, rshexp, g, go):
     rsho = x[0]
     rshref = x[1]
 
-    rshb = np.maximum((rshref - rsho * np.exp(-rshexp)) / (1.0 - np.exp(-rshexp)), 0.0)
+    rshb = np.maximum(
+        (rshref - rsho * np.exp(-rshexp)) / (1.0 - np.exp(-rshexp)), 0.0
+    )
     rsh = rshb + (rsho - rshb) * np.exp(-rshexp * g / go)
     return rsh
 
@@ -1082,7 +1104,9 @@ def _filter_params(ee, isc, io, rs, rsh):
     negrs = rs < 0.0
     badrs = np.logical_or(rs > rsh, np.isnan(rs))
     imagrs = ~(np.isreal(rs))
-    badio = np.logical_or(np.logical_or(~(np.isreal(rs)), io <= 0), np.isnan(io))
+    badio = np.logical_or(
+        np.logical_or(~(np.isreal(rs)), io <= 0), np.isnan(io)
+    )
     goodr = np.logical_and(~badrsh, ~imagrs)
     goodr = np.logical_and(goodr, ~negrs)
     goodr = np.logical_and(goodr, ~badrs)
@@ -1251,7 +1275,9 @@ def _update_rsh_fixed_pt(vmp, imp, iph, io, rs, rsh, nnsvth):
         _, z = _calc_theta_phi_exact(vmp, imp, iph, io, rs, x1, nnsvth)
         with np.errstate(divide="ignore"):
             next_x1 = (
-                (1 + z) / z * ((iph + io) * x1 / imp - nnsvth * z / imp - 2 * vmp / imp)
+                (1 + z)
+                / z
+                * ((iph + io) * x1 / imp - nnsvth * z / imp - 2 * vmp / imp)
             )
         x1 = next_x1
 

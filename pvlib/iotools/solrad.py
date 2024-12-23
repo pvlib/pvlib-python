@@ -32,10 +32,20 @@ STD_HEADERS = ("std_dw_psp", "std_direct", "std_diffuse", "std_uvb")
 
 HEADERS = BASE_HEADERS + STD_HEADERS
 
-DPIR_HEADERS = ("dpir", "dpir_flag", "dpirc", "dpirc_flag", "dpird", "dpird_flag")
+DPIR_HEADERS = (
+    "dpir",
+    "dpir_flag",
+    "dpirc",
+    "dpirc_flag",
+    "dpird",
+    "dpird_flag",
+)
 
 MADISON_HEADERS = (
-    BASE_HEADERS + DPIR_HEADERS + STD_HEADERS + ("std_dpir", "std_dpirc", "std_dpird")
+    BASE_HEADERS
+    + DPIR_HEADERS
+    + STD_HEADERS
+    + ("std_dpir", "std_dpirc", "std_dpird")
 )
 
 

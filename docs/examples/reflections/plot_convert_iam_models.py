@@ -93,7 +93,9 @@ martin_ruiz_iam = martin_ruiz(aoi, **martin_ruiz_params)
 # Get parameters for the physical model ...
 
 # ... using the default weight function.
-physical_params_default = convert("martin_ruiz", martin_ruiz_params, "physical")
+physical_params_default = convert(
+    "martin_ruiz", martin_ruiz_params, "physical"
+)
 physical_iam_default = physical(aoi, **physical_params_default)
 
 

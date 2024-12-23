@@ -43,7 +43,9 @@ tau500 = 0.1
 ozone = 0.31  # atm-cm
 albedo = 0.2
 
-times = pd.date_range("2023-01-01 08:00", freq="h", periods=9, tz="America/Denver")
+times = pd.date_range(
+    "2023-01-01 08:00", freq="h", periods=9, tz="America/Denver"
+)
 solpos = solarposition.get_solarposition(times, lat, lon)
 aoi = irradiance.aoi(tilt, azimuth, solpos.apparent_zenith, solpos.azimuth)
 

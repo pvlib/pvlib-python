@@ -123,7 +123,11 @@ def build_precise_iv_curve_dataframe(file_csv, file_json):
     curves = pd.DataFrame(curves_metadata["IV Curves"].values.tolist())
     curves["cells_in_series"] = curves_metadata["cells_in_series"]
     joined = params.merge(
-        curves, on="Index", how="inner", suffixes=(None, "_drop"), validate="one_to_one"
+        curves,
+        on="Index",
+        how="inner",
+        suffixes=(None, "_drop"),
+        validate="one_to_one",
     )
     joined = joined[(c for c in joined.columns if not c.endswith("_drop"))]
 
@@ -131,13 +135,24 @@ def build_precise_iv_curve_dataframe(file_csv, file_json):
     is_array = ["Currents", "Voltages", "diode_voltage"]
     for col in is_array:
         joined[col] = [np.asarray(a, dtype=np.float64) for a in joined[col]]
-    is_number = ["v_oc", "i_sc", "v_mp", "i_mp", "p_mp", "i_x", "i_xx", "Temperature"]
+    is_number = [
+        "v_oc",
+        "i_sc",
+        "v_mp",
+        "i_mp",
+        "p_mp",
+        "i_x",
+        "i_xx",
+        "Temperature",
+    ]
     joined[is_number] = joined[is_number].astype(np.float64)
 
     joined["Boltzmann"] = scipy.constants.Boltzmann
     joined["Elementary Charge"] = scipy.constants.elementary_charge
     joined["Vth"] = (
-        joined["Boltzmann"] * joined["Temperature"] / joined["Elementary Charge"]
+        joined["Boltzmann"]
+        * joined["Temperature"]
+        / joined["Elementary Charge"]
     )
 
     return joined
@@ -278,7 +293,8 @@ def get_pvsyst_fs_495():
             get_pvsyst_fs_495()["temp_ref"],
             {
                 "pmp": (
-                    get_pvsyst_fs_495()["I_mp_ref"] * get_pvsyst_fs_495()["V_mp_ref"]
+                    get_pvsyst_fs_495()["I_mp_ref"]
+                    * get_pvsyst_fs_495()["V_mp_ref"]
                 ),
                 "isc": get_pvsyst_fs_495()["I_sc_ref"],
                 "voc": get_pvsyst_fs_495()["V_oc_ref"],
@@ -286,7 +302,12 @@ def get_pvsyst_fs_495():
             (5e-4, 0.04),
         ),
         # other conditions
-        (POA, TCELL, {"pmp": 76.262, "isc": 1.3868, "voc": 79.292}, (1e-4, 1e-4)),
+        (
+            POA,
+            TCELL,
+            {"pmp": 76.262, "isc": 1.3868, "voc": 79.292},
+            (1e-4, 1e-4),
+        ),
     ],
 )
 @pytest.mark.parametrize("method", ["newton", "brentq"])
@@ -312,7 +333,9 @@ def test_pvsyst_recombination_loss(method, poa, temp_cell, expected, tol):
     )
     il_pvsyst, io_pvsyst, rs_pvsyst, rsh_pvsyst, nnsvt_pvsyst = x
     voc_est_pvsyst = estimate_voc(
-        photocurrent=il_pvsyst, saturation_current=io_pvsyst, nNsVth=nnsvt_pvsyst
+        photocurrent=il_pvsyst,
+        saturation_current=io_pvsyst,
+        nNsVth=nnsvt_pvsyst,
     )
     vd_pvsyst = np.linspace(0, voc_est_pvsyst, 1000)
     pvsyst = bishop88(
@@ -420,7 +443,9 @@ def test_pvsyst_breakdown(
     breakdown_factor, breakdown_voltage, breakdown_exp = brk_params
 
     voc_est_pvsyst = estimate_voc(
-        photocurrent=il_pvsyst, saturation_current=io_pvsyst, nNsVth=nnsvt_pvsyst
+        photocurrent=il_pvsyst,
+        saturation_current=io_pvsyst,
+        nNsVth=nnsvt_pvsyst,
     )
     vd_pvsyst = np.linspace(0, voc_est_pvsyst, 1000)
     pvsyst = bishop88(
@@ -529,7 +554,9 @@ def bishop88_arguments():
         ),
     ],
 )
-def test_bishop88_kwargs_transfer(method, method_kwargs, mocker, bishop88_arguments):
+def test_bishop88_kwargs_transfer(
+    method, method_kwargs, mocker, bishop88_arguments
+):
     """test method_kwargs modifying optimizer does not break anything"""
     # patch method namespace at singlediode module namespace
     optimizer_mock = mocker.patch("pvlib.singlediode." + method)
@@ -549,7 +576,9 @@ def test_bishop88_kwargs_transfer(method, method_kwargs, mocker, bishop88_argume
     _, kwargs = optimizer_mock.call_args
     assert method_kwargs.items() <= kwargs.items()
 
-    bishop88_mpp(**bishop88_arguments, method=method, method_kwargs=method_kwargs)
+    bishop88_mpp(
+        **bishop88_arguments, method=method, method_kwargs=method_kwargs
+    )
     _, kwargs = optimizer_mock.call_args
     assert method_kwargs.items() <= kwargs.items()
 
@@ -559,11 +588,21 @@ def test_bishop88_kwargs_transfer(method, method_kwargs, mocker, bishop88_argume
     [
         (
             "newton",
-            {"tol": 1e-4, "rtol": 1e-4, "maxiter": 20, "_inexistent_param": "0.01"},
+            {
+                "tol": 1e-4,
+                "rtol": 1e-4,
+                "maxiter": 20,
+                "_inexistent_param": "0.01",
+            },
         ),
         (
             "brentq",
-            {"xtol": 1e-4, "rtol": 1e-4, "maxiter": 20, "_inexistent_param": "0.01"},
+            {
+                "xtol": 1e-4,
+                "rtol": 1e-4,
+                "maxiter": 20,
+                "_inexistent_param": "0.01",
+            },
         ),
     ],
 )
@@ -647,7 +686,9 @@ def test_bishop88_pdSeries_len_one(method, bishop88_arguments):
 
 def _sde_check_solution(i, v, il, io, rs, rsh, a, d2mutau=0.0, NsVbi=np.inf):
     vd = v + rs * i
-    return il - io * np.expm1(vd / a) - vd / rsh - il * d2mutau / (NsVbi - vd) - i
+    return (
+        il - io * np.expm1(vd / a) - vd / rsh - il * d2mutau / (NsVbi - vd) - i
+    )
 
 
 @pytest.mark.parametrize("method", ["newton", "brentq"])
@@ -696,14 +737,18 @@ def test_bishop88_init_cond(method):
     # test v_from_i
     vmp2 = bishop88_v_from_i(imp, *sde_params, d2mutau=d2mutau, NsVbi=NsVbi)
     err = np.abs(
-        _sde_check_solution(imp, vmp2, *sde_params, d2mutau=d2mutau, NsVbi=NsVbi)
+        _sde_check_solution(
+            imp, vmp2, *sde_params, d2mutau=d2mutau, NsVbi=NsVbi
+        )
     )
     bad_results = np.isnan(vmp2) | (vmp2 < 0) | (err > 0.00001)
     assert not bad_results.any()
     # test v_from_i
     imp2 = bishop88_i_from_v(vmp, *sde_params, d2mutau=d2mutau, NsVbi=NsVbi)
     err = np.abs(
-        _sde_check_solution(imp2, vmp, *sde_params, d2mutau=d2mutau, NsVbi=NsVbi)
+        _sde_check_solution(
+            imp2, vmp, *sde_params, d2mutau=d2mutau, NsVbi=NsVbi
+        )
     )
     bad_results = np.isnan(imp2) | (imp2 < 0) | (err > 0.00001)
     assert not bad_results.any()

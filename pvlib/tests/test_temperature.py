@@ -12,23 +12,34 @@ import re
 
 @pytest.fixture
 def sapm_default():
-    return temperature.TEMPERATURE_MODEL_PARAMETERS["sapm"]["open_rack_glass_glass"]
+    return temperature.TEMPERATURE_MODEL_PARAMETERS["sapm"][
+        "open_rack_glass_glass"
+    ]
 
 
 def test_sapm_cell(sapm_default):
     default = temperature.sapm_cell(
-        900, 20, 5, sapm_default["a"], sapm_default["b"], sapm_default["deltaT"]
+        900,
+        20,
+        5,
+        sapm_default["a"],
+        sapm_default["b"],
+        sapm_default["deltaT"],
     )
     assert_allclose(default, 43.509, 1e-3)
 
 
 def test_sapm_module(sapm_default):
-    default = temperature.sapm_module(900, 20, 5, sapm_default["a"], sapm_default["b"])
+    default = temperature.sapm_module(
+        900, 20, 5, sapm_default["a"], sapm_default["b"]
+    )
     assert_allclose(default, 40.809, 1e-3)
 
 
 def test_sapm_cell_from_module(sapm_default):
-    default = temperature.sapm_cell_from_module(50, 900, sapm_default["deltaT"])
+    default = temperature.sapm_cell_from_module(
+        50, 900, sapm_default["deltaT"]
+    )
     assert_allclose(default, 50 + 900 / 1000 * sapm_default["deltaT"])
 
 
@@ -154,7 +165,9 @@ def test_faiman_rad_ir():
 
     emissivity = np.array([1.0, 0.88, 0.5, 0.0])
     expected = [-4.626, -4.071, -2.313, 0.000]
-    result = temperature.faiman_rad(0, 0, 0, ir_down=200, emissivity=emissivity)
+    result = temperature.faiman_rad(
+        0, 0, 0, ir_down=200, emissivity=emissivity
+    )
     assert_allclose(result, expected, atol=0.001)
 
 
@@ -180,10 +193,14 @@ def test_faiman_series():
 
 
 def test__temperature_model_params():
-    params = temperature._temperature_model_params("sapm", "open_rack_glass_glass")
+    params = temperature._temperature_model_params(
+        "sapm", "open_rack_glass_glass"
+    )
     assert (
         params
-        == temperature.TEMPERATURE_MODEL_PARAMETERS["sapm"]["open_rack_glass_glass"]
+        == temperature.TEMPERATURE_MODEL_PARAMETERS["sapm"][
+            "open_rack_glass_glass"
+        ]
     )
     with pytest.raises(KeyError):
         temperature._temperature_model_params("sapm", "not_a_parameter_set")
@@ -247,13 +264,17 @@ def test_fuentes(filename, inoct):
 def test_fuentes_timezone(tz):
     index = pd.date_range("2019-01-01", freq="h", periods=3, tz=tz)
 
-    df = pd.DataFrame({"poa_global": 1000, "temp_air": 20, "wind_speed": 1}, index)
+    df = pd.DataFrame(
+        {"poa_global": 1000, "temp_air": 20, "wind_speed": 1}, index
+    )
 
     out = temperature.fuentes(
         df["poa_global"], df["temp_air"], df["wind_speed"], noct_installed=45
     )
 
-    assert_series_equal(out, pd.Series([47.85, 50.85, 50.85], index=index, name="tmod"))
+    assert_series_equal(
+        out, pd.Series([47.85, 50.85, 50.85], index=index, name="tmod")
+    )
 
 
 def test_noct_sam():
@@ -374,7 +395,16 @@ def test_prilliman():
 
     # default coeffs
     expected = pd.Series(
-        [0, 0, 0.7047457, 2.21176412, 4.45584299, 7.63635512, 12.26808265, 18.00305776],
+        [
+            0,
+            0,
+            0.7047457,
+            2.21176412,
+            4.45584299,
+            7.63635512,
+            12.26808265,
+            18.00305776,
+        ],
         index=times,
     )
     actual = temperature.prilliman(cell_temperature, wind_speed, unit_mass=10)
@@ -383,7 +413,16 @@ def test_prilliman():
     # custom coeffs
     coefficients = [0.0046, 4.5537e-4, -2.2586e-4, -1.5661e-5]
     expected = pd.Series(
-        [0, 0, 0.70716941, 2.2199537, 4.47537694, 7.6676931, 12.30423167, 18.04215198],
+        [
+            0,
+            0,
+            0.70716941,
+            2.2199537,
+            4.47537694,
+            7.6676931,
+            12.30423167,
+            18.04215198,
+        ],
         index=times,
     )
     actual = temperature.prilliman(
@@ -396,7 +435,16 @@ def test_prilliman():
     cell_temperature = pd.Series([0, 1, 3, 6, 10, 15, 21, 27], index=times)
     wind_speed = pd.Series([0, 1, 2, 3, 2, 1, 2, 3])
     expected = pd.Series(
-        [0, 0, 0.53557976, 1.49270094, 2.85940173, 4.63914366, 7.09641845, 10.24899272],
+        [
+            0,
+            0,
+            0.53557976,
+            1.49270094,
+            2.85940173,
+            4.63914366,
+            7.09641845,
+            10.24899272,
+        ],
         index=times,
     )
     actual = temperature.prilliman(cell_temperature, wind_speed, unit_mass=12)
@@ -427,7 +475,9 @@ def test_prilliman_nans():
     cell_temperature = pd.Series([0, 1, 3, 6, 10, np.nan, 21, 27], index=times)
     wind_speed = pd.Series([0, 1, 2, 3, 2, 1, np.nan, 3])
     actual = temperature.prilliman(cell_temperature, wind_speed)
-    expected = pd.Series([True, True, True, True, True, True, False, True], index=times)
+    expected = pd.Series(
+        [True, True, True, True, True, True, False, True], index=times
+    )
     assert_series_equal(actual.notnull(), expected)
 
     # check that nan temperatures do not mess up the weighted average;
@@ -444,7 +494,9 @@ def test_prilliman_nans():
 
 def test_glm_conversions():
     # it is easiest and sufficient to test conversion from  & to the same model
-    glm = temperature.GenericLinearModel(module_efficiency=0.1, absorptance=0.9)
+    glm = temperature.GenericLinearModel(
+        module_efficiency=0.1, absorptance=0.9
+    )
 
     inp = {"u0": 25.0, "u1": 6.84}
     glm.use_faiman(**inp)
@@ -459,7 +511,12 @@ def test_glm_conversions():
         assert np.isclose(out[k], v)
 
     # test with optional parameters
-    inp = {"u_c": 25, "u_v": 4, "module_efficiency": 0.15, "alpha_absorption": 0.95}
+    inp = {
+        "u_c": 25,
+        "u_v": 4,
+        "module_efficiency": 0.15,
+        "alpha_absorption": 0.95,
+    }
     glm.use_pvsyst(**inp)
     out = glm.to_pvsyst()
     for k, v in inp.items():
@@ -472,7 +529,11 @@ def test_glm_conversions():
         assert np.isclose(out[k], v)
 
     # test with optional parameters
-    inp = {"noct": 47, "module_efficiency": 0.15, "transmittance_absorptance": 0.95}
+    inp = {
+        "noct": 47,
+        "module_efficiency": 0.15,
+        "transmittance_absorptance": 0.95,
+    }
     glm.use_noct_sam(**inp)
     out = glm.to_noct_sam()
     for k, v in inp.items():
@@ -486,7 +547,9 @@ def test_glm_conversions():
 
 
 def test_glm_simulations():
-    glm = temperature.GenericLinearModel(module_efficiency=0.1, absorptance=0.9)
+    glm = temperature.GenericLinearModel(
+        module_efficiency=0.1, absorptance=0.9
+    )
     wind = np.array([1.4, 1 / 0.51, 5.4])
     weather = (800, 20, wind)
 
@@ -508,7 +571,9 @@ def test_glm_simulations():
 
 
 def test_glm_repr():
-    glm = temperature.GenericLinearModel(module_efficiency=0.1, absorptance=0.9)
+    glm = temperature.GenericLinearModel(
+        module_efficiency=0.1, absorptance=0.9
+    )
     inp = {"u0": 20.0, "u1": 5.0}
     glm.use_faiman(**inp)
     expected = (

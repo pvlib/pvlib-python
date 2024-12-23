@@ -71,7 +71,11 @@ def test_get_acis_nrcc(grid, expected):
         index=pd.to_datetime(["2020-01-01"]),
     )
     assert_frame_equal(df, expected)
-    expected_meta = {"latitude": 40.0, "longitude": -80.0, "altitude": 356.9208}
+    expected_meta = {
+        "latitude": 40.0,
+        "longitude": -80.0,
+        "altitude": 356.9208,
+    }
     assert meta == pytest.approx(expected_meta)
 
     # map_variables=False
@@ -119,7 +123,9 @@ def test_get_acis_mpe():
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_get_acis_station_data():
     # map_variables=True
-    df, meta = get_acis_station_data("ORD", "2020-01-10", "2020-01-12", trace_val=-99)
+    df, meta = get_acis_station_data(
+        "ORD", "2020-01-10", "2020-01-12", trace_val=-99
+    )
     expected = pd.DataFrame(
         [
             [10.0, 2.0, 6.0, np.nan, 21.34, 0.0, 0.0, 0.0, 59.0, 0.0],

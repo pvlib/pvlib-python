@@ -29,7 +29,8 @@ def fail_on_pvlib_version(version):
             # fail if the version is too high
             if pvlib_base_version >= Version(version):
                 pytest.fail(
-                    "the tested function is scheduled to be " "removed in %s" % version
+                    "the tested function is scheduled to be "
+                    "removed in %s" % version
                 )
             # otherwise return the function to be executed
             else:
@@ -82,7 +83,9 @@ RERUNS_DELAY = 2
 
 
 platform_is_windows = platform.system() == "Windows"
-skip_windows = pytest.mark.skipif(platform_is_windows, reason="does not run on windows")
+skip_windows = pytest.mark.skipif(
+    platform_is_windows, reason="does not run on windows"
+)
 
 
 try:
@@ -107,7 +110,8 @@ except KeyError:
     has_solaranywhere_credentials = False
 
 requires_solaranywhere_credentials = pytest.mark.skipif(
-    not has_solaranywhere_credentials, reason="requires solaranywhere credentials"
+    not has_solaranywhere_credentials,
+    reason="requires solaranywhere credentials",
 )
 
 
@@ -163,7 +167,9 @@ try:
 except ImportError:
     has_pvfactors = False
 
-requires_pvfactors = pytest.mark.skipif(not has_pvfactors, reason="requires pvfactors")
+requires_pvfactors = pytest.mark.skipif(
+    not has_pvfactors, reason="requires pvfactors"
+)
 
 
 try:
@@ -249,7 +255,8 @@ def adr_inverter_parameters():
     parameters if required without affecting other tests.
     """
     parameters = {
-        "Name": "Ablerex Electronics Co., Ltd.: ES 2200-US-240 (240Vac)" "[CEC 2011]",
+        "Name": "Ablerex Electronics Co., Ltd.: ES 2200-US-240 (240Vac)"
+        "[CEC 2011]",
         "Vac": 240.0,
         "Pacmax": 2110.0,
         "Pnom": 2200.0,

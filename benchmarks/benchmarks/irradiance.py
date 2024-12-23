@@ -8,7 +8,9 @@ from pvlib import irradiance, location
 
 class Irradiance:
     def setup(self):
-        self.times = pd.date_range(start="20180601", freq="1min", periods=14400)
+        self.times = pd.date_range(
+            start="20180601", freq="1min", periods=14400
+        )
         self.days = pd.date_range(start="20180601", freq="d", periods=30)
         self.location = location.Location(40, -80)
         self.solar_position = self.location.get_solarposition(self.times)

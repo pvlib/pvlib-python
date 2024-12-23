@@ -174,7 +174,9 @@ def get_solaranywhere(
     if probability_of_exceedance is not None:
         if not isinstance(probability_of_exceedance, int):
             raise ValueError("`probability_of_exceedance` must be an integer")
-        payload["Options"]["ProbabilityOfExceedance"] = probability_of_exceedance
+        payload["Options"]["ProbabilityOfExceedance"] = (
+            probability_of_exceedance
+        )
 
     # Add start/end time if requesting non-TMY data
     if (start is not None) or (end is not None):
@@ -192,7 +194,9 @@ def get_solaranywhere(
     # Convert the payload dictionary to a JSON string (uses double quotes)
     payload = json.dumps(payload)
     # Make data request
-    request = requests.post(url + "/WeatherData", data=payload, headers=headers)
+    request = requests.post(
+        url + "/WeatherData", data=payload, headers=headers
+    )
     # Raise error if request is not OK
     if request.ok is False:
         raise ValueError(request.json()["Message"])
@@ -211,7 +215,9 @@ def get_solaranywhere(
         if results_json.get("Status") == "Done":
             if results_json["WeatherDataResults"][0]["Status"] == "Failure":
                 raise RuntimeError(
-                    results_json["WeatherDataResults"][0]["ErrorMessages"][0]["Message"]
+                    results_json["WeatherDataResults"][0]["ErrorMessages"][0][
+                        "Message"
+                    ]
                 )  # noqa: E501
             break
         elif (time.time() - start_time) > timeout:
@@ -305,7 +311,9 @@ def read_solaranywhere(filename, map_variables=True, encoding="iso-8859-1"):
     meta["LatLon Resolution"] = float(meta["LatLon Resolution"])
 
     # Set index
-    data.index = pd.to_datetime(data["ObservationTime(LST)"], format="%m/%d/%Y %H:%M")
+    data.index = pd.to_datetime(
+        data["ObservationTime(LST)"], format="%m/%d/%Y %H:%M"
+    )
     # Set timezone
     data = data.tz_localize(int(meta["TZ"] * 3600))
     # Remove notion of LST in case the index is later converted to another tz

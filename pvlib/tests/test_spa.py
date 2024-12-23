@@ -20,7 +20,9 @@ import unittest
 from .conftest import requires_numba
 
 
-times = pd.date_range("2003-10-17 12:30:30", periods=1, freq="D").tz_localize("MST")
+times = pd.date_range("2003-10-17 12:30:30", periods=1, freq="D").tz_localize(
+    "MST"
+)
 unixtimes = np.array(times.tz_convert("UTC").view(np.int64) * 1.0 / 10**9)
 
 lat = 39.742476
@@ -134,7 +136,9 @@ class SpaBase:
         microsecond = dt.microsecond
         assert_almost_equal(
             JD + 1e-6 / (3600 * 24),  # modify expected JD by 1us
-            self.spa.julian_day_dt(year, month, day, hour, minute, second, microsecond),
+            self.spa.julian_day_dt(
+                year, month, day, hour, minute, second, microsecond
+            ),
             6,
         )
 
@@ -199,17 +203,23 @@ class SpaBase:
         assert_almost_equal(dTau, self.spa.aberration_correction(R), 6)
 
     def test_apparent_sun_longitude(self):
-        assert_almost_equal(lamd, self.spa.apparent_sun_longitude(Theta, dPsi, dTau), 6)
+        assert_almost_equal(
+            lamd, self.spa.apparent_sun_longitude(Theta, dPsi, dTau), 6
+        )
 
     def test_mean_sidereal_time(self):
         assert_almost_equal(v0, self.spa.mean_sidereal_time(JD, JC), 3)
 
     def test_apparent_sidereal_time(self):
-        assert_almost_equal(v, self.spa.apparent_sidereal_time(v0, dPsi, epsilon), 5)
+        assert_almost_equal(
+            v, self.spa.apparent_sidereal_time(v0, dPsi, epsilon), 5
+        )
 
     def test_geocentric_sun_right_ascension(self):
         assert_almost_equal(
-            alpha, self.spa.geocentric_sun_right_ascension(lamd, epsilon, beta), 6
+            alpha,
+            self.spa.geocentric_sun_right_ascension(lamd, epsilon, beta),
+            6,
         )
 
     def test_geocentric_sun_declination(self):
@@ -232,7 +242,9 @@ class SpaBase:
 
     def test_topocentric_sun_right_ascension(self):
         assert_almost_equal(
-            alpha_prime, self.spa.topocentric_sun_right_ascension(alpha, dAlpha), 5
+            alpha_prime,
+            self.spa.topocentric_sun_right_ascension(alpha, dAlpha),
+            5,
         )
 
     def test_topocentric_sun_declination(self):
@@ -277,7 +289,9 @@ class SpaBase:
     def test_topocentric_astronomers_azimuth(self):
         assert_almost_equal(
             Gamma,
-            self.spa.topocentric_astronomers_azimuth(H_prime, delta_prime, lat),
+            self.spa.topocentric_astronomers_azimuth(
+                H_prime, delta_prime, lat
+            ),
             5,
         )
 
@@ -289,7 +303,14 @@ class SpaBase:
             # don't warn on method reload
             warnings.simplefilter("ignore")
             spa_out_0 = self.spa.solar_position(
-                unixtimes, lat, lon, elev, pressure, temp, delta_t, atmos_refract
+                unixtimes,
+                lat,
+                lon,
+                elev,
+                pressure,
+                temp,
+                delta_t,
+                atmos_refract,
             )[:-1]
             spa_out_1 = self.spa.solar_position(
                 unixtimes,
@@ -302,18 +323,24 @@ class SpaBase:
                 atmos_refract,
                 sst=True,
             )[:3]
-        assert_almost_equal(np.array([[theta, theta0, e, e0, Phi]]).T, spa_out_0, 5)
+        assert_almost_equal(
+            np.array([[theta, theta0, e, e0, Phi]]).T, spa_out_0, 5
+        )
         assert_almost_equal(np.array([[v, alpha, delta]]).T, spa_out_1, 5)
 
     def test_equation_of_time(self):
         eot = 14.64
         M = self.spa.sun_mean_longitude(JME)
-        assert_almost_equal(eot, self.spa.equation_of_time(M, alpha, dPsi, epsilon), 2)
+        assert_almost_equal(
+            eot, self.spa.equation_of_time(M, alpha, dPsi, epsilon), 2
+        )
 
     def test_transit_sunrise_sunset(self):
         # tests at greenwich
         times = (
-            pd.DatetimeIndex([dt.datetime(1996, 7, 5, 0), dt.datetime(2004, 12, 4, 0)])
+            pd.DatetimeIndex(
+                [dt.datetime(1996, 7, 5, 0), dt.datetime(2004, 12, 4, 0)]
+            )
             .tz_localize("UTC")
             .view(np.int64)
             * 1.0
@@ -321,7 +348,10 @@ class SpaBase:
         )
         sunrise = (
             pd.DatetimeIndex(
-                [dt.datetime(1996, 7, 5, 7, 8, 15), dt.datetime(2004, 12, 4, 4, 38, 57)]
+                [
+                    dt.datetime(1996, 7, 5, 7, 8, 15),
+                    dt.datetime(2004, 12, 4, 4, 38, 57),
+                ]
             )
             .tz_localize("UTC")
             .view(np.int64)
@@ -330,7 +360,10 @@ class SpaBase:
         )
         sunset = (
             pd.DatetimeIndex(
-                [dt.datetime(1996, 7, 5, 17, 1, 4), dt.datetime(2004, 12, 4, 19, 2, 2)]
+                [
+                    dt.datetime(1996, 7, 5, 17, 1, 4),
+                    dt.datetime(2004, 12, 4, 19, 2, 2),
+                ]
             )
             .tz_localize("UTC")
             .view(np.int64)
@@ -481,14 +514,16 @@ class SpaBase:
         times = np.array(times)
         sunrise = np.array(sunrise)
         sunset = np.array(sunset)
-        result = self.spa.transit_sunrise_sunset(times, 39.917, 116.383, 64.0, 1)
+        result = self.spa.transit_sunrise_sunset(
+            times, 39.917, 116.383, 64.0, 1
+        )
         assert_almost_equal(sunrise / 1e3, result[1] / 1e3, 1)
         assert_almost_equal(sunset / 1e3, result[2] / 1e3, 1)
 
     def test_earthsun_distance(self):
-        times = pd.date_range("2003-10-17 12:30:30", periods=1, freq="D").tz_localize(
-            "MST"
-        )
+        times = pd.date_range(
+            "2003-10-17 12:30:30", periods=1, freq="D"
+        ).tz_localize("MST")
         unixtimes = times.tz_convert("UTC").view(np.int64) * 1.0 / 10**9
         unixtimes = np.array(unixtimes)
         result = self.spa.earthsun_distance(unixtimes, 64.0, 1)

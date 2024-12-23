@@ -269,7 +269,10 @@ def get_cams(
     else:
         fbuf = io.StringIO(res.content.decode("utf-8"))
         data, metadata = parse_cams(
-            fbuf, integrated=integrated, label=label, map_variables=map_variables
+            fbuf,
+            integrated=integrated,
+            label=label,
+            map_variables=map_variables,
         )
         return data, metadata
 
@@ -355,7 +358,9 @@ def parse_cams(fbuf, integrated=False, label=None, map_variables=True):
         data.index = data.index - pd.Timedelta(days=1)
 
     if not integrated:  # Convert radiation values from Wh/m2 to W/m2
-        integrated_cols = [c for c in CAMS_INTEGRATED_COLUMNS if c in data.columns]
+        integrated_cols = [
+            c for c in CAMS_INTEGRATED_COLUMNS if c in data.columns
+        ]
 
         if time_step == "1M":
             time_delta = pd.to_datetime(obs_period.str[1]) - pd.to_datetime(

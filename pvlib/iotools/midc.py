@@ -223,7 +223,9 @@ def read_midc(filename, variable_map={}, raw_data=False, **kwargs):
     return data
 
 
-def read_midc_raw_data_from_nrel(site, start, end, variable_map={}, timeout=30):
+def read_midc_raw_data_from_nrel(
+    site, start, end, variable_map={}, timeout=30
+):
     """Request and read MIDC data directly from the raw data api.
 
     Parameters
@@ -278,5 +280,8 @@ def read_midc_raw_data_from_nrel(site, start, end, variable_map={}, timeout=30):
     col_length = len(first_row.columns)
     raw_csv.seek(0)
     return read_midc(
-        raw_csv, variable_map=variable_map, raw_data=True, usecols=range(col_length)
+        raw_csv,
+        variable_map=variable_map,
+        raw_data=True,
+        usecols=range(col_length),
     )

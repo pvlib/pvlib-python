@@ -47,7 +47,9 @@ from pathlib import Path
 # Datafile found in the pvlib distribution
 DATA_FILE = Path(pvlib.__path__[0]).joinpath("data", "723170TYA.CSV")
 
-tmy, metadata = pvlib.iotools.read_tmy3(DATA_FILE, coerce_year=2002, map_variables=True)
+tmy, metadata = pvlib.iotools.read_tmy3(
+    DATA_FILE, coerce_year=2002, map_variables=True
+)
 tmy = tmy.filter(
     ["ghi", "dhi", "dni", "pressure", "temp_air"]
 )  # remaining columns are not needed

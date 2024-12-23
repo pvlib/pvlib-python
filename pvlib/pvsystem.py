@@ -72,7 +72,15 @@ _DC_MODEL_PARAMS = {
         "FD",
     },
     "desoto": {"alpha_sc", "a_ref", "I_L_ref", "I_o_ref", "R_sh_ref", "R_s"},
-    "cec": {"alpha_sc", "a_ref", "I_L_ref", "I_o_ref", "R_sh_ref", "R_s", "Adjust"},
+    "cec": {
+        "alpha_sc",
+        "a_ref",
+        "I_L_ref",
+        "I_o_ref",
+        "R_sh_ref",
+        "R_s",
+        "Adjust",
+    },
     "pvsyst": {
         "gamma_ref",
         "mu_gamma",
@@ -85,7 +93,14 @@ _DC_MODEL_PARAMS = {
         "EgRef",
         "cells_in_series",
     },
-    "singlediode": {"alpha_sc", "a_ref", "I_L_ref", "I_o_ref", "R_sh_ref", "R_s"},
+    "singlediode": {
+        "alpha_sc",
+        "a_ref",
+        "I_L_ref",
+        "I_o_ref",
+        "R_sh_ref",
+        "R_s",
+    },
     "pvwatts": {"pdc0", "gamma_pdc"},
 }
 
@@ -451,7 +466,9 @@ class PVSystem:
                 model=model,
                 **kwargs,
             )
-            for array, dni, ghi, dhi, albedo in zip(self.arrays, dni, ghi, dhi, albedo)
+            for array, dni, ghi, dhi, albedo in zip(
+                self.arrays, dni, ghi, dhi, albedo
+            )
         )
 
     @_unwrap_single_value
@@ -484,12 +501,18 @@ class PVSystem:
         """
         aoi = self._validate_per_array(aoi)
         return tuple(
-            array.get_iam(aoi, iam_model) for array, aoi in zip(self.arrays, aoi)
+            array.get_iam(aoi, iam_model)
+            for array, aoi in zip(self.arrays, aoi)
         )
 
     @_unwrap_single_value
     def get_cell_temperature(
-        self, poa_global, temp_air, wind_speed, model, effective_irradiance=None
+        self,
+        poa_global,
+        temp_air,
+        wind_speed,
+        model,
+        effective_irradiance=None,
     ):
         """
         Determine cell temperature using the method specified by ``model``.
@@ -542,7 +565,11 @@ class PVSystem:
                 poa_global, temp_air, wind_speed, model, effective_irradiance
             )
             for array, poa_global, temp_air, wind_speed, effective_irradiance in zip(
-                self.arrays, poa_global, temp_air, wind_speed, effective_irradiance
+                self.arrays,
+                poa_global,
+                temp_air,
+                wind_speed,
+                effective_irradiance,
             )
         )
 
@@ -586,7 +613,9 @@ class PVSystem:
 
         return tuple(
             calcparams_desoto(
-                effective_irradiance, temp_cell, **build_kwargs(array.module_parameters)
+                effective_irradiance,
+                temp_cell,
+                **build_kwargs(array.module_parameters),
             )
             for array, effective_irradiance, temp_cell in zip(
                 self.arrays, effective_irradiance, temp_cell
@@ -634,7 +663,9 @@ class PVSystem:
 
         return tuple(
             calcparams_cec(
-                effective_irradiance, temp_cell, **build_kwargs(array.module_parameters)
+                effective_irradiance,
+                temp_cell,
+                **build_kwargs(array.module_parameters),
             )
             for array, effective_irradiance, temp_cell in zip(
                 self.arrays, effective_irradiance, temp_cell
@@ -684,7 +715,9 @@ class PVSystem:
 
         return tuple(
             calcparams_pvsyst(
-                effective_irradiance, temp_cell, **build_kwargs(array.module_parameters)
+                effective_irradiance,
+                temp_cell,
+                **build_kwargs(array.module_parameters),
             )
             for array, effective_irradiance, temp_cell in zip(
                 self.arrays, effective_irradiance, temp_cell
@@ -737,13 +770,20 @@ class PVSystem:
             The SAPM spectral loss coefficient.
         """
         return tuple(
-            spectrum.spectral_factor_sapm(airmass_absolute, array.module_parameters)
+            spectrum.spectral_factor_sapm(
+                airmass_absolute, array.module_parameters
+            )
             for array in self.arrays
         )
 
     @_unwrap_single_value
     def sapm_effective_irradiance(
-        self, poa_direct, poa_diffuse, airmass_absolute, aoi, reference_irradiance=1000
+        self,
+        poa_direct,
+        poa_diffuse,
+        airmass_absolute,
+        aoi,
+        reference_irradiance=1000,
     ):
         """
         Use the :py:func:`sapm_effective_irradiance` function, the input
@@ -774,7 +814,11 @@ class PVSystem:
         aoi = self._validate_per_array(aoi)
         return tuple(
             sapm_effective_irradiance(
-                poa_direct, poa_diffuse, airmass_absolute, aoi, array.module_parameters
+                poa_direct,
+                poa_diffuse,
+                airmass_absolute,
+                aoi,
+                array.module_parameters,
             )
             for array, poa_direct, poa_diffuse, aoi in zip(
                 self.arrays, poa_direct, poa_diffuse, aoi
@@ -814,7 +858,10 @@ class PVSystem:
         pw = self._validate_per_array(pw, system_wide=True)
 
         def _spectral_correction(array, pw):
-            if "first_solar_spectral_coefficients" in array.module_parameters.keys():
+            if (
+                "first_solar_spectral_coefficients"
+                in array.module_parameters.keys()
+            ):
                 coefficients = array.module_parameters[
                     "first_solar_spectral_coefficients"
                 ]
@@ -827,7 +874,9 @@ class PVSystem:
                 pw, airmass_absolute, module_type, coefficients
             )
 
-        return tuple(itertools.starmap(_spectral_correction, zip(self.arrays, pw)))
+        return tuple(
+            itertools.starmap(_spectral_correction, zip(self.arrays, pw))
+        )
 
     def singlediode(
         self,
@@ -918,7 +967,9 @@ class PVSystem:
             p_dc = self._validate_per_array(p_dc)
             v_dc = self._validate_per_array(v_dc)
             if multiple_arrays:
-                return inverter.sandia_multi(v_dc, p_dc, self.inverter_parameters)
+                return inverter.sandia_multi(
+                    v_dc, p_dc, self.inverter_parameters
+                )
             return inverter.sandia(v_dc[0], p_dc[0], self.inverter_parameters)
         elif model == "pvwatts":
             kwargs = _build_kwargs(
@@ -929,7 +980,9 @@ class PVSystem:
                 return inverter.pvwatts_multi(
                     p_dc, self.inverter_parameters["pdc0"], **kwargs
                 )
-            return inverter.pvwatts(p_dc[0], self.inverter_parameters["pdc0"], **kwargs)
+            return inverter.pvwatts(
+                p_dc[0], self.inverter_parameters["pdc0"], **kwargs
+            )
         elif model == "adr":
             if multiple_arrays:
                 raise ValueError(
@@ -1126,7 +1179,9 @@ class Array:
         self.modules_per_string = modules_per_string
 
         if temperature_model_parameters is None:
-            self.temperature_model_parameters = self._infer_temperature_model_params()
+            self.temperature_model_parameters = (
+                self._infer_temperature_model_params()
+            )
         else:
             self.temperature_model_parameters = temperature_model_parameters
 
@@ -1160,7 +1215,9 @@ class Array:
         if param_set in temperature.TEMPERATURE_MODEL_PARAMETERS["sapm"]:
             return temperature._temperature_model_params("sapm", param_set)
         elif "freestanding" in param_set:
-            return temperature._temperature_model_params("pvsyst", "freestanding")
+            return temperature._temperature_model_params(
+                "pvsyst", "freestanding"
+            )
         elif "insulated" in param_set:  # after SAPM to avoid confusing keys
             return temperature._temperature_model_params("pvsyst", "insulated")
         else:
@@ -1372,7 +1429,12 @@ class Array:
             raise ValueError(model + " is not a valid IAM model")
 
     def get_cell_temperature(
-        self, poa_global, temp_air, wind_speed, model, effective_irradiance=None
+        self,
+        poa_global,
+        temp_air,
+        wind_speed,
+        model,
+        effective_irradiance=None,
     ):
         """
         Determine cell temperature using the method specified by ``model``.
@@ -1422,20 +1484,27 @@ class Array:
         if model == "sapm":
             func = temperature.sapm_cell
             required = _build_tcell_args(["a", "b", "deltaT"])
-            optional = _build_kwargs(["irrad_ref"], self.temperature_model_parameters)
+            optional = _build_kwargs(
+                ["irrad_ref"], self.temperature_model_parameters
+            )
         elif model == "pvsyst":
             func = temperature.pvsyst_cell
             required = tuple()
             optional = {
                 **_build_kwargs(
-                    ["module_efficiency", "alpha_absorption"], self.module_parameters
+                    ["module_efficiency", "alpha_absorption"],
+                    self.module_parameters,
                 ),
-                **_build_kwargs(["u_c", "u_v"], self.temperature_model_parameters),
+                **_build_kwargs(
+                    ["u_c", "u_v"], self.temperature_model_parameters
+                ),
             }
         elif model == "faiman":
             func = temperature.faiman
             required = tuple()
-            optional = _build_kwargs(["u0", "u1"], self.temperature_model_parameters)
+            optional = _build_kwargs(
+                ["u0", "u1"], self.temperature_model_parameters
+            )
         elif model == "fuentes":
             func = temperature.fuentes
             required = _build_tcell_args(["noct_installed"])
@@ -1458,13 +1527,19 @@ class Array:
             )
             required = _build_tcell_args(["noct", "module_efficiency"])
             optional = _build_kwargs(
-                ["transmittance_absorptance", "array_height", "mount_standoff"],
+                [
+                    "transmittance_absorptance",
+                    "array_height",
+                    "mount_standoff",
+                ],
                 self.temperature_model_parameters,
             )
         else:
             raise ValueError(f"{model} is not a valid cell temperature model")
 
-        temperature_cell = func(poa_global, temp_air, wind_speed, *required, **optional)
+        temperature_cell = func(
+            poa_global, temp_air, wind_speed, *required, **optional
+        )
         return temperature_cell
 
     def dc_ohms_from_percent(self):
@@ -1499,7 +1574,9 @@ class Array:
         """
 
         # get relevent Vmp and Imp parameters from CEC parameters
-        if all(elem in self.module_parameters for elem in ["V_mp_ref", "I_mp_ref"]):
+        if all(
+            elem in self.module_parameters for elem in ["V_mp_ref", "I_mp_ref"]
+        ):
             vmp_ref = self.module_parameters["V_mp_ref"]
             imp_ref = self.module_parameters["I_mp_ref"]
 
@@ -1889,7 +1966,11 @@ def calcparams_desoto(
     # used, in place of the product S*M in [1]. effective_irradiance is
     # equivalent to the product of S (irradiance reaching a module's cells) *
     # M (spectral adjustment factor) as described in [1].
-    IL = effective_irradiance / irrad_ref * (I_L_ref + alpha_sc * (Tcell_K - Tref_K))
+    IL = (
+        effective_irradiance
+        / irrad_ref
+        * (I_L_ref + alpha_sc * (Tcell_K - Tref_K))
+    )
     I0 = (
         I_o_ref
         * ((Tcell_K / Tref_K) ** 3)
@@ -2186,7 +2267,11 @@ def calcparams_pvsyst(
     gamma = gamma_ref + mu_gamma * (Tcell_K - Tref_K)
     nNsVth = gamma * k / q * cells_in_series * Tcell_K
 
-    IL = effective_irradiance / irrad_ref * (I_L_ref + alpha_sc * (Tcell_K - Tref_K))
+    IL = (
+        effective_irradiance
+        / irrad_ref
+        * (I_L_ref + alpha_sc * (Tcell_K - Tref_K))
+    )
 
     I0 = (
         I_o_ref
@@ -2194,7 +2279,9 @@ def calcparams_pvsyst(
         * (np.exp((q * EgRef) / (k * gamma) * (1 / Tref_K - 1 / Tcell_K)))
     )
 
-    Rsh_tmp = (R_sh_ref - R_sh_0 * np.exp(-R_sh_exp)) / (1.0 - np.exp(-R_sh_exp))
+    Rsh_tmp = (R_sh_ref - R_sh_0 * np.exp(-R_sh_exp)) / (
+        1.0 - np.exp(-R_sh_exp)
+    )
     Rsh_base = np.maximum(0.0, Rsh_tmp)
 
     Rsh = Rsh_base + (R_sh_0 - Rsh_base) * np.exp(
@@ -2361,7 +2448,9 @@ def _normalize_sam_product_names(names):
 
     n_duplicates = norm_names.duplicated().sum()
     if n_duplicates > 0:
-        warnings.warn("Normalized names contain %d duplicate(s)." % n_duplicates)
+        warnings.warn(
+            "Normalized names contain %d duplicate(s)." % n_duplicates
+        )
 
     return norm_names.values
 
@@ -2505,7 +2594,9 @@ def sapm(effective_irradiance, temp_cell, module):
 
     out = OrderedDict()
 
-    out["i_sc"] = module["Isco"] * Ee * (1 + module["Aisc"] * (temp_cell - temp_ref))
+    out["i_sc"] = (
+        module["Isco"] * Ee * (1 + module["Aisc"] * (temp_cell - temp_ref))
+    )
 
     out["i_mp"] = (
         module["Impo"]
@@ -2557,7 +2648,9 @@ sapm_spectral_loss = deprecated(
 )(spectrum.spectral_factor_sapm)
 
 
-def sapm_effective_irradiance(poa_direct, poa_diffuse, airmass_absolute, aoi, module):
+def sapm_effective_irradiance(
+    poa_direct, poa_diffuse, airmass_absolute, aoi, module
+):
     r"""
     Calculates the SAPM effective irradiance using the SAPM spectral
     loss and SAPM angle of incidence loss functions.
@@ -2758,10 +2851,18 @@ def singlediode(
         # Calculate points on the IV curve using either 'newton' or 'brentq'
         # methods. Voltages are determined by first solving the single diode
         # equation for the diode voltage V_d then backing out voltage
-        v_oc = _singlediode.bishop88_v_from_i(0.0, *args, method=method.lower())
-        i_mp, v_mp, p_mp = _singlediode.bishop88_mpp(*args, method=method.lower())
-        i_sc = _singlediode.bishop88_i_from_v(0.0, *args, method=method.lower())
-        i_x = _singlediode.bishop88_i_from_v(v_oc / 2.0, *args, method=method.lower())
+        v_oc = _singlediode.bishop88_v_from_i(
+            0.0, *args, method=method.lower()
+        )
+        i_mp, v_mp, p_mp = _singlediode.bishop88_mpp(
+            *args, method=method.lower()
+        )
+        i_sc = _singlediode.bishop88_i_from_v(
+            0.0, *args, method=method.lower()
+        )
+        i_x = _singlediode.bishop88_i_from_v(
+            v_oc / 2.0, *args, method=method.lower()
+        )
         i_xx = _singlediode.bishop88_i_from_v(
             (v_oc + v_mp) / 2.0, *args, method=method.lower()
         )
@@ -3127,7 +3228,12 @@ def pvwatts_dc(g_poa_effective, temp_cell, pdc0, gamma_pdc, temp_ref=25.0):
            (2014).
     """  # noqa: E501
 
-    pdc = g_poa_effective * 0.001 * pdc0 * (1 + gamma_pdc * (temp_cell - temp_ref))
+    pdc = (
+        g_poa_effective
+        * 0.001
+        * pdc0
+        * (1 + gamma_pdc * (temp_cell - temp_ref))
+    )
 
     return pdc
 

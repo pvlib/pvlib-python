@@ -217,7 +217,9 @@ def bishop88(
         grad2i = -g_diode / nNsVth - grad_2i_recomb - grad2i_brk  # d2i/dvd
         grad2v = -grad2i * resistance_series  # d2v/dvd
         grad2p = (
-            grad_v * grad + v * (grad2i / grad_v - grad_i * grad2v / grad_v**2) + grad_i
+            grad_v * grad
+            + v * (grad2i / grad_v - grad_i * grad2v / grad_v**2)
+            + grad_i
         )  # d2p/dv/dvd
         retval += (grad_i, grad_v, grad, grad_p, grad2p)
     return retval
@@ -747,7 +749,18 @@ def bishop88_mpp(
                 fmpp,
                 0.0,
                 voc,
-                args=(iph, isat, rs, rsh, gamma, d2mutau, NsVbi, vbr_a, vbr, vbr_exp),
+                args=(
+                    iph,
+                    isat,
+                    rs,
+                    rsh,
+                    gamma,
+                    d2mutau,
+                    NsVbi,
+                    vbr_a,
+                    vbr,
+                    vbr_exp,
+                ),
                 **method_kwargs,
             )
         )
@@ -756,7 +769,9 @@ def bishop88_mpp(
         # make sure all args are numpy arrays if max size > 1
         # if voc_est is an array, then make a copy to use for initial guess, v0
 
-        x0, args, method_kwargs = _prepare_newton_inputs(xp, args, method_kwargs)
+        x0, args, method_kwargs = _prepare_newton_inputs(
+            xp, args, method_kwargs
+        )
         vd = newton(
             func=fmpp,
             x0=x0,
@@ -778,7 +793,9 @@ def bishop88_mpp(
 
 
 def _shape_of_max_size(*args):
-    return max(((np.size(a), np.shape(a)) for a in args), key=lambda t: t[0])[1]
+    return max(((np.size(a), np.shape(a)) for a in args), key=lambda t: t[0])[
+        1
+    ]
 
 
 def _prepare_newton_inputs(x0, args, method_kwargs):
@@ -877,7 +894,10 @@ def _lambertw_v_from_i(
             argW = (
                 I0[idx_p]
                 / (Gsh[idx_p] * a[idx_p])
-                * np.exp((-I[idx_p] + IL[idx_p] + I0[idx_p]) / (Gsh[idx_p] * a[idx_p]))
+                * np.exp(
+                    (-I[idx_p] + IL[idx_p] + I0[idx_p])
+                    / (Gsh[idx_p] * a[idx_p])
+                )
             )
 
         # lambertw typically returns complex value with zero imaginary part
@@ -1054,7 +1074,9 @@ def _lambertw(
 
     # create ivcurve
     if ivcurve_pnts:
-        ivcurve_v = np.asarray(v_oc)[..., np.newaxis] * np.linspace(0, 1, ivcurve_pnts)
+        ivcurve_v = np.asarray(v_oc)[..., np.newaxis] * np.linspace(
+            0, 1, ivcurve_pnts
+        )
 
         ivcurve_i = _lambertw_i_from_v(ivcurve_v.T, **params).T
 

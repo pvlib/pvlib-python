@@ -130,7 +130,9 @@ azimuth = 180  # south-facing
 # Datafile found in the pvlib distribution
 data_file = Path(pvlib.__path__[0]).joinpath("data", "723170TYA.CSV")
 
-tmy, metadata = pvlib.iotools.read_tmy3(data_file, coerce_year=2002, map_variables=True)
+tmy, metadata = pvlib.iotools.read_tmy3(
+    data_file, coerce_year=2002, map_variables=True
+)
 tmy = tmy.filter(
     ["ghi", "dni", "dni_extra", "dhi", "temp_air", "wind_speed", "pressure"]
 )  # remaining columns are not needed

@@ -44,7 +44,9 @@ cbar = ax.figure.colorbar(points)
 times_ticks = pd.date_range("2019-01-01", "2020-01-01", freq="MS", tz=tz)
 cbar.set_ticks(ticks=times_ticks.dayofyear, labels=[], minor=False)
 cbar.set_ticks(
-    ticks=times_ticks.dayofyear + 15, labels=times_ticks.strftime("%b"), minor=True
+    ticks=times_ticks.dayofyear + 15,
+    labels=times_ticks.strftime("%b"),
+    minor=True,
 )
 cbar.ax.tick_params(which="minor", width=0)
 
@@ -142,7 +144,9 @@ cbar = fig.colorbar(points)
 times_ticks = pd.date_range("2019-01-01", "2020-01-01", freq="MS", tz=tz)
 cbar.set_ticks(ticks=times_ticks.dayofyear, labels=[], minor=False)
 cbar.set_ticks(
-    ticks=times_ticks.dayofyear + 15, labels=times_ticks.strftime("%b"), minor=True
+    ticks=times_ticks.dayofyear + 15,
+    labels=times_ticks.strftime("%b"),
+    minor=True,
 )
 cbar.ax.tick_params(which="minor", width=0)
 

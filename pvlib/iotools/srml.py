@@ -85,7 +85,8 @@ def read_srml(filename, map_variables=True):
     #
     columns = data.columns
     flag_label_map = {
-        flag: columns[columns.get_loc(flag) - 1] + "_flag" for flag in columns[1::2]
+        flag: columns[columns.get_loc(flag) - 1] + "_flag"
+        for flag in columns[1::2]
     }
     data = data.rename(columns=flag_label_map)
 
@@ -165,7 +166,9 @@ def _format_index(df):
         times = df_time.where(~old_hours, df_time - 40)
     times = times.apply(lambda x: "{:04.0f}".format(x))
     doy = df_doy.apply(lambda x: "{:03.0f}".format(x))
-    dts = pd.to_datetime(str(year) + "-" + doy + "-" + times, format="%Y-%j-%H%M")
+    dts = pd.to_datetime(
+        str(year) + "-" + doy + "-" + times, format="%Y-%j-%H%M"
+    )
     df.index = dts
     df = df.tz_localize("Etc/GMT+8")
     return df

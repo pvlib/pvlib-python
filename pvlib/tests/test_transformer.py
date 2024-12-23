@@ -8,7 +8,13 @@ from pvlib import transformer
 def test_simple_efficiency():
     # define test inputs
     input_power = pd.Series(
-        [-800.0, 436016.609823837, 1511820.16603752, 1580687.44677249, 1616441.79660171]
+        [
+            -800.0,
+            436016.609823837,
+            1511820.16603752,
+            1580687.44677249,
+            1616441.79660171,
+        ]
     )
     no_load_loss = 0.002
     load_loss = 0.007
@@ -44,10 +50,14 @@ def test_simple_efficiency_known_values():
     args = (no_load_loss, load_loss, rating)
 
     # verify correct behavior at no-load condition
-    assert_allclose(transformer.simple_efficiency(no_load_loss * rating, *args), 0.0)
+    assert_allclose(
+        transformer.simple_efficiency(no_load_loss * rating, *args), 0.0
+    )
 
     # verify correct behavior at rated condition
     assert_allclose(
-        transformer.simple_efficiency(rating * (1 + no_load_loss + load_loss), *args),
+        transformer.simple_efficiency(
+            rating * (1 + no_load_loss + load_loss), *args
+        ),
         rating,
     )

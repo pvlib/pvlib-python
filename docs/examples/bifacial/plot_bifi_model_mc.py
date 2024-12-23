@@ -127,4 +127,6 @@ mc_bifi = modelchain.ModelChain(system, site_location, aoi_model="no_loss")
 mc_bifi.run_model_from_effective_irradiance(irrad)
 
 # plot results
-mc_bifi.results.ac.plot(title="Bifacial Simulation on June Solstice", ylabel="AC Power")
+mc_bifi.results.ac.plot(
+    title="Bifacial Simulation on June Solstice", ylabel="AC Power"
+)

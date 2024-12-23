@@ -62,7 +62,9 @@ def renamed_kwarg_func():
     This function is called 'func' and has a docstring equal to 'docstring'.
     """
 
-    @_deprecation.renamed_kwarg_warning("0.1.0", "old_kwarg", "new_kwarg", "0.2.0")
+    @_deprecation.renamed_kwarg_warning(
+        "0.1.0", "old_kwarg", "new_kwarg", "0.2.0"
+    )
     def func(new_kwarg):
         """docstring"""
         return new_kwarg
@@ -90,5 +92,7 @@ def test_renamed_kwarg_warning(renamed_kwarg_func):
         renamed_kwarg_func(old_kwarg=1, new_kwarg=2)
 
     # assert when not providing any of them
-    with pytest.raises(TypeError, match="missing 1 required positional argument"):
+    with pytest.raises(
+        TypeError, match="missing 1 required positional argument"
+    ):
         renamed_kwarg_func()

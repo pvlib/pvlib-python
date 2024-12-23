@@ -27,7 +27,9 @@ def test_system():
     c00 = (-2 - sqr3) / np.sqrt(1.25**2 + (2 + sqr3) ** 2)  # right edge row -1
     c01 = -sqr3 / np.sqrt(1.25**2 + sqr3**2)  # right edge row 0
     c02 = sqr3 / np.sqrt(0.75**2 + sqr3**2)  # left edge of row 0
-    c03 = (2 - sqr3) / np.sqrt(1.25**2 + (2 - sqr3) ** 2)  # right edge of row 1
+    c03 = (2 - sqr3) / np.sqrt(
+        1.25**2 + (2 - sqr3) ** 2
+    )  # right edge of row 1
     vf_0 = 0.5 * (c03 - c02 + c01 - c00)  # vf at point 0
     c10 = (-3 - sqr3) / np.sqrt(1.25**2 + (3 + sqr3) ** 2)  # right edge row -1
     c11 = (-1 - sqr3) / np.sqrt(1.25**2 + (1 + sqr3) ** 2)  # right edge row 0
@@ -45,7 +47,9 @@ def test_system():
 
 def test__poa_ground_shadows():
     poa_ground, f_gnd_beam, df, vf_gnd_sky = (300.0, 0.5, 0.5, 0.2)
-    result = infinite_sheds._poa_ground_shadows(poa_ground, f_gnd_beam, df, vf_gnd_sky)
+    result = infinite_sheds._poa_ground_shadows(
+        poa_ground, f_gnd_beam, df, vf_gnd_sky
+    )
     expected = 300.0 * (0.5 * 0.5 + 0.5 * 0.2)
     assert np.isclose(result, expected)
     # vector inputs
@@ -53,7 +57,9 @@ def test__poa_ground_shadows():
     f_gnd_beam = np.array([0.5, 0.5])
     df = np.array([0.5, 0.0])
     vf_gnd_sky = np.array([0.2, 0.2])
-    result = infinite_sheds._poa_ground_shadows(poa_ground, f_gnd_beam, df, vf_gnd_sky)
+    result = infinite_sheds._poa_ground_shadows(
+        poa_ground, f_gnd_beam, df, vf_gnd_sky
+    )
     expected_vec = np.array([expected, 300.0 * 0.5])
     assert np.allclose(result, expected_vec)
 
@@ -130,7 +136,9 @@ def test_get_irradiance_poa():
     solar_zenith = np.array([0.0, 45.0, 45.0, 90.0])
     solar_azimuth = np.array([180.0, 180.0, 135.0, 180.0])
     expected_diffuse = np.array([300.0, 300.0, 300.0, 300.0])
-    expected_direct = np.array([700.0, 350.0 * np.sqrt(2), 350.0 * np.sqrt(2), 0.0])
+    expected_direct = np.array(
+        [700.0, 350.0 * np.sqrt(2), 350.0 * np.sqrt(2), 0.0]
+    )
     expected_global = expected_diffuse + expected_direct
     expected_shaded_fraction = np.array([0.0, 0.0, 0.0, 0.0])
     res = infinite_sheds.get_irradiance_poa(
@@ -157,7 +165,9 @@ def test_get_irradiance_poa():
     surface_azimuth = pd.Series(data=surface_azimuth, index=surface_tilt.index)
     solar_zenith = pd.Series(solar_zenith, index=surface_tilt.index)
     solar_azimuth = pd.Series(data=solar_azimuth, index=surface_tilt.index)
-    expected_diffuse = pd.Series(data=expected_diffuse, index=surface_tilt.index)
+    expected_diffuse = pd.Series(
+        data=expected_diffuse, index=surface_tilt.index
+    )
     expected_direct = pd.Series(data=expected_direct, index=surface_tilt.index)
     expected_global = expected_diffuse + expected_direct
     expected_global.name = "poa_global"  # to match output Series
@@ -250,8 +260,12 @@ def test_get_irradiance(vectorize):
     assert np.isclose(result["poa_front_diffuse"], expected_front_diffuse)
     assert np.isclose(result["poa_front_direct"], expected_front_direct)
     assert np.isclose(result["poa_global"], result["poa_front"])
-    assert np.isclose(result["shaded_fraction_front"], expected_shaded_fraction_front)
-    assert np.isclose(result["shaded_fraction_back"], expected_shaded_fraction_back)
+    assert np.isclose(
+        result["shaded_fraction_front"], expected_shaded_fraction_front
+    )
+    assert np.isclose(
+        result["shaded_fraction_back"], expected_shaded_fraction_back
+    )
     # series inputs
     ghi = pd.Series([1000.0, 500.0, 500.0, np.nan])
     dhi = pd.Series([300.0, 500.0, 500.0, 500.0], index=ghi.index)
@@ -295,15 +309,24 @@ def test_get_irradiance(vectorize):
     )
     assert isinstance(result, pd.DataFrame)
     expected_poa_global = pd.Series(
-        [1000.0, 500.0, result_front["poa_global"][2] * (1 + 0.8 * 0.98), np.nan],
+        [
+            1000.0,
+            500.0,
+            result_front["poa_global"][2] * (1 + 0.8 * 0.98),
+            np.nan,
+        ],
         index=ghi.index,
         name="poa_global",
     )
     expected_shaded_fraction = pd.Series(
-        result_front["shaded_fraction"], index=ghi.index, name="shaded_fraction_front"
+        result_front["shaded_fraction"],
+        index=ghi.index,
+        name="shaded_fraction_front",
     )
     assert_series_equal(result["poa_global"], expected_poa_global)
-    assert_series_equal(result["shaded_fraction_front"], expected_shaded_fraction)
+    assert_series_equal(
+        result["shaded_fraction_front"], expected_shaded_fraction
+    )
 
 
 def test_get_irradiance_limiting_gcr():
@@ -352,19 +375,27 @@ def test_get_irradiance_limiting_gcr():
     assert np.isclose(result["poa_front"], expected_poa, rtol=0.01)
     assert np.isclose(result["poa_front_diffuse"], expected_diffuse, rtol=0.01)
     assert np.isclose(result["poa_front_direct"], expected_direct)
-    assert np.isclose(result["poa_front_sky_diffuse"], expected_sky_diffuse, rtol=0.01)
+    assert np.isclose(
+        result["poa_front_sky_diffuse"], expected_sky_diffuse, rtol=0.01
+    )
     assert np.isclose(
         result["poa_front_ground_diffuse"], expected_ground_diffuse, rtol=0.01
     )
     assert np.isclose(result["poa_front"], result["poa_back"])
     assert np.isclose(result["poa_front_diffuse"], result["poa_back_diffuse"])
     assert np.isclose(result["poa_front_direct"], result["poa_back_direct"])
-    assert np.isclose(result["poa_front_sky_diffuse"], result["poa_back_sky_diffuse"])
+    assert np.isclose(
+        result["poa_front_sky_diffuse"], result["poa_back_sky_diffuse"]
+    )
     assert np.isclose(
         result["poa_front_ground_diffuse"], result["poa_back_ground_diffuse"]
     )
-    assert np.isclose(result["shaded_fraction_front"], expected_shaded_fraction_front)
-    assert np.isclose(result["shaded_fraction_back"], expected_shaded_fraction_back)
+    assert np.isclose(
+        result["shaded_fraction_front"], expected_shaded_fraction_front
+    )
+    assert np.isclose(
+        result["shaded_fraction_back"], expected_shaded_fraction_back
+    )
 
 
 def test_get_irradiance_with_haydavies():
@@ -415,8 +446,12 @@ def test_get_irradiance_with_haydavies():
     assert np.isclose(result["poa_front_diffuse"], expected_front_diffuse)
     assert np.isclose(result["poa_front_direct"], expected_front_direct)
     assert np.isclose(result["poa_global"], result["poa_front"])
-    assert np.isclose(result["shaded_fraction_front"], expected_shaded_fraction_front)
-    assert np.isclose(result["shaded_fraction_back"], expected_shaded_fraction_back)
+    assert np.isclose(
+        result["shaded_fraction_front"], expected_shaded_fraction_front
+    )
+    assert np.isclose(
+        result["shaded_fraction_back"], expected_shaded_fraction_back
+    )
     # test for when dni_extra is not supplied
     with pytest.raises(ValueError, match="supply dni_extra for haydavies"):
         result = infinite_sheds.get_irradiance(

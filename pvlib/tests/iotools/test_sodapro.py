@@ -17,7 +17,9 @@ testfile_radiation_verbose = DATA_DIR / "cams_radiation_1min_verbose.csv"
 testfile_radiation_monthly = DATA_DIR / "cams_radiation_monthly.csv"
 
 
-index_verbose = pd.date_range("2020-06-01 12", periods=4, freq="1min", tz="UTC")
+index_verbose = pd.date_range(
+    "2020-06-01 12", periods=4, freq="1min", tz="UTC"
+)
 index_monthly = pd.date_range("2020-01-01", periods=4, freq="1M")
 
 
@@ -47,7 +49,14 @@ dtypes_mcclear_verbose = [
     "float64",
 ]
 
-dtypes_mcclear = ["object", "float64", "float64", "float64", "float64", "float64"]
+dtypes_mcclear = [
+    "object",
+    "float64",
+    "float64",
+    "float64",
+    "float64",
+    "float64",
+]
 
 dtypes_radiation_verbose = [
     "object",
@@ -636,7 +645,9 @@ def generate_expected_dataframe(values, columns, index, dtypes):
 )
 def test_read_cams(testfile, index, columns, values, dtypes):
     expected = generate_expected_dataframe(values, columns, index, dtypes)
-    out, metadata = sodapro.read_cams(testfile, integrated=False, map_variables=True)
+    out, metadata = sodapro.read_cams(
+        testfile, integrated=False, map_variables=True
+    )
     assert_frame_equal(out, expected, check_less_precise=True)
 
 
@@ -650,7 +661,10 @@ def test_read_cams_integrated_unmapped_label():
         dtypes=dtypes_radiation_verbose,
     )
     out, metadata = sodapro.read_cams(
-        testfile_radiation_verbose, integrated=True, label="right", map_variables=False
+        testfile_radiation_verbose,
+        integrated=True,
+        label="right",
+        map_variables=False,
     )
     assert_frame_equal(out, expected, check_less_precise=True)
 
@@ -687,7 +701,9 @@ def test_read_cams_metadata():
         ),
     ],
 )
-def test_get_cams(requests_mock, testfile, index, columns, values, dtypes, identifier):
+def test_get_cams(
+    requests_mock, testfile, index, columns, values, dtypes, identifier
+):
     """Test that get_cams generates the correct URI request and that parse_cams
     is being called correctly"""
     # Open local test file containing McClear mothly data
@@ -698,7 +714,9 @@ def test_get_cams(requests_mock, testfile, index, columns, values, dtypes, ident
     url_test_cams = f"https://api.soda-solardata.com/service/wps?DataInputs=latitude=55.7906;longitude=12.5251;altitude=80;date_begin=2020-01-01;date_end=2020-05-04;time_ref=UT;summarization=P01M;username=pvlib-admin%2540googlegroups.com;verbose=false&Service=WPS&Request=Execute&Identifier=get_{identifier}&version=1.0.0&RawDataOutput=irradiation"  # noqa: E501
 
     requests_mock.get(
-        url_test_cams, text=mock_response, headers={"Content-Type": "application/csv"}
+        url_test_cams,
+        text=mock_response,
+        headers={"Content-Type": "application/csv"},
     )
 
     # Make API call - an error is raised if requested URI does not match

@@ -103,7 +103,10 @@ axis_height = 1.5  # meters
 
 location = pvlib.location.Location(latitude, longitude)
 mount = pvlib.pvsystem.SingleAxisTrackerMount(
-    gcr=gcr, backtrack=backtrack, max_angle=max_angle, axis_azimuth=axis_azimuth
+    gcr=gcr,
+    backtrack=backtrack,
+    max_angle=max_angle,
+    axis_azimuth=axis_azimuth,
 )
 array = pvlib.pvsystem.Array(
     mount,
@@ -113,7 +116,9 @@ array = pvlib.pvsystem.Array(
     strings=strings_per_inverter,
 )
 system = pvlib.pvsystem.PVSystem(
-    array, inverter_parameters=inverter_parameters, losses_parameters=losses_parameters
+    array,
+    inverter_parameters=inverter_parameters,
+    losses_parameters=losses_parameters,
 )
 
 model = pvlib.modelchain.ModelChain(
@@ -136,7 +141,15 @@ model = pvlib.modelchain.ModelChain(
 api_key = "DEMO_KEY"
 email = "your_email@domain.com"
 
-keys = ["ghi", "dni", "dhi", "temp_air", "wind_speed", "albedo", "precipitable_water"]
+keys = [
+    "ghi",
+    "dni",
+    "dhi",
+    "temp_air",
+    "wind_speed",
+    "albedo",
+    "precipitable_water",
+]
 psm3, psm3_metadata = pvlib.iotools.get_psm3(
     latitude,
     longitude,
@@ -203,7 +216,9 @@ cell_temperature_steady_state = pvlib.temperature.faiman(
 )
 
 cell_temperature = pvlib.temperature.prilliman(
-    cell_temperature_steady_state, psm3["wind_speed"], unit_mass=module_unit_mass
+    cell_temperature_steady_state,
+    psm3["wind_speed"],
+    unit_mass=module_unit_mass,
 )
 
 # %%
@@ -220,7 +235,9 @@ weather_inputs = pd.DataFrame(
         "poa_direct": averaged_irradiance["poa_direct"],
         "poa_diffuse": averaged_irradiance["poa_diffuse"],
         "cell_temperature": cell_temperature,
-        "precipitable_water": psm3["precipitable_water"],  # for the spectral model
+        "precipitable_water": psm3[
+            "precipitable_water"
+        ],  # for the spectral model
     }
 )
 model.run_model_from_poa(weather_inputs)

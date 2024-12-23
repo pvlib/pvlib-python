@@ -65,7 +65,10 @@ out_disc = irradiance.disc(
 )
 # use "complete sum" AKA "closure" equations: DHI = GHI - DNI * cos(zenith)
 df_disc = irradiance.complete_irradiance(
-    solar_zenith=solpos.apparent_zenith, ghi=greensboro.ghi, dni=out_disc.dni, dhi=None
+    solar_zenith=solpos.apparent_zenith,
+    ghi=greensboro.ghi,
+    dni=out_disc.dni,
+    dhi=None,
 )
 out_disc = out_disc.rename(columns={"dni": "dni_disc"})
 out_disc["dhi_disc"] = df_disc.dhi
@@ -86,10 +89,14 @@ dni_dirint = irradiance.dirint(
 )
 # use "complete sum" AKA "closure" equation: DHI = GHI - DNI * cos(zenith)
 df_dirint = irradiance.complete_irradiance(
-    solar_zenith=solpos.apparent_zenith, ghi=greensboro.ghi, dni=dni_dirint, dhi=None
+    solar_zenith=solpos.apparent_zenith,
+    ghi=greensboro.ghi,
+    dni=dni_dirint,
+    dhi=None,
 )
 out_dirint = pd.DataFrame(
-    {"dni_dirint": dni_dirint, "dhi_dirint": df_dirint.dhi}, index=greensboro.index
+    {"dni_dirint": dni_dirint, "dhi_dirint": df_dirint.dhi},
+    index=greensboro.index,
 )
 
 # %%
@@ -113,7 +120,9 @@ out_erbs = out_erbs.rename(columns={"dni": "dni_erbs", "dhi": "dhi_erbs"})
 # between zero and one.
 
 out_boland = irradiance.boland(greensboro.ghi, solpos.zenith, greensboro.index)
-out_boland = out_boland.rename(columns={"dni": "dni_boland", "dhi": "dhi_boland"})
+out_boland = out_boland.rename(
+    columns={"dni": "dni_boland", "dhi": "dhi_boland"}
+)
 
 # %%
 # Comparison Plots

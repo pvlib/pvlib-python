@@ -10,10 +10,18 @@ def test_spectrl2(spectrl2_data):
     kwargs, expected = spectrl2_data
     actual = spectrum.spectrl2(**kwargs)
     assert_allclose(expected["wavelength"].values, actual["wavelength"])
-    assert_allclose(expected["specdif"].values, actual["dhi"].ravel(), atol=7e-5)
-    assert_allclose(expected["specdir"].values, actual["dni"].ravel(), atol=1.5e-4)
-    assert_allclose(expected["specetr"], actual["dni_extra"].ravel(), atol=2e-4)
-    assert_allclose(expected["specglo"], actual["poa_global"].ravel(), atol=1e-4)
+    assert_allclose(
+        expected["specdif"].values, actual["dhi"].ravel(), atol=7e-5
+    )
+    assert_allclose(
+        expected["specdir"].values, actual["dni"].ravel(), atol=1.5e-4
+    )
+    assert_allclose(
+        expected["specetr"], actual["dni_extra"].ravel(), atol=2e-4
+    )
+    assert_allclose(
+        expected["specglo"], actual["poa_global"].ravel(), atol=1e-4
+    )
 
 
 def test_spectrl2_array(spectrl2_data):

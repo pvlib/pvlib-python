@@ -354,7 +354,9 @@ def test_lookup_linke_turbidity_nointerp_months():
 
 
 def test_haurwitz():
-    apparent_solar_elevation = np.array([-20, -0.05, -0.001, 5, 10, 30, 50, 90])
+    apparent_solar_elevation = np.array(
+        [-20, -0.05, -0.001, 5, 10, 30, 50, 90]
+    )
     apparent_solar_zenith = 90 - apparent_solar_elevation
     data_in = pd.DataFrame(
         data=apparent_solar_zenith,
@@ -405,7 +407,8 @@ def test_simplified_solis_scalar_neg_elevation():
 
 def test_simplified_solis_series_elevation():
     expected = pd.DataFrame(
-        np.array([[959.335463, 1064.653145, 129.125602]]), columns=["dni", "ghi", "dhi"]
+        np.array([[959.335463, 1064.653145, 129.125602]]),
+        columns=["dni", "ghi", "dhi"],
     )
     expected = expected[["ghi", "dni", "dhi"]]
 
@@ -415,7 +418,8 @@ def test_simplified_solis_series_elevation():
 
 def test_simplified_solis_dni_extra():
     expected = pd.DataFrame(
-        np.array([[963.555414, 1069.33637, 129.693603]]), columns=["dni", "ghi", "dhi"]
+        np.array([[963.555414, 1069.33637, 129.693603]]),
+        columns=["dni", "ghi", "dhi"],
     )
     expected = expected[["ghi", "dni", "dhi"]]
 
@@ -436,7 +440,9 @@ def test_simplified_solis_pressure():
     )
     expected = expected[["ghi", "dni", "dhi"]]
 
-    out = clearsky.simplified_solis(80, pressure=pd.Series([95000, 98000, 101000]))
+    out = clearsky.simplified_solis(
+        80, pressure=pd.Series([95000, 98000, 101000])
+    )
     assert_frame_equal(expected, out)
 
 
@@ -503,7 +509,9 @@ def test_simplified_solis_return_arrays():
         [[1099.25706525, 656.24601381], [915.31689149, 530.31697378]]
     )
 
-    expected["dhi"] = np.array([[64.1063074, 254.6186615], [62.75642216, 232.21931597]])
+    expected["dhi"] = np.array(
+        [[64.1063074, 254.6186615], [62.75642216, 232.21931597]]
+    )
 
     aod700 = np.linspace(0, 0.5, 2)
     precipitable_water = np.linspace(0, 10, 2)
@@ -599,7 +607,9 @@ def test_linke_turbidity_corners():
 
     def monthly_lt_nointerp(lat, lon, time=months):
         """monthly Linke turbidity factor without time interpolation"""
-        return clearsky.lookup_linke_turbidity(time, lat, lon, interp_turbidity=False)
+        return clearsky.lookup_linke_turbidity(
+            time, lat, lon, interp_turbidity=False
+        )
 
     # Northwest
     assert np.allclose(
@@ -635,7 +645,9 @@ def test_linke_turbidity_corners():
 @pytest.fixture
 def detect_clearsky_data():
     data_file = DATA_DIR / "detect_clearsky_data.csv"
-    expected = pd.read_csv(data_file, index_col=0, parse_dates=True, comment="#")
+    expected = pd.read_csv(
+        data_file, index_col=0, parse_dates=True, comment="#"
+    )
     expected = expected.tz_localize("UTC").tz_convert("Etc/GMT+7")
     metadata = {}
     with data_file.open() as f:
@@ -647,7 +659,9 @@ def detect_clearsky_data():
                 break
     metadata["window_length"] = int(metadata["window_length"])
     loc = Location(
-        metadata["latitude"], metadata["longitude"], altitude=metadata["elevation"]
+        metadata["latitude"],
+        metadata["longitude"],
+        altitude=metadata["elevation"],
     )
     # specify turbidity to guard against future lookup changes
     cs = loc.get_clearsky(expected.index, linke_turbidity=2.658197)
@@ -659,7 +673,9 @@ def detect_clearsky_threshold_data():
     # this is (roughly) just a 2 hour period of the same data in
     # detect_clearsky_data (which only spans 30 minutes)
     data_file = DATA_DIR / "detect_clearsky_threshold_data.csv"
-    expected = pd.read_csv(data_file, index_col=0, parse_dates=True, comment="#")
+    expected = pd.read_csv(
+        data_file, index_col=0, parse_dates=True, comment="#"
+    )
     expected = expected.tz_localize("UTC").tz_convert("Etc/GMT+7")
     metadata = {}
     with data_file.open() as f:
@@ -671,7 +687,9 @@ def detect_clearsky_threshold_data():
                 break
     metadata["window_length"] = int(metadata["window_length"])
     loc = Location(
-        metadata["latitude"], metadata["longitude"], altitude=metadata["elevation"]
+        metadata["latitude"],
+        metadata["longitude"],
+        altitude=metadata["elevation"],
     )
     # specify turbidity to guard against future lookup changes
     cs = loc.get_clearsky(expected.index, linke_turbidity=2.658197)
@@ -689,7 +707,9 @@ def test_clearsky_get_threshold_raises_error():
         clearsky._clearsky_get_threshold(0.5)
 
 
-def test_detect_clearsky_calls_threshold(mocker, detect_clearsky_threshold_data):
+def test_detect_clearsky_calls_threshold(
+    mocker, detect_clearsky_threshold_data
+):
     threshold_spy = mocker.spy(clearsky, "_clearsky_get_threshold")
     expected, cs = detect_clearsky_threshold_data
     threshold_actual = clearsky.detect_clearsky(
@@ -704,7 +724,10 @@ def test_detect_clearsky(detect_clearsky_data):
         expected["GHI"], cs["ghi"], times=cs.index, window_length=10
     )
     assert_series_equal(
-        expected["Clear or not"], clear_samples, check_dtype=False, check_names=False
+        expected["Clear or not"],
+        clear_samples,
+        check_dtype=False,
+        check_names=False,
     )
 
 
@@ -712,7 +735,10 @@ def test_detect_clearsky_defaults(detect_clearsky_data):
     expected, cs = detect_clearsky_data
     clear_samples = clearsky.detect_clearsky(expected["GHI"], cs["ghi"])
     assert_series_equal(
-        expected["Clear or not"], clear_samples, check_dtype=False, check_names=False
+        expected["Clear or not"],
+        clear_samples,
+        check_dtype=False,
+        check_names=False,
     )
 
 
@@ -726,7 +752,10 @@ def test_detect_clearsky_components(detect_clearsky_data):
         return_components=True,
     )
     assert_series_equal(
-        expected["Clear or not"], clear_samples, check_dtype=False, check_names=False
+        expected["Clear or not"],
+        clear_samples,
+        check_dtype=False,
+        check_names=False,
     )
     assert isinstance(components, OrderedDict)
     assert np.allclose(alpha, 0.9633903181941296)
@@ -745,7 +774,10 @@ def test_detect_clearsky_iterations(detect_clearsky_data):
         expected["GHI"], cs["ghi"] * alpha, max_iterations=20
     )
     assert_series_equal(
-        expected["Clear or not"], clear_samples, check_dtype=False, check_names=False
+        expected["Clear or not"],
+        clear_samples,
+        check_dtype=False,
+        check_names=False,
     )
 
 
@@ -773,7 +805,9 @@ def test_detect_clearsky_window(detect_clearsky_data):
     )
     expected = expected["Clear or not"].copy()
     expected.iloc[-3:] = 1
-    assert_series_equal(expected, clear_samples, check_dtype=False, check_names=False)
+    assert_series_equal(
+        expected, clear_samples, check_dtype=False, check_names=False
+    )
 
 
 def test_detect_clearsky_time_interval(detect_clearsky_data):
@@ -785,14 +819,20 @@ def test_detect_clearsky_time_interval(detect_clearsky_data):
         expected2["GHI"], cs2["ghi"], window_length=6
     )
     assert_series_equal(
-        expected2["Clear or not"], clear_samples, check_dtype=False, check_names=False
+        expected2["Clear or not"],
+        clear_samples,
+        check_dtype=False,
+        check_names=False,
     )
 
 
 def test_detect_clearsky_arrays(detect_clearsky_data):
     expected, cs = detect_clearsky_data
     clear_samples = clearsky.detect_clearsky(
-        expected["GHI"].values, cs["ghi"].values, times=cs.index, window_length=10
+        expected["GHI"].values,
+        cs["ghi"].values,
+        times=cs.index,
+        window_length=10,
     )
     assert isinstance(clear_samples, np.ndarray)
     assert (clear_samples == expected["Clear or not"].values).all()
@@ -804,7 +844,9 @@ def test_detect_clearsky_irregular_times(detect_clearsky_data):
     times[0] += 10**9
     times = pd.DatetimeIndex(times)
     with pytest.raises(NotImplementedError):
-        clearsky.detect_clearsky(expected["GHI"].values, cs["ghi"].values, times, 10)
+        clearsky.detect_clearsky(
+            expected["GHI"].values, cs["ghi"].values, times, 10
+        )
 
 
 def test_detect_clearsky_missing_index(detect_clearsky_data):
@@ -826,7 +868,9 @@ def test_detect_clearsky_window_too_short(detect_clearsky_data):
 
 
 @pytest.mark.parametrize("window_length", [5, 10, 15, 20, 25])
-def test_detect_clearsky_optimizer_not_failed(detect_clearsky_data, window_length):
+def test_detect_clearsky_optimizer_not_failed(
+    detect_clearsky_data, window_length
+):
     expected, cs = detect_clearsky_data
     clear_samples = clearsky.detect_clearsky(
         expected["GHI"], cs["ghi"], window_length=window_length
@@ -840,9 +884,12 @@ def detect_clearsky_helper_data():
     sample_interval = 1
     x = pd.Series(np.arange(0, 7) ** 2.0)
     # line length between adjacent points
-    sqt = pd.Series(np.sqrt(np.array([np.nan, 2.0, 10.0, 26.0, 50.0, 82, 122.0])))
+    sqt = pd.Series(
+        np.sqrt(np.array([np.nan, 2.0, 10.0, 26.0, 50.0, 82, 122.0]))
+    )
     H = hankel(
-        np.arange(samples_per_window), np.arange(samples_per_window - 1, len(sqt))
+        np.arange(samples_per_window),
+        np.arange(samples_per_window - 1, len(sqt)),
     )
     return x, samples_per_window, sample_interval, H
 
@@ -851,10 +898,14 @@ def test__line_length_windowed(detect_clearsky_helper_data):
     x, samples_per_window, sample_interval, H = detect_clearsky_helper_data
     # sqt is hand-calculated assuming window=3
     # line length between adjacent points
-    sqt = pd.Series(np.sqrt(np.array([np.nan, 2.0, 10.0, 26.0, 50.0, 82, 122.0])))
+    sqt = pd.Series(
+        np.sqrt(np.array([np.nan, 2.0, 10.0, 26.0, 50.0, 82, 122.0]))
+    )
     expected = {}
     expected["line_length"] = sqt + sqt.shift(-1)
-    result = clearsky._line_length_windowed(x, H, samples_per_window, sample_interval)
+    result = clearsky._line_length_windowed(
+        x, H, samples_per_window, sample_interval
+    )
     assert_series_equal(result, expected["line_length"])
 
 
@@ -875,7 +926,15 @@ def test__calc_stats(detect_clearsky_helper_data):
     mean_x = pd.Series(np.array([np.nan, np.nan, 5, 14, 29, 50, 77]) / 3.0)
     max_x = pd.Series(np.array([np.nan, np.nan, 4, 9, 16, 25, 36]))
     diff_std = np.array(
-        [np.nan, np.nan, np.sqrt(2), np.sqrt(2), np.sqrt(2), np.sqrt(2), np.sqrt(2)]
+        [
+            np.nan,
+            np.nan,
+            np.sqrt(2),
+            np.sqrt(2),
+            np.sqrt(2),
+            np.sqrt(2),
+            np.sqrt(2),
+        ]
     )
     slope_nstd = diff_std / mean_x
     slope = x.diff().shift(-1)
@@ -895,7 +954,9 @@ def test__calc_stats(detect_clearsky_helper_data):
 
 def test_bird():
     """Test Bird/Hulstrom Clearsky Model"""
-    times = pd.date_range(start="1/1/2015 0:00", end="12/31/2015 23:00", freq="h")
+    times = pd.date_range(
+        start="1/1/2015 0:00", end="12/31/2015 23:00", freq="h"
+    )
     tz = -7  # test timezone
     gmt_tz = pytz.timezone("Etc/GMT%+d" % -(tz))
     times = times.tz_localize(gmt_tz)  # set timezone
@@ -947,7 +1008,9 @@ def test_bird():
     dawn = zenith < 88.0
     dusk = testdata["Zenith Ang"] < 88.0
     am = pd.Series(np.where(dawn, airmass, 0.0), index=times).fillna(0.0)
-    assert np.allclose(testdata["Air Mass"].where(dusk, 0.0), am[1:end], rtol=1e-3)
+    assert np.allclose(
+        testdata["Air Mass"].where(dusk, 0.0), am[1:end], rtol=1e-3
+    )
     direct_beam = pd.Series(np.where(dawn, Eb, 0.0), index=times).fillna(0.0)
     assert np.allclose(
         testdata["Direct Beam"].where(dusk, 0.0), direct_beam[1:end], rtol=1e-3
@@ -1008,9 +1071,13 @@ def test_bird():
     testdata2.index = times[1:end]
     direct_beam2 = pd.Series(np.where(dawn, Eb2, 0.0), index=times).fillna(0.0)
     assert np.allclose(
-        testdata2["Direct Beam"].where(dusk, 0.0), direct_beam2[1:end], rtol=1e-3
+        testdata2["Direct Beam"].where(dusk, 0.0),
+        direct_beam2[1:end],
+        rtol=1e-3,
     )
-    direct_horz2 = pd.Series(np.where(dawn, Ebh2, 0.0), index=times).fillna(0.0)
+    direct_horz2 = pd.Series(np.where(dawn, Ebh2, 0.0), index=times).fillna(
+        0.0
+    )
     assert np.allclose(
         testdata2["Direct Hz"].where(dusk, 0.0), direct_horz2[1:end], rtol=1e-3
     )
@@ -1018,19 +1085,28 @@ def test_bird():
     assert np.allclose(
         testdata2["Global Hz"].where(dusk, 0.0), global_horz2[1:end], rtol=1e-3
     )
-    diffuse_horz2 = pd.Series(np.where(dawn, Dh2, 0.0), index=times).fillna(0.0)
+    diffuse_horz2 = pd.Series(np.where(dawn, Dh2, 0.0), index=times).fillna(
+        0.0
+    )
     assert np.allclose(
         testdata2["Dif Hz"].where(dusk, 0.0), diffuse_horz2[1:end], rtol=1e-3
     )
     # test scalars just at noon
     # XXX: calculations start at 12am so noon is at index = 12
     irrads3 = clearsky.bird(
-        zenith[12], airmass[12], aod_380nm, aod_500nm, h2o_cm, dni_extra=etr.iloc[12]
+        zenith[12],
+        airmass[12],
+        aod_380nm,
+        aod_500nm,
+        h2o_cm,
+        dni_extra=etr.iloc[12],
     )
     Eb3, Ebh3, Gh3, Dh3 = (irrads3[_] for _ in field_names)
     # XXX: testdata starts at 1am so noon is at index = 11
     np.allclose(
         [Eb3, Ebh3, Gh3, Dh3],
-        testdata2[["Direct Beam", "Direct Hz", "Global Hz", "Dif Hz"]].iloc[11],
+        testdata2[["Direct Beam", "Direct Hz", "Global Hz", "Dif Hz"]].iloc[
+            11
+        ],
         rtol=1e-3,
     )

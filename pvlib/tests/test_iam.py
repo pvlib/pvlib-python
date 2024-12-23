@@ -51,7 +51,9 @@ def test_ashrae_scalar():
 
 
 def test_physical():
-    aoi = np.array([-90.0, -67.5, -45.0, -22.5, 0.0, 22.5, 45.0, 67.5, 90.0, np.nan])
+    aoi = np.array(
+        [-90.0, -67.5, -45.0, -22.5, 0.0, 22.5, 45.0, 67.5, 90.0, np.nan]
+    )
     expected = np.array(
         [
             0,
@@ -253,7 +255,10 @@ def test_iam_interp():
     "aoi,expected",
     [
         (45, 0.9975036250000002),
-        (np.array([[-30, 30, 100, np.nan]]), np.array([[0, 1.007572, 0, np.nan]])),
+        (
+            np.array([[-30, 30, 100, np.nan]]),
+            np.array([[0, 1.007572, 0, np.nan]]),
+        ),
         (pd.Series([80]), pd.Series([0.597472])),
     ],
 )
@@ -346,7 +351,11 @@ def test_marion_integrate_scalar(region, N, expected):
 @pytest.mark.parametrize(
     "region,N,expected",
     [
-        ("sky", 180, [0.9523611991069362, 0.9596085829811408, 0.9619811198105501]),
+        (
+            "sky",
+            180,
+            [0.9523611991069362, 0.9596085829811408, 0.9619811198105501],
+        ),
         ("horizon", 1800, [0.0, 0.8329070417832541, 0.8987287652347437]),
         ("ground", 180, [0.0, 0.719823559106309, 0.8186360238536674]),
     ],
@@ -363,7 +372,11 @@ def test_marion_integrate_list(region, N, expected):
 @pytest.mark.parametrize(
     "region,N,expected",
     [
-        ("sky", 180, [0.9523611991069362, 0.9596085829811408, 0.9619811198105501]),
+        (
+            "sky",
+            180,
+            [0.9523611991069362, 0.9596085829811408, 0.9619811198105501],
+        ),
         ("horizon", 1800, [0.0, 0.8329070417832541, 0.8987287652347437]),
         ("ground", 180, [0.0, 0.719823559106309, 0.8186360238536674]),
     ],
@@ -435,9 +448,13 @@ def test_schlick_diffuse():
 
     # pandas Series
     idx = pd.date_range("2019-01-01", freq="h", periods=len(surface_tilt))
-    actual_sky, actual_ground = _iam.schlick_diffuse(pd.Series(surface_tilt, idx))
+    actual_sky, actual_ground = _iam.schlick_diffuse(
+        pd.Series(surface_tilt, idx)
+    )
     assert_series_equal(pd.Series(expected_sky, idx), actual_sky)
-    assert_series_equal(pd.Series(expected_ground, idx), actual_ground, rtol=1e-6)
+    assert_series_equal(
+        pd.Series(expected_ground, idx), actual_ground, rtol=1e-6
+    )
 
 
 @pytest.mark.parametrize(
@@ -449,8 +466,18 @@ def test_schlick_diffuse():
             "martin_ruiz",
             {"a_r": 0.174037},
         ),
-        ("physical", {"n": 1.5, "K": 4.5, "L": 0.004}, "ashrae", {"b": 0.042896}),
-        ("ashrae", {"b": 0.15}, "physical", {"n": 0.991457, "K": 4, "L": 0.037813}),
+        (
+            "physical",
+            {"n": 1.5, "K": 4.5, "L": 0.004},
+            "ashrae",
+            {"b": 0.042896},
+        ),
+        (
+            "ashrae",
+            {"b": 0.15},
+            "physical",
+            {"n": 0.991457, "K": 4, "L": 0.037813},
+        ),
         ("ashrae", {"b": 0.15}, "martin_ruiz", {"a_r": 0.302390}),
         (
             "martin_ruiz",
@@ -470,7 +497,11 @@ def test_convert(source, source_params, target, expected):
 
 @pytest.mark.parametrize(
     "source,source_params",
-    [("ashrae", {"b": 0.15}), ("ashrae", {"b": 0.05}), ("martin_ruiz", {"a_r": 0.15})],
+    [
+        ("ashrae", {"b": 0.15}),
+        ("ashrae", {"b": 0.05}),
+        ("martin_ruiz", {"a_r": 0.15}),
+    ],
 )
 def test_convert_recover(source, source_params):
     # convert isn't set up to handle both source and target = 'physical'
@@ -483,7 +514,9 @@ def test_convert_recover(source, source_params):
 def test_convert_ashrae_physical_no_fix_n():
     # convert ashrae to physical, without fixing n
     source_params = {"b": 0.15}
-    target_params = _iam.convert("ashrae", source_params, "physical", fix_n=False)
+    target_params = _iam.convert(
+        "ashrae", source_params, "physical", fix_n=False
+    )
     expected = {"n": 0.989019, "K": 4, "L": 0.037382}
     exp = [expected[k] for k in expected]
     tar = [target_params[k] for k in expected]
@@ -501,7 +534,9 @@ def test_convert_reverse_order_in_physical():
 
 def test_convert_xtol():
     source_params = {"b": 0.15}
-    target_params = _iam.convert("ashrae", source_params, "physical", xtol=1e-8)
+    target_params = _iam.convert(
+        "ashrae", source_params, "physical", xtol=1e-8
+    )
     expected = {"n": 0.9914568914, "K": 4, "L": 0.0378126985}
     exp = [expected[k] for k in expected]
     tar = [target_params[k] for k in expected]
@@ -577,7 +612,9 @@ def test_fit_custom_weight_func():
 
     expected_a_r = 0.14
 
-    actual_dict = _iam.fit(aoi, perturbed_iam, "martin_ruiz", weight=scaled_weight)
+    actual_dict = _iam.fit(
+        aoi, perturbed_iam, "martin_ruiz", weight=scaled_weight
+    )
     actual_a_r = actual_dict["a_r"]
 
     assert np.isclose(expected_a_r, actual_a_r, atol=1e-04)
@@ -595,7 +632,12 @@ def test_fit__minimize_fails():
         return np.nan
 
     with pytest.raises(RuntimeError, match="Optimizer exited unsuccessfully"):
-        _iam.fit(np.array([0, 10]), np.array([1, 0.99]), "physical", weight=nan_weight)
+        _iam.fit(
+            np.array([0, 10]),
+            np.array([1, 0.99]),
+            "physical",
+            weight=nan_weight,
+        )
 
 
 def test__residual_zero_outside_range():

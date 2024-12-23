@@ -388,7 +388,9 @@ def test_kimber_manwash(greensboro_rain, expected_kimber_manwash):
     # calculate soiling with manual wash
     manwash = kimber(greensboro_rain, manual_wash_dates=manwash)
     # test manual wash
-    assert np.allclose(manwash.values, expected_kimber_manwash["soiling"].values)
+    assert np.allclose(
+        manwash.values, expected_kimber_manwash["soiling"].values
+    )
 
 
 @pytest.fixture

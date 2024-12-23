@@ -272,9 +272,65 @@ def test_normalize_max2one(data_in, expected):
     ],
 )
 def test_localize_to_utc(input, expected):
-    """Test localization of naive time to UTC using the specified location."""
     got = tools.localize_to_utc(**input)
     if isinstance(got, (pd.Series, pd.DataFrame)):
         assert got.equals(expected)
     else:
         assert got == expected
+
+
+@pytest.mark.parametrize(
+        'input,expected',
+        [
+            (
+                {
+                    "time": datetime(1974, 6, 22, 18, 30, 15, tzinfo=ZoneInfo("Etc/GMT+5"))
+                },
+                27201.47934027778,
+            ),
+            (
+                {
+                    "time": datetime(1974, 6, 22, 23, 30, 15, tzinfo=ZoneInfo("UTC"))
+                },
+                27201.47934027778,
+            ),
+        ],
+    ids=[
+        "datetime.datetime with tzinfo",
+        "datetime.datetime",
+    ],
+)
+def test_datetime_to_djd(input, expected):
+    assert tools.datetime_to_djd(input["time"]) == expected
+
+
+@pytest.mark.parametrize(
+        'input,expected',
+        [
+            (
+                {
+                    "djd": 27201.47934027778,
+                    "tz": "Etc/GMT+5",
+                },
+                datetime(1974, 6, 22, 18, 30, 15, tzinfo=ZoneInfo("Etc/GMT+5")),
+            ),
+            (
+                {
+                    "djd": 27201.47934027778,
+                    "tz": None,
+                },
+                datetime(1974, 6, 22, 23, 30, 15, tzinfo=ZoneInfo("UTC")),
+            ),
+        ],
+    ids=[
+        "djd with tzinfo",
+        "djd",
+    ],
+)
+def test_djd_to_datetime(input, expected):
+    if input["tz"] is not None:
+        got = tools.djd_to_datetime(input["djd"])
+    else:
+        got = tools.djd_to_datetime(input["djd"], tz="Etc/GMT+5")
+
+    assert got == expected

@@ -150,116 +150,116 @@ def test_normalize_max2one(data_in, expected):
 
 
 @pytest.mark.parametrize(
-        'input,expected',
-        [
-            (
-                {
-                    "time": datetime(
-                        1974, 6, 22, 18, 30, 15, tzinfo=ZoneInfo("Etc/GMT+5"),
-                    ),
-                    "location": location.Location(
-                        43.19262774396091, -77.58782907414867, tz="Etc/GMT+5"
-                    )
-                },
-                datetime(1974, 6, 22, 23, 30, 15, tzinfo=ZoneInfo("UTC")),
-            ),
-            (
-                {
-                    "time": datetime(1974, 6, 22, 18, 30, 15),
-                    "location": location.Location(
-                        43.19262774396091, -77.58782907414867, tz="Etc/GMT+5"
-                    )
-                },
-                datetime(1974, 6, 22, 23, 30, 15, tzinfo=ZoneInfo("UTC")),
-            ),
-            (
-                {
-                    "time": pd.DatetimeIndex(
+    'input,expected',
+    [
+        (
+            {
+                "time": datetime(
+                    1974, 6, 22, 18, 30, 15, tzinfo=ZoneInfo("Etc/GMT+5"),
+                ),
+                "location": location.Location(
+                    43.19262774396091, -77.58782907414867, tz="Etc/GMT+5"
+                )
+            },
+            datetime(1974, 6, 22, 23, 30, 15, tzinfo=ZoneInfo("UTC")),
+        ),
+        (
+            {
+                "time": datetime(1974, 6, 22, 18, 30, 15),
+                "location": location.Location(
+                    43.19262774396091, -77.58782907414867, tz="Etc/GMT+5"
+                )
+            },
+            datetime(1974, 6, 22, 23, 30, 15, tzinfo=ZoneInfo("UTC")),
+        ),
+        (
+            {
+                "time": pd.DatetimeIndex(
+                    ["1974-06-22T18:30:15"],
+                    tz=ZoneInfo("Etc/GMT+5"),
+                ),
+                "location": location.Location(
+                    43.19262774396091, -77.58782907414867, tz="Etc/GMT+5"
+                )
+            },
+            pd.DatetimeIndex(["1974-06-22T23:30:15"], tz=ZoneInfo("UTC")),
+        ),
+        (
+            {
+                "time": pd.DatetimeIndex(["1974-06-22T18:30:15"]),
+                "location": location.Location(
+                    43.19262774396091, -77.58782907414867, tz="Etc/GMT+5"
+                )
+            },
+            pd.DatetimeIndex(["1974-06-22T23:30:15"], tz=ZoneInfo("UTC")),
+        ),
+        (
+            {
+                "time": pd.Series(
+                    [24.42],
+                    index=pd.DatetimeIndex(
                         ["1974-06-22T18:30:15"],
                         tz=ZoneInfo("Etc/GMT+5"),
                     ),
-                    "location": location.Location(
-                        43.19262774396091, -77.58782907414867, tz="Etc/GMT+5"
-                    )
-                },
+                ),
+                "location": location.Location(
+                    43.19262774396091, -77.58782907414867, tz="Etc/GMT+5"
+                )
+            },
+            pd.Series(
+                [24.42],
                 pd.DatetimeIndex(["1974-06-22T23:30:15"], tz=ZoneInfo("UTC")),
             ),
-            (
-                {
-                    "time": pd.DatetimeIndex(["1974-06-22T18:30:15"]),
-                    "location": location.Location(
-                        43.19262774396091, -77.58782907414867, tz="Etc/GMT+5"
-                    )
-                },
+        ),
+        (
+            {
+                "time": pd.Series(
+                    [24.42],
+                    index=pd.DatetimeIndex(["1974-06-22T18:30:15"]),
+                ),
+                "location": location.Location(
+                    43.19262774396091, -77.58782907414867, tz="Etc/GMT+5"
+                )
+            },
+            pd.Series(
+                [24.42],
                 pd.DatetimeIndex(["1974-06-22T23:30:15"], tz=ZoneInfo("UTC")),
             ),
-            (
-                {
-                    "time": pd.Series(
-                        [24.42],
-                        index=pd.DatetimeIndex(
-                            ["1974-06-22T18:30:15"],
-                            tz=ZoneInfo("Etc/GMT+5"),
-                        ),
-                    ),
-                    "location": location.Location(
-                        43.19262774396091, -77.58782907414867, tz="Etc/GMT+5"
-                    )
-                },
-                pd.Series(
-                    [24.42],
-                    pd.DatetimeIndex(["1974-06-22T23:30:15"], tz=ZoneInfo("UTC")),
-                ),
-            ),
-            (
-                {
-                    "time": pd.Series(
-                        [24.42],
-                        index=pd.DatetimeIndex(["1974-06-22T18:30:15"]),
-                    ),
-                    "location": location.Location(
-                        43.19262774396091, -77.58782907414867, tz="Etc/GMT+5"
-                    )
-                },
-                pd.Series(
-                    [24.42],
-                    pd.DatetimeIndex(["1974-06-22T23:30:15"], tz=ZoneInfo("UTC")),
-                ),
-            ),
-            (
-                {
-                    "time": pd.DataFrame(
-                        [[24.42]],
-                        index=pd.DatetimeIndex(
-                            ["1974-06-22T18:30:15"],
-                            tz=ZoneInfo("Etc/GMT+5"),
-                        ),
-                    ),
-                    "location": location.Location(
-                        43.19262774396091, -77.58782907414867, tz="Etc/GMT+5"
-                    )
-                },
-                pd.DataFrame(
+        ),
+        (
+            {
+                "time": pd.DataFrame(
                     [[24.42]],
-                    pd.DatetimeIndex(["1974-06-22T23:30:15"], tz=ZoneInfo("UTC")),
-                ),
-            ),
-            (
-                {
-                    "time": pd.DataFrame(
-                        [[24.42]],
-                        index=pd.DatetimeIndex(["1974-06-22T18:30:15"]),
+                    index=pd.DatetimeIndex(
+                        ["1974-06-22T18:30:15"],
+                        tz=ZoneInfo("Etc/GMT+5"),
                     ),
-                    "location": location.Location(
-                        43.19262774396091, -77.58782907414867, tz="Etc/GMT+5"
-                    )
-                },
-                pd.DataFrame(
-                    [[24.42]],
-                    pd.DatetimeIndex(["1974-06-22T23:30:15"], tz=ZoneInfo("UTC")),
                 ),
+                "location": location.Location(
+                    43.19262774396091, -77.58782907414867, tz="Etc/GMT+5"
+                )
+            },
+            pd.DataFrame(
+                [[24.42]],
+                pd.DatetimeIndex(["1974-06-22T23:30:15"], tz=ZoneInfo("UTC")),
             ),
-        ],
+        ),
+        (
+            {
+                "time": pd.DataFrame(
+                    [[24.42]],
+                    index=pd.DatetimeIndex(["1974-06-22T18:30:15"]),
+                ),
+                "location": location.Location(
+                    43.19262774396091, -77.58782907414867, tz="Etc/GMT+5"
+                )
+            },
+            pd.DataFrame(
+                [[24.42]],
+                pd.DatetimeIndex(["1974-06-22T23:30:15"], tz=ZoneInfo("UTC")),
+            ),
+        ),
+    ],
     ids=[
         "datetime.datetime with tzinfo",
         "datetime.datetime",
@@ -280,52 +280,50 @@ def test_localize_to_utc(input, expected):
 
 
 @pytest.mark.parametrize(
-        'input,expected',
-        [
-            (
-                {
-                    "time": datetime(1974, 6, 22, 18, 30, 15, tzinfo=ZoneInfo("Etc/GMT+5"))
-                },
-                27201.47934027778,
-            ),
-            (
-                {
-                    "time": datetime(1974, 6, 22, 23, 30, 15, tzinfo=ZoneInfo("UTC"))
-                },
-                27201.47934027778,
-            ),
-        ],
-    ids=[
-        "datetime.datetime with tzinfo",
-        "datetime.datetime",
+    'input,expected',
+    [
+        (
+            {
+                "time": datetime(
+                    1974, 6, 22, 18, 30, 15, tzinfo=ZoneInfo("Etc/GMT+5")
+                )
+            },
+            27201.47934027778,
+        ),
+        (
+            {
+                "time": datetime(
+                    1974, 6, 22, 23, 30, 15, tzinfo=ZoneInfo("UTC")
+                )
+            },
+            27201.47934027778,
+        ),
     ],
+    ids=["datetime.datetime with tzinfo", "datetime.datetime"],
 )
 def test_datetime_to_djd(input, expected):
     assert tools.datetime_to_djd(input["time"]) == expected
 
 
 @pytest.mark.parametrize(
-        'input,expected',
-        [
-            (
-                {
-                    "djd": 27201.47934027778,
-                    "tz": "Etc/GMT+5",
-                },
-                datetime(1974, 6, 22, 18, 30, 15, tzinfo=ZoneInfo("Etc/GMT+5")),
-            ),
-            (
-                {
-                    "djd": 27201.47934027778,
-                    "tz": None,
-                },
-                datetime(1974, 6, 22, 23, 30, 15, tzinfo=ZoneInfo("UTC")),
-            ),
-        ],
-    ids=[
-        "djd with tzinfo",
-        "djd",
+    'input,expected',
+    [
+        (
+            {
+                "djd": 27201.47934027778,
+                "tz": "Etc/GMT+5",
+            },
+            datetime(1974, 6, 22, 18, 30, 15, tzinfo=ZoneInfo("Etc/GMT+5")),
+        ),
+        (
+            {
+                "djd": 27201.47934027778,
+                "tz": None,
+            },
+            datetime(1974, 6, 22, 23, 30, 15, tzinfo=ZoneInfo("UTC")),
+        ),
     ],
+    ids=["djd with tzinfo", "djd"],
 )
 def test_djd_to_datetime(input, expected):
     if input["tz"] is not None:

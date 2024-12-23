@@ -42,7 +42,8 @@ class Location:
         Positive is east of the prime meridian.
         Use decimal degrees notation.
 
-    tz : str, int, float, zoneinfo.ZoneInfo, datetime.timezone, or pytz timezone (deprecated), default 'UTC'.
+    tz : str, int, float, zoneinfo.ZoneInfo, datetime.timezone, or pytz
+        timezone (deprecated), default 'UTC'.
         See http://en.wikipedia.org/wiki/List_of_tz_database_time_zones for a
         list of valid time zone strings, or use the function
         zoneinfo.available_timezones().
@@ -94,7 +95,7 @@ class Location:
         #     warn_deprecated(
         #         "0.11.3",
         #         message='pytz-based timezones are deprecated for locations',
-        #         alternative='use zoneinfo.ZoneInfo from the standard library',
+        #         alternative='use zoneinfo.ZoneInfo from standard library',
         #         obj_type='function argument type',
         #     )
         #     self.tz = ZoneInfo(tz.zone)

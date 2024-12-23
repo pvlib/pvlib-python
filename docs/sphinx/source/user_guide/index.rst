@@ -28,7 +28,7 @@ This user guide is an overview and explains some of the key features of pvlib.
 
 .. toctree::
    :caption: Extras
-   :maxdepth: 1
+   :maxdepth: 2
 
    nomenclature
    faq

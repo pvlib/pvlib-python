@@ -4,19 +4,31 @@
 User Guide
 ==========
 
+This user guide is an overview and explains some of the key features of pvlib.
 
 .. toctree::
+   :caption: Getting started
    :maxdepth: 2
-
+   
    package_overview
    installation
    introtutorial
+   
+.. toctree::
+   :caption: Advanced usage
+   :maxdepth: 2
+   
    pvsystem
    modelchain
    timetimezones
-   clearsky
    bifacial
+   clearsky
    weather_data
    singlediode
+
+.. toctree::
+   :caption: Extras
+   :maxdepth: 1
+
    nomenclature
    faq

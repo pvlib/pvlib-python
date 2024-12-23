@@ -18,6 +18,7 @@ Documentation
 
 Testing
 ~~~~~~~
+* Added Python 3.12 to test suite. (:pull:`2258`)
 
 
 Requirements

@@ -1,3 +1,4 @@
+import sys
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
@@ -272,12 +273,18 @@ def test_normalize_max2one(data_in, expected):
     ],
 )
 def test_localize_to_utc(input, expected):
+    # Pandas has bad dtype check in Python 3.9.
+    if (sys.version_info[0], sys.version_info[1]) == (3, 9):
+        check_dtype = False
+    else:
+        check_dtype = True
+
     got = tools.localize_to_utc(**input)
 
     if isinstance(got, pd.Series):
-        pd.testing.assert_series_equal(got, expected)
+        pd.testing.assert_series_equal(got, expected, check_dtype=check_dtype)
     elif isinstance(got, pd.DataFrame):
-        pd.testing.assert_frame_equal(got, expected)
+        pd.testing.assert_frame_equal(got, expected, check_dtype=check_dtype)
     else:
         assert got == expected
 

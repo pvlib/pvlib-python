@@ -24,5 +24,5 @@ dependencies:
     - scipy >= 1.6.0
     - statsmodels
     - pip:
-        - nrel-pysam>=2.0
+        # - nrel-pysam>=2.0  # not available for py3.13 as of Dec 2024
         # - solarfactors  # required shapely<2 isn't available for Python>=3.12

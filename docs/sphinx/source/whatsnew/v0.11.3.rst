@@ -18,6 +18,7 @@ Documentation
 
 Testing
 ~~~~~~~
+* Add tests for time conversions in tools package. (:issue:`2340`, :pull:`2341`)
 
 
 Requirements
@@ -26,5 +27,4 @@ Requirements
 
 Contributors
 ~~~~~~~~~~~~
-
-
+* Mark Campanellli (:ghuser:`markcampanelli`)

@@ -316,3 +316,76 @@ def deprecated(since, message='', name='', alternative='', pending=False,
         return finalize(wrapper, new_doc)
 
     return deprecate
+
+
+def renamed_kwarg_warning(since, old_param_name, new_param_name, removal=""):
+    """
+    Decorator to mark a possible keyword argument as deprecated and replaced
+    with other name.
+
+    Raises a warning when the deprecated argument is used, and replaces the
+    call with the new argument name. Does not modify the function signature.
+
+    .. warning::
+        Ensure ``removal`` date with a ``fail_on_pvlib_version`` decorator in
+        the test suite.
+
+    .. note::
+        Not compatible with positional-only arguments.
+
+    .. note::
+        Documentation for the function may updated to reflect the new parameter
+        name; it is suggested to add a |.. versionchanged::| directive.
+
+    Parameters
+    ----------
+    since : str
+        The release at which this API became deprecated.
+    old_param_name : str
+        The name of the deprecated parameter.
+    new_param_name : str
+        The name of the new parameter.
+    removal : str, optional
+        The expected removal version, in order to compose the Warning message.
+
+    Examples
+    --------
+    >>> @renamed_kwarg_warning("1.4.0", "old_name", "new_name", "1.6.0")
+    >>> def some_function(new_name=None):
+    >>>     pass
+    >>> some_function(old_name=1)
+    Parameter 'old_name' has been renamed since 1.4.0. and
+    will be removed in 1.6.0. Please use 'new_name' instead.
+
+    >>> @renamed_kwarg_warning("1.4.0", "old_name", "new_name")
+    >>> def some_function(new_name=None):
+    >>>     pass
+    >>> some_function(old_name=1)
+    Parameter 'old_name' has been renamed since 1.4.0. and
+    will be removed soon. Please use 'new_name' instead.
+    """
+
+    def deprecate(func, old=old_param_name, new=new_param_name, since=since):
+        def wrapper(*args, **kwargs):
+            if old in kwargs:
+                if new in kwargs:
+                    raise ValueError(
+                        f"{func.__name__} received both '{old}' and '{new}', "
+                        "which are mutually exclusive since they refer to the "
+                        f"same parameter. Please remove deprecated '{old}'."
+                    )
+                warnings.warn(
+                    f"Parameter '{old}' has been renamed since {since}. "
+                    f"and will be removed "
+                    + (f"in {removal}" if removal else "soon")
+                    + f". Please use '{new}' instead.",
+                    _projectWarning,
+                    stacklevel=2,
+                )
+                kwargs[new] = kwargs.pop(old)
+            return func(*args, **kwargs)
+
+        wrapper = functools.wraps(func)(wrapper)
+        return wrapper
+
+    return deprecate

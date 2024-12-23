@@ -1,9 +1,9 @@
 from collections import OrderedDict
-from zoneinfo import ZoneInfo
 
 import numpy as np
 from numpy import nan
 import pandas as pd
+import pytz
 from scipy.linalg import hankel
 
 import pytest
@@ -758,7 +758,7 @@ def test_bird():
     times = pd.date_range(start='1/1/2015 0:00', end='12/31/2015 23:00',
                           freq='h')
     tz = -7  # test timezone
-    gmt_tz = ZoneInfo(f"Etc/GMT{-tz:+}")
+    gmt_tz = pytz.timezone('Etc/GMT%+d' % -(tz))
     times = times.tz_localize(gmt_tz)  # set timezone
     times_utc = times.tz_convert('UTC')
     # match test data from BIRD_08_16_2012.xls

@@ -1,5 +1,6 @@
 import pandas as pd
 import pytest
+import pytz
 
 from pvlib.iotools import midc
 from ..conftest import DATA_DIR, RERUNS, RERUNS_DELAY
@@ -42,7 +43,7 @@ def test_midc__format_index_tz_conversion():
     data = pd.read_csv(MIDC_TESTFILE)
     data = data.rename(columns={'MST': 'PST'})
     data = midc._format_index(data)
-    assert str(data.index[0].tz) == 'Etc/GMT+8'
+    assert data.index[0].tz == pytz.timezone('Etc/GMT+8')
 
 
 def test_midc__format_index_raw():

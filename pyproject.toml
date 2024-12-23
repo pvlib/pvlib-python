@@ -14,7 +14,7 @@ dependencies = [
     'h5py >=3.12, <4',
     'numpy >=1.19.3, <3',
     'pandas >=1.3.0, <3',
-    # 'pytz',
+    'pytz',
     'requests >=2, <3',
     'scipy >=1.6.0, <2',
 ]

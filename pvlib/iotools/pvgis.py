@@ -17,12 +17,10 @@ More detailed information about the API for TMY and hourly radiation are here:
 import io
 import json
 from pathlib import Path
-from zoneinfo import ZoneInfo
-
 import requests
 import numpy as np
 import pandas as pd
-
+import pytz
 from pvlib.iotools import read_epw, parse_epw
 
 URL = 'https://re.jrc.ec.europa.eu/api/'
@@ -400,10 +398,10 @@ def _coerce_and_roll_tmy(tmy_data, tz, year):
     re-interpreted as zero / UTC.
     """
     if tz:
-        tzname = ZoneInfo(f'Etc/GMT{-tz:+d}')
+        tzname = pytz.timezone(f'Etc/GMT{-tz:+d}')
     else:
         tz = 0
-        tzname = ZoneInfo('UTC')
+        tzname = pytz.timezone('UTC')
     new_index = pd.DatetimeIndex([
         timestamp.replace(year=year, tzinfo=tzname)
         for timestamp in tmy_data.index],

@@ -73,10 +73,10 @@ class Location:
             self.pytz = pytz.UTC
         elif isinstance(tz, datetime.tzinfo):
             self.tz = tz.zone
-            self.pytz = tz
+            self.pytz = pytz.timezone(tz.zone)
         elif isinstance(tz, (int, float)):
-            self.tz = tz
-            self.pytz = pytz.FixedOffset(tz*60)
+            self.tz = f"Etc/GMT{int(-tz):+d}"
+            self.pytz = pytz.timezone(self.tz)
         else:
             raise TypeError('Invalid tz specification')
 
@@ -89,8 +89,10 @@ class Location:
 
     def __repr__(self):
         attrs = ['name', 'latitude', 'longitude', 'altitude', 'tz']
+        # Use None as getattr default in case __repr__ is called during
+        # initialization before all attributes have been assigned.
         return ('Location: \n  ' + '\n  '.join(
-            f'{attr}: {getattr(self, attr)}' for attr in attrs))
+            f'{attr}: {getattr(self, attr, None)}' for attr in attrs))
 
     @classmethod
     def from_tmy(cls, tmy_metadata, tmy_data=None, **kwargs):

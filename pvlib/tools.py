@@ -133,7 +133,7 @@ def localize_to_utc(time, location):
     """
     if isinstance(time, dt.datetime):
         if time.tzinfo is None:
-            time = pytz.timezone(location.tz).localize(time)
+            time = location.pytz.localize(time)
         time_utc = time.astimezone(pytz.utc)
     else:
         try:

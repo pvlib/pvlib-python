@@ -8,5 +8,13 @@ User Guide
 
    package_overview
    installation
+   introtutorial
+   pvsystem
+   modelchain
+   timetimezones
+   clearsky
+   bifacial
+   weather_data
+   singlediode
    nomenclature
    faq

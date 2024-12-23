@@ -72,6 +72,7 @@ class Location:
             self.tz = 'UTC'
             self.pytz = pytz.UTC
         elif isinstance(tz, datetime.tzinfo):
+            # This includes pytz timezones.
             self.tz = tz.zone
             self.pytz = pytz.timezone(tz.zone)
         elif isinstance(tz, (int, float)):

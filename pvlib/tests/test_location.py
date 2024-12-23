@@ -28,11 +28,16 @@ def test_location_all():
 
 
 @pytest.mark.parametrize('tz', [
-    pytz.timezone('US/Arizona'), 'America/Phoenix',  -7, -7.0,
-    datetime.timezone.utc
+    'America/Phoenix',
+    datetime.timezone.utc,
+    pytz.timezone('US/Arizona'),
+    -7,
+    -7.0,
 ])
 def test_location_tz(tz):
-    Location(32.2, -111, tz)
+    loc = Location(32.2, -111, tz)
+    assert type(loc.tz) is str
+    assert isinstance(loc.pytz, pytz.tzinfo.BaseTzInfo)
 
 
 def test_location_invalid_tz():

@@ -119,7 +119,7 @@ def atand(number):
 
 def localize_to_utc(time, location):
     """
-    Converts or localizes a time series to UTC.
+    Converts time to UTC, localizing if necessary using location.
 
     Parameters
     ----------
@@ -129,7 +129,7 @@ def localize_to_utc(time, location):
 
     Returns
     -------
-    pandas object localized to UTC.
+    datetime.datetime or pandas object localized to UTC.
     """
     if isinstance(time, dt.datetime):
         if time.tzinfo is None:

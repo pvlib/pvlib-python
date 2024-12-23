@@ -273,8 +273,11 @@ def test_normalize_max2one(data_in, expected):
 )
 def test_localize_to_utc(input, expected):
     got = tools.localize_to_utc(**input)
-    if isinstance(got, (pd.Series, pd.DataFrame)):
-        assert got.equals(expected)
+
+    if isinstance(got, pd.Series):
+        pd.testing.assert_series_equal(got, expected)
+    elif isinstance(got, pd.DataFrame):
+        pd.testing.assert_frame_equal(got, expected)
     else:
         assert got == expected
 

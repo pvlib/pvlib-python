@@ -125,7 +125,7 @@ def localize_to_utc(time, location):
     ----------
     time : datetime.datetime, pandas.DatetimeIndex,
            or pandas.Series/DataFrame with a DatetimeIndex.
-    location : pvlib.Location object
+    location : pvlib.Location object (unused if time is localized)
 
     Returns
     -------

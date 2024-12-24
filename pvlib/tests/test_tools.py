@@ -149,190 +149,106 @@ def test_normalize_max2one(data_in, expected):
     assert_allclose(result, expected)
 
 
-@pytest.mark.parametrize(
-    'input,expected',
-    [
-        (
-            {
-                "time": datetime(
-                    1974, 6, 22, 18, 30, 15, tzinfo=ZoneInfo("Etc/GMT+5"),
-                ),
-                "location": location.Location(
-                    43.19262774396091, -77.58782907414867, tz="Etc/GMT+5"
-                )
-            },
-            datetime(1974, 6, 22, 23, 30, 15, tzinfo=ZoneInfo("UTC")),
-        ),
-        (
-            {
-                "time": datetime(1974, 6, 22, 18, 30, 15),
-                "location": location.Location(
-                    43.19262774396091, -77.58782907414867, tz="Etc/GMT+5"
-                )
-            },
-            datetime(1974, 6, 22, 23, 30, 15, tzinfo=ZoneInfo("UTC")),
-        ),
-        (
-            {
-                "time": pd.DatetimeIndex(
-                    ["1974-06-22T18:30:15"],
-                    tz=ZoneInfo("Etc/GMT+5"),
-                ),
-                "location": location.Location(
-                    43.19262774396091, -77.58782907414867, tz="Etc/GMT+5"
-                )
-            },
-            pd.DatetimeIndex(["1974-06-22T23:30:15"], tz=ZoneInfo("UTC")),
-        ),
-        (
-            {
-                "time": pd.DatetimeIndex(["1974-06-22T18:30:15"]),
-                "location": location.Location(
-                    43.19262774396091, -77.58782907414867, tz="Etc/GMT+5"
-                )
-            },
-            pd.DatetimeIndex(["1974-06-22T23:30:15"], tz=ZoneInfo("UTC")),
-        ),
-        (
-            {
-                "time": pd.Series(
-                    [24.42],
-                    index=pd.DatetimeIndex(
-                        ["1974-06-22T18:30:15"],
-                        tz=ZoneInfo("Etc/GMT+5"),
-                    ),
-                ),
-                "location": location.Location(
-                    43.19262774396091, -77.58782907414867, tz="Etc/GMT+5"
-                )
-            },
-            pd.Series(
-                [24.42],
-                pd.DatetimeIndex(["1974-06-22T23:30:15"], tz=ZoneInfo("UTC")),
-            ),
-        ),
-        (
-            {
-                "time": pd.Series(
-                    [24.42],
-                    index=pd.DatetimeIndex(["1974-06-22T18:30:15"]),
-                ),
-                "location": location.Location(
-                    43.19262774396091, -77.58782907414867, tz="Etc/GMT+5"
-                )
-            },
-            pd.Series(
-                [24.42],
-                pd.DatetimeIndex(["1974-06-22T23:30:15"], tz=ZoneInfo("UTC")),
-            ),
-        ),
-        (
-            {
-                "time": pd.DataFrame(
-                    [[24.42]],
-                    index=pd.DatetimeIndex(
-                        ["1974-06-22T18:30:15"],
-                        tz=ZoneInfo("Etc/GMT+5"),
-                    ),
-                ),
-                "location": location.Location(
-                    43.19262774396091, -77.58782907414867, tz="Etc/GMT+5"
-                )
-            },
-            pd.DataFrame(
-                [[24.42]],
-                pd.DatetimeIndex(["1974-06-22T23:30:15"], tz=ZoneInfo("UTC")),
-            ),
-        ),
-        (
-            {
-                "time": pd.DataFrame(
-                    [[24.42]],
-                    index=pd.DatetimeIndex(["1974-06-22T18:30:15"]),
-                ),
-                "location": location.Location(
-                    43.19262774396091, -77.58782907414867, tz="Etc/GMT+5"
-                )
-            },
-            pd.DataFrame(
-                [[24.42]],
-                pd.DatetimeIndex(["1974-06-22T23:30:15"], tz=ZoneInfo("UTC")),
-            ),
-        ),
-    ],
-    ids=[
-        "datetime.datetime with tzinfo",
-        "datetime.datetime",
-        "pandas.DatetimeIndex with tzinfo",
-        "pandas.DatetimeIndex",
-        "pandas.Series with tzinfo",
-        "pandas.Series",
-        "pandas.DataFrame with tzinfo",
-        "pandas.DataFrame",
-    ],
-)
-def test_localize_to_utc(input, expected):
-    got = tools.localize_to_utc(**input)
+def test_localize_to_utc():
+    lat, lon = 43.2, -77.6
+    tz = "Etc/GMT+5"
+    loc = location.Location(lat, lon, tz=tz)
+    year, month, day, hour, minute, second = 1974, 6, 22, 18, 30, 15
+    hour_utc = hour + 5
 
-    if isinstance(got, (pd.Series, pd.DataFrame)):
-        # Older pandas versions have wonky dtype equality check on timestamp
-        # index, so check the values as numpy.ndarray and indices one by one.
-        np.testing.assert_array_equal(got.to_numpy(), expected.to_numpy())
+    # Test all combinations of supported inputs.
+    dt_time_aware_utc = datetime(
+        year, month, day, hour_utc, minute, second, tzinfo=ZoneInfo("UTC")
+    )
+    dt_time_aware = datetime(
+        year, month, day, hour, minute, second, tzinfo=ZoneInfo(tz)
+    )
+    assert tools.localize_to_utc(dt_time_aware, None) == dt_time_aware_utc
+    dt_time_naive = datetime(year, month, day, hour, minute, second)
+    assert tools.localize_to_utc(dt_time_naive, loc) == dt_time_aware_utc
 
-        for index_got, index_expected in zip(got.index, expected.index):
-            assert index_got == index_expected
-    else:
-        assert got == expected
+    # FIXME Derive timestamp strings from above variables.
+    dt_index_aware_utc = pd.DatetimeIndex(
+        [dt_time_aware_utc.strftime("%Y-%m-%dT%H:%M:%S")], tz=ZoneInfo("UTC")
+    )
+    dt_index_aware = pd.DatetimeIndex(
+        [dt_time_aware.strftime("%Y-%m-%dT%H:%M:%S")], tz=ZoneInfo(tz)
+    )
+    assert tools.localize_to_utc(dt_index_aware, None) == dt_index_aware_utc
+    dt_index_naive = pd.DatetimeIndex(
+        [dt_time_naive.strftime("%Y-%m-%dT%H:%M:%S")]
+    )
+    assert tools.localize_to_utc(dt_index_naive, loc) == dt_index_aware_utc
+
+    # Older pandas versions have wonky dtype equality check on timestamp
+    # index, so check the values as numpy.ndarray and indices one by one.
+    series_time_aware_utc_expected = pd.Series([24.42], dt_index_aware_utc)
+    series_time_aware = pd.Series([24.42], index=dt_index_aware)
+    series_time_aware_utc_got = tools.localize_to_utc(series_time_aware, None)
+    np.testing.assert_array_equal(
+        series_time_aware_utc_got.to_numpy(),
+        series_time_aware_utc_expected.to_numpy(),
+    )
+
+    for index_got, index_expected in zip(
+        series_time_aware_utc_got.index, series_time_aware_utc_expected.index
+    ):
+        assert index_got == index_expected
+
+    series_time_naive = pd.Series([24.42], index=dt_index_naive)
+    series_time_naive_utc_got = tools.localize_to_utc(series_time_naive, loc)
+    np.testing.assert_array_equal(
+        series_time_naive_utc_got.to_numpy(),
+        series_time_aware_utc_expected.to_numpy(),
+    )
+
+    for index_got, index_expected in zip(
+        series_time_naive_utc_got.index, series_time_aware_utc_expected.index
+    ):
+        assert index_got == index_expected
+
+    # Older pandas versions have wonky dtype equality check on timestamp
+    # index, so check the values as numpy.ndarray and indices one by one.
+    df_time_aware_utc_expected = pd.DataFrame([[24.42]], dt_index_aware)
+    df_time_naive = pd.DataFrame([[24.42]], index=dt_index_naive)
+    df_time_naive_utc_got = tools.localize_to_utc(df_time_naive, loc)
+    np.testing.assert_array_equal(
+        df_time_naive_utc_got.to_numpy(),
+        df_time_aware_utc_expected.to_numpy(),
+    )
+
+    for index_got, index_expected in zip(
+        df_time_naive_utc_got.index, df_time_aware_utc_expected.index
+    ):
+        assert index_got == index_expected
+
+    df_time_aware = pd.DataFrame([[24.42]], index=dt_index_aware)
+    df_time_aware_utc_got = tools.localize_to_utc(df_time_aware, None)
+    np.testing.assert_array_equal(
+        df_time_aware_utc_got.to_numpy(),
+        df_time_aware_utc_expected.to_numpy(),
+    )
+
+    for index_got, index_expected in zip(
+        df_time_aware_utc_got.index, df_time_aware_utc_expected.index
+    ):
+        assert index_got == index_expected
 
 
-@pytest.mark.parametrize(
-    'input,expected',
-    [
-        (
-            {
-                "time": datetime(
-                    1974, 6, 22, 18, 30, 15, tzinfo=ZoneInfo("Etc/GMT+5")
-                )
-            },
-            27201.47934027778,
-        ),
-        (
-            {
-                "time": datetime(1974, 6, 22, 23, 30, 15)
-            },
-            27201.47934027778,
-        ),
-    ],
-    ids=["datetime.datetime with tzinfo", "datetime.datetime"],
-)
-def test_datetime_to_djd(input, expected):
-    assert tools.datetime_to_djd(input["time"]) == expected
+def test_datetime_to_djd():
+    expected = 27201.47934027778
+    dt_aware = datetime(1974, 6, 22, 18, 30, 15, tzinfo=ZoneInfo("Etc/GMT+5"))
+    assert tools.datetime_to_djd(dt_aware) == expected
+    dt_naive_utc = datetime(1974, 6, 22, 23, 30, 15)
+    assert tools.datetime_to_djd(dt_naive_utc) == expected
 
 
-@pytest.mark.parametrize(
-    'input,expected',
-    [
-        (
-            {
-                "djd": 27201.47934027778,
-                "tz": "Etc/GMT+5",
-            },
-            datetime(1974, 6, 22, 18, 30, 15, tzinfo=ZoneInfo("Etc/GMT+5")),
-        ),
-        (
-            {
-                "djd": 27201.47934027778,
-                "tz": None,
-            },
-            datetime(1974, 6, 22, 23, 30, 15, tzinfo=ZoneInfo("UTC")),
-        ),
-    ],
-    ids=["djd with tzinfo", "djd"],
-)
-def test_djd_to_datetime(input, expected):
-    if input["tz"] is not None:
-        got = tools.djd_to_datetime(input["djd"])
-    else:
-        got = tools.djd_to_datetime(input["djd"], tz="Etc/GMT+5")
+def test_djd_to_datetime():
+    djd = 27201.47934027778
+    tz = "Etc/GMT+5"
 
-    assert got == expected
+    expected = datetime(1974, 6, 22, 18, 30, 15, tzinfo=ZoneInfo(tz))
+    assert tools.djd_to_datetime(djd, tz) == expected
+
+    expected = datetime(1974, 6, 22, 23, 30, 15, tzinfo=ZoneInfo("UTC"))
+    assert tools.djd_to_datetime(djd) == expected

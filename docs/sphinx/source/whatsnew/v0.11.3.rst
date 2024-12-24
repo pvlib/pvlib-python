@@ -14,8 +14,8 @@ Enhancements
 
 Bug Fixes
 ~~~~~~~~~
-* Ensure proper tz and pytz types in pvlib.location.Location. (:issue:`2340`,
-:pull:`2341`)
+* Ensure proper tz and pytz types in pvlib.location.Location.
+  (:issue:`2340`, :pull:`2341`)
 
 
 Documentation
@@ -24,8 +24,8 @@ Documentation
 
 Testing
 ~~~~~~~
-* Add tests for timezone types in pvlib.location.Location. (:issue:`2340`,
-:pull:`2341`)
+* Add tests for timezone types in pvlib.location.Location.
+  (:issue:`2340`, :pull:`2341`)
 * Add tests for time conversions in pvlib.tools. (:issue:`2340`, :pull:`2341`)
 
 

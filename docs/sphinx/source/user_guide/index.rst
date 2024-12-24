@@ -15,7 +15,7 @@ This user guide is an overview and explains some of the key features of pvlib.
    introtutorial
    
 .. toctree::
-   :caption: Advanced usage
+   :caption: Modeling topics
    :maxdepth: 2
    
    pvsystem

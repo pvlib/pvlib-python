@@ -2593,7 +2593,7 @@ def _gti_dirint_gte_90_kt_prime(aoi, solar_zenith, solar_azimuth, times,
         kt_prime_am_avg = data[aoi_65_80_morning].mean()
         kt_prime_pm_avg = data[aoi_65_80_afternoon].mean()
 
-        kt_prime_by_date = pd.Series(np.nan, index=dataindex)
+        kt_prime_by_date = pd.Series(np.nan, index=data.index)
         kt_prime_by_date[zenith_lt_90_aoi_gte_90_morning] = kt_prime_am_avg
         kt_prime_by_date[zenith_lt_90_aoi_gte_90_afternoon] = kt_prime_pm_avg
         kt_prime_gte_90.append(kt_prime_by_date)

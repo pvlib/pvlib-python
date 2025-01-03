@@ -2,7 +2,7 @@
 /* https://github.com/readthedocs/sphinx-hoverxref/issues/231 */
 /* Inspired by https://github.com/pybamm-team/PyBaMM/pull/3083 */
 
-/* These will ensure that the tooltip inherits the sphinx-pydata-theme colours */
+/* These will ensure that the tooltip inherits the pydata-sphinx-theme colours */
 
 .tooltipster-sidetip.tooltipster-shadow .tooltipster-box {
     background: var(--pst-color-background) !important;

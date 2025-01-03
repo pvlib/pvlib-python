@@ -529,7 +529,7 @@ def get_ground_diffuse(surface_tilt, ghi, albedo=.25, surface_type=None):
     Parameters
     ----------
     surface_tilt : numeric
-        Surface tilt angles in decimal degrees. Tilt must be >=0 and
+        Surface tilt angles. [°] Tilt must be >=0 and
         <=180. The tilt angle is defined as degrees from horizontal
         (e.g. surface facing up = 0, surface facing horizon = 90).
 
@@ -640,12 +640,12 @@ def klucher(surface_tilt, surface_azimuth, dhi, ghi, solar_zenith,
     Parameters
     ----------
     surface_tilt : numeric
-        Surface tilt angles in decimal degrees. ``surface_tilt`` must be >=0
+        Surface tilt angles. [°] ``surface_tilt`` must be >=0
         and <=180. The tilt angle is defined as degrees from horizontal
         (e.g. surface facing up = 0, surface facing horizon = 90)
 
     surface_azimuth : numeric
-        Surface azimuth angles in decimal degrees. ``surface_azimuth`` must
+        Surface azimuth angles. [°] ``surface_azimuth`` must
         be >=0 and <=360. The Azimuth convention is defined as degrees
         east of north (e.g. North = 0, South=180 East = 90, West = 270).
 
@@ -660,7 +660,7 @@ def klucher(surface_tilt, surface_azimuth, dhi, ghi, solar_zenith,
         degrees. ``solar_zenith`` must be >=0 and <=180.
 
     solar_azimuth : numeric
-        Sun azimuth angles in decimal degrees. ``solar_azimuth`` must be >=0
+        Sun azimuth angles. [°] ``solar_azimuth`` must be >=0
         and <=360. The Azimuth convention is defined as degrees east of
         north (e.g. North = 0, East = 90, West = 270).
 
@@ -749,7 +749,7 @@ def haydavies(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
         :term:`surface_tilt`.
 
     surface_azimuth : numeric
-        Surface azimuth angles in decimal degrees. The azimuth
+        Surface azimuth angles. [°] The azimuth
         convention is defined as degrees east of north (e.g. North=0,
         South=180, East=90, West=270).
 
@@ -768,7 +768,7 @@ def haydavies(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
         supply ``projection_ratio``.
 
     solar_azimuth : numeric, optional
-        Solar azimuth angles in decimal degrees. Must supply
+        Solar azimuth angles. [°] Must supply
         ``solar_zenith`` and ``solar_azimuth`` or supply
         ``projection_ratio``.
 
@@ -887,12 +887,12 @@ def reindl(surface_tilt, surface_azimuth, dhi, dni, ghi, dni_extra,
     Parameters
     ----------
     surface_tilt : numeric
-        Surface tilt angles in decimal degrees. The tilt angle is
+        Surface tilt angles. [°] The tilt angle is
         defined as degrees from horizontal (e.g. surface facing up = 0,
         surface facing horizon = 90)
 
     surface_azimuth : numeric
-        Surface azimuth angles in decimal degrees. The azimuth
+        Surface azimuth angles. [°] The azimuth
         convention is defined as degrees east of north (e.g. North = 0,
         South=180 East = 90, West = 270).
 
@@ -909,10 +909,10 @@ def reindl(surface_tilt, surface_azimuth, dhi, dni, ghi, dni_extra,
         Extraterrestrial normal irradiance. [Wm⁻²]
 
     solar_zenith : numeric
-        Apparent (refraction-corrected) zenith angles in decimal degrees.
+        Apparent (refraction-corrected) zenith angles. [°]
 
     solar_azimuth : numeric
-        Sun azimuth angles in decimal degrees. The azimuth convention is
+        Sun azimuth angles. [°] The azimuth convention is
         defined as degrees east of north (e.g. North = 0, East = 90,
         West = 270).
 
@@ -1004,7 +1004,7 @@ def king(surface_tilt, dhi, ghi, solar_zenith):
     Parameters
     ----------
     surface_tilt : numeric
-        Surface tilt angles in decimal degrees. The tilt angle is
+        Surface tilt angles. [°] The tilt angle is
         defined as degrees from horizontal (e.g. surface facing up = 0,
         surface facing horizon = 90)
 
@@ -1015,7 +1015,7 @@ def king(surface_tilt, dhi, ghi, solar_zenith):
         Global horizontal irradiance. [Wm⁻²]
 
     solar_zenith : numeric
-        Apparent (refraction-corrected) zenith angles in decimal degrees.
+        Apparent (refraction-corrected) zenith angles. [°]
 
     Returns
     --------
@@ -1056,12 +1056,12 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
     Parameters
     ----------
     surface_tilt : numeric
-        Surface tilt angles in decimal degrees. surface_tilt must be >=0
+        Surface tilt angles. [°] surface_tilt must be >=0
         and <=180. The tilt angle is defined as degrees from horizontal
         (e.g. surface facing up = 0, surface facing horizon = 90)
 
     surface_azimuth : numeric
-        Surface azimuth angles in decimal degrees. surface_azimuth must
+        Surface azimuth angles. [°] surface_azimuth must
         be >=0 and <=360. The azimuth convention is defined as degrees
         east of north (e.g. North = 0, South=180 East = 90, West = 270).
 
@@ -1079,7 +1079,7 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
         degrees. solar_zenith must be >=0 and <=180.
 
     solar_azimuth : numeric
-        Sun azimuth angles in decimal degrees. solar_azimuth must be >=0
+        Sun azimuth angles. [°] solar_azimuth must be >=0
         and <=360. The azimuth convention is defined as degrees east of
         north (e.g. North = 0, East = 90, West = 270).
 
@@ -1322,12 +1322,12 @@ def perez_driesse(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
     Parameters
     ----------
     surface_tilt : numeric
-        Surface tilt angles in decimal degrees. surface_tilt must be >=0
+        Surface tilt angles. [°] surface_tilt must be >=0
         and <=180. The tilt angle is defined as degrees from horizontal
         (e.g. surface facing up = 0, surface facing horizon = 90)
 
     surface_azimuth : numeric
-        Surface azimuth angles in decimal degrees. surface_azimuth must
+        Surface azimuth angles. [°] surface_azimuth must
         be >=0 and <=360. The azimuth convention is defined as degrees
         east of north (e.g. North = 0, South=180 East = 90, West = 270).
 
@@ -1345,7 +1345,7 @@ def perez_driesse(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
         degrees. solar_zenith must be >=0 and <=180.
 
     solar_azimuth : numeric
-        Sun azimuth angles in decimal degrees. solar_azimuth must be >=0
+        Sun azimuth angles. [°] solar_azimuth must be >=0
         and <=360. The azimuth convention is defined as degrees east of
         north (e.g. North = 0, East = 90, West = 270).
 
@@ -2305,18 +2305,18 @@ def gti_dirint(poa_global, aoi, solar_zenith, solar_azimuth, times,
         degrees.
 
     solar_azimuth : array-like
-        Solar azimuth angles in decimal degrees.
+        Solar azimuth angles. [°]
 
     times : DatetimeIndex
         Time indices for the input array-like data
 
     surface_tilt : numeric
-        Surface tilt angles in decimal degrees. Tilt must be >=0 and
+        Surface tilt angles. [°] Tilt must be >=0 and
         <=180. The tilt angle is defined as degrees from horizontal
         (e.g. surface facing up = 0, surface facing horizon = 90).
 
     surface_azimuth : numeric
-        Surface azimuth angles in decimal degrees. surface_azimuth must
+        Surface azimuth angles. [°] surface_azimuth must
         be >=0 and <=360. The Azimuth convention is defined as degrees
         east of north (e.g. North = 0, South=180 East = 90, West = 270).
 
@@ -2628,7 +2628,7 @@ def erbs(ghi, zenith, datetime_or_doy, min_cos_zenith=0.065, max_zenith=87):
     ghi: numeric
         Global horizontal irradiance. [Wm⁻²]
     zenith: numeric
-        True (not refraction-corrected) zenith angles in decimal degrees.
+        True (not refraction-corrected) zenith angles. [°]
     datetime_or_doy : int, float, array, pd.DatetimeIndex
         Day of year or array of days of year e.g.
         pd.DatetimeIndex.dayofyear, or pd.DatetimeIndex.
@@ -2726,7 +2726,7 @@ def erbs_driesse(ghi, zenith, datetime_or_doy=None, dni_extra=None,
     ghi: numeric
         Global horizontal irradiance. [Wm⁻²]
     zenith: numeric
-        True (not refraction-corrected) zenith angles in decimal degrees.
+        True (not refraction-corrected) zenith angles. [°]
     datetime_or_doy : int, float, array or pd.DatetimeIndex, optional
         Day of year or array of days of year e.g.
         pd.DatetimeIndex.dayofyear, or pd.DatetimeIndex.
@@ -2847,7 +2847,7 @@ def orgill_hollands(ghi, zenith, datetime_or_doy, dni_extra=None,
     ghi: numeric
         Global horizontal irradiance. [Wm⁻²]
     zenith: numeric
-        True (not refraction-corrected) zenith angles in decimal degrees.
+        True (not refraction-corrected) zenith angles. [°]
     datetime_or_doy : int, float, array, pd.DatetimeIndex
         Day of year or array of days of year e.g.
         pd.DatetimeIndex.dayofyear, or pd.DatetimeIndex.
@@ -2940,7 +2940,7 @@ def boland(ghi, solar_zenith, datetime_or_doy, a_coeff=8.645, b_coeff=0.613,
     ghi: numeric
         Global horizontal irradiance. [Wm⁻²]
     solar_zenith: numeric
-        True (not refraction-corrected) zenith angles in decimal degrees.
+        True (not refraction-corrected) zenith angles. [°]
     datetime_or_doy : numeric, pandas.DatetimeIndex
         Day of year or array of days of year e.g.
         pd.DatetimeIndex.dayofyear, or pd.DatetimeIndex.

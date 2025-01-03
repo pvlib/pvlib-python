@@ -79,7 +79,7 @@ jobs:
         shell: bash -l {0}  # necessary for conda env to be active
         run: |
           # ignore iotools; those tests are run in a separate workflow
-          pytest pvlib --cov=./ --cov-report=xml --ignore=pvlib/tests/iotools
+          pytest pvlib --cov=./ --cov-report=xml --ignore=tests/iotools
 
       - name: Upload coverage to Codecov
         if: matrix.python-version == 3.9 && matrix.suffix == '' && matrix.os == 'ubuntu-latest' && matrix.environment-type == 'conda'

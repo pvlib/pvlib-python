@@ -83,7 +83,7 @@ coverage.xml
 # Datafiles
 # Do not exclude data directories
 !pvlib/data/**
-!pvlib/tests/data/**
+!tests/data/**
 
 # vi
 *.swp

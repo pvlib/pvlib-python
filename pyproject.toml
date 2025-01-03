@@ -92,7 +92,6 @@ include-package-data = false  # true by default
 
 [tool.setuptools.packages.find]
 include = ["pvlib*"]
-exclude = ["pvlib.tests*"]
 
 [tool.setuptools.package-data]
 pvlib = ["data/*"]
@@ -101,7 +100,7 @@ pvlib = ["data/*"]
 
 [tool.pytest]
 junit_family = "xunit2"
-testpaths = "pvlib/tests"
+testpaths = "tests"
 # warning messages to suppress from pytest output.  useful in cases
 # where a dependency hasn't addressed a deprecation yet, and there's
 # nothing we can do to fix it ourselves.

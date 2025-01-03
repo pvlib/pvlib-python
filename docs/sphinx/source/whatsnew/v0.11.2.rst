@@ -67,7 +67,7 @@ Documentation
 
 Testing
 ~~~~~~~
-* Moved data exclusively used in tests to ``pvlib/tests/data``.
+* Moved tests folder to `/tests` and data exclusively used for testing to `/tests/data`.
   (:issue:`2271`, :pull:`2277`)
 
 Requirements

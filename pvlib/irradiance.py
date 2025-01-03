@@ -58,8 +58,8 @@ def get_extra_radiation(datetime_or_doy, solar_constant=1366.1,
     Returns
     -------
     dni_extra : float, array, or Series
-        The extraterrestrial radiation present in watts per square meter
-        on a surface which is normal to the sun. Pandas Timestamp and
+        The extraterrestrial radiation normal to the sun. [Wm⁻²]
+        Pandas Timestamp and
         DatetimeIndex inputs will yield a Pandas TimeSeries. All other
         inputs will yield a float or an array of floats. See :term:`dni_extra`.
 

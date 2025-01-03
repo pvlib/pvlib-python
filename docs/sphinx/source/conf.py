@@ -56,10 +56,29 @@ extensions = [
     'sphinx_gallery.gen_gallery',
     'sphinx_toggleprompt',
     'sphinx_favicon',
+    'hoverxref.extension',
 ]
 
 mathjax3_config = {'chtml': {'displayAlign': 'left',
                              'displayIndent': '2em'}}
+
+# Example configuration for intersphinx: refer to the Python standard library.
+intersphinx_mapping = {
+    'python': ('https://docs.python.org/3/', None),
+    'numpy': ('https://numpy.org/doc/stable/', None),
+    'scipy': ('https://docs.scipy.org/doc/scipy/reference/', None),
+    'pandas': ('https://pandas.pydata.org/pandas-docs/stable', None),
+    'matplotlib': ('https://matplotlib.org/stable', None),
+}
+
+# Enable hover tooltips
+hoverxref_auto_ref = True
+hoverxref_roles = [
+    "class", "meth", "func", "ref", "term", "obj", "mod", "data"
+]
+hoverxref_role_types = dict.fromkeys(hoverxref_roles, "tooltip")
+hoverxref_domains = ["py"]
+hoverxref_intersphinx = list(intersphinx_mapping.keys())
 
 napoleon_use_rtype = False  # group rtype on same line together with return
 
@@ -356,15 +375,6 @@ texinfo_documents = [
 
 # If true, do not generate a @detailmenu in the "Top" node's menu.
 # texinfo_no_detailmenu = False
-
-# Example configuration for intersphinx: refer to the Python standard library.
-intersphinx_mapping = {
-    'python': ('https://docs.python.org/3/', None),
-    'numpy': ('https://numpy.org/doc/stable/', None),
-    'scipy': ('https://docs.scipy.org/doc/scipy/reference/', None),
-    'pandas': ('https://pandas.pydata.org/pandas-docs/stable', None),
-    'matplotlib': ('https://matplotlib.org/stable', None),
-}
 
 ipython_warning_is_error = False
 

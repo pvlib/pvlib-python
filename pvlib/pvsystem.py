@@ -17,7 +17,7 @@ from dataclasses import dataclass
 from abc import ABC, abstractmethod
 from typing import Optional, Union
 
-from pvlib._deprecation import deprecated, warn_deprecated
+from pvlib._deprecation import deprecated
 
 import pvlib  # used to avoid albedo name collision in the Array class
 from pvlib import (atmosphere, iam, inverter, irradiance,
@@ -104,22 +104,22 @@ class PVSystem:
     ----------
     arrays : Array or iterable of Array, optional
         An Array or list of arrays that are part of the system. If not
-        specified a single array is created from the other parameters (e.g.
+        specified, a single array is created from the other parameters (e.g.
         `surface_tilt`, `surface_azimuth`). If specified as a list, the list
         must contain at least one Array;
         if length of arrays is 0 a ValueError is raised. If `arrays` is
         specified the following PVSystem parameters are ignored:
 
-        - `surface_tilt`
-        - `surface_azimuth`
-        - `albedo`
-        - `surface_type`
-        - `module`
-        - `module_type`
-        - `module_parameters`
-        - `temperature_model_parameters`
-        - `modules_per_string`
-        - `strings_per_inverter`
+        - ``surface_tilt``
+        - ``surface_azimuth``
+        - ``albedo``
+        - ``surface_type``
+        - ``module``
+        - ``module_type``
+        - ``module_parameters``
+        - ``temperature_model_parameters``
+        - ``modules_per_string``
+        - ``strings_per_inverter``
 
     surface_tilt: float or array-like, default 0
         Surface tilt angles in decimal degrees.
@@ -127,7 +127,7 @@ class PVSystem:
         (e.g. surface facing up = 0, surface facing horizon = 90)
 
     surface_azimuth: float or array-like, default 180
-        Azimuth angle of the module surface.
+        Azimuth angle of the module surface in decimal degrees.
         North=0, East=90, South=180, West=270.
 
     albedo : float, optional
@@ -142,8 +142,6 @@ class PVSystem:
 
     module : string, optional
         The model name of the modules.
-        May be used to look up the module_parameters dictionary
-        via some other method.
 
     module_type : string, default 'glass_polymer'
          Describes the module's construction. Valid strings are 'glass_polymer'
@@ -154,7 +152,8 @@ class PVSystem:
 
     temperature_model_parameters : dict or Series, optional
         Temperature model parameters as required by one of the models in
-        pvlib.temperature (excluding poa_global, temp_air and wind_speed).
+        :py:mod:`pvlib.temperature` (excluding ``poa_global``, ``temp_air`` and
+        ``wind_speed``).
 
     modules_per_string: int or float, default 1
         See system topology discussion above.
@@ -164,15 +163,17 @@ class PVSystem:
 
     inverter : string, optional
         The model name of the inverters.
-        May be used to look up the inverter_parameters dictionary
-        via some other method.
 
     inverter_parameters : dict or Series, optional
         Inverter parameters as defined by the SAPM, CEC, or other.
 
-    racking_model : string, default 'open_rack'
-        Valid strings are 'open_rack', 'close_mount', and 'insulated_back'.
-        Used to identify a parameter set for the SAPM cell temperature model.
+    racking_model : string, optional
+        Valid strings are ``'open_rack'``, ``'close_mount'``,
+        ``'insulated_back'``, ``'freestanding'`` and ``'insulated'``.
+        Used to identify a parameter set for the SAPM or PVsyst cell
+        temperature model.
+        See :py:func:`~pvlib.temperature.sapm_module` and
+        :py:func:`~pvlib.temperature.pvsyst_cell` for definitions.
 
     losses_parameters : dict or Series, optional
         Losses parameters as defined by PVWatts or other.
@@ -186,7 +187,7 @@ class PVSystem:
     Raises
     ------
     ValueError
-        If `arrays` is not None and has length 0.
+        If ``arrays`` is not None and has length 0.
 
     See also
     --------
@@ -1395,8 +1396,12 @@ class FixedMount(AbstractMount):
         West=270. [degrees]
 
     racking_model : str, optional
-        Valid strings are 'open_rack', 'close_mount', and 'insulated_back'.
-        Used to identify a parameter set for the SAPM cell temperature model.
+        Valid strings are ``'open_rack'``, ``'close_mount'``,
+        ``'insulated_back'``, ``'freestanding'`` and ``'insulated'``.
+        Used to identify a parameter set for the SAPM or PVsyst cell
+        temperature model.
+        See :py:func:`~pvlib.temperature.sapm_module`  and
+        :py:func:`~pvlib.temperature.pvsyst_cell` for definitions.
 
     module_height : float, optional
        The height above ground of the center of the module [m]. Used for
@@ -1472,8 +1477,13 @@ class SingleAxisTrackerMount(AbstractMount):
         `cross_axis_tilt`. [degrees]
 
     racking_model : str, optional
-        Valid strings are 'open_rack', 'close_mount', and 'insulated_back'.
-        Used to identify a parameter set for the SAPM cell temperature model.
+        Valid strings are ``'open_rack'``, ``'close_mount'``,
+        ``'insulated_back'``, ``'freestanding'`` and ``'insulated'``.
+        Used to identify a parameter set for the SAPM or PVsyst cell
+        temperature model. ``'open_rack'`` or ``'freestanding'`` should
+        be used for systems with single-axis trackers.
+        See :py:func:`~pvlib.temperature.sapm_module` and
+        :py:func:`~pvlib.temperature.pvsyst_cell` for definitions.
 
     module_height : float, optional
        The height above ground of the center of the module [m]. Used for
@@ -1986,10 +1996,10 @@ def retrieve_sam(name=None, path=None):
 
     This function will retrieve either:
 
-        * CEC module database
-        * Sandia Module database
-        * CEC Inverter database
-        * Anton Driesse Inverter database
+    * CEC module database
+    * Sandia Module database
+    * CEC Inverter database
+    * Anton Driesse Inverter database
 
     and return it as a pandas DataFrame.
 
@@ -2002,20 +2012,20 @@ def retrieve_sam(name=None, path=None):
         Use one of the following strings to retrieve a database bundled with
         pvlib:
 
-        * 'CECMod' - returns the CEC module database
-        * 'CECInverter' - returns the CEC Inverter database
-        * 'SandiaInverter' - returns the CEC Inverter database
+        * ``'CECMod'`` - returns the CEC module database
+        * ``'CECInverter'`` - returns the CEC Inverter database
+        * ``'SandiaInverter'`` - returns the CEC Inverter database
           (CEC is only current inverter db available; tag kept for
           backwards compatibility)
-        * 'SandiaMod' - returns the Sandia Module database
-        * 'ADRInverter' - returns the ADR Inverter database
+        * ``'SandiaMod'`` - returns the Sandia Module database
+        * ``'ADRInverter'`` - returns the ADR Inverter database
 
     path : string, optional
         Path to a CSV file or a URL.
 
     Returns
     -------
-    samfile : DataFrame
+    DataFrame
         A DataFrame containing all the elements of the desired database.
         Each column represents a module or inverter, and a specific
         dataset can be retrieved by the command
@@ -2033,14 +2043,13 @@ def retrieve_sam(name=None, path=None):
     -----
     Files available at
         https://github.com/NREL/SAM/tree/develop/deploy/libraries
-    Documentation for module and inverter data sets:
-        https://sam.nrel.gov/photovoltaic/pv-sub-page-2.html
 
     Examples
     --------
+    Using a database bundled with pvlib:
 
     >>> from pvlib import pvsystem
-    >>> invdb = pvsystem.retrieve_sam('CECInverter')
+    >>> invdb = pvsystem.retrieve_sam(name='CECInverter')
     >>> inverter = invdb.AE_Solar_Energy__AE6_0__277V_
     >>> inverter
     Vac                          277
@@ -2060,7 +2069,15 @@ def retrieve_sam(name=None, path=None):
     CEC_Date                     NaN
     CEC_Type     Utility Interactive
     Name: AE_Solar_Energy__AE6_0__277V_, dtype: object
-    """
+
+    Using a remote database, via URL:
+
+    >>> url = "https://raw.githubusercontent.com/NREL/SAM/refs/heads/develop/deploy/libraries/CEC%20Inverters.csv"
+    >>> inv_db = pvsystem.retrieve_sam(path=url)
+    >>> inv_db.keys()
+    Index(['ABB__PVI_3_0_OUTD_S_US_A__208V_', 'ABB__PVI_3_0_OUTD_S_US_A__240V_', ...],
+          dtype='object', length=...)
+    """  # noqa: E501
     # error: path was previously silently ignored if name was given GH#2018
     if name is not None and path is not None:
         raise ValueError("Please provide either 'name' or 'path', not both.")

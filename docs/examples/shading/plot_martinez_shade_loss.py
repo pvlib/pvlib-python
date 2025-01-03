@@ -47,7 +47,7 @@ import pvlib
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.dates import ConciseDateFormatter
+from matplotlib.dates import DateFormatter
 
 pitch = 4  # meters
 width = 1.5  # meters
@@ -235,10 +235,6 @@ for k, shade_losses in shade_losses_per_module.items():
     ax1.plot(times, shade_losses, label=k, linestyle=linestyle)
 ax1.legend(loc="upper center")
 ax1.grid()
-ax1.set_xlabel("Time")
-ax1.xaxis.set_major_formatter(
-    ConciseDateFormatter("%H:%M", tz="Europe/Madrid")
-)
 ax1.set_ylabel(r"$P_{out}$ losses")
 ax1.set_title("Per module")
 
@@ -248,9 +244,7 @@ for k, shade_losses in shade_losses_per_row.items():
 ax2.legend(loc="upper center")
 ax2.grid()
 ax2.set_xlabel("Time")
-ax2.xaxis.set_major_formatter(
-    ConciseDateFormatter("%H:%M", tz="Europe/Madrid")
-)
+ax2.xaxis.set_major_formatter(DateFormatter("%H:%M", tz="Europe/Madrid"))
 ax2.set_ylabel(r"$P_{out}$ losses")
 ax2.set_title("Per row")
 fig.tight_layout()

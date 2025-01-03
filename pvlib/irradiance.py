@@ -16,7 +16,7 @@ from scipy.optimize import bisect
 from pvlib import atmosphere, solarposition, tools
 import pvlib  # used to avoid dni name collision in complete_irradiance
 
-from pvlib._deprecation import pvlibDeprecationWarning
+from pvlib._deprecation import pvlibDeprecationWarning, renamed_kwarg_warning
 import warnings
 
 
@@ -244,7 +244,7 @@ def beam_component(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
     solar_azimuth : numeric
         Solar azimuth angle.
     dni : numeric
-        Direct Normal Irradiance
+        Direct normal irradiance, see :term:`dni`. [Wm⁻²]
 
     Returns
     -------
@@ -1528,7 +1528,7 @@ def _ghi_from_poa(surface_tilt, surface_azimuth,
 def ghi_from_poa_driesse_2023(surface_tilt, surface_azimuth,
                               solar_zenith, solar_azimuth,
                               poa_global,
-                              dni_extra=None, airmass=None, albedo=0.25,
+                              dni_extra, airmass=None, albedo=0.25,
                               xtol=0.01,
                               full_output=False):
     '''
@@ -1549,7 +1549,7 @@ def ghi_from_poa_driesse_2023(surface_tilt, surface_azimuth,
         Solar azimuth angle. [degree]
     poa_global : numeric
         Plane-of-array global irradiance, aka global tilted irradiance. [Wm⁻²]
-    dni_extra : numeric, optional
+    dni_extra : numeric
         Extraterrestrial direct normal irradiance. [Wm⁻²]
     airmass : numeric, optional
         Relative airmass (not adjusted for pressure). [unitless]
@@ -1614,7 +1614,12 @@ def ghi_from_poa_driesse_2023(surface_tilt, surface_azimuth,
         return ghi
 
 
-def clearsky_index(ghi, clearsky_ghi, max_clearsky_index=2.0):
+@renamed_kwarg_warning(
+    since='0.11.2',
+    old_param_name='clearsky_ghi',
+    new_param_name='ghi_clear',
+    removal="0.13.0")
+def clearsky_index(ghi, ghi_clear, max_clearsky_index=2.0):
     """
     Calculate the clearsky index.
 
@@ -1626,8 +1631,11 @@ def clearsky_index(ghi, clearsky_ghi, max_clearsky_index=2.0):
     ghi : numeric
         Global horizontal irradiance. [Wm⁻²]
 
-    clearsky_ghi : numeric
+    ghi_clear : numeric
         Modeled clearsky GHI
+
+        .. versionchanged:: 0.11.2
+            Renamed from ``ghi_clearsky`` to ``ghi_clear``.
 
     max_clearsky_index : numeric, default 2.0
         Maximum value of the clearsky index. The default, 2.0, allows
@@ -1638,12 +1646,12 @@ def clearsky_index(ghi, clearsky_ghi, max_clearsky_index=2.0):
     clearsky_index : numeric
         Clearsky index
     """
-    clearsky_index = ghi / clearsky_ghi
+    clearsky_index = ghi / ghi_clear
     # set +inf, -inf, and nans to zero
     clearsky_index = np.where(~np.isfinite(clearsky_index), 0,
                               clearsky_index)
     # but preserve nans in the input arrays
-    input_is_nan = ~np.isfinite(ghi) | ~np.isfinite(clearsky_ghi)
+    input_is_nan = ~np.isfinite(ghi) | ~np.isfinite(ghi_clear)
     clearsky_index = np.where(input_is_nan, np.nan, clearsky_index)
 
     clearsky_index = np.maximum(clearsky_index, 0)
@@ -2151,7 +2159,17 @@ def _dirint_bins(times, kt_prime, zenith, w, delta_kt_prime):
     return kt_prime_bin, zenith_bin, w_bin, delta_kt_prime_bin
 
 
-def dirindex(ghi, ghi_clearsky, dni_clearsky, zenith, times, pressure=101325.,
+@renamed_kwarg_warning(
+    since='0.11.2',
+    old_param_name='ghi_clearsky',
+    new_param_name='ghi_clear',
+    removal="0.13.0")
+@renamed_kwarg_warning(
+    since='0.11.2',
+    old_param_name='dni_clearsky',
+    new_param_name='dni_clear',
+    removal="0.13.0")
+def dirindex(ghi, ghi_clear, dni_clear, zenith, times, pressure=101325.,
              use_delta_kt_prime=True, temp_dew=None, min_cos_zenith=0.065,
              max_zenith=87):
     """
@@ -2159,7 +2177,7 @@ def dirindex(ghi, ghi_clearsky, dni_clearsky, zenith, times, pressure=101325.,
 
     The DIRINDEX model [1]_ modifies the DIRINT model implemented in
     :py:func:`pvlib.irradiance.dirint` by taking into account information
-    from a clear sky model. It is recommended that ``ghi_clearsky`` be
+    from a clear sky model. It is recommended that ``ghi_clear`` be
     calculated using the Ineichen clear sky model
     :py:func:`pvlib.clearsky.ineichen` with ``perez_enhancement=True``.
 
@@ -2170,11 +2188,17 @@ def dirindex(ghi, ghi_clearsky, dni_clearsky, zenith, times, pressure=101325.,
     ghi : array-like
         Global horizontal irradiance. [Wm⁻²]
 
-    ghi_clearsky : array-like
+    ghi_clear : array-like
         Global horizontal irradiance from clear sky model. [Wm⁻²]
 
-    dni_clearsky : array-like
+        .. versionchanged:: 0.11.2
+            Renamed from ``ghi_clearsky`` to ``ghi_clear``.
+
+    dni_clear : array-like
         Direct normal irradiance from clear sky model. [Wm⁻²]
+
+        .. versionchanged:: 0.11.2
+            Renamed from ``dni_clearsky`` to ``dni_clear``.
 
     zenith : array-like
         True (not refraction-corrected) zenith angles in decimal
@@ -2232,14 +2256,14 @@ def dirindex(ghi, ghi_clearsky, dni_clearsky, zenith, times, pressure=101325.,
                         temp_dew=temp_dew, min_cos_zenith=min_cos_zenith,
                         max_zenith=max_zenith)
 
-    dni_dirint_clearsky = dirint(ghi_clearsky, zenith, times,
+    dni_dirint_clearsky = dirint(ghi_clear, zenith, times,
                                  pressure=pressure,
                                  use_delta_kt_prime=use_delta_kt_prime,
                                  temp_dew=temp_dew,
                                  min_cos_zenith=min_cos_zenith,
                                  max_zenith=max_zenith)
 
-    dni_dirindex = dni_clearsky * dni_dirint / dni_dirint_clearsky
+    dni_dirindex = dni_clear * dni_dirint / dni_dirint_clearsky
 
     dni_dirindex[dni_dirindex < 0] = 0.
 
@@ -3611,7 +3635,12 @@ def _get_dirint_coeffs():
     return coeffs[1:, 1:, :, :]
 
 
-def dni(ghi, dhi, zenith, clearsky_dni=None, clearsky_tolerance=1.1,
+@renamed_kwarg_warning(
+    since='0.11.2',
+    old_param_name='clearsky_dni',
+    new_param_name='dni_clear',
+    removal="0.13.0")
+def dni(ghi, dhi, zenith, dni_clear=None, clearsky_tolerance=1.1,
         zenith_threshold_for_zero_dni=88.0,
         zenith_threshold_for_clearsky_limit=80.0):
     """
@@ -3635,11 +3664,14 @@ def dni(ghi, dhi, zenith, clearsky_dni=None, clearsky_tolerance=1.1,
         True (not refraction-corrected) zenith angles in decimal
         degrees. Angles must be >=0 and <=180.
 
-    clearsky_dni : Series, optional
-        Clearsky direct normal irradiance.
+    dni_clear : Series, optional
+        Clearsky direct normal irradiance. [Wm⁻²]
+
+        .. versionchanged:: 0.11.2
+            Renamed from ``clearsky_dni`` to ``dni_clear``.
 
     clearsky_tolerance : float, default 1.1
-        If 'clearsky_dni' is given this parameter can be used to allow a
+        If ``dni_clear`` is given this parameter can be used to allow a
         tolerance by how much the calculated DNI value can be greater than
         the clearsky value before it is identified as an unreasonable value.
 
@@ -3652,7 +3684,7 @@ def dni(ghi, dhi, zenith, clearsky_dni=None, clearsky_tolerance=1.1,
         'zenith_threshold_for_clearsky_limit' and smaller the
         'zenith_threshold_for_zero_dni' that are greater than the clearsky DNI
         (times allowed tolerance) will be corrected. Only applies if
-        'clearsky_dni' is not None.
+        ``dni_clear`` is not None.
 
     Returns
     -------
@@ -3674,8 +3706,8 @@ def dni(ghi, dhi, zenith, clearsky_dni=None, clearsky_tolerance=1.1,
     # zenith_threshold_for_clearsky_limit and smaller than the
     # upper_cutoff_zenith that are greater than the clearsky DNI (times
     # clearsky_tolerance)
-    if clearsky_dni is not None:
-        max_dni = clearsky_dni * clearsky_tolerance
+    if dni_clear is not None:
+        max_dni = dni_clear * clearsky_tolerance
         dni[(zenith >= zenith_threshold_for_clearsky_limit) &
             (zenith < zenith_threshold_for_zero_dni) &
             (dni > max_dni)] = max_dni
@@ -3716,8 +3748,8 @@ def complete_irradiance(solar_zenith,
         Pandas series of dni data, with datetime index. Must have the same
         datetime index as ghi, dhi, and zenith series, when available.
     dni_clear : Series, optional
-        Pandas series of clearsky dni data. Must have the same datetime index
-        as ghi, dhi, dni, and zenith series, when available. See
+        Pandas series of clearsky dni data [Wm⁻²]. Must have the same datetime
+        index as ghi, dhi, dni, and zenith series, when available. See
         :py:func:`dni` for details.
 
     Returns
@@ -3727,7 +3759,7 @@ def complete_irradiance(solar_zenith,
     """
     if ghi is not None and dhi is not None and dni is None:
         dni = pvlib.irradiance.dni(ghi, dhi, solar_zenith,
-                                   clearsky_dni=dni_clear,
+                                   dni_clear=dni_clear,
                                    clearsky_tolerance=1.1)
     elif dni is not None and dhi is not None and ghi is None:
         ghi = (dhi + dni * tools.cosd(solar_zenith))

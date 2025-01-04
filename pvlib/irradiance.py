@@ -534,7 +534,7 @@ def get_ground_diffuse(surface_tilt, ghi, albedo=.25, surface_type=None):
         (e.g. surface facing up = 0, surface facing horizon = 90).
 
     ghi : numeric
-        Global horizontal irradiance. [Wm⁻²]
+        Global horizontal irradiance. [Wm⁻²] 
 
     albedo : numeric, default 0.25
         Ground reflectance, typically 0.1-0.4 for surfaces on Earth
@@ -602,12 +602,13 @@ def isotropic(surface_tilt, dhi):
     Parameters
     ----------
     surface_tilt : numeric
-        Surface tilt angle in decimal degrees. Tilt must be >=0 and
+        Surface tilt angle. [°] Tilt must be >=0 and
         <=180. The tilt angle is defined as degrees from horizontal
-        (e.g. surface facing up = 0, surface facing horizon = 90)
+        (e.g. surface facing up = 0, surface facing horizon = 90).
+        See :term:`surface_tilt`.
 
     dhi : numeric
-        Diffuse horizontal irradiance. [Wm⁻²] DHI must be >=0.
+        Diffuse horizontal irradiance. [Wm⁻²] DHI must be >=0. See :term:`dhi`.
 
     Returns
     -------
@@ -656,8 +657,8 @@ def klucher(surface_tilt, surface_azimuth, dhi, ghi, solar_zenith,
         Global horizontal irradiance, must be >=0. [Wm⁻²]
 
     solar_zenith : numeric
-        Apparent (refraction-corrected) zenith angles in decimal
-        degrees. ``solar_zenith`` must be >=0 and <=180.
+        Apparent (refraction-corrected) zenith angles. [°]
+        ``solar_zenith`` must be >=0 and <=180. See :term:`solar_zenith`.
 
     solar_azimuth : numeric
         Sun azimuth angles. [°] ``solar_azimuth`` must be >=0
@@ -745,22 +746,21 @@ def haydavies(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
     Parameters
     ----------
     surface_tilt : numeric
-        Panel tilt from the horizontal, in decimal degrees, see
-        :term:`surface_tilt`.
+        Panel tilt from the horizontal. [°] See :term:`surface_tilt`.
 
     surface_azimuth : numeric
         Surface azimuth angles. [°] The azimuth
         convention is defined as degrees east of north (e.g. North=0,
-        South=180, East=90, West=270).
+        South=180, East=90, West=270). See :term:`surface_azimuth`.
 
     dhi : numeric
-        Diffuse horizontal irradiance. [Wm⁻²]
+        Diffuse horizontal irradiance. [Wm⁻²] See :term:`dhi`.
 
     dni : numeric
         Direct normal irradiance, see :term:`dni`. [Wm⁻²]
 
     dni_extra : numeric
-        Extraterrestrial normal irradiance. [Wm⁻²]
+        Extraterrestrial normal irradiance, see :term:`dni_extra`. [Wm⁻²]
 
     solar_zenith : numeric, optional
         Solar apparent (refraction-corrected) zenith angles in decimal
@@ -3660,17 +3660,17 @@ def dni(ghi, dhi, zenith, dni_clear=None, clearsky_tolerance=1.1,
     Parameters
     ----------
     ghi : Series
-        Global horizontal irradiance.
+        Global horizontal irradiance. [Wm⁻²] See :term:`ghi`.
 
     dhi : Series
-        Diffuse horizontal irradiance.
+        Diffuse horizontal irradiance. [Wm⁻²] See :term:`dhi`.
 
     zenith : Series
         True (not refraction-corrected) zenith angles in decimal
         degrees. Angles must be >=0 and <=180.
 
     dni_clear : Series, optional
-        Clearsky direct normal irradiance. [Wm⁻²]
+        Clearsky direct normal irradiance. [Wm⁻²] See :term:`dni_clear`.
 
         .. versionchanged:: 0.11.2
             Renamed from ``clearsky_dni`` to ``dni_clear``.

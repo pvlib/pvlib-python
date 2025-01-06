@@ -346,7 +346,7 @@ def test_with_pvwatts(pvwatts_dc_pvwatts_ac_system, location, weather):
 
 
 def test_run_model_with_irradiance(sapm_dc_snl_ac_system, location):
-    mc = ModelChain(sapm_dc_snl_ac_system, location)
+    mc = ModelChain(sapm_dc_snl_ac_system, location, spectral_model='sapm')
     times = pd.date_range('20160101 1200-0700', periods=2, freq='6h')
     irradiance = pd.DataFrame({'dni': 900, 'ghi': 600, 'dhi': 150},
                               index=times)
@@ -629,9 +629,13 @@ def test_run_model_arrays_weather(sapm_dc_snl_ac_system_same_arrays,
 
 
 def test_run_model_perez(sapm_dc_snl_ac_system, location):
-    mc = ModelChain(sapm_dc_snl_ac_system, location,
-                    transposition_model='perez')
-    times = pd.date_range('20160101 1200-0700', periods=2, freq='6h')
+    mc = ModelChain(
+        sapm_dc_snl_ac_system,
+        location,
+        transposition_model="perez",
+        spectral_model="sapm",
+    )
+    times = pd.date_range("20160101 1200-0700", periods=2, freq="6h")
     irradiance = pd.DataFrame({'dni': 900, 'ghi': 600, 'dhi': 150},
                               index=times)
     ac = mc.run_model(irradiance).results.ac
@@ -642,10 +646,14 @@ def test_run_model_perez(sapm_dc_snl_ac_system, location):
 
 
 def test_run_model_gueymard_perez(sapm_dc_snl_ac_system, location):
-    mc = ModelChain(sapm_dc_snl_ac_system, location,
-                    airmass_model='gueymard1993',
-                    transposition_model='perez')
-    times = pd.date_range('20160101 1200-0700', periods=2, freq='6h')
+    mc = ModelChain(
+        sapm_dc_snl_ac_system,
+        location,
+        airmass_model="gueymard1993",
+        transposition_model="perez",
+        spectral_model="sapm",
+    )
+    times = pd.date_range("20160101 1200-0700", periods=2, freq="6h")
     irradiance = pd.DataFrame({'dni': 900, 'ghi': 600, 'dhi': 150},
                               index=times)
     ac = mc.run_model(irradiance).results.ac
@@ -1271,12 +1279,16 @@ def test_infer_spectral_model(location, sapm_dc_snl_ac_system,
 def test_infer_spectral_model_with_weather(location, sapm_dc_snl_ac_system,
                                            cec_dc_snl_ac_system, weather):
     # instantiate example ModelChain to get the default spectral model
-    # inferred without weather available by default
-    # - should resolve to sapm
+    # default should resolve to no loss
     mc = ModelChain(sapm_dc_snl_ac_system, location, aoi_model='physical')
     assert mc.spectral_model == mc.sapm_spectral_loss
-    # - should resolve to no loss
-    mc = ModelChain(cec_dc_snl_ac_system, location, aoi_model='physical')
+    # - next inference should resolve to no loss
+    mc = ModelChain(
+        cec_dc_snl_ac_system,
+        location,
+        aoi_model="physical",
+        spectral_model=None,
+    )
     assert mc.spectral_model == mc.no_spectral_loss
 
     # infer spectral model from weather
@@ -2008,9 +2020,9 @@ def test__irrad_for_celltemp():
 
 
 def test_ModelChain___repr__(sapm_dc_snl_ac_system, location):
-
-    mc = ModelChain(sapm_dc_snl_ac_system, location,
-                    name='my mc')
+    mc = ModelChain(
+        sapm_dc_snl_ac_system, location, name="my mc", spectral_model="sapm"
+    )
 
     expected = '\n'.join([
         'ModelChain: ',

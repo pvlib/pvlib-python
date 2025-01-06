@@ -29,7 +29,7 @@ POA_KEYS = ('poa_global', 'poa_direct', 'poa_diffuse')
 
 # Optional keys to communicate temperature data. If provided,
 # 'cell_temperature' overrides ModelChain.temperature_model and sets
-# ModelChain.cell_temperature to the data. If 'module_temperature' is provdied,
+# ModelChain.cell_temperature to the data. If 'module_temperature' is provided,
 # overrides ModelChain.temperature_model with
 # pvlib.temperature.sapm_celL_from_module
 TEMPERATURE_KEYS = ('module_temperature', 'cell_temperature')
@@ -330,7 +330,7 @@ class ModelChain:
         'interp' and 'no_loss'. The ModelChain instance will be passed as the
         first argument to a user-defined function.
 
-    spectral_model : str or function, optional
+    spectral_model : str or function, default ``'no_loss'``
         Valid strings are:
 
         - ``'sapm'``
@@ -339,8 +339,6 @@ class ModelChain:
 
         The ModelChain instance will be passed as the first argument to
         a user-defined function.
-
-        By default, it will be inferred from the system attributes only.
 
         See :py:func:`~pvlib.modelchain.ModelChain.infer_spectral_model` to
         infer the spectral model from system and weather information.
@@ -369,7 +367,7 @@ class ModelChain:
                  solar_position_method='nrel_numpy',
                  airmass_model='kastenyoung1989',
                  dc_model=None, ac_model=None, aoi_model=None,
-                 spectral_model=None, temperature_model=None,
+                 spectral_model='no_loss', temperature_model=None,
                  dc_ohmic_model='no_loss',
                  losses_model='no_loss', name=None):
 
@@ -873,9 +871,9 @@ class ModelChain:
             else:
                 raise ValueError(model + ' is not a valid spectral loss model')
         elif model is None:
-            # uses recursive setter to infer model, which returns a string
-            self.spectral_model = self.infer_spectral_model(weather=None)
-        else:  # assume model is a callable
+            # not setting a model is equivalent to setting no_loss
+            self._spectral_model = self.no_spectral_loss
+        else:  # assume model is callable with 1st argument = the MC instance
             self._spectral_model = partial(model, self)
 
     def infer_spectral_model(self, weather=None):

@@ -341,7 +341,7 @@ class ModelChain:
         a user-defined function.
 
         See :py:func:`~pvlib.modelchain.ModelChain.infer_spectral_model` to
-        infer the spectral model from system and weather information.
+        get a list of available spectral models for the current system.
 
     temperature_model : str or function, optional
         Valid strings are: 'sapm', 'pvsyst', 'faiman', 'fuentes', 'noct_sam'.
@@ -878,8 +878,10 @@ class ModelChain:
 
     def infer_spectral_model(self, weather=None):
         """
-        Infer spectral model from system attributes, and optionally from
-        the input weather dataframe, and set it to the ``ModelChain`` instance.
+        Return a spectral model key or a list of possible spectral models based
+        on the system attributes and weather data. If the weather data is not
+        provided, the spectral model will be inferred from the system
+        attributes only.
 
         Parameters
         ----------
@@ -890,35 +892,56 @@ class ModelChain:
 
         Returns
         -------
-        Inferred spectral correction model : string key for model setter
+        Inferred spectral correction model : string key or list of string keys
+            If no spectral model is inferred, 'no_loss' is returned.
+            If only one spectral model is inferred, a string key is returned.
+            If multiple spectral models are inferred, a list of string keys is
+            returned.
+
+            The following spectral models keys may be returned:
+
+            - ``'sapm'`` for
+              :py:func:`~pvlib.spectrum.spectral_factor_sapm`
+            - ``'first_solar'`` for
+              :py:func:`~pvlib.spectrum.spectral_factor_first_solar`.
+              Requires ``'precipitable_water'`` in the weather dataframe.
+
+            If no spectral model is inferred, 'no_loss' is returned.
 
         Examples
         --------
         >>> mc = ModelChain(system, location)
         >>> mc.spectral_model = mc.infer_spectral_model(weather=weather)
         """
+        possible_models_result = []  # list of possible spectral models
         module_parameters = tuple(
             array.module_parameters for array in self.system.arrays
         )
         params = _common_keys(module_parameters)
-        if {"A4", "A3", "A2", "A1", "A0"} <= params:
-            return "sapm"
-        elif "first_solar_spectral_coefficients" in params:
-            # user explicitly sets spectral coefficients
-            return "first_solar"
-        elif (
-            # cell type is known or can be inferred
-            ("Technology" in params or "Material" in params)
-            and (self.system._infer_cell_type() is not None)
-        ):
-            # This suggests models that provide default parameters per cell
-            # type can be used. However, some models depend on other weather
-            # parameters, so we need to check if they are available.
-            if weather is not None:  # weather is available
-                if "precipitable_water" in weather:
-                    return "first_solar"
 
-        return "no_loss"
+        # infer all the possible spectral models and append them to the list
+        if {"A4", "A3", "A2", "A1", "A0"} <= params:
+            possible_models_result.append("sapm")
+        if weather is not None:  # models that depend on weather data
+            if "precipitable_water" in weather:
+                if "first_solar_spectral_coefficients" in params:
+                    # user explicitly sets first solar spectral coefficients
+                    possible_models_result.append("first_solar")
+                # cell type is known or can be inferred
+                if ("Technology" in params or "Material" in params) and (
+                    self.system._infer_cell_type() is not None
+                ):
+                    possible_models_result.append("first_solar")
+
+        # result resolution based on the number of inferred spectral models
+        if (result_len := len(possible_models_result)) == 0:
+            # if no spectral model is inferred, return no_loss
+            return "no_loss"
+        elif result_len == 1:
+            # when only one spectral model is inferred, return it
+            return possible_models_result[0]
+        else:  # multiple spectral models are inferred (avoiding duplicates)
+            return list(set(possible_models_result))
 
     def first_solar_spectral_loss(self):
         self.results.spectral_modifier = self.system.first_solar_spectral_loss(

@@ -1281,6 +1281,9 @@ def test_infer_spectral_model_with_weather(location, sapm_dc_snl_ac_system,
     # instantiate example ModelChain to get the default spectral model
     # default should resolve to no loss
     mc = ModelChain(sapm_dc_snl_ac_system, location, aoi_model='physical')
+    assert mc.spectral_model == mc.no_spectral_loss
+    # - inference should resolve to sapm
+    mc.spectral_model = mc.infer_spectral_model(weather=weather)
     assert mc.spectral_model == mc.sapm_spectral_loss
     # - next inference should resolve to no loss
     mc = ModelChain(
@@ -1289,6 +1292,7 @@ def test_infer_spectral_model_with_weather(location, sapm_dc_snl_ac_system,
         aoi_model="physical",
         spectral_model=None,
     )
+    mc.spectral_model = mc.infer_spectral_model(weather=weather)
     assert mc.spectral_model == mc.no_spectral_loss
 
     # infer spectral model from weather

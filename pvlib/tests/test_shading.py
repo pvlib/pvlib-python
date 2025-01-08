@@ -258,7 +258,7 @@ def sf1d_premises_and_expected():
         ),
     )  # fmt: skip
 
-    test_data["cross_axis_slope"] = atand(
+    test_data["cross_axis_tilt"] = atand(
         (test_data["z_R"] - test_data["z_L"])
         / (test_data["x_L"] - test_data["x_R"])
     )
@@ -314,7 +314,7 @@ def test_shaded_fraction1d_unprovided_shading_row_rotation():
     test_data = pd.DataFrame(
         columns=[
             "shaded_row_rotation", "surface_to_axis_offset", "collector_width",
-            "solar_zenith", "cross_axis_slope", "pitch", "solar_azimuth",
+            "solar_zenith", "cross_axis_tilt", "pitch", "solar_azimuth",
             "axis_azimuth", "expected_sf",
         ],
         data=[

@@ -116,7 +116,7 @@ shaded_fraction = pvlib.shading.shaded_fraction1d(
     shading_row_rotation=tracker_theta,
     collector_width=width,
     pitch=pitch,
-    cross_axis_slope=cross_axis_tilt,
+    cross_axis_tilt=cross_axis_tilt,
 )
 
 # %%

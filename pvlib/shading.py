@@ -354,7 +354,7 @@ def shaded_fraction1d(
     pitch,
     axis_tilt=0,
     surface_to_axis_offset=0,
-    cross_axis_slope=0,
+    cross_axis_tilt=0,
     shading_row_rotation=None,
 ):
     r"""
@@ -397,7 +397,7 @@ def shaded_fraction1d(
     surface_to_axis_offset : numeric, default 0
         Distance between the rotating axis and the collector surface.
         May be used to account for a torque tube offset.
-    cross_axis_slope : numeric, default 0
+    cross_axis_tilt : numeric, default 0
         Angle of the plane containing the rows' axes from
         horizontal. Right-handed rotation with respect to the rows axes.
         In degrees :math:`^{\circ}`.
@@ -430,7 +430,7 @@ def shaded_fraction1d(
     +------------------+----------------------------+                     |
     | :math:`\theta_2` | ``shaded_row_rotation``    | Degrees             |
     +------------------+----------------------------+ :math:`^{\circ}`    |
-    | :math:`\beta_c`  | ``cross_axis_slope``       |                     |
+    | :math:`\beta_c`  | ``cross_axis_tilt``        |                     |
     +------------------+----------------------------+---------------------+
     | :math:`p`        | ``pitch``                  | Any consistent      |
     +------------------+----------------------------+ length unit across  |
@@ -452,7 +452,7 @@ def shaded_fraction1d(
     >>> shaded_fraction1d(solar_zenith=80, solar_azimuth=135,
     ...     axis_azimuth=90, shaded_row_rotation=30, shading_row_rotation=30,
     ...     collector_width=2, pitch=3, axis_tilt=0,
-    ...     surface_to_axis_offset=0.05, cross_axis_slope=0)
+    ...     surface_to_axis_offset=0.05, cross_axis_tilt=0)
     0.47755694708090535
 
     **Fixed-tilt north-facing array on sloped terrain**
@@ -466,7 +466,7 @@ def shaded_fraction1d(
     >>> shaded_fraction1d(solar_zenith=80, solar_azimuth=75.5,
     ...     axis_azimuth=270, shaded_row_rotation=50, shading_row_rotation=30,
     ...     collector_width=2.5, pitch=4, axis_tilt=10,
-    ...     surface_to_axis_offset=0.05, cross_axis_slope=0)
+    ...     surface_to_axis_offset=0.05, cross_axis_tilt=0)
     0.793244836197256
 
     **N-S single-axis tracker on sloped terrain**
@@ -478,7 +478,7 @@ def shaded_fraction1d(
 
     >>> shaded_fraction1d(solar_zenith=80, solar_azimuth=90, axis_azimuth=180,
     ...     shaded_row_rotation=-30, collector_width=1.4, pitch=3, axis_tilt=0,
-    ...     surface_to_axis_offset=0.10, cross_axis_slope=7)
+    ...     surface_to_axis_offset=0.10, cross_axis_tilt=7)
     0.8242176864434579
 
     Note the previous example only is valid for the shaded fraction of the
@@ -493,7 +493,7 @@ def shaded_fraction1d(
 
     >>> shaded_fraction1d(solar_zenith=80, solar_azimuth=270, axis_azimuth=180,
     ...     shaded_row_rotation=30, collector_width=1.4, pitch=3, axis_tilt=0,
-    ...     surface_to_axis_offset=0.10, cross_axis_slope=7)
+    ...     surface_to_axis_offset=0.10, cross_axis_tilt=7)
     0.018002567182254348
 
     You must switch the input/output depending on the
@@ -528,7 +528,7 @@ def shaded_fraction1d(
     # calculate repeated elements
     thetas_1_S_diff = shading_row_rotation - projected_solar_zenith
     thetas_2_S_diff = shaded_row_rotation - projected_solar_zenith
-    thetaS_rotation_diff = projected_solar_zenith - cross_axis_slope
+    thetaS_rotation_diff = projected_solar_zenith - cross_axis_tilt
 
     cos_theta_2_S_diff_abs = np.abs(cosd(thetas_2_S_diff))
 
@@ -548,7 +548,7 @@ def shaded_fraction1d(
             / collector_width
             * cosd(thetaS_rotation_diff)
             / cos_theta_2_S_diff_abs
-            / cosd(cross_axis_slope)
+            / cosd(cross_axis_tilt)
         )
     )
 
@@ -660,7 +660,7 @@ def direct_martinez(
     >>>     solar_zenith=80, solar_azimuth=180,
     >>>     axis_azimuth=90, shaded_row_rotation=25,
     >>>     collector_width=0.5, pitch=1, surface_to_axis_offset=0,
-    >>>     cross_axis_slope=5.711, shading_row_rotation=50)
+    >>>     cross_axis_tilt=5.711, shading_row_rotation=50)
     >>> # calculation of the number of shaded blocks
     >>> shaded_blocks = np.ceil(total_blocks*shaded_fraction)
     >>> # apply the Martinez power losses to the calculated shading

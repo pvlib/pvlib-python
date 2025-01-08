@@ -334,7 +334,7 @@ def renamed_kwarg_warning(since, old_param_name, new_param_name, removal=""):
         Not compatible with positional-only arguments.
 
     .. note::
-        Documentation for the function may updated to reflect the new parameter
+        Affected function docstring may be updated to reflect the new parameter
         name; it is suggested to add a |.. versionchanged::| directive.
 
     Parameters

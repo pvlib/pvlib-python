@@ -7,6 +7,8 @@ import numpy as np
 import pandas as pd
 from pvlib.tools import sind, cosd
 
+from pvlib._deprecation import renamed_kwarg_warning
+
 
 def ground_angle(surface_tilt, gcr, slant_height):
     """
@@ -344,6 +346,12 @@ def projected_solar_zenith_angle(solar_zenith, solar_azimuth,
     return theta_T
 
 
+@renamed_kwarg_warning(
+    since="0.11.3",
+    old_param_name="cross_axis_slope",
+    new_param_name="cross_axis_tilt",
+    removal="0.13.0",
+)
 def shaded_fraction1d(
     solar_zenith,
     solar_azimuth,

@@ -9,6 +9,9 @@ from datetime import timezone, timedelta
 from pvlib import shading
 from pvlib.tools import atand
 
+from pvlib.tests.conftest import fail_on_pvlib_version
+from pvlib._deprecation import pvlibDeprecationWarning
+
 
 @pytest.fixture
 def test_system():
@@ -327,6 +330,22 @@ def test_shaded_fraction1d_unprovided_shading_row_rotation():
     premises = test_data.drop(columns=["expected_sf"])
     sf = shading.shaded_fraction1d(**premises)
     assert_allclose(sf, expected_sf, atol=1e-2)
+
+
+@fail_on_pvlib_version("0.13.0")
+def test_shaded_fraction1d_renamed_cross_axis_slope2cross_axis_tilt():
+    # Tests shaded_fraction1d with cross_axis_slope instead of cross_axis_tilt
+    with pytest.warns(pvlibDeprecationWarning, match="cross_axis_slope"):
+        shading.shaded_fraction1d(
+            solar_zenith=60,
+            solar_azimuth=90,
+            axis_azimuth=180,
+            shaded_row_rotation=30,
+            collector_width=3,
+            pitch=7,
+            surface_to_axis_offset=0,
+            cross_axis_slope=0,
+        )
 
 
 @pytest.fixture

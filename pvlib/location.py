@@ -47,7 +47,7 @@ class Location:
         ints and floats must be non-fractional N-hour offsets from UTC, which
         are converted to the 'Etc/GMT-N' format (note limited range of N and
         its conventional sign change).
-        Raises TypeError for time zone conversion issues or 
+        Raises TypeError for time zone conversion issues or
         pytz.exceptions.UnknownTimeZoneError when (stringified) time zone is
         not recognized by pytz.timezone.
 

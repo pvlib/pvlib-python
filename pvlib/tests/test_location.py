@@ -29,11 +29,10 @@ def test_location_all():
 
 
 @pytest.mark.parametrize(
-    'tz,tz_expected',
-    [
+    'tz,tz_expected', [
         pytest.param('UTC', 'UTC'),
         pytest.param('Etc/GMT+5', 'Etc/GMT+5'),
-        pytest.param('US/Mountain','US/Mountain'),
+        pytest.param('US/Mountain', 'US/Mountain'),
         pytest.param('America/Phoenix', 'America/Phoenix'),
         pytest.param('Asia/Kathmandu', 'Asia/Kathmandu'),
         pytest.param('Asia/Yangon', 'Asia/Yangon'),

@@ -1,5 +1,6 @@
 import datetime
 from unittest.mock import ANY
+import zoneinfo
 
 import numpy as np
 from numpy import nan
@@ -27,27 +28,69 @@ def test_location_all():
     Location(32.2, -111, 'US/Arizona', 700, 'Tucson')
 
 
-@pytest.mark.parametrize('tz', [
-    'America/Phoenix',
-    datetime.timezone.utc,
-    pytz.timezone('US/Arizona'),
-    -7,
-    -7.0,
-])
-def test_location_tz(tz):
+@pytest.mark.parametrize(
+    'tz,tz_expected',
+    [
+        pytest.param('UTC', 'UTC'),
+        pytest.param('Etc/GMT+5', 'Etc/GMT+5'),
+        pytest.param('US/Mountain','US/Mountain'),
+        pytest.param('America/Phoenix', 'America/Phoenix'),
+        pytest.param('Asia/Kathmandu', 'Asia/Kathmandu'),
+        pytest.param('Asia/Yangon', 'Asia/Yangon'),
+        pytest.param(datetime.timezone.utc, 'UTC'),
+        pytest.param(zoneinfo.ZoneInfo('Etc/GMT-7'), 'Etc/GMT-7'),
+        pytest.param(pytz.timezone('US/Arizona'), 'US/Arizona'),
+        pytest.param(-6, 'Etc/GMT+6'),
+        pytest.param(-11.0, 'Etc/GMT+11'),
+        pytest.param(12, 'Etc/GMT-12'),
+    ],
+)
+def test_location_tz(tz, tz_expected):
     loc = Location(32.2, -111, tz)
-    assert type(loc.tz) is str
+    assert isinstance(loc.pytz, datetime.tzinfo)  # Abstract base class.
     assert isinstance(loc.pytz, pytz.tzinfo.BaseTzInfo)
+    assert type(loc.tz) is str
+    assert loc.tz == tz_expected
 
 
-def test_location_invalid_tz():
+def test_location_tz_update():
+    loc = Location(32.2, -111, -11)
+    assert loc.tz == 'Etc/GMT+11'
+    assert loc.pytz == pytz.timezone('Etc/GMT+11')
+
+    # Updating tz updates pytz.
+    loc.tz = 7
+    assert loc.tz == 'Etc/GMT-7'
+    assert loc.pytz == pytz.timezone('Etc/GMT-7')
+
+    # Updating pytz updates tz.
+    loc.pytz = pytz.timezone('US/Arizona')
+    assert loc.tz == 'US/Arizona'
+    assert loc.pytz == pytz.timezone('US/Arizona')
+
+
+@pytest.mark.parametrize(
+    'tz', [
+        'invalid',
+        'Etc/GMT+20',  # offset too large.
+        20,  # offset too large.
+    ]
+)
+def test_location_invalid_tz(tz):
     with pytest.raises(UnknownTimeZoneError):
-        Location(32.2, -111, 'invalid')
+        Location(32.2, -111, tz)
 
 
-def test_location_invalid_tz_type():
+@pytest.mark.parametrize(
+    'tz', [
+        -9.5,  # float with non-zero fractional part.
+        b"bytes not str",
+        [5],
+    ]
+)
+def test_location_invalid_tz_type(tz):
     with pytest.raises(TypeError):
-        Location(32.2, -111, [5])
+        Location(32.2, -111, tz)
 
 
 def test_location_print_all():

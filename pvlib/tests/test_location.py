@@ -10,7 +10,6 @@ from .conftest import assert_frame_equal, assert_index_equal
 import pytest
 
 import pytz
-from pytz.exceptions import UnknownTimeZoneError
 
 import pvlib
 from pvlib import location
@@ -62,11 +61,6 @@ def test_location_tz_update():
     assert loc.tz == 'Etc/GMT-7'
     assert loc.pytz == pytz.timezone('Etc/GMT-7')
 
-    # Updating pytz updates tz.
-    loc.pytz = pytz.timezone('US/Arizona')
-    assert loc.tz == 'US/Arizona'
-    assert loc.pytz == pytz.timezone('US/Arizona')
-
 
 @pytest.mark.parametrize(
     'tz', [
@@ -76,7 +70,7 @@ def test_location_tz_update():
     ]
 )
 def test_location_invalid_tz(tz):
-    with pytest.raises(UnknownTimeZoneError):
+    with pytest.raises(zoneinfo.ZoneInfoNotFoundError):
         Location(32.2, -111, tz)
 
 

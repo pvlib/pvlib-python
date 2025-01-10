@@ -3,10 +3,11 @@ Collection of functions used in pvlib_python
 """
 
 import datetime as dt
+import warnings
+
 import numpy as np
 import pandas as pd
 import pytz
-import warnings
 
 
 def cosd(angle):
@@ -125,7 +126,7 @@ def localize_to_utc(time, location):
     ----------
     time : datetime.datetime, pandas.DatetimeIndex,
            or pandas.Series/DataFrame with a DatetimeIndex.
-    location : pvlib.Location object (unused if time is localized)
+    location : pvlib.Location object (unused if ``time`` is localized)
 
     Returns
     -------

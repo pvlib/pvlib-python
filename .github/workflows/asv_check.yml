@@ -39,6 +39,7 @@ jobs:
         uses: conda-incubator/setup-miniconda@v3
         with:
           conda-version: 24.1.2
+          python-version: 3.9
 
       - name: Run asv benchmarks
         run: |

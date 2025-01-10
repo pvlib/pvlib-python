@@ -26,11 +26,10 @@ class Location:
 
         * ``tz`` is an IANA time-zone string.
         * ``pytz`` is a pytz-based time-zone object (read-only).
-        * ``zoneinfo`` is a zoneinfo.ZoneInfo time-zone object (read-only).
 
-    As with Location-object initialization, use the ``tz`` attribute update
-    the Location's time zone after instantiation, and the read-only ``pytz``
-    and ``zoneinfo`` attributes will stay in sync with any change in ``tz``.
+    As with Location-object initialization, use the ``tz`` attribute to update
+    the Location's object's time zone after instantiation, and the read-only
+    ``pytz`` attribute will stay in sync with any changes made using ``tz``.
 
     Location objects support the print method.
 
@@ -52,10 +51,6 @@ class Location:
         ints and floats must be whole-number hour offsets from UTC, which
         are converted to the IANA-suppored 'Etc/GMT-N' format (note the
         limited range of the offset N and its sign-change convention).
-        Raises TypeError for time zone conversion issues or
-        zoneinfo.ZoneInfoNotFoundError when the (stringified) time zone is
-        not recognized as an IANA time zone by the zoneinfo.ZoneInfo
-        initializer used for internal time-zone representation.
 
     altitude : float, optional
         Altitude from sea level in meters.
@@ -65,6 +60,17 @@ class Location:
 
     name : string, optional
         Sets the name attribute of the Location object.
+
+        
+    Raises
+    ------
+    ValueError
+        when the time-zone ``tz`` input cannot be converted.
+
+    zoneinfo.ZoneInfoNotFoundError
+        when the time zone ``tz`` is not recognizable as an IANA time zone by
+        the zoneinfo.ZoneInfo initializer used for internal time-zone
+        representation.
 
     See also
     --------
@@ -123,10 +129,6 @@ class Location:
     @property
     def pytz(self):
         return pytz.timezone(str(self._zoneinfo))
-
-    @property
-    def zoneinfo(self):
-        return self._zoneinfo
 
     @classmethod
     def from_tmy(cls, tmy_metadata, tmy_data=None, **kwargs):

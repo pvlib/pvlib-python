@@ -38,4 +38,4 @@ Requirements
 
 Contributors
 ~~~~~~~~~~~~
-* Mark Campanellli (:ghuser:`markcampanelli`)
+* Mark Campanelli (:ghuser:`markcampanelli`)

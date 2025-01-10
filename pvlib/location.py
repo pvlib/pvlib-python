@@ -61,7 +61,6 @@ class Location:
     name : string, optional
         Sets the name attribute of the Location object.
 
-        
     Raises
     ------
     ValueError

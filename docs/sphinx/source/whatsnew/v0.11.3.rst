@@ -22,12 +22,14 @@ Testing
 
 Requirements
 ~~~~~~~~~~~~
-* asv 0.4.2 upgraded to asv 0.6.4 to fix CI install failure due to pinned older conda.
+
+
+Maintenance
+~~~~~~~~~~~
+* asv 0.4.2 upgraded to asv 0.6.4 to fix CI failure due to pinned older conda.
   (pull:`2352`)
 
 
 Contributors
 ~~~~~~~~~~~~
-* Mark Campanellli (:ghuser:`markcampanelli`)
-
-
+* Mark Campanelli (:ghuser:`markcampanelli`)

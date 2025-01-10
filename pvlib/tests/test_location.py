@@ -54,12 +54,14 @@ def test_location_tz(tz, tz_expected):
 def test_location_tz_update():
     loc = Location(32.2, -111, -11)
     assert loc.tz == 'Etc/GMT+11'
-    assert loc.pytz == pytz.timezone('Etc/GMT+11')
+    assert loc.pytz == pytz.timezone('Etc/GMT+11')  # Deprecated attribute.
+    assert loc.zoneinfo == zoneinfo.ZoneInfo('Etc/GMT+11')
 
-    # Updating tz updates pytz.
+    # Updating Location's tz updates read-only time-zone attributes.
     loc.tz = 7
     assert loc.tz == 'Etc/GMT-7'
-    assert loc.pytz == pytz.timezone('Etc/GMT-7')
+    assert loc.pytz == pytz.timezone('Etc/GMT-7')  # Deprecated attribute.
+    assert loc.zoneinfo == zoneinfo.ZoneInfo('Etc/GMT-7')
 
 
 @pytest.mark.parametrize(

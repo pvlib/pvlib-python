@@ -14,7 +14,10 @@ Enhancements
 
 Bug Fixes
 ~~~~~~~~~
-* Ensure proper tz and pytz types in pvlib.location.Location.
+* Ensure proper tz and pytz types in pvlib.location.Location. tz becomes the
+  single source of time-zone truth, is the single time-zone setter interface,
+  and the getter consistently returns an IANA string. pytz attribute becomes
+  read only. Any datetime.tzinfo subclass is fully supported in tz setter.
   (:issue:`2340`, :pull:`2341`)
 
 

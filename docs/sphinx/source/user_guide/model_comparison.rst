@@ -3,6 +3,8 @@
 Model comparison tables
 =======================
 
+Intro?
+
 Spectral mismatch models
 ------------------------
 
@@ -18,12 +20,14 @@ The table below summarises the models currently available in pvlib, the inputs
 required, cell technologies for which model coefficients have been published, 
 source of data used for model development and validation, and references.
 
-| **Model**                                               | **Inputs** | **Cell technology** | **Data source** | **Reference** |
-|---------------------------------------------------------|------------|---------------------|-----------------|---------------|
-| :py:func:`~pvlib.spectrum.spectral_factor_caballero`    |            |                     |                 |               |
-| :py:func:`~pvlib.spectrum.spectral_factor_firstsolar`   |            |                     |                 |               |
-| :py:func:`~pvlib.spectrum.spectral_factor_sapm`         |            |                     |                 |               |
-| :py:func:`~pvlib.spectrum.spectral_factor_pvspec`       |            |                     |                 |               |
-| :py:func:`~pvlib.spectrum.spectral_factor_jrc`          |            |                     |                 |               |
-| :py:func:`~pvlib.spectrum.calc_spectral_mismatch_field` |            |                     |                 |               |
++---------------------------------------------------------+--------+-----------------+-------------+-----------+
+| Model                                                   | Inputs | Cell technology | Data source | Reference |
++=========================================================+========+=================+=============+===========+
+| :py:func:`~pvlib.spectrum.spectral_factor_caballero`    |        |                 |             |           |
+| :py:func:`~pvlib.spectrum.spectral_factor_firstsolar`   |        |                 |             |           |
+| :py:func:`~pvlib.spectrum.spectral_factor_sapm`         |        |                 |             |           |
+| :py:func:`~pvlib.spectrum.spectral_factor_pvspec`       |        |                 |             |           |
+| :py:func:`~pvlib.spectrum.spectral_factor_jrc`          |        |                 |             |           |
+| :py:func:`~pvlib.spectrum.calc_spectral_mismatch_field` |        |                 |             |           |
++---------------------------------------------------------+--------+-----------------+-------------+-----------+
 

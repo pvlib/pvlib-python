@@ -15,6 +15,7 @@ User Guide
    clearsky
    bifacial
    weather_data
+   model_comparison
    singlediode
    nomenclature
    faq

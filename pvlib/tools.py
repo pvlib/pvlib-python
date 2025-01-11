@@ -206,8 +206,32 @@ def _pandas_to_doy(pd_object):
     Returns
     -------
     dayofyear
+
+    Notes
+    -----
+    Day of year is determined using UTC, since pandas uses local hour
     """
-    return pd_object.dayofyear
+    return _pandas_to_utc(pd_object).dayofyear
+
+
+def _pandas_to_utc(pd_object):
+    """
+    Converts a pandas datetime-like object to UTC, if localized.
+    Otherwise, assume UTC.
+
+    Parameters
+    ----------
+    pd_object : DatetimeIndex or Timestamp
+
+    Returns
+    -------
+    pandas object localized to or assumed to be UTC.
+    """
+    try:
+        pd_object_utc = pd_object.tz_convert('UTC')
+    except TypeError:
+        pd_object_utc = pd_object
+    return pd_object_utc
 
 
 def _doy_to_datetimeindex(doy, epoch_year=2014):
@@ -230,7 +254,7 @@ def _doy_to_datetimeindex(doy, epoch_year=2014):
 
 
 def _datetimelike_scalar_to_doy(time):
-    return pd.DatetimeIndex([pd.Timestamp(time)]).dayofyear
+    return _pandas_to_doy(_datetimelike_scalar_to_datetimeindex(time))
 
 
 def _datetimelike_scalar_to_datetimeindex(time):
@@ -507,3 +531,30 @@ def get_pandas_index(*args):
         (a.index for a in args if isinstance(a, (pd.DataFrame, pd.Series))),
         None
     )
+
+
+def normalize_max2one(a):
+    r"""
+    Normalize an array so that the largest absolute value is ±1.
+
+    Handles both numpy arrays and pandas objects.
+    On 2D arrays, normalization is row-wise.
+    On pandas DataFrame, normalization is column-wise.
+
+    If all values of row are 0, the array is set to NaNs.
+
+    Parameters
+    ----------
+    a : array-like
+        The array to normalize.
+
+    Returns
+    -------
+    array-like
+        The normalized array.
+    """
+    try:  # expect numpy array
+        res = a / np.max(np.absolute(a), axis=-1, keepdims=True)
+    except ValueError:  # fails for pandas objects
+        res = a.div(a.abs().max(axis=0, skipna=True))
+    return res

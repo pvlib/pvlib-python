@@ -4,7 +4,7 @@ This module contains the Location class.
 
 # Will Holmgren, University of Arizona, 2014-2016.
 
-import os
+import pathlib
 import datetime
 
 import pandas as pd
@@ -13,6 +13,7 @@ import h5py
 
 from pvlib import solarposition, clearsky, atmosphere, irradiance
 from pvlib.tools import _degrees_to_index
+
 
 class Location:
     """
@@ -44,8 +45,11 @@ class Location:
         pytz.timezone objects will be converted to strings.
         ints and floats must be in hours from UTC.
 
-    altitude : float, default 0.
+    altitude : float, optional
         Altitude from sea level in meters.
+        If not specified, the altitude will be fetched from
+        :py:func:`pvlib.location.lookup_altitude`.
+        If no data is available for the location, the altitude is set to 0.
 
     name : string, optional
         Sets the name attribute of the Location object.
@@ -55,7 +59,8 @@ class Location:
     pvlib.pvsystem.PVSystem
     """
 
-    def __init__(self, latitude, longitude, tz='UTC', altitude=0, name=None):
+    def __init__(self, latitude, longitude, tz='UTC', altitude=None,
+                 name=None):
 
         self.latitude = latitude
         self.longitude = longitude
@@ -75,6 +80,9 @@ class Location:
         else:
             raise TypeError('Invalid tz specification')
 
+        if altitude is None:
+            altitude = lookup_altitude(latitude, longitude)
+
         self.altitude = altitude
 
         self.name = name
@@ -93,7 +101,8 @@ class Location:
         Parameters
         ----------
         tmy_metadata : dict
-            Returned from tmy.readtmy2 or tmy.readtmy3
+            Returned from :py:func:`~pvlib.iotools.read_tmy2` or
+            :py:func:`~pvlib.iotools.read_tmy3`
         tmy_data : DataFrame, optional
             Optionally attach the TMY data to this object.
 
@@ -137,14 +146,13 @@ class Location:
         Parameters
         ----------
         metadata : dict
-            Returned from epw.read_epw
+            Returned from :py:func:`~pvlib.iotools.read_epw`
         data : DataFrame, optional
             Optionally attach the epw data to this object.
 
         Returns
         -------
-        Location object (or the child class of Location that you
-        called this method from).
+        Location
         """
 
         latitude = metadata['latitude']
@@ -274,7 +282,7 @@ class Location:
         """
         Calculate the relative and absolute airmass.
 
-        Automatically chooses zenith or apparant zenith
+        Automatically chooses zenith or apparent zenith
         depending on the selected model.
 
         Parameters
@@ -427,8 +435,8 @@ def lookup_altitude(latitude, longitude):
 
     """
 
-    pvlib_path = os.path.dirname(os.path.abspath(__file__))
-    filepath = os.path.join(pvlib_path, 'data', 'Altitude.h5')
+    pvlib_path = pathlib.Path(__file__).parent
+    filepath = pvlib_path / 'data' / 'Altitude.h5'
 
     latitude_index = _degrees_to_index(latitude, coordinate='latitude')
     longitude_index = _degrees_to_index(longitude, coordinate='longitude')

@@ -13,13 +13,10 @@ import pandas as pd
 from dataclasses import dataclass, field
 from typing import Union, Tuple, Optional, TypeVar
 
-from pvlib import (atmosphere, clearsky, inverter, pvsystem, solarposition,
-                   temperature, iam)
+from pvlib import pvsystem, iam
 import pvlib.irradiance  # avoid name conflict with full import
 from pvlib.pvsystem import _DC_MODEL_PARAMS
 from pvlib.tools import _build_kwargs
-
-from pvlib._deprecation import deprecated
 
 # keys that are used to detect input data and assign data to appropriate
 # ModelChain attribute
@@ -41,7 +38,7 @@ DATA_KEYS = WEATHER_KEYS + POA_KEYS + TEMPERATURE_KEYS
 
 # these dictionaries contain the default configuration for following
 # established modeling sequences. They can be used in combination with
-# basic_chain and ModelChain. They are used by the ModelChain methods
+# ModelChain, particularly they are used by the methods
 # ModelChain.with_pvwatts, ModelChain.with_sapm, etc.
 
 # pvwatts documentation states that it uses the following reference for
@@ -62,165 +59,6 @@ SAPM_CONFIG = dict(
 )
 
 
-@deprecated(
-    since='0.9.1',
-    name='pvlib.modelchain.basic_chain',
-    alternative=('pvlib.modelchain.ModelChain.with_pvwatts'
-                 ' or pvlib.modelchain.ModelChain.with_sapm'),
-    addendum='Note that the with_xyz methods take different model parameters.'
-)
-def basic_chain(times, latitude, longitude,
-                surface_tilt, surface_azimuth,
-                module_parameters, temperature_model_parameters,
-                inverter_parameters,
-                irradiance=None, weather=None,
-                transposition_model='haydavies',
-                solar_position_method='nrel_numpy',
-                airmass_model='kastenyoung1989',
-                altitude=None, pressure=None,
-                **kwargs):
-    """
-    An experimental function that computes all of the modeling steps
-    necessary for calculating power or energy for a PV system at a given
-    location.
-
-    Parameters
-    ----------
-    times : DatetimeIndex
-        Times at which to evaluate the model.
-
-    latitude : float.
-        Positive is north of the equator.
-        Use decimal degrees notation.
-
-    longitude : float.
-        Positive is east of the prime meridian.
-        Use decimal degrees notation.
-
-    surface_tilt : numeric
-        Surface tilt angles in decimal degrees.
-        The tilt angle is defined as degrees from horizontal
-        (e.g. surface facing up = 0, surface facing horizon = 90)
-
-    surface_azimuth : numeric
-        Surface azimuth angles in decimal degrees.
-        The azimuth convention is defined
-        as degrees east of north
-        (North=0, South=180, East=90, West=270).
-
-    module_parameters : dict or Series
-        Module parameters as defined by the SAPM. See pvsystem.sapm for
-        details.
-
-    temperature_model_parameters : dict or Series
-        Temperature model parameters as defined by the SAPM.
-        See temperature.sapm_cell for details.
-
-    inverter_parameters : dict or Series
-        Inverter parameters as defined by the CEC. See
-        :py:func:`inverter.sandia` for details.
-
-    irradiance : DataFrame, optional
-        If not specified, calculates clear sky data.
-        Columns must be 'dni', 'ghi', 'dhi'.
-
-    weather : DataFrame, optional
-        If not specified, assumes air temperature is 20 C and
-        wind speed is 0 m/s.
-        Columns must be 'wind_speed', 'temp_air'.
-
-    transposition_model : str, default 'haydavies'
-        Passed to system.get_irradiance.
-
-    solar_position_method : str, default 'nrel_numpy'
-        Passed to solarposition.get_solarposition.
-
-    airmass_model : str, default 'kastenyoung1989'
-        Passed to atmosphere.relativeairmass.
-
-    altitude : float, optional
-        If not specified, computed from ``pressure``. Assumed to be 0 m
-        if ``pressure`` is also unspecified.
-
-    pressure : float, optional
-        If not specified, computed from ``altitude``. Assumed to be 101325 Pa
-        if ``altitude`` is also unspecified.
-
-    **kwargs
-        Arbitrary keyword arguments.
-        See code for details.
-
-    Returns
-    -------
-    output : (dc, ac)
-        Tuple of DC power (with SAPM parameters) (DataFrame) and AC
-        power (Series).
-    """
-
-    if altitude is None and pressure is None:
-        altitude = 0.
-        pressure = 101325.
-    elif altitude is None:
-        altitude = atmosphere.pres2alt(pressure)
-    elif pressure is None:
-        pressure = atmosphere.alt2pres(altitude)
-
-    solar_position = solarposition.get_solarposition(
-        times, latitude, longitude, altitude=altitude, pressure=pressure,
-        method=solar_position_method, **kwargs)
-
-    # possible error with using apparent zenith with some models
-    airmass = atmosphere.get_relative_airmass(
-        solar_position['apparent_zenith'], model=airmass_model)
-    airmass = atmosphere.get_absolute_airmass(airmass, pressure)
-    dni_extra = pvlib.irradiance.get_extra_radiation(solar_position.index)
-
-    aoi = pvlib.irradiance.aoi(surface_tilt, surface_azimuth,
-                               solar_position['apparent_zenith'],
-                               solar_position['azimuth'])
-
-    if irradiance is None:
-        linke_turbidity = clearsky.lookup_linke_turbidity(
-            solar_position.index, latitude, longitude)
-        irradiance = clearsky.ineichen(
-            solar_position['apparent_zenith'],
-            airmass,
-            linke_turbidity,
-            altitude=altitude,
-            dni_extra=dni_extra
-        )
-
-    total_irrad = pvlib.irradiance.get_total_irradiance(
-        surface_tilt,
-        surface_azimuth,
-        solar_position['apparent_zenith'],
-        solar_position['azimuth'],
-        irradiance['dni'],
-        irradiance['ghi'],
-        irradiance['dhi'],
-        model=transposition_model,
-        dni_extra=dni_extra)
-
-    if weather is None:
-        weather = {'wind_speed': 0, 'temp_air': 20}
-
-    cell_temperature = temperature.sapm_cell(
-        total_irrad['poa_global'], weather['temp_air'], weather['wind_speed'],
-        temperature_model_parameters['a'], temperature_model_parameters['b'],
-        temperature_model_parameters['deltaT'])
-
-    effective_irradiance = pvsystem.sapm_effective_irradiance(
-        total_irrad['poa_direct'], total_irrad['poa_diffuse'], airmass, aoi,
-        module_parameters)
-
-    dc = pvsystem.sapm(effective_irradiance, cell_temperature,
-                       module_parameters)
-
-    ac = inverter.sandia(dc['v_mp'], dc['p_mp'], inverter_parameters)
-
-    return dc, ac
-
-
 def get_orientation(strategy, **kwargs):
     """
     Determine a PV system's surface tilt and surface azimuth
@@ -238,7 +76,6 @@ def get_orientation(strategy, **kwargs):
     -------
     surface_tilt, surface_azimuth
     """
-
     if strategy == 'south_at_latitude_tilt':
         surface_azimuth = 180
         surface_tilt = kwargs['latitude']
@@ -1637,7 +1474,7 @@ class ModelChain:
         data : DataFrame, or tuple or list of DataFrame
             Contains plane-of-array irradiance data. Required column names
             include ``'poa_global'``, ``'poa_direct'`` and ``'poa_diffuse'``.
-            Columns with weather-related data are ssigned to the
+            Columns with weather-related data are assigned to the
             ``weather`` attribute.  If columns for ``'temp_air'`` and
             ``'wind_speed'`` are not provided, air temperature of 20 C and wind
             speed of 0 m/s are assumed.

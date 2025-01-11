@@ -269,8 +269,8 @@ def martin_ruiz(aoi, a_r=0.16):
 
     which is presented as :math:`AL(\alpha) = 1 - IAM` in equation 4 of [1]_,
     with :math:`\alpha` representing the angle of incidence AOI. Thus IAM = 1
-    at AOI = 0, and IAM = 0 at AOI = 90.  This equation is only valid for
-    -90 <= aoi <= 90, therefore `iam` is constrained to 0.0 outside this
+    at AOI = 0°, and IAM = 0 at AOI = 90°.  This equation is only valid for
+    0° <= aoi <= 90°, therefore `iam` is constrained to 0.0 outside this
     interval.
 
     References
@@ -592,10 +592,10 @@ def marion_diffuse(model, surface_tilt, **kwargs):
     iam : dict
         IAM values for each type of diffuse irradiance:
 
-            * 'sky': radiation from the sky dome (zenith <= 90)
-            * 'horizon': radiation from the region of the sky near the horizon
-              (89.5 <= zenith <= 90)
-            * 'ground': radiation reflected from the ground (zenith >= 90)
+        * 'sky': radiation from the sky dome (zenith <= 90)
+        * 'horizon': radiation from the region of the sky near the horizon
+          (89.5 <= zenith <= 90)
+        * 'ground': radiation reflected from the ground (zenith >= 90)
 
         See [1]_ for a detailed description of each class.
 
@@ -667,10 +667,10 @@ def marion_integrate(function, surface_tilt, region, num=None):
     region : {'sky', 'horizon', 'ground'}
         The region to integrate over. Must be one of:
 
-            * 'sky': radiation from the sky dome (zenith <= 90)
-            * 'horizon': radiation from the region of the sky near the horizon
-              (89.5 <= zenith <= 90)
-            * 'ground': radiation reflected from the ground (zenith >= 90)
+        * 'sky': radiation from the sky dome (zenith <= 90)
+        * 'horizon': radiation from the region of the sky near the horizon
+          (89.5 <= zenith <= 90)
+        * 'ground': radiation reflected from the ground (zenith >= 90)
 
         See [1]_ for a detailed description of each class.
 
@@ -678,8 +678,8 @@ def marion_integrate(function, surface_tilt, region, num=None):
         The number of increments in the zenith integration.
         If not specified, N will follow the values used in [1]_:
 
-            * 'sky' or 'ground': num = 180
-            * 'horizon': num = 1800
+        * 'sky' or 'ground': num = 180
+        * 'horizon': num = 1800
 
     Returns
     -------
@@ -891,8 +891,8 @@ def schlick_diffuse(surface_tilt):
     implements only the integrated Schlick approximation.
 
     Note also that the output of this function (which is an exact integration)
-    can be compared with the output of :py:func:`marion_diffuse` which numerically
-    integrates the Schlick approximation:
+    can be compared with the output of :py:func:`marion_diffuse` which
+    numerically integrates the Schlick approximation:
 
     .. code::
 
@@ -1107,14 +1107,14 @@ def convert(source_name, source_params, target_name, weight=_sin_weight,
     source_params : dict
         A dictionary of parameters for the source model.
 
-            If source model is ``'ashrae'``, the dictionary must contain
-            the key ``'b'``.
+        If source model is ``'ashrae'``, the dictionary must contain
+        the key ``'b'``.
 
-            If source model is ``'martin_ruiz'``, the dictionary must
-            contain the key ``'a_r'``.
+        If source model is ``'martin_ruiz'``, the dictionary must
+        contain the key ``'a_r'``.
 
-            If source model is ``'physical'``, the dictionary must
-            contain the keys ``'n'``, ``'K'``, and ``'L'``.
+        If source model is ``'physical'``, the dictionary must
+        contain the keys ``'n'``, ``'K'``, and ``'L'``.
 
     target_name : str
         Name of the target model. Must be ``'ashrae'``, ``'martin_ruiz'``, or
@@ -1146,14 +1146,14 @@ def convert(source_name, source_params, target_name, weight=_sin_weight,
     dict
         Parameters for the target model.
 
-            If target model is ``'ashrae'``, the dictionary will contain
-            the key ``'b'``.
+        If target model is ``'ashrae'``, the dictionary will contain
+        the key ``'b'``.
 
-            If target model is ``'martin_ruiz'``, the dictionary will
-            contain the key ``'a_r'``.
+        If target model is ``'martin_ruiz'``, the dictionary will
+        contain the key ``'a_r'``.
 
-            If target model is ``'physical'``, the dictionary will
-            contain the keys ``'n'``, ``'K'``, and ``'L'``.
+        If target model is ``'physical'``, the dictionary will
+        contain the keys ``'n'``, ``'K'``, and ``'L'``.
 
     Note
     ----
@@ -1243,14 +1243,14 @@ def fit(measured_aoi, measured_iam, model_name, weight=_sin_weight, xtol=None):
     dict
         Parameters for target model.
 
-            If target model is ``'ashrae'``, the dictionary will contain
-            the key ``'b'``.
+        If target model is ``'ashrae'``, the dictionary will contain
+        the key ``'b'``.
 
-            If target model is ``'martin_ruiz'``, the dictionary will
-            contain the key ``'a_r'``.
+        If target model is ``'martin_ruiz'``, the dictionary will
+        contain the key ``'a_r'``.
 
-            If target model is ``'physical'``, the dictionary will
-            contain the keys ``'n'``, ``'K'``, and ``'L'``.
+        If target model is ``'physical'``, the dictionary will
+        contain the keys ``'n'``, ``'K'``, and ``'L'``.
 
     References
     ----------

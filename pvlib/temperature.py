@@ -118,12 +118,24 @@ def sapm_cell(poa_global, temp_air, wind_speed, a, b, deltaT,
     +===============+================+=======+=========+=====================+
     | glass/glass   | open rack      | -3.47 | -0.0594 | 3                   |
     +---------------+----------------+-------+---------+---------------------+
-    | glass/glass   | close roof     | -2.98 | -0.0471 | 1                   |
+    | glass/glass   | close mount    | -2.98 | -0.0471 | 1                   |
     +---------------+----------------+-------+---------+---------------------+
     | glass/polymer | open rack      | -3.56 | -0.075  | 3                   |
     +---------------+----------------+-------+---------+---------------------+
     | glass/polymer | insulated back | -2.81 | -0.0455 | 0                   |
     +---------------+----------------+-------+---------+---------------------+
+
+    Mounting cases can be described in terms of air flow across and around the
+    rear-facing surface of the module:
+
+    * "open rack" refers to mounting that allows relatively free air flow.
+      This case is typical of ground-mounted systems on fixed racking or
+      single axis trackers.
+    * "close mount" refers to limited or restricted air flow. This case is
+      typical of roof-mounted systems with some gap behind the module.
+    * "insulated back" refers to systems with no air flow contacting the rear
+      surface of the module. This case is typical of building-integrated PV
+      systems, or systems laid flat on a ground surface.
 
     References
     ----------
@@ -199,12 +211,24 @@ def sapm_module(poa_global, temp_air, wind_speed, a, b):
     +===============+================+=======+=========+=====================+
     | glass/glass   | open rack      | -3.47 | -0.0594 | 3                   |
     +---------------+----------------+-------+---------+---------------------+
-    | glass/glass   | close roof     | -2.98 | -0.0471 | 1                   |
+    | glass/glass   | close mount    | -2.98 | -0.0471 | 1                   |
     +---------------+----------------+-------+---------+---------------------+
     | glass/polymer | open rack      | -3.56 | -0.075  | 3                   |
     +---------------+----------------+-------+---------+---------------------+
     | glass/polymer | insulated back | -2.81 | -0.0455 | 0                   |
     +---------------+----------------+-------+---------+---------------------+
+
+    Mounting cases can be described in terms of air flow across and around the
+    rear-facing surface of the module:
+
+    * "open rack" refers to mounting that allows relatively free air flow.
+      This case is typical of ground-mounted systems on fixed racking or
+      single axis trackers.
+    * "close mount" refers to limited or restricted air flow. This case is
+      typical of roof-mounted systems with some gap behind the module.
+    * "insulated back" refers to systems with no air flow contacting the rear
+      surface of the module. This case is typical of building-integrated PV
+      systems, or systems laid flat on a ground surface.
 
     References
     ----------
@@ -269,12 +293,24 @@ def sapm_cell_from_module(module_temperature, poa_global, deltaT,
     +===============+================+=======+=========+=====================+
     | glass/glass   | open rack      | -3.47 | -0.0594 | 3                   |
     +---------------+----------------+-------+---------+---------------------+
-    | glass/glass   | close roof     | -2.98 | -0.0471 | 1                   |
+    | glass/glass   | close mount    | -2.98 | -0.0471 | 1                   |
     +---------------+----------------+-------+---------+---------------------+
     | glass/polymer | open rack      | -3.56 | -0.075  | 3                   |
     +---------------+----------------+-------+---------+---------------------+
     | glass/polymer | insulated back | -2.81 | -0.0455 | 0                   |
     +---------------+----------------+-------+---------+---------------------+
+
+    Mounting cases can be described in terms of air flow across and around the
+    rear-facing surface of the module:
+
+    * "open rack" refers to mounting that allows relatively free air flow.
+      This case is typical of ground-mounted systems on fixed racking or
+      single axis trackers.
+    * "close mount" refers to limited or restricted air flow. This case is
+      typical of roof-mounted systems with some gap behind the module.
+    * "insulated back" refers to systems with no air flow contacting the rear
+      surface of the module. This case is typical of building-integrated PV
+      systems, or systems laid flat on a ground surface.
 
     References
     ----------
@@ -359,6 +395,16 @@ def pvsyst_cell(poa_global, temp_air, wind_speed=1.0, u_c=29.0, u_v=0.0,
     +--------------+---------------+---------------+
     | insulated    | 15.0          | 0.0           |
     +--------------+---------------+---------------+
+
+    Mounting cases can be described in terms of air flow across and around the
+    rear-facing surface of the module:
+
+    * "freestanding" refers to mounting that allows relatively free air
+      circulation around the modules. This case is typical of ground-mounted
+      systems on tilted, fixed racking or single axis trackers.
+    * "insulated" refers to mounting with air flow across only the front
+      surface. This case is typical of roof-mounted systems with no gap
+      behind the module.
 
     References
     ----------

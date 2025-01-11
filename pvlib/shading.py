@@ -342,3 +342,353 @@ def projected_solar_zenith_angle(solar_zenith, solar_azimuth,
     # Eq. (5); angle between sun's beam and surface
     theta_T = np.degrees(np.arctan2(sx_prime, sz_prime))
     return theta_T
+
+
+def shaded_fraction1d(
+    solar_zenith,
+    solar_azimuth,
+    axis_azimuth,
+    shaded_row_rotation,
+    *,
+    collector_width,
+    pitch,
+    axis_tilt=0,
+    surface_to_axis_offset=0,
+    cross_axis_slope=0,
+    shading_row_rotation=None,
+):
+    r"""
+    Shaded fraction in the vertical dimension of tilted rows, or perpendicular
+    to the axis of horizontal rows.
+
+    If ``shading_row_rotation`` isn't provided, it is assumed that
+    both the shaded row and the shading row (the one blocking the
+    direct beam) have the same rotation and azimuth values.
+
+    .. warning::
+        The function assumes that the roles of the shaded and shading rows
+        remain the same during the day. In the case where the shading and
+        shaded rows change throughout the day, e.g. a N-S single-axis tracker,
+        the inputs must be switched depending on the sign of the projected
+        solar zenith angle. See the Examples section below.
+
+    .. versionadded:: 0.11.0
+
+    Parameters
+    ----------
+    solar_zenith : numeric
+        Solar zenith angle, in degrees.
+    solar_azimuth : numeric
+        Solar azimuth angle, in degrees.
+    axis_azimuth : numeric
+        Axis azimuth of the rotation axis of a tracker, in degrees.
+        Fixed-tilt arrays can be considered as a particular case of a tracker.
+        North=0º, South=180º, East=90º, West=270º.
+    shaded_row_rotation : numeric
+        Right-handed rotation of the row receiving the shade, with respect
+        to ``axis_azimuth``. In degrees :math:`^{\circ}`.
+    collector_width : numeric
+        Vertical length of a tilted row. The returned ``shaded_fraction``
+        is the ratio of the shadow over this value.
+    pitch : numeric
+        Axis-to-axis horizontal spacing of the row.
+    axis_tilt : numeric, default 0
+        Tilt of the rows axis from horizontal. In degrees :math:`^{\circ}`.
+    surface_to_axis_offset : numeric, default 0
+        Distance between the rotating axis and the collector surface.
+        May be used to account for a torque tube offset.
+    cross_axis_slope : numeric, default 0
+        Angle of the plane containing the rows' axes from
+        horizontal. Right-handed rotation with respect to the rows axes.
+        In degrees :math:`^{\circ}`.
+    shading_row_rotation : numeric, optional
+        Right-handed rotation of the row casting the shadow, with respect
+        to the row axis. In degrees :math:`^{\circ}`.
+
+    Returns
+    -------
+    shaded_fraction : numeric
+        The fraction of the collector width shaded by an adjacent row. A
+        value of 1 is completely shaded and 0 is no shade.
+
+    Notes
+    -----
+    All length parameters must have the same units.
+
+    Parameters are defined as follow:
+
+    .. figure:: ../../_images/Anderson_Jensen_2024_Fig3.png
+        :alt: Diagram showing the two rows and the parameters of the model.
+
+        Figure 3 of [1]_. See correspondence between this nomenclature and the
+        function parameters in the table below.
+
+    +------------------+----------------------------+---------------------+
+    | Symbol           | Parameter                  | Units               |
+    +==================+============================+=====================+
+    | :math:`\theta_1` | ``shading_row_rotation``   |                     |
+    +------------------+----------------------------+                     |
+    | :math:`\theta_2` | ``shaded_row_rotation``    | Degrees             |
+    +------------------+----------------------------+ :math:`^{\circ}`    |
+    | :math:`\beta_c`  | ``cross_axis_slope``       |                     |
+    +------------------+----------------------------+---------------------+
+    | :math:`p`        | ``pitch``                  | Any consistent      |
+    +------------------+----------------------------+ length unit across  |
+    | :math:`\ell`     | ``collector_width``        | all these           |
+    +------------------+----------------------------+ parameters, e.g.    |
+    | :math:`z_0`      | ``surface_to_axis_offset`` | :math:`m`.          |
+    +------------------+----------------------------+---------------------+
+    | :math:`f_s`      | Return value               | Dimensionless       |
+    +------------------+----------------------------+---------------------+
+
+    Examples
+    --------
+
+    **Fixed-tilt south-facing array on flat terrain**
+
+    Tilted row with a pitch of 3 m, a collector width of
+    2 m, and row rotations of 30°. In the morning.
+
+    >>> shaded_fraction1d(solar_zenith=80, solar_azimuth=135,
+    ...     axis_azimuth=90, shaded_row_rotation=30, shading_row_rotation=30,
+    ...     collector_width=2, pitch=3, axis_tilt=0,
+    ...     surface_to_axis_offset=0.05, cross_axis_slope=0)
+    0.47755694708090535
+
+    **Fixed-tilt north-facing array on sloped terrain**
+
+    Tilted row with a pitch of 4 m, a collector width of
+    2.5 m, and row rotations of 50° for the shaded
+    row and 30° for the shading row. The rows are on a
+    10° slope, where their axis is on the most inclined
+    direction (zero cross-axis slope). Shaded in the morning.
+
+    >>> shaded_fraction1d(solar_zenith=80, solar_azimuth=75.5,
+    ...     axis_azimuth=270, shaded_row_rotation=50, shading_row_rotation=30,
+    ...     collector_width=2.5, pitch=4, axis_tilt=10,
+    ...     surface_to_axis_offset=0.05, cross_axis_slope=0)
+    0.793244836197256
+
+    **N-S single-axis tracker on sloped terrain**
+
+    Horizontal trackers with a pitch of 3 m, a collector width of
+    1.4 m, and tracker rotations of 30° pointing east,
+    in the morning. Terrain slope is 7° west-east (east-most
+    tracker is higher than the west-most tracker).
+
+    >>> shaded_fraction1d(solar_zenith=80, solar_azimuth=90, axis_azimuth=180,
+    ...     shaded_row_rotation=-30, collector_width=1.4, pitch=3, axis_tilt=0,
+    ...     surface_to_axis_offset=0.10, cross_axis_slope=7)
+    0.8242176864434579
+
+    Note the previous example only is valid for the shaded fraction of the
+    west-most tracker in the morning, and assuming it is the
+    shaded tracker during all the day is incorrect.
+    During the afternoon, it is the one casting the shadow onto the
+    east-most tracker.
+
+    To calculate the shaded fraction for the east-most
+    tracker, you must input the corresponding ``shaded_row_rotation``
+    in the afternoon.
+
+    >>> shaded_fraction1d(solar_zenith=80, solar_azimuth=270, axis_azimuth=180,
+    ...     shaded_row_rotation=30, collector_width=1.4, pitch=3, axis_tilt=0,
+    ...     surface_to_axis_offset=0.10, cross_axis_slope=7)
+    0.018002567182254348
+
+    You must switch the input/output depending on the
+    sign of the projected solar zenith angle. See
+    :py:func:`~pvlib.shading.projected_solar_zenith_angle` and the example
+    :ref:`sphx_glr_gallery_shading_plot_shaded_fraction1d_ns_hsat_example.py`
+
+    See also
+    --------
+    pvlib.shading.projected_solar_zenith_angle
+
+    References
+    ----------
+    .. [1] Kevin S. Anderson, Adam R. Jensen; Shaded fraction and backtracking
+        in single-axis trackers on rolling terrain. J. Renewable Sustainable
+        Energy 1 March 2024; 16 (2): 023504. :doi:`10.1063/5.0202220`
+    """
+    # For nomenclature you may refer to [1].
+
+    # rotation of row casting the shadow defaults to shaded row's one
+    if shading_row_rotation is None:
+        shading_row_rotation = shaded_row_rotation
+
+    # projected solar zenith angle
+    projected_solar_zenith = projected_solar_zenith_angle(
+        solar_zenith,
+        solar_azimuth,
+        axis_tilt,
+        axis_azimuth,
+    )
+
+    # calculate repeated elements
+    thetas_1_S_diff = shading_row_rotation - projected_solar_zenith
+    thetas_2_S_diff = shaded_row_rotation - projected_solar_zenith
+    thetaS_rotation_diff = projected_solar_zenith - cross_axis_slope
+
+    cos_theta_2_S_diff_abs = np.abs(cosd(thetas_2_S_diff))
+
+    # Eq. (12) of [1]
+    t_asterisk = (
+        0.5
+        + np.abs(cosd(thetas_1_S_diff)) / cos_theta_2_S_diff_abs / 2
+        + (
+            np.sign(projected_solar_zenith)
+            * surface_to_axis_offset
+            / collector_width
+            / cos_theta_2_S_diff_abs
+            * (sind(thetas_2_S_diff) - sind(thetas_1_S_diff))
+        )
+        - (
+            pitch
+            / collector_width
+            * cosd(thetaS_rotation_diff)
+            / cos_theta_2_S_diff_abs
+            / cosd(cross_axis_slope)
+        )
+    )
+
+    return np.clip(t_asterisk, 0, 1)
+
+
+def direct_martinez(
+    poa_global,
+    poa_direct,
+    shaded_fraction,
+    shaded_blocks,
+    total_blocks,
+):
+    r"""
+    A shading loss power factor for non-monolithic silicon
+    modules and arrays with an arbitrary number of bypass diodes.
+
+    This experimental model reduces the direct and circumsolar
+    irradiance reaching the module's cells based on the number of *blocks*
+    affected by the shadow.
+    More on blocks in the *Notes* section and in [1]_.
+
+    .. versionadded:: 0.11.0
+
+    Parameters
+    ----------
+    poa_global : numeric
+        Plane of array global irradiance. [W/m²].
+    poa_direct : numeric
+        Plane of array direct and circumsolar irradiance. [W/m²].
+    shaded_fraction : numeric
+        Fraction of module surface area that is shaded. [Unitless].
+    shaded_blocks : numeric
+        Number of blocks affected by the shadow. [Unitless].
+        If a floating point number is provided, it will be rounded up.
+    total_blocks : int
+        Number of total blocks. Unitless.
+
+    Returns
+    -------
+    shading_losses : numeric
+        Fraction of DC power lost due to shading. [Unitless]
+
+    Notes
+    -----
+    The implemented equations are (6) and (8) from [1]_:
+
+    .. math::
+
+        (1 - F_{ES}) = (1 - F_{GS}) \left(1 - \frac{N_{SB}}{N_{TB} + 1}\right)
+        \quad \text{(6)}
+
+        \left(1 - \frac{P_{S}}{P_{NS}}\right) = \left(1 -
+        \frac{\left[(B + D^{CIR})(1 - F_{ES}) + D^{ISO} + R\right]}{G}\right)
+        \quad \text{(8)}
+
+    In (6), :math:`(1 - F_{ES})` is the correction factor to be multiplied by
+    the direct and circumsolar irradiance, :math:`F_{GS}` is the shaded
+    fraction of the collector, :math:`N_{SB}` is the number of shaded blocks
+    and :math:`N_{TB}` is the number of total blocks.
+
+    In (8), :math:`\frac{P_{S}}{P_{NS}}` is the fraction of DC power lost due
+    to shading, :math:`P_{S}` is the power output of the shaded module,
+    :math:`P_{NS}` is the power output of the non-shaded module,
+    :math:`B + D^{CIR}` is the beam and circumsolar irradiance,
+    :math:`D^{ISO} + R` is the sum of diffuse and albedo irradiances and
+    :math:`G` is the global irradiance.
+
+    **Blocks terminology:**
+
+    A *block* is defined in [1]_ as a group of solar cells protected by a
+    bypass diode. Also, a *block* is shaded when at least one of its
+    cells is partially shaded.
+
+    The total number of blocks and their layout depend on the module(s) used.
+    Many manufacturers don't specify this information explicitly.
+    However, these values can be inferred from:
+
+    - the number of bypass diodes
+    - where and how many junction boxes are present on the back of the module
+    - whether or not the module is comprised of *half-cut cells*
+
+    The latter two are heavily correlated.
+
+    For example:
+
+    1. A module with 1 bypass diode behaves as 1 block.
+    2. A module with 3 bypass diodes and 1 junction box is likely to have 3
+       blocks.
+    3. A half-cut module with 3 junction boxes (split junction boxes) is
+       likely to have 3x2 blocks. The number of blocks along the longest
+       side of the module is 2 and along the shortest side is 3.
+    4. A module without bypass diodes doesn't constitute a block, but may be
+       part of one.
+
+    Examples
+    --------
+    Minimal example. For a complete example, see
+    :ref:`sphx_glr_gallery_shading_plot_martinez_shade_loss.py`.
+
+    >>> import numpy as np
+    >>> from pvlib import shading
+    >>> total_blocks = 3  # blocks along the vertical of the module
+    >>> POA_direct_and_circumsolar, POA_diffuse = 600, 80  # W/m²
+    >>> POA_global = POA_direct_and_circumsolar + POA_diffuse
+    >>> P_out_unshaded = 3000  # W
+    >>> # calculation of the shaded fraction for the collector
+    >>> shaded_fraction = shading.shaded_fraction1d(
+    >>>     solar_zenith=80, solar_azimuth=180,
+    >>>     axis_azimuth=90, shaded_row_rotation=25,
+    >>>     collector_width=0.5, pitch=1, surface_to_axis_offset=0,
+    >>>     cross_axis_slope=5.711, shading_row_rotation=50)
+    >>> # calculation of the number of shaded blocks
+    >>> shaded_blocks = np.ceil(total_blocks*shaded_fraction)
+    >>> # apply the Martinez power losses to the calculated shading
+    >>> loss_fraction = shading.direct_martinez(
+    >>>     POA_global, POA_direct_and_circumsolar,
+    >>>     shaded_fraction, shaded_blocks, total_blocks)
+    >>> P_out_corrected = P_out_unshaded * (1 - loss_fraction)
+
+    See Also
+    --------
+    shaded_fraction1d : to calculate 1-dimensional shaded fraction
+
+    References
+    ----------
+    .. [1] F. Martínez-Moreno, J. Muñoz, and E. Lorenzo, 'Experimental model
+        to estimate shading losses on PV arrays', Solar Energy Materials and
+        Solar Cells, vol. 94, no. 12, pp. 2298-2303, Dec. 2010,
+        :doi:`10.1016/j.solmat.2010.07.029`.
+    """  # Contributed by Echedey Luis, 2024
+    beam_factor = (  # Eq. (6) of [1]
+        (1 - shaded_fraction)
+        * (1 - np.ceil(shaded_blocks) / (1 + total_blocks))
+    )
+    return (  # Eq. (8) of [1]
+        1
+        - (
+            poa_direct * beam_factor
+            + (poa_global - poa_direct)  # diffuse and albedo
+        )
+        / poa_global
+    )

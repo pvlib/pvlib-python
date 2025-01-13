@@ -3,7 +3,7 @@
 Model comparison tables
 =======================
 
-Intro?
+Intro
 
 Spectral mismatch models
 ------------------------
@@ -38,3 +38,7 @@ source of data used for model development and validation, and references.
 +---------------------------------------------------------+--------------------------------------------------------------+-----------------+-------------------+-----------+
 
 
+link param(case of multiple?), list tech, parameterisation?
+
+References
+----------

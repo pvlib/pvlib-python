@@ -22,9 +22,12 @@ Testing
 
 Requirements
 ~~~~~~~~~~~~
+* Add sphinx configuration key to `readthedocs.yml` (:issue:`2357`,
+:pull:`2358`)
 
 
 Contributors
 ~~~~~~~~~~~~
+* Rajiv Daxini (:ghuser:`RDaxini`)
 
 

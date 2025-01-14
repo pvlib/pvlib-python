@@ -22,8 +22,12 @@ Testing
 
 Requirements
 ~~~~~~~~~~~~
-* Add sphinx configuration key to `readthedocs.yml` (:issue:`2357`,
-:pull:`2358`)
+
+
+Maintenance
+~~~~~~~~~~~
+* Fix ReadTheDocs builds by upgrading `readthedocs.yml` configuration
+(:issue:`2357`, :pull:`2358`)
 
 
 Contributors

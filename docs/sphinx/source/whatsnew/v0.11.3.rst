@@ -35,6 +35,4 @@ Maintenance
 Contributors
 ~~~~~~~~~~~~
 * Rajiv Daxini (:ghuser:`RDaxini`)
-
-
 * Mark Campanelli (:ghuser:`markcampanelli`)

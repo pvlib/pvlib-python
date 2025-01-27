@@ -260,7 +260,10 @@ def get_irradiance_poa(surface_tilt, surface_azimuth, solar_zenith,
     Returns
     -------
     output : dict or DataFrame
-        Output is a DataFrame when input ghi is a Series. See Notes for
+        Output is a DataFrame when solar_zenith is a Series.
+        solar_zenith is the one that sets the output type.
+        See Issue #2245
+        See Notes for
         descriptions of content.
 
     Notes
@@ -372,7 +375,7 @@ def get_irradiance_poa(surface_tilt, surface_azimuth, solar_zenith,
         'poa_global': poa_global, 'poa_direct': poa_direct,
         'poa_diffuse': poa_diffuse, 'poa_ground_diffuse': poa_gnd_pv,
         'poa_sky_diffuse': poa_sky_pv, 'shaded_fraction': f_x}
-    if isinstance(poa_global, pd.Series):
+    if isinstance(solar_zenith, pd.Series):
         output = pd.DataFrame(output)
     return output
 

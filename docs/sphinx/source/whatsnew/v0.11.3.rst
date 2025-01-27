@@ -36,8 +36,6 @@ Requirements
 ~~~~~~~~~~~~
 
 
-Contributors
-~~~~~~~~~~~~
 Maintenance
 ~~~~~~~~~~~
 * Fix ReadTheDocs builds by upgrading `readthedocs.yml` configuration

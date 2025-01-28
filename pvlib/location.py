@@ -129,7 +129,7 @@ class Location:
 
     @property
     def pytz(self):
-        """The location's pytz time zone."""
+        """The location's pytz time zone (read only)."""
         return pytz.timezone(str(self._zoneinfo))
 
     @classmethod

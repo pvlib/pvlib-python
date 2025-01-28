@@ -44,13 +44,13 @@ class Location:
         Use decimal degrees notation.
 
     tz : time zone as str, int, float, or datetime.tzinfo (inc. subclasses
-        from the pytz and zoneinfo packages), default 'UTC'.
+    from the pytz and zoneinfo packages), default 'UTC'.
         This value is stored as a valid IANA time zone name string. See
         http://en.wikipedia.org/wiki/List_of_tz_database_time_zones for a
         list of valid name strings, any of which may be passed directly here.
-        ints and floats must be whole-number hour offsets from UTC, which
-        are converted to the IANA-suppored 'Etc/GMT-N' format (note the
-        limited range of the offset N and its sign-change convention).
+        `int`s and `float`s must be whole-number hour offsets from UTC, which
+        are converted to the IANA-suppored 'Etc/GMT-N' format. (Note the
+        limited range of the offset N and its sign-change convention.)
 
     altitude : float, optional
         Altitude from sea level in meters.
@@ -68,7 +68,7 @@ class Location:
 
     zoneinfo.ZoneInfoNotFoundError
         when the time zone ``tz`` is not recognizable as an IANA time zone by
-        the zoneinfo.ZoneInfo initializer used for internal time-zone
+        the `zoneinfo.ZoneInfo` initializer used for internal time-zone
         representation.
 
     See also

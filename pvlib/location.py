@@ -27,9 +27,7 @@ class Location:
         * ``tz`` is an IANA time-zone string.
         * ``pytz`` is a pytz-based time-zone object (read only).
 
-    As with Location-object initialization, use the ``tz`` attribute to update
-    the Location's object's time zone after instantiation, and the read-only
-    ``pytz`` attribute will stay in sync with any changes made using ``tz``.
+    The read-only ``pytz`` attribute will stay in sync with any changes made using ``tz``.
 
     Location objects support the print method.
 

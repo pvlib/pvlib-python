@@ -1,7 +1,7 @@
-.. _spectral_correction_comparison:
+.. _spectrum_user_guide:
 
-Spectral mismatch models
-========================
+Spectral mismatch
+=================
 
 pvlib-python contains several models to estimate the spectral mismatch factor
 using atmospheric variables such as air mass, or system and meteorological

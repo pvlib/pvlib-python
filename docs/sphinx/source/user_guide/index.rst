@@ -21,16 +21,11 @@ This user guide is an overview and explains some of the key features of pvlib.
    pvsystem
    modelchain
    timetimezones
+   spectrum
    bifacial
    clearsky
    weather_data
    singlediode
-
-.. toctree::
-   :caption: Model comparisons
-   :maxdepth: 2
-
-   model_comparison
 
 .. toctree::
    :caption: Extras

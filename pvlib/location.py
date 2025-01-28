@@ -43,8 +43,8 @@ class Location:
         Positive is east of the prime meridian.
         Use decimal degrees notation.
 
-    tz : time zone as str, int, float, or datetime.tzinfo (including
-        subclassesfrom the pytz and zoneinfo packages), default 'UTC'.
+    tz : time zone as str, int, float, or datetime.tzinfo including
+        subclassesfrom the pytz and zoneinfo packages, default 'UTC'.
         This value is stored as a valid IANA time zone name string. See
         http://en.wikipedia.org/wiki/List_of_tz_database_time_zones for a
         list of valid name strings, any of which may be passed directly here.

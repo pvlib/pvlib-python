@@ -120,7 +120,7 @@ def atand(number):
 
 def localize_to_utc(time, location):
     """
-    Converts time to UTC, localizing if necessary using location.
+    Converts ``time`` to UTC, localizing if necessary using location.
 
     Parameters
     ----------

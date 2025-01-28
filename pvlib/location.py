@@ -25,7 +25,7 @@ class Location:
     Location objects have two time-zone attributes:
 
         * ``tz`` is an IANA time-zone string.
-        * ``pytz`` is a pytz-based time-zone object (read-only).
+        * ``pytz`` is a pytz-based time-zone object (read only).
 
     As with Location-object initialization, use the ``tz`` attribute to update
     the Location's object's time zone after instantiation, and the read-only

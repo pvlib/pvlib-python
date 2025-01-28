@@ -10,7 +10,7 @@ Deprecations
 
 Enhancements
 ~~~~~~~~~~~~
-
+Fix syntax for unshaded ground fraction (:issue:`2245`, :pull:`2359`)
 
 Documentation
 ~~~~~~~~~~~~~
@@ -36,3 +36,4 @@ Contributors
 ~~~~~~~~~~~~
 * Rajiv Daxini (:ghuser:`RDaxini`)
 * Mark Campanelli (:ghuser:`markcampanelli`)
+* Jason Lun Leung (:ghuser:`jason-rpkt`)

@@ -49,7 +49,7 @@ class Location:
         list of valid name strings, any of which may be passed directly here.
         ints and floats must be whole-number hour offsets from UTC, which
         are converted to the IANA-suppored 'Etc/GMT-N' format. (Note the
-        limited range of the offset N and its sign-change convention.) 
+        limited range of the offset N and its sign-change convention.)
         Time zones from the pytz and zoneinfo packages may also be passed
         directly here, as they are subclasses of datetime.tzinfo.
 

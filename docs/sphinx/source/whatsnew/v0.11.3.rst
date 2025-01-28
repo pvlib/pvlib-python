@@ -14,6 +14,7 @@ Enhancements
 
 Documentation
 ~~~~~~~~~~~~~
+* Restructure the user guide with subsections (:issue:`2302`, :pull:`2310`)
 
 
 Testing

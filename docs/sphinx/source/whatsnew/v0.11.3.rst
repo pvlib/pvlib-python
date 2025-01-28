@@ -14,11 +14,8 @@ Enhancements
 
 Bug Fixes
 ~~~~~~~~~
-* Ensure proper tz and pytz types in pvlib.location.Location. tz becomes the
-  single source of time-zone truth, is the single time-zone setter interface,
-  and the getter consistently returns an IANA string. datetime.tzinfo
-  subclasses are fully supported in tz setter. pytz attribute becomes read
-  only. (:issue:`2340`, :pull:`2341`)
+* Ensure proper tz and pytz types in pvlib.location.Location.
+  (:issue:`2340`, :pull:`2341`)
 
 
 Documentation
@@ -43,6 +40,15 @@ Maintenance
 * asv 0.4.2 upgraded to asv 0.6.4 to fix CI failure due to pinned older conda.
   (:pull:`2352`)
 
+Breaking Changes
+~~~~~~~~~~~~~~~~
+* To ensure that the time zone in pvlib.location.Location remains internally
+  consistent if/when the time zone is updated, the tz attribute becomes the
+  single source of time-zone truth, is the single time-zone setter interface,
+  and its getter consistently returns an IANA string. datetime.tzinfo
+  subclasses (including time zones from pytz and zoneinfo) are still fully
+  supported in the tz setter, but the pytz attribute becomes read only.
+  (:issue:`2340`, :pull:`2341`)
 
 Contributors
 ~~~~~~~~~~~~

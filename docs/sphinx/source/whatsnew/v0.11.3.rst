@@ -10,7 +10,7 @@ Deprecations
 
 Enhancements
 ~~~~~~~~~~~~
-* :pyPfunc:`~pvlib.irradiance.gti_dirint` now raises an informative message
+* :py:func:`~pvlib.irradiance.gti_dirint` now raises an informative message
   when input data don't include values with AOI<90 (:issue:`1342`, :pull:`2347`)
 
 Documentation

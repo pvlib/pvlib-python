@@ -2408,7 +2408,7 @@ def _gti_dirint_check_input(aoi):
 
     Raises Exceptions from input data that cause the algorithm to fail.
     """
-    if (aoi >= 90).all():
+    if not (aoi < 90).any():
         raise ValueError("AOI >= 90 for all input data to gti_dirint. "
                          "gti_dirint requires some data with AOI < 90.")
 

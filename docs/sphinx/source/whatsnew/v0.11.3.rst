@@ -14,7 +14,8 @@ Enhancements
 
 Documentation
 ~~~~~~~~~~~~~
-
+* :py:meth:`~pvlib.solarposition.get_solarposition` Changes for different results for Procedural and Object oriented examples
+  (:issue:`2366`, :pull:`2367`)
 
 Testing
 ~~~~~~~
@@ -36,3 +37,4 @@ Contributors
 ~~~~~~~~~~~~
 * Rajiv Daxini (:ghuser:`RDaxini`)
 * Mark Campanelli (:ghuser:`markcampanelli`)
+* Manoj K S (:ghuser: `manojks1999`)

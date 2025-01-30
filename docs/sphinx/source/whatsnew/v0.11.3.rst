@@ -14,8 +14,7 @@ Enhancements
 
 Documentation
 ~~~~~~~~~~~~~
-* :py:meth:`~pvlib.solarposition.get_solarposition` Changes for different results for Procedural and Object oriented examples
-  (:issue:`2366`, :pull:`2367`)
+* Fix Procedural and Object Oriented simulation examples having slightly different results, in :ref:`introtutorial`.
 
 Testing
 ~~~~~~~
@@ -37,4 +36,4 @@ Contributors
 ~~~~~~~~~~~~
 * Rajiv Daxini (:ghuser:`RDaxini`)
 * Mark Campanelli (:ghuser:`markcampanelli`)
-* Manoj K S (:ghuser: `manojks1999`)
+* Manoj K S (:ghuser:`manojks1999`)

@@ -14,8 +14,8 @@ Enhancements
 
 Documentation
 ~~~~~~~~~~~~~
+* Fix Procedural and Object Oriented simulation examples having slightly different results, in :ref:`introtutorial`. (:issue:`2366`, :pull:`2367`)
 * Restructure the user guide with subsections (:issue:`2302`, :pull:`2310`)
-
 
 Testing
 ~~~~~~~
@@ -37,3 +37,4 @@ Contributors
 ~~~~~~~~~~~~
 * Rajiv Daxini (:ghuser:`RDaxini`)
 * Mark Campanelli (:ghuser:`markcampanelli`)
+* Manoj K S (:ghuser:`manojks1999`)

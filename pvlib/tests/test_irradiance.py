@@ -939,7 +939,7 @@ def test_gti_dirint_data_error():
 
     aoi = np.array([100, 170, 110])
     with pytest.raises(
-            ValueError, match="AOI >= 90 for all input data to gti_dirint"):
+            ValueError, match="There are no times with AOI < 90"):
         irradiance.gti_dirint(
             poa_global, aoi, zenith, azimuth, times, surface_tilt,
             surface_azimuth)

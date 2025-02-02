@@ -9,11 +9,24 @@ import numpy as np
 
 
 def pvfactors_timeseries(
-        solar_azimuth, solar_zenith, surface_azimuth, surface_tilt,
-        axis_azimuth, timestamps, dni, dhi, gcr, pvrow_height, pvrow_width,
-        albedo, n_pvrows=3, index_observed_pvrow=1,
-        rho_front_pvrow=0.03, rho_back_pvrow=0.05,
-        horizon_band_angle=15.):
+    solar_azimuth,
+    solar_zenith,
+    surface_azimuth,
+    surface_tilt,
+    axis_azimuth,
+    timestamps,
+    dni,
+    dhi,
+    gcr,
+    pvrow_height,
+    pvrow_width,
+    albedo,
+    n_pvrows=3,
+    index_observed_pvrow=1,
+    rho_front_pvrow=0.03,
+    rho_back_pvrow=0.05,
+    horizon_band_angle=15.0,
+):
     """
     Calculate front and back surface plane-of-array irradiance on
     a fixed tilt or single-axis tracker PV array configuration using
@@ -103,39 +116,57 @@ def pvfactors_timeseries(
 
     # Build up pv array configuration parameters
     pvarray_parameters = {
-        'n_pvrows': n_pvrows,
-        'axis_azimuth': axis_azimuth,
-        'pvrow_height': pvrow_height,
-        'pvrow_width': pvrow_width,
-        'gcr': gcr
+        "n_pvrows": n_pvrows,
+        "axis_azimuth": axis_azimuth,
+        "pvrow_height": pvrow_height,
+        "pvrow_width": pvrow_width,
+        "gcr": gcr,
     }
 
     irradiance_model_params = {
-        'rho_front': rho_front_pvrow,
-        'rho_back': rho_back_pvrow,
-        'horizon_band_angle': horizon_band_angle
+        "rho_front": rho_front_pvrow,
+        "rho_back": rho_back_pvrow,
+        "horizon_band_angle": horizon_band_angle,
     }
 
     # Create report function
     def fn_build_report(pvarray):
-        return {'total_inc_back': pvarray.ts_pvrows[index_observed_pvrow]
-                .back.get_param_weighted('qinc'),
-                'total_inc_front': pvarray.ts_pvrows[index_observed_pvrow]
-                .front.get_param_weighted('qinc'),
-                'total_abs_back': pvarray.ts_pvrows[index_observed_pvrow]
-                .back.get_param_weighted('qabs'),
-                'total_abs_front': pvarray.ts_pvrows[index_observed_pvrow]
-                .front.get_param_weighted('qabs')}
+        return {
+            "total_inc_back": pvarray.ts_pvrows[
+                index_observed_pvrow
+            ].back.get_param_weighted("qinc"),
+            "total_inc_front": pvarray.ts_pvrows[
+                index_observed_pvrow
+            ].front.get_param_weighted("qinc"),
+            "total_abs_back": pvarray.ts_pvrows[
+                index_observed_pvrow
+            ].back.get_param_weighted("qabs"),
+            "total_abs_front": pvarray.ts_pvrows[
+                index_observed_pvrow
+            ].front.get_param_weighted("qabs"),
+        }
 
     # Run pvfactors calculations
     report = run_timeseries_engine(
-        fn_build_report, pvarray_parameters,
-        timestamps, dni, dhi, solar_zenith, solar_azimuth,
-        surface_tilt, surface_azimuth, albedo,
-        irradiance_model_params=irradiance_model_params)
+        fn_build_report,
+        pvarray_parameters,
+        timestamps,
+        dni,
+        dhi,
+        solar_zenith,
+        solar_azimuth,
+        surface_tilt,
+        surface_azimuth,
+        albedo,
+        irradiance_model_params=irradiance_model_params,
+    )
 
     # Turn report into dataframe
     df_report = pd.DataFrame(report, index=timestamps)
 
-    return (df_report.total_inc_front, df_report.total_inc_back,
-            df_report.total_abs_front, df_report.total_abs_back)
+    return (
+        df_report.total_inc_front,
+        df_report.total_inc_back,
+        df_report.total_abs_front,
+        df_report.total_abs_back,
+    )

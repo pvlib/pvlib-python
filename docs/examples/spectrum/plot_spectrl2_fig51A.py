@@ -34,15 +34,16 @@ tau500 = 0.1
 ozone = 0.31  # atm-cm
 albedo = 0.2
 
-times = pd.date_range('1984-03-20 06:17', freq='h', periods=6, tz='Etc/GMT+7')
+times = pd.date_range("1984-03-20 06:17", freq="h", periods=6, tz="Etc/GMT+7")
 solpos = solarposition.get_solarposition(times, lat, lon)
 aoi = irradiance.aoi(tilt, azimuth, solpos.apparent_zenith, solpos.azimuth)
 
 # The technical report uses the 'kasten1966' airmass model, but later
 # versions of SPECTRL2 use 'kastenyoung1989'.  Here we use 'kasten1966'
 # for consistency with the technical report.
-relative_airmass = atmosphere.get_relative_airmass(solpos.apparent_zenith,
-                                                   model='kasten1966')
+relative_airmass = atmosphere.get_relative_airmass(
+    solpos.apparent_zenith, model="kasten1966"
+)
 
 # %%
 # With all the necessary inputs in hand we can model spectral irradiance using
@@ -69,7 +70,7 @@ spectra = spectrum.spectrl2(
 # Figure 5-1A:
 
 plt.figure()
-plt.plot(spectra['wavelength'], spectra['poa_global'])
+plt.plot(spectra["wavelength"], spectra["poa_global"])
 plt.xlim(200, 2700)
 plt.ylim(0, 1.8)
 plt.title(r"Day 80 1984, $\tau=0.1$, Wv=0.5 cm")

@@ -173,9 +173,9 @@ def masking_angle_passias(surface_tilt, gcr):
     beta = np.radians(np.array(surface_tilt))
     sin_b = np.sin(beta)
     cos_b = np.cos(beta)
-    X = 1/gcr
+    X = 1 / gcr
 
-    with np.errstate(divide='ignore', invalid='ignore'):  # ignore beta=0
+    with np.errstate(divide="ignore", invalid="ignore"):  # ignore beta=0
         term1 = -X * sin_b * np.log(np.abs(2 * X * cos_b - (X**2 + 1))) / 2
         term2 = (X * cos_b - 1) * np.arctan((X * cos_b - 1) / (X * sin_b))
         term3 = (1 - X * cos_b) * np.arctan(cos_b / sin_b)
@@ -231,11 +231,12 @@ def sky_diffuse_passias(masking_angle):
        Reference Update", NREL Technical Report NREL/TP-6A20-67399.
        Available at https://www.nrel.gov/docs/fy18osti/67399.pdf
     """
-    return 1 - cosd(masking_angle/2)**2
+    return 1 - cosd(masking_angle / 2) ** 2
 
 
-def projected_solar_zenith_angle(solar_zenith, solar_azimuth,
-                                 axis_tilt, axis_azimuth):
+def projected_solar_zenith_angle(
+    solar_zenith, solar_azimuth, axis_tilt, axis_azimuth
+):
     r"""
     Calculate projected solar zenith angle in degrees.
 

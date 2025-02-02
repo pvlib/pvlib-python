@@ -43,12 +43,13 @@ import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
 
-from pvlib.irradiance import (erbs_driesse,
-                              get_total_irradiance,
-                              ghi_from_poa_driesse_2023,
-                              )
+from pvlib.irradiance import (
+    erbs_driesse,
+    get_total_irradiance,
+    ghi_from_poa_driesse_2023,
+)
 
-matplotlib.rcParams['axes.grid'] = True
+matplotlib.rcParams["axes.grid"] = True
 
 # %%
 #
@@ -70,20 +71,26 @@ solar_zenith = 75
 # transpose using the Perez-Driesse model.
 #
 
-ghi = np.linspace(0, 500, 100+1)
+ghi = np.linspace(0, 500, 100 + 1)
 
 erbsout = erbs_driesse(ghi, solar_zenith, dni_extra=dni_extra)
 
-dni = erbsout['dni']
-dhi = erbsout['dhi']
+dni = erbsout["dni"]
+dhi = erbsout["dhi"]
 
-irrads = get_total_irradiance(surface_tilt, surface_azimuth,
-                              solar_zenith, solar_azimuth,
-                              dni, ghi, dhi,
-                              dni_extra,
-                              model='perez-driesse')
+irrads = get_total_irradiance(
+    surface_tilt,
+    surface_azimuth,
+    solar_zenith,
+    solar_azimuth,
+    dni,
+    ghi,
+    dhi,
+    dni_extra,
+    model="perez-driesse",
+)
 
-poa_global = irrads['poa_global']
+poa_global = irrads["poa_global"]
 
 # %%
 #
@@ -92,13 +99,17 @@ poa_global = irrads['poa_global']
 
 poa_test = 200
 
-ghi_hat = ghi_from_poa_driesse_2023(surface_tilt, surface_azimuth,
-                                    solar_zenith, solar_azimuth,
-                                    poa_test,
-                                    dni_extra,
-                                    full_output=False)
+ghi_hat = ghi_from_poa_driesse_2023(
+    surface_tilt,
+    surface_azimuth,
+    solar_zenith,
+    solar_azimuth,
+    poa_test,
+    dni_extra,
+    full_output=False,
+)
 
-print('Estimated GHI: %.2f W/m².' % ghi_hat)
+print("Estimated GHI: %.2f W/m²." % ghi_hat)
 
 # %%
 #
@@ -106,19 +117,21 @@ print('Estimated GHI: %.2f W/m².' % ghi_hat)
 #
 
 plt.figure()
-plt.plot(ghi, poa_global, 'k-')
-plt.axvline(ghi_hat, color='g', lw=1)
-plt.axhline(poa_test, color='g', lw=1)
-plt.plot(ghi_hat, poa_test, 'gs')
-plt.annotate('GHI=%.2f' % (ghi_hat),
-             xy=(ghi_hat-2, 200+2),
-             xytext=(ghi_hat-20, 200+20),
-             ha='right',
-             arrowprops={'arrowstyle': 'simple'})
+plt.plot(ghi, poa_global, "k-")
+plt.axvline(ghi_hat, color="g", lw=1)
+plt.axhline(poa_test, color="g", lw=1)
+plt.plot(ghi_hat, poa_test, "gs")
+plt.annotate(
+    "GHI=%.2f" % (ghi_hat),
+    xy=(ghi_hat - 2, 200 + 2),
+    xytext=(ghi_hat - 20, 200 + 20),
+    ha="right",
+    arrowprops={"arrowstyle": "simple"},
+)
 plt.xlim(0, 500)
 plt.ylim(0, 250)
-plt.xlabel('GHI [W/m²]')
-plt.ylabel('POA [W/m²]')
+plt.xlabel("GHI [W/m²]")
+plt.ylabel("POA [W/m²]")
 plt.show()
 
 # %%
@@ -136,16 +149,22 @@ solar_azimuth = 76
 
 erbsout = erbs_driesse(ghi, solar_zenith, dni_extra=dni_extra)
 
-dni = erbsout['dni']
-dhi = erbsout['dhi']
+dni = erbsout["dni"]
+dhi = erbsout["dhi"]
 
-irrads = get_total_irradiance(surface_tilt, surface_azimuth,
-                              solar_zenith, solar_azimuth,
-                              dni, ghi, dhi,
-                              dni_extra,
-                              model='perez-driesse')
+irrads = get_total_irradiance(
+    surface_tilt,
+    surface_azimuth,
+    solar_zenith,
+    solar_azimuth,
+    dni,
+    ghi,
+    dhi,
+    dni_extra,
+    model="perez-driesse",
+)
 
-poa_global = irrads['poa_global']
+poa_global = irrads["poa_global"]
 
 # %%
 #
@@ -156,26 +175,33 @@ poa_global = irrads['poa_global']
 # out, other times not.
 #
 
-result = ghi_from_poa_driesse_2023(surface_tilt, surface_azimuth,
-                                   solar_zenith, solar_azimuth,
-                                   poa_global,
-                                   dni_extra,
-                                   full_output=True,
-                                   )
+result = ghi_from_poa_driesse_2023(
+    surface_tilt,
+    surface_azimuth,
+    solar_zenith,
+    solar_azimuth,
+    poa_global,
+    dni_extra,
+    full_output=True,
+)
 
 ghi_hat, conv, niter = result
 correct = np.isclose(ghi, ghi_hat, atol=0.01)
 
 plt.figure()
-plt.plot(np.where(correct, ghi, np.nan), np.where(correct, poa_global, np.nan),
-         'g.', label='correct GHI found')
-plt.plot(ghi[~correct], poa_global[~correct], 'r.', label='unreachable GHI')
-plt.plot(ghi[~conv], poa_global[~conv], 'm.', label='out of range (kt > 1.25)')
-plt.axhspan(88, 103, color='y', alpha=0.25, label='problem region')
+plt.plot(
+    np.where(correct, ghi, np.nan),
+    np.where(correct, poa_global, np.nan),
+    "g.",
+    label="correct GHI found",
+)
+plt.plot(ghi[~correct], poa_global[~correct], "r.", label="unreachable GHI")
+plt.plot(ghi[~conv], poa_global[~conv], "m.", label="out of range (kt > 1.25)")
+plt.axhspan(88, 103, color="y", alpha=0.25, label="problem region")
 
 plt.xlim(0, 500)
 plt.ylim(0, 250)
-plt.xlabel('GHI [W/m²]')
-plt.ylabel('POA [W/m²]')
+plt.xlabel("GHI [W/m²]")
+plt.ylabel("POA [W/m²]")
 plt.legend()
 plt.show()

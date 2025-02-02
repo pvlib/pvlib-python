@@ -56,7 +56,7 @@ jobs:
     strategy:
       fail-fast: false  # don't cancel other matrix jobs when one fails
       matrix:
-        python-version: [3.9, "3.10", "3.11", "3.12"]
+        python-version: [3.9, 3.10, 3.11, 3.12, 3.13]
         suffix: ['']  # the alternative to "-min"
         include:
           - python-version: 3.9

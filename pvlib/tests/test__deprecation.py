@@ -10,20 +10,21 @@ from .conftest import fail_on_pvlib_version
 import warnings
 
 
-@pytest.mark.xfail(strict=True,
-                   reason='fail_on_pvlib_version should cause test to fail')
-@fail_on_pvlib_version('0.0')
+@pytest.mark.xfail(
+    strict=True, reason="fail_on_pvlib_version should cause test to fail"
+)
+@fail_on_pvlib_version("0.0")
 def test_fail_on_pvlib_version():
     pass  # pragma: no cover
 
 
-@fail_on_pvlib_version('100000.0')
+@fail_on_pvlib_version("100000.0")
 def test_fail_on_pvlib_version_pass():
     pass
 
 
-@pytest.mark.xfail(strict=True, reason='ensure that the test is called')
-@fail_on_pvlib_version('100000.0')
+@pytest.mark.xfail(strict=True, reason="ensure that the test is called")
+@fail_on_pvlib_version("100000.0")
 def test_fail_on_pvlib_version_fail_in_test():
     raise Exception
 
@@ -46,7 +47,7 @@ def deprec_func():
     )(alt_func)
 
 
-@fail_on_pvlib_version('350.9')
+@fail_on_pvlib_version("350.9")
 def test_use_fixture_with_decorator(some_data, deprec_func):
     # test that the correct data is returned by the some_data fixture
     assert some_data == "some data"

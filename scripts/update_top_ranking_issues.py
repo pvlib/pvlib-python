@@ -15,8 +15,8 @@ def main():
     # but we can place it in our env when running the script locally,
     # for convenience
     local_github_token: str | None = None
-    github_token: str | None = (
-        local_github_token or os.getenv("GITHUB_ACCESS_TOKEN")
+    github_token: str | None = local_github_token or os.getenv(
+        "GITHUB_ACCESS_TOKEN"
     )
     github = Github(github_token)
 
@@ -35,7 +35,7 @@ def main():
     # --- Actions ---
     # Get sorted issues
     query: str = (
-        f'repo:{repository.full_name} is:open is:issue sort:reactions-+1-desc'
+        f"repo:{repository.full_name} is:open is:issue sort:reactions-+1-desc"
     )
     issues = github.search_issues(query)
 
@@ -54,8 +54,8 @@ def main():
             break
 
         markdown_bullet_point: str = (
-            f"{issue.html_url} " +
-            f"({issue._rawData['reactions']['+1']} :thumbsup:)"
+            f"{issue.html_url} "
+            + f"({issue._rawData['reactions']['+1']} :thumbsup:)"
         )
 
         markdown_bullet_point = f"{i}. {markdown_bullet_point}"
@@ -67,9 +67,7 @@ def main():
     )
     header = "Top Ranking Issues"
     new_body = header + "\n" + "\n".join(ranked_issues)
-    top_issues_card.edit(
-        body=new_body
-    )
+    top_issues_card.edit(body=new_body)
 
     print(top_issues_card.body)
 

@@ -1,5 +1,4 @@
-""" Functions to access data from the Solcast API.
-"""
+"""Functions to access data from the Solcast API."""
 
 import requests
 import pandas as pd
@@ -21,7 +20,7 @@ VARIABLE_MAP = [
     # air_temp -> temp_air (deg C)
     ParameterMap("air_temp", "temp_air"),
     # surface_pressure (hPa) -> pressure (Pa)
-    ParameterMap("surface_pressure", "pressure", lambda x: x*100),
+    ParameterMap("surface_pressure", "pressure", lambda x: x * 100),
     # dewpoint_temp -> temp_dew (deg C)
     ParameterMap("dewpoint_temp", "temp_dew"),
     # gti (W/m^2) -> poa_global (W/m^2)
@@ -31,18 +30,16 @@ VARIABLE_MAP = [
     # wind_direction_10m (deg) -> wind_direction  (deg)
     ParameterMap("wind_direction_10m", "wind_direction"),
     # azimuth -> solar_azimuth (degrees) (different convention)
-    ParameterMap(
-        "azimuth", "solar_azimuth", lambda x: -x % 360
-    ),
+    ParameterMap("azimuth", "solar_azimuth", lambda x: -x % 360),
     # precipitable_water (kg/m2) -> precipitable_water (cm)
-    ParameterMap("precipitable_water", "precipitable_water", lambda x: x/10),
+    ParameterMap("precipitable_water", "precipitable_water", lambda x: x / 10),
     # zenith -> solar_zenith
     ParameterMap("zenith", "solar_zenith"),
     # clearsky
     ParameterMap("clearsky_dhi", "dhi_clear"),
     ParameterMap("clearsky_dni", "dni_clear"),
     ParameterMap("clearsky_ghi", "ghi_clear"),
-    ParameterMap("clearsky_gti", "poa_global_clear")
+    ParameterMap("clearsky_gti", "poa_global_clear"),
 ]
 
 
@@ -113,17 +110,14 @@ def get_solcast_tmy(
     """
 
     params = dict(
-        latitude=latitude,
-        longitude=longitude,
-        format="json",
-        **kwargs
+        latitude=latitude, longitude=longitude, format="json", **kwargs
     )
 
     data = _get_solcast(
         endpoint="tmy/radiation_and_weather",
         params=params,
         api_key=api_key,
-        map_variables=map_variables
+        map_variables=map_variables,
     )
 
     return data, {"latitude": latitude, "longitude": longitude}
@@ -137,7 +131,7 @@ def get_solcast_historic(
     end=None,
     duration=None,
     map_variables=True,
-    **kwargs
+    **kwargs,
 ):
     """Get historical irradiance and weather estimates.
 
@@ -222,14 +216,14 @@ def get_solcast_historic(
         duration=duration,
         api_key=api_key,
         format="json",
-        **kwargs
+        **kwargs,
     )
 
     data = _get_solcast(
         endpoint="historic/radiation_and_weather",
         params=params,
         api_key=api_key,
-        map_variables=map_variables
+        map_variables=map_variables,
     )
 
     return data, {"latitude": latitude, "longitude": longitude}
@@ -297,17 +291,14 @@ def get_solcast_forecast(
     """
 
     params = dict(
-        latitude=latitude,
-        longitude=longitude,
-        format="json",
-        **kwargs
+        latitude=latitude, longitude=longitude, format="json", **kwargs
     )
 
     data = _get_solcast(
         endpoint="forecast/radiation_and_weather",
         params=params,
         api_key=api_key,
-        map_variables=map_variables
+        map_variables=map_variables,
     )
 
     return data, {"latitude": latitude, "longitude": longitude}
@@ -384,17 +375,14 @@ def get_solcast_live(
     """
 
     params = dict(
-        latitude=latitude,
-        longitude=longitude,
-        format="json",
-        **kwargs
+        latitude=latitude, longitude=longitude, format="json", **kwargs
     )
 
     data = _get_solcast(
         endpoint="live/radiation_and_weather",
         params=params,
         api_key=api_key,
-        map_variables=map_variables
+        map_variables=map_variables,
     )
 
     return data, {"latitude": latitude, "longitude": longitude}
@@ -414,8 +402,10 @@ def _solcast2pvlib(data):
     """
     # move from period_end to period_middle as per pvlib convention
 
-    data["period_mid"] = pd.to_datetime(
-        data.period_end) - pd.to_timedelta(data.period.values) / 2
+    data["period_mid"] = (
+        pd.to_datetime(data.period_end)
+        - pd.to_timedelta(data.period.values) / 2
+    )
     data = data.set_index("period_mid").drop(columns=["period_end", "period"])
 
     # rename and convert variables
@@ -423,19 +413,15 @@ def _solcast2pvlib(data):
         if variable.solcast_name in data.columns:
             data.rename(
                 columns={variable.solcast_name: variable.pvlib_name},
-                inplace=True
+                inplace=True,
             )
-            data[variable.pvlib_name] = data[
-                variable.pvlib_name].apply(variable.conversion)
+            data[variable.pvlib_name] = data[variable.pvlib_name].apply(
+                variable.conversion
+            )
     return data
 
 
-def _get_solcast(
-        endpoint,
-        params,
-        api_key,
-        map_variables
-):
+def _get_solcast(endpoint, params, api_key, map_variables):
     """Retrieve weather, irradiance and power data from the Solcast API.
 
     Parameters
@@ -467,9 +453,9 @@ def _get_solcast(
     """
 
     response = requests.get(
-        url='/'.join([BASE_URL, endpoint]),
+        url="/".join([BASE_URL, endpoint]),
         params=params,
-        headers={"Authorization": f"Bearer {api_key}"}
+        headers={"Authorization": f"Bearer {api_key}"},
     )
 
     if response.status_code == 200:

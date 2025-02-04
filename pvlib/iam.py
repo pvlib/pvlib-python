@@ -7,22 +7,14 @@ irradiance that is reflected away or absorbed by the module's front materials.
 IAM is typically a function of the angle of incidence (AOI) of the direct
 irradiance to the module's surface.
 """
+import functools
 
 import numpy as np
 import pandas as pd
-import functools
+import scipy.interpolate
 from scipy.optimize import minimize
-from pvlib.tools import cosd, sind, acosd
 
-# a dict of required parameter names for each IAM model
-# keys are the function names for the IAM models
-_IAM_MODEL_PARAMS = {
-    'ashrae': {'b'},
-    'physical': {'n', 'K', 'L'},
-    'martin_ruiz': {'a_r'},
-    'sapm': {'B0', 'B1', 'B2', 'B3', 'B4', 'B5'},
-    'interp': {'theta_ref', 'iam_ref'}
-}
+from pvlib.tools import cosd, sind, acosd
 
 
 def ashrae(aoi, b=0.05):
@@ -75,9 +67,11 @@ def ashrae(aoi, b=0.05):
 
     See Also
     --------
-    pvlib.iam.physical
-    pvlib.iam.martin_ruiz
     pvlib.iam.interp
+    pvlib.iam.martin_ruiz
+    pvlib.iam.physical
+    pvlib.iam.sapm
+    pvlib.iam.schlick
     """
 
     iam = 1 - b * (1 / np.cos(np.radians(aoi)) - 1)
@@ -92,7 +86,7 @@ def ashrae(aoi, b=0.05):
     return iam
 
 
-def physical(aoi, n=1.526, K=4.0, L=0.002, *, n_ar=None):
+def physical(aoi, n=1.526, K=4.0, L=0.002, n_ar=None):
     r"""
     Determine the incidence angle modifier using refractive index ``n``,
     extinction coefficient ``K``, glazing thickness ``L`` and refractive
@@ -151,10 +145,11 @@ def physical(aoi, n=1.526, K=4.0, L=0.002, *, n_ar=None):
 
     See Also
     --------
-    pvlib.iam.martin_ruiz
     pvlib.iam.ashrae
     pvlib.iam.interp
+    pvlib.iam.martin_ruiz
     pvlib.iam.sapm
+    pvlib.iam.schlick
     """
     n1, n3 = 1, n
     if n_ar is None or np.allclose(n_ar, n1):
@@ -286,11 +281,12 @@ def martin_ruiz(aoi, a_r=0.16):
 
     See Also
     --------
-    pvlib.iam.martin_ruiz_diffuse
-    pvlib.iam.physical
     pvlib.iam.ashrae
     pvlib.iam.interp
+    pvlib.iam.physical
     pvlib.iam.sapm
+    pvlib.iam.schlick
+    pvlib.iam.martin_ruiz_diffuse
     '''
     # Contributed by Anton Driesse (@adriesse), PV Performance Labs. July, 2019
 
@@ -314,7 +310,7 @@ def martin_ruiz(aoi, a_r=0.16):
 
 def martin_ruiz_diffuse(surface_tilt, a_r=0.16, c1=0.4244, c2=None):
     '''
-    Determine the incidence angle modifiers (iam) for diffuse sky and
+    Determine the incidence angle modifiers (IAM) for diffuse sky and
     ground-reflected irradiance using the Martin and Ruiz incident angle model.
 
     Parameters
@@ -373,10 +369,8 @@ def martin_ruiz_diffuse(surface_tilt, a_r=0.16, c1=0.4244, c2=None):
     See Also
     --------
     pvlib.iam.martin_ruiz
-    pvlib.iam.physical
-    pvlib.iam.ashrae
-    pvlib.iam.interp
-    pvlib.iam.sapm
+    pvlib.iam.marion_diffuse
+    pvlib.iam.schlick_diffuse
     '''
     # Contributed by Anton Driesse (@adriesse), PV Performance Labs. Oct. 2019
 
@@ -463,14 +457,13 @@ def interp(aoi, theta_ref, iam_ref, method='linear', normalize=True):
 
     See Also
     --------
-    pvlib.iam.physical
     pvlib.iam.ashrae
     pvlib.iam.martin_ruiz
+    pvlib.iam.physical
     pvlib.iam.sapm
+    pvlib.iam.schlick
     '''
     # Contributed by Anton Driesse (@adriesse), PV Performance Labs. July, 2019
-
-    from scipy.interpolate import interp1d
 
     # Scipy doesn't give the clearest feedback, so check number of points here.
     MIN_REF_VALS = {'linear': 2, 'quadratic': 3, 'cubic': 4, 1: 2, 2: 3, 3: 4}
@@ -483,8 +476,9 @@ def interp(aoi, theta_ref, iam_ref, method='linear', normalize=True):
         raise ValueError("Negative value(s) found in 'iam_ref'. "
                          "This is not physically possible.")
 
-    interpolator = interp1d(theta_ref, iam_ref, kind=method,
-                            fill_value='extrapolate')
+    interpolator = scipy.interpolate.interp1d(
+        theta_ref, iam_ref, kind=method, fill_value='extrapolate'
+    )
     aoi_input = aoi
 
     aoi = np.asanyarray(aoi)
@@ -501,9 +495,19 @@ def interp(aoi, theta_ref, iam_ref, method='linear', normalize=True):
     return iam
 
 
-def sapm(aoi, module, upper=None):
+def sapm(aoi, B0, B1, B2, B3, B4, B5, upper=None):
     r"""
-    Determine the incidence angle modifier (IAM) using the SAPM model.
+    Caclulate the incidence angle modifier (IAM), :math:`f_2`, using the
+    Sandia Array Performance Model (SAPM).
+
+    The SAPM incidence angle modifier is part of the broader Sandia Array
+    Performance Model, which defines five points on an IV curve using empirical
+    module-specific coefficients. Module coefficients for the SAPM are
+    available in the SAPM database and can be retrieved for use through
+    :py:func:`pvlib.pvsystem.retrieve_sam()`. More details on the SAPM can be
+    found in [1]_, while a full description of the procedure to determine the
+    empirical model coefficients, including those for the SAPM incidence angle
+    modifier, can be found in [2]_.
 
     Parameters
     ----------
@@ -511,20 +515,46 @@ def sapm(aoi, module, upper=None):
         Angle of incidence in degrees. Negative input angles will return
         zeros.
 
-    module : dict-like
-        A dict or Series with the SAPM IAM model parameters.
-        See the :py:func:`sapm` notes section for more details.
+    B0 : float
+        The coefficient of the degree-0 polynomial term.
+
+    B1 : float
+        The coefficient of the degree-1 polynomial term.
+
+    B2 : float
+        The coefficient of the degree-2 polynomial term.
+
+    B3 : float
+        The coefficient of the degree-3 polynomial term.
+
+    B4 : float
+        The coefficient of the degree-4 polynomial term.
+
+    B5 : float
+        The coefficient of the degree-5 polynomial term.
 
     upper : float, optional
-        Upper limit on the results.
+        Upper limit on the results. None means no upper limiting.
 
     Returns
     -------
     iam : numeric
-        The SAPM angle of incidence loss coefficient, termed F2 in [1]_.
+        The SAPM angle of incidence loss coefficient, :math:`f_2` in [1]_.
 
     Notes
     -----
+    The SAPM spectral correction functions parameterises :math:`f_2` as a
+    fifth-order polynomial function of angle of incidence:
+
+    .. math::
+
+        f_2 = b_0 + b_1 AOI + b_2 AOI^2 + b_3 AOI^3 + b_4 AOI^4 + b_5 AOI^5.
+
+    where :math:`f_2` is the spectral mismatch factor, :math:`b_{0-5}` are
+    the module-specific coefficients, and :math:`AOI` is the angle of
+    incidence. More detail on how this incidence angle modifier function was
+    developed can be found in [3]_. Its measurement is described in [4]_.
+
     The SAPM [1]_ traditionally does not define an upper limit on the AOI
     loss function and values slightly exceeding 1 may exist for moderate
     angles of incidence (15-40 degrees). However, users may consider
@@ -532,30 +562,34 @@ def sapm(aoi, module, upper=None):
 
     References
     ----------
-    .. [1] King, D. et al, 2004, "Sandia Photovoltaic Array Performance
-       Model", SAND Report 3535, Sandia National Laboratories, Albuquerque,
-       NM.
-
-    .. [2] B.H. King et al, "Procedure to Determine Coefficients for the
-       Sandia Array Performance Model (SAPM)," SAND2016-5284, Sandia
-       National Laboratories (2016).
-
-    .. [3] B.H. King et al, "Recent Advancements in Outdoor Measurement
-       Techniques for Angle of Incidence Effects," 42nd IEEE PVSC (2015).
-       :doi:`10.1109/PVSC.2015.7355849`
+    .. [1] King, D., Kratochvil, J., and Boyson W. (2004), "Sandia
+           Photovoltaic Array Performance Model", (No. SAND2004-3535), Sandia
+           National Laboratories, Albuquerque, NM (United States).
+           :doi:`10.2172/919131`
+    .. [2] King, B., Hansen, C., Riley, D., Robinson, C., and Pratt, L.
+           (2016). Procedure to determine coefficients for the Sandia Array
+           Performance Model (SAPM) (No. SAND2016-5284). Sandia National
+           Laboratories, Albuquerque, NM (United States).
+           :doi:`10.2172/1256510`
+    .. [3] King, D., Kratochvil, J., and Boyson, W. "Measuring solar spectral
+           and angle-of-incidence effects on photovoltaic modules and solar
+           irradiance sensors." Conference Record of the 26th IEEE Potovoltaic
+           Specialists Conference (PVSC). IEEE, 1997.
+           :doi:`10.1109/PVSC.1997.654283`
+    .. [4] B.H. King et al, "Recent Advancements in Outdoor Measurement
+           Techniques for Angle of Incidence Effects," 42nd IEEE PVSC (2015).
+           :doi:`10.1109/PVSC.2015.7355849`
 
     See Also
     --------
-    pvlib.iam.physical
     pvlib.iam.ashrae
-    pvlib.iam.martin_ruiz
     pvlib.iam.interp
+    pvlib.iam.martin_ruiz
+    pvlib.iam.physical
+    pvlib.iam.schlick
     """
 
-    aoi_coeff = [module['B5'], module['B4'], module['B3'], module['B2'],
-                 module['B1'], module['B0']]
-
-    iam = np.polyval(aoi_coeff, aoi)
+    iam = np.polyval([B5, B4, B3, B2, B1, B0], aoi)
     iam = np.clip(iam, 0, upper)
     # nan tolerant masking
     aoi_lt_0 = np.full_like(aoi, False, dtype='bool')
@@ -575,9 +609,11 @@ def marion_diffuse(model, surface_tilt, **kwargs):
 
     Parameters
     ----------
-    model : str
+    model : str or callable
         The IAM function to evaluate across solid angle. Must be one of
-        `'ashrae', 'physical', 'martin_ruiz', 'sapm', 'schlick'`.
+        `'ashrae', `interp`, 'martin_ruiz', 'physical', 'sapm', 'schlick'`
+        or be callable. If callable, then must take numeric AOI in degrees
+        as input and return the fractional IAM.
 
     surface_tilt : numeric
         Surface tilt angles in decimal degrees.
@@ -602,6 +638,14 @@ def marion_diffuse(model, surface_tilt, **kwargs):
     See Also
     --------
     pvlib.iam.marion_integrate
+    pvlib.iam.ashrae
+    pvlib.iam.interp
+    pvlib.iam.martin_ruiz
+    pvlib.iam.physical
+    pvlib.iam.sapm
+    pvlib.iam.schlick
+    pvlib.iam.martin_ruiz_diffuse
+    pvlib.iam.schlick_diffuse
 
     References
     ----------
@@ -613,7 +657,7 @@ def marion_diffuse(model, surface_tilt, **kwargs):
     Examples
     --------
     >>> marion_diffuse('physical', surface_tilt=20)
-    {'sky': 0.9539178294437575,
+    {'sky': 0.953917829443757
      'horizon': 0.7652650139134007,
      'ground': 0.6387140117795903}
 
@@ -622,26 +666,28 @@ def marion_diffuse(model, surface_tilt, **kwargs):
      'horizon': array([0.86478428, 0.91825792]),
      'ground': array([0.77004435, 0.8522436 ])}
     """
+    if callable(model):
+        # A callable IAM model function was specified.
+        func = model
+    else:
+        # Check that a builtin IAM function was specified.
+        builtin_models = _get_builtin_models()
 
-    models = {
-        'physical': physical,
-        'ashrae': ashrae,
-        'sapm': sapm,
-        'martin_ruiz': martin_ruiz,
-        'schlick': schlick,
+        try:
+            model = builtin_models[model]
+        except KeyError as exc:
+            raise ValueError(
+                f'model must be one of: {builtin_models.keys()}'
+            ) from exc
+
+        func = model["func"]
+
+    iam_function = functools.partial(func, **kwargs)
+
+    return {
+        region: marion_integrate(iam_function, surface_tilt, region)
+        for region in ['sky', 'horizon', 'ground']
     }
-
-    try:
-        iam_model = models[model]
-    except KeyError:
-        raise ValueError('model must be one of: ' + str(list(models.keys())))
-
-    iam_function = functools.partial(iam_model, **kwargs)
-    iam = {}
-    for region in ['sky', 'horizon', 'ground']:
-        iam[region] = marion_integrate(iam_function, surface_tilt, region)
-
-    return iam
 
 
 def marion_integrate(function, surface_tilt, region, num=None):
@@ -814,10 +860,6 @@ def schlick(aoi):
     iam : numeric
         The incident angle modifier.
 
-    See Also
-    --------
-    pvlib.iam.schlick_diffuse
-
     References
     ----------
     .. [1] Schlick, C. An inexpensive BRDF model for physically-based
@@ -827,6 +869,15 @@ def schlick(aoi):
        for Diffuse radiation on Inclined photovoltaic Surfaces (FEDIS)",
        Renewable and Sustainable Energy Reviews, vol. 161, 112362. June 2022.
        :doi:`10.1016/j.rser.2022.112362`
+
+    See Also
+    --------
+    pvlib.iam.ashrae
+    pvlib.iam.interp
+    pvlib.iam.martin_ruiz
+    pvlib.iam.physical
+    pvlib.iam.sapm
+    pvlib.iam.schlick_diffuse
     """
     iam = 1 - (1 - cosd(aoi)) ** 5
     iam = np.where(np.abs(aoi) >= 90.0, 0.0, iam)
@@ -875,10 +926,6 @@ def schlick_diffuse(surface_tilt):
     iam_ground : numeric
         The incident angle modifier for ground-reflected diffuse.
 
-    See Also
-    --------
-    pvlib.iam.schlick
-
     Notes
     -----
     The analytical integration of the Schlick approximation was derived
@@ -913,6 +960,12 @@ def schlick_diffuse(surface_tilt):
        for Diffuse radiation on Inclined photovoltaic Surfaces (FEDIS)",
        Renewable and Sustainable Energy Reviews, vol. 161, 112362. June 2022.
        :doi:`10.1016/j.rser.2022.112362`
+
+    See Also
+    --------
+    pvlib.iam.schlick
+    pvlib.iam.marion_diffuse
+    pvlib.iam.martin_ruiz_diffuse
     """
     # these calculations are as in [2]_, but with the refractive index
     # weighting coefficient w set to 1.0 (so it is omitted)
@@ -943,27 +996,96 @@ def schlick_diffuse(surface_tilt):
     return cuk, cug
 
 
-def _get_model(model_name):
-    # check that model is implemented
-    model_dict = {'ashrae': ashrae, 'martin_ruiz': martin_ruiz,
-                  'physical': physical}
+def _get_builtin_models():
+    """
+    Get builtin IAM models' usage information.
+
+    Returns
+    -------
+    info : dict
+        A dictionary of dictionaries keyed by builtin IAM model name, with
+        each model dictionary containing:
+
+        * 'func': callable
+            The callable model function
+        * 'params_required': set of str
+            The model function's required parameters
+        * 'params_optional': set of str
+            The model function's optional parameters
+
+    See Also
+    --------
+    pvlib.iam.ashrae
+    pvlib.iam.interp
+    pvlib.iam.martin_ruiz
+    pvlib.iam.physical
+    pvlib.iam.sapm
+    pvlib.iam.schlick
+    """
+    return {
+        'ashrae': {
+            'func': ashrae,
+            'params_required': set(),
+            'params_optional': {'b'},
+        },
+        'interp': {
+            'func': interp,
+            'params_required': {'theta_ref', 'iam_ref'},
+            'params_optional': {'method', 'normalize'},
+        },
+        'martin_ruiz': {
+            'func': martin_ruiz,
+            'params_required': set(),
+            'params_optional': {'a_r'},
+        },
+        'physical': {
+            'func': physical,
+            'params_required': set(),
+            'params_optional': {'n', 'K', 'L', 'n_ar'},
+        },
+        'sapm': {
+            'func': sapm,
+            'params_required': {'B0', 'B1', 'B2', 'B3', 'B4', 'B5'},
+            'params_optional': {'upper'},
+        },
+        'schlick': {
+            'func': schlick,
+            'params_required': set(),
+            'params_optional': set(),
+        },
+    }
+
+
+def _get_fittable_or_convertable_model(builtin_model_name):
+    # check that model is implemented and fittable or convertable
+    implemented_builtin_models = {
+        'ashrae': ashrae, 'martin_ruiz': martin_ruiz, 'physical': physical,
+    }
+
     try:
-        model = model_dict[model_name]
-    except KeyError:
-        raise NotImplementedError(f"The {model_name} model has not been "
-                                  "implemented")
+        return implemented_builtin_models[builtin_model_name]
+    except KeyError as exc:
+        raise NotImplementedError(
+            f"No implementation for model {builtin_model_name}"
+        ) from exc
 
-    return model
 
+def _check_params(builtin_model_name, params):
+    # check that parameters passed in with IAM model belong to the model
+    handed_params = set(params.keys())
+    builtin_model = _get_builtin_models()[builtin_model_name]
+    expected_params = builtin_model["params_required"].union(
+        builtin_model["params_optional"]
+    )
 
-def _check_params(model_name, params):
-    # check that the parameters passed in with the model
-    # belong to the model
-    exp_params = _IAM_MODEL_PARAMS[model_name]
-    if set(params.keys()) != exp_params:
-        raise ValueError(f"The {model_name} model was expecting to be passed "
-                         "{', '.join(list(exp_params))}, but "
-                         "was handed {', '.join(list(params.keys()))}")
+    if builtin_model_name == 'physical':
+        expected_params.remove('n_ar')  # Not required.
+
+    if handed_params != expected_params:
+        raise ValueError(
+            f"The {builtin_model_name} model was expecting to be passed"
+            f"{expected_params}, but was handed {handed_params}"
+        )
 
 
 def _sin_weight(aoi):
@@ -1179,8 +1301,8 @@ def convert(source_name, source_params, target_name, weight=_sin_weight,
     pvlib.iam.martin_ruiz
     pvlib.iam.physical
     """
-    source = _get_model(source_name)
-    target = _get_model(target_name)
+    source = _get_fittable_or_convertable_model(source_name)
+    target = _get_fittable_or_convertable_model(target_name)
 
     aoi = np.linspace(0, 90, 91)
     _check_params(source_name, source_params)
@@ -1277,7 +1399,7 @@ def fit(measured_aoi, measured_iam, model_name, weight=_sin_weight, xtol=None):
     pvlib.iam.martin_ruiz
     pvlib.iam.physical
     """
-    target = _get_model(model_name)
+    target = _get_fittable_or_convertable_model(model_name)
 
     if model_name == "physical":
         bounds = [(0, 0.08), (1, 2)]

@@ -12,7 +12,7 @@ jobs:
         with:
           python-version: '3.11'
       - name: Install Flake8 5.0.4 linter
-        run: pip install flake8==5.0.4  # use this version for --diff option
+        run: pip install flake8==5.0.4  # use this version for --diff option, should match version in pyproject.toml
       - name: Setup Flake8 output matcher for PR annotations
         run: echo '::add-matcher::.github/workflows/flake8-linter-matcher.json'
       - name: Fetch pull request target branch

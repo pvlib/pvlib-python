@@ -3,15 +3,46 @@ Created on Wed Oct  2 10:14:16 2019
 
 @author: cwhanse
 """
+import inspect
 
 import numpy as np
-import pandas as pd
-
-import pytest
-from .conftest import assert_series_equal
 from numpy.testing import assert_allclose
+import pandas as pd
+import pytest
+import scipy.interpolate
 
 from pvlib import iam as _iam
+from pvlib.tests.conftest import assert_series_equal
+
+
+def test_get_builtin_models():
+    builtin_models = _iam._get_builtin_models()
+
+    models = set(builtin_models.keys())
+    models_expected = {
+        "ashrae", "interp", "martin_ruiz", "physical", "sapm", "schlick"
+    }
+    assert set(models) == models_expected
+
+    for model in models:
+        builtin_model = builtin_models[model]
+
+        params_required_expected = set(
+            k for k, v in inspect.signature(
+                builtin_model["func"]
+            ).parameters.items() if v.default is inspect.Parameter.empty
+        )
+        assert builtin_model["params_required"].union(
+            {"aoi"}
+        ) == params_required_expected, model
+
+        params_optional_expected = set(
+            k for k, v in inspect.signature(
+                builtin_model["func"]
+            ).parameters.items() if v.default is not inspect.Parameter.empty
+        )
+        assert builtin_model["params_optional"] == \
+            params_optional_expected, model
 
 
 def test_ashrae():
@@ -222,7 +253,15 @@ def test_iam_interp():
 ])
 def test_sapm(sapm_module_params, aoi, expected):
 
-    out = _iam.sapm(aoi, sapm_module_params)
+    out = _iam.sapm(
+        aoi,
+        sapm_module_params["B0"],
+        sapm_module_params["B1"],
+        sapm_module_params["B2"],
+        sapm_module_params["B3"],
+        sapm_module_params["B4"],
+        sapm_module_params["B5"],
+    )
 
     if isinstance(aoi, pd.Series):
         assert_series_equal(out, expected, check_less_precise=4)
@@ -232,13 +271,38 @@ def test_sapm(sapm_module_params, aoi, expected):
 
 def test_sapm_limits():
     module_parameters = {'B0': 5, 'B1': 0, 'B2': 0, 'B3': 0, 'B4': 0, 'B5': 0}
-    assert _iam.sapm(1, module_parameters) == 5
+    assert _iam.sapm(
+        1,
+        module_parameters["B0"],
+        module_parameters["B1"],
+        module_parameters["B2"],
+        module_parameters["B3"],
+        module_parameters["B4"],
+        module_parameters["B5"],
+    ) == 5
 
     module_parameters = {'B0': 5, 'B1': 0, 'B2': 0, 'B3': 0, 'B4': 0, 'B5': 0}
-    assert _iam.sapm(1, module_parameters, upper=1) == 1
+    assert _iam.sapm(
+        1,
+        module_parameters["B0"],
+        module_parameters["B1"],
+        module_parameters["B2"],
+        module_parameters["B3"],
+        module_parameters["B4"],
+        module_parameters["B5"],
+        upper=1,
+    ) == 1
 
     module_parameters = {'B0': -5, 'B1': 0, 'B2': 0, 'B3': 0, 'B4': 0, 'B5': 0}
-    assert _iam.sapm(1, module_parameters) == 0
+    assert _iam.sapm(
+        1,
+        module_parameters["B0"],
+        module_parameters["B1"],
+        module_parameters["B2"],
+        module_parameters["B3"],
+        module_parameters["B4"],
+        module_parameters["B5"],
+    ) == 0
 
 
 def test_marion_diffuse_model(mocker):
@@ -265,10 +329,14 @@ def test_marion_diffuse_model(mocker):
     assert physical_spy.call_count == 3
 
     for k, v in ashrae_expected.items():
-        assert_allclose(ashrae_actual[k], v)
+        assert_allclose(
+            ashrae_actual[k], v, err_msg=f"ashrae component {k}"
+        )
 
     for k, v in physical_expected.items():
-        assert_allclose(physical_actual[k], v)
+        assert_allclose(
+            physical_actual[k], v, err_msg=f"physical component {k}"
+        )
 
 
 def test_marion_diffuse_kwargs():
@@ -281,11 +349,73 @@ def test_marion_diffuse_kwargs():
     actual = _iam.marion_diffuse('ashrae', 20, b=0.04)
 
     for k, v in expected.items():
-        assert_allclose(actual[k], v)
+        assert_allclose(actual[k], v, err_msg=f"component {k}")
+
+
+# IEC 61853-2 measurement data for tests.
+AOI_DATA = np.array([
+    0, 10, 20, 30, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90,
+])
+IAM_DATA = np.array([
+    1.0000, 1.0000, 1.0014, 1.0002, 0.9984, 0.9941, 0.9911, 0.9815, 0.9631,
+    0.9352, 0.8922, 0.8134, 0.6778, 0.4541, 0.0000,
+])
+
+
+def test_marion_diffuse_iam_function_without_kwargs():
+    """
+    Test PCHIP-interpolated custom IAM function from an IEC 61853-2 IAM
+    measurement, without any kwargs and with array input.
+    """
+    pchip = scipy.interpolate.PchipInterpolator(
+        AOI_DATA, IAM_DATA, extrapolate=False
+    )
+
+    # Custom IAM function without kwargs, using IEC 61853-2 measurement data.
+    def iam_pchip(aoi):
+        """
+        Compute unitless incident-angle modifier as a function of aoi, in
+        degrees.
+        """
+        iam_ = pchip(aoi)
+        iam_[90 < aoi] = 0.0
+
+        return iam_
+
+    expected = {
+        'sky': np.array([0.95671526, 0.96967113, 0.95672627, 0.88137573]),
+        'horizon': np.array([0.03718587, 0.94953826, 0.97722834, 0.94862772]),
+        'ground': np.array([0., 0.88137573, 0.95672627, 0.96967113]),
+    }
+    actual = _iam.marion_diffuse(iam_pchip, np.array([0.0, 45, 90, 135]))
+
+    for k, v in expected.items():
+        assert_allclose(actual[k], v, rtol=2e-7, err_msg=f"component {k}")
+
+
+def test_marion_diffuse_iam_with_kwargs():
+    """
+    Test custom IAM function (using iam.interp) with kwargs and scalar input.
+    """
+    expected = {
+        'sky': 0.9688222974371822,
+        'horizon': 0.94824614710175,
+        'ground': 0.878266931831978,
+    }
+    actual = _iam.marion_diffuse(
+        _iam.interp,
+        45.0,
+        theta_ref=AOI_DATA,
+        iam_ref=IAM_DATA,
+        normalize=False,
+    )
+
+    for k, v in expected.items():
+        assert_allclose(actual[k], v, err_msg=f"component {k}")
 
 
 def test_marion_diffuse_invalid():
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match='model must be one of: '):
         _iam.marion_diffuse('not_a_model', 20)
 
 
@@ -481,7 +611,9 @@ def test_convert_custom_weight_func():
 
 
 def test_convert_model_not_implemented():
-    with pytest.raises(NotImplementedError, match='model has not been'):
+    with pytest.raises(
+        NotImplementedError, match='No implementation for model foo'
+    ):
         _iam.convert('ashrae', {'b': 0.1}, 'foo')
 
 
@@ -532,7 +664,9 @@ def test_fit_custom_weight_func():
 
 
 def test_fit_model_not_implemented():
-    with pytest.raises(NotImplementedError, match='model has not been'):
+    with pytest.raises(
+        NotImplementedError, match='No implementation for model foo'
+    ):
         _iam.fit(np.array([0, 10]), np.array([1, 0.99]), 'foo')
 
 

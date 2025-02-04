@@ -148,7 +148,14 @@ def test_spectral_factor_firstsolar_range():
 ])
 def test_spectral_factor_sapm(sapm_module_params, airmass, expected):
 
-    out = spectrum.spectral_factor_sapm(airmass, sapm_module_params)
+    out = spectrum.spectral_factor_sapm(
+        airmass,
+        sapm_module_params["A0"],
+        sapm_module_params["A1"],
+        sapm_module_params["A2"],
+        sapm_module_params["A3"],
+        sapm_module_params["A4"],
+    )
 
     if isinstance(airmass, pd.Series):
         assert_series_equal(out, expected, check_less_precise=4)

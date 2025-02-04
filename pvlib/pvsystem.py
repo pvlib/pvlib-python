@@ -8,7 +8,6 @@ import functools
 import io
 import itertools
 from pathlib import Path
-import inspect
 from urllib.request import urlopen
 import numpy as np
 from scipy import constants
@@ -399,8 +398,8 @@ class PVSystem:
             The angle of incidence in degrees.
 
         aoi_model : string, default 'physical'
-            The IAM model to be used. Valid strings are 'physical', 'ashrae',
-            'martin_ruiz', 'sapm' and 'interp'.
+            The IAM model to be used. Valid strings are 'ashrae', 'interp',
+            'martin_ruiz', 'physical', 'sapm', and  'schlick'.
         Returns
         -------
         iam : numeric or tuple of numeric
@@ -634,9 +633,14 @@ class PVSystem:
             The SAPM spectral loss coefficient.
         """
         return tuple(
-            spectrum.spectral_factor_sapm(airmass_absolute,
-                                          array.module_parameters)
-            for array in self.arrays
+            spectrum.spectral_factor_sapm(
+                airmass_absolute,
+                array.module_parameters["A0"],
+                array.module_parameters["A1"],
+                array.module_parameters["A2"],
+                array.module_parameters["A3"],
+                array.module_parameters["A4"],
+            ) for array in self.arrays
         )
 
     @_unwrap_single_value
@@ -1161,12 +1165,15 @@ class Array:
 
     def get_iam(self, aoi, iam_model='physical'):
         """
-        Determine the incidence angle modifier using the method specified by
+        Determine the incidence-angle modifier (IAM) for the given
+        angle of incidence (AOI) using the method specified by
         ``iam_model``.
 
         Parameters for the selected IAM model are expected to be in
-        ``Array.module_parameters``. Default parameters are available for
-        the 'physical', 'ashrae' and 'martin_ruiz' models.
+        ``Array.module_parameters``. A minimal set of default parameters
+        are available for the 'ashrae', 'martin_ruiz', and 'physical'
+        models, but not for 'interp', 'sapm'. The 'schlick' model does not
+        take any parameters.
 
         Parameters
         ----------
@@ -1174,13 +1181,13 @@ class Array:
             The angle of incidence in degrees.
 
         aoi_model : string, default 'physical'
-            The IAM model to be used. Valid strings are 'physical', 'ashrae',
-            'martin_ruiz', 'sapm' and 'interp'.
+            The IAM model to be used. Valid strings are 'ashrae', 'interp',
+            'martin_ruiz', 'physical', 'sapm', and 'schlick'.
 
         Returns
         -------
         iam : numeric
-            The AOI modifier.
+            The IAM at the specified AOI.
 
         Raises
         ------
@@ -1188,18 +1195,27 @@ class Array:
             if `iam_model` is not a valid model name.
         """
         model = iam_model.lower()
-        if model in ['ashrae', 'physical', 'martin_ruiz', 'interp']:
-            func = getattr(iam, model)  # get function at pvlib.iam
-            # get all parameters from function signature to retrieve them from
-            # module_parameters if present
-            params = set(inspect.signature(func).parameters.keys())
-            params.discard('aoi')  # exclude aoi so it can't be repeated
-            kwargs = _build_kwargs(params, self.module_parameters)
-            return func(aoi, **kwargs)
-        elif model == 'sapm':
-            return iam.sapm(aoi, self.module_parameters)
-        else:
-            raise ValueError(model + ' is not a valid IAM model')
+
+        try:
+            model_info = iam._get_builtin_models()[model]
+        except KeyError as exc:
+            raise ValueError(f'{iam_model} is not a valid iam_model') from exc
+
+        for param in model_info["params_required"]:
+            if param not in self.module_parameters:
+                raise KeyError(f"{param} is missing in module_parameters")
+
+        params_required = _build_kwargs(
+            model_info["params_required"], self.module_parameters
+        )
+
+        params_optional = _build_kwargs(
+            model_info["params_optional"], self.module_parameters
+        )
+
+        return model_info["func"](
+            aoi, **params_required, **params_optional
+        )
 
     def get_cell_temperature(self, poa_global, temp_air, wind_speed, model,
                              effective_irradiance=None):
@@ -2379,8 +2395,23 @@ def sapm_effective_irradiance(poa_direct, poa_diffuse, airmass_absolute, aoi,
     pvlib.pvsystem.sapm
     """
 
-    F1 = spectrum.spectral_factor_sapm(airmass_absolute, module)
-    F2 = iam.sapm(aoi, module)
+    F1 = spectrum.spectral_factor_sapm(
+        airmass_absolute,
+        module["A0"],
+        module["A1"],
+        module["A2"],
+        module["A3"],
+        module["A4"],
+    )
+    F2 = iam.sapm(
+        aoi,
+        module["B0"],
+        module["B1"],
+        module["B2"],
+        module["B3"],
+        module["B4"],
+        module["B5"],
+    )
 
     Ee = F1 * (poa_direct * F2 + module['FD'] * poa_diffuse)
 

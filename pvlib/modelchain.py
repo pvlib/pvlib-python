@@ -6,14 +6,15 @@ library. With great power comes great responsibility: users should take
 the time to read the source code for the module.
 """
 
+from dataclasses import dataclass, field
 from functools import partial
 import itertools
+from typing import Optional, Tuple, TypeVar, Union
 import warnings
-import pandas as pd
-from dataclasses import dataclass, field
-from typing import Union, Tuple, Optional, TypeVar
 
-from pvlib import pvsystem, iam
+import pandas as pd
+
+from pvlib import pvsystem
 import pvlib.irradiance  # avoid name conflict with full import
 from pvlib.pvsystem import _DC_MODEL_PARAMS
 from pvlib.tools import _build_kwargs
@@ -289,12 +290,12 @@ class ModelChain:
     Parameters
     ----------
     system : PVSystem
-        A :py:class:`~pvlib.pvsystem.PVSystem` object that represents
-        the connected set of modules, inverters, etc.
+        A :py:class:`~pvlib.pvsystem.PVSystem` object that represents the
+        connected set of modules, inverters, etc.
 
     location : Location
-        A :py:class:`~pvlib.location.Location` object that represents
-        the physical location at which to evaluate the model.
+        A :py:class:`~pvlib.location.Location` object that represents the
+        physical location at which to evaluate the model.
 
     clearsky_model : str, default 'ineichen'
         Passed to location.get_clearsky. Only used when DNI is not found in
@@ -311,31 +312,29 @@ class ModelChain:
 
     dc_model : str, or function, optional
         If not specified, the model will be inferred from the parameters that
-        are common to all of system.arrays[i].module_parameters.
-        Valid strings are 'sapm', 'desoto', 'cec', 'pvsyst', 'pvwatts'.
-        The ModelChain instance will be passed as the first argument
-        to a user-defined function.
+        are common to all of system.arrays[i].module_parameters. Valid strings
+        are 'sapm', 'desoto', 'cec', 'pvsyst', 'pvwatts'. The ModelChain
+        instance will be passed as the first argument to a user-defined
+        function.
 
     ac_model : str, or function, optional
         If not specified, the model will be inferred from the parameters that
-        are common to all of system.inverter_parameters.
-        Valid strings are 'sandia', 'adr', 'pvwatts'. The
-        ModelChain instance will be passed as the first argument to a
-        user-defined function.
+        are common to all of system.inverter_parameters. Valid strings are
+        'sandia', 'adr', 'pvwatts'. The ModelChain instance will be passed as
+        the first argument to a user-defined function.
 
     aoi_model : str, or function, optional
         If not specified, the model will be inferred from the parameters that
-        are common to all of system.arrays[i].module_parameters.
-        Valid strings are 'physical', 'ashrae', 'sapm', 'martin_ruiz',
-        'interp' and 'no_loss'. The ModelChain instance will be passed as the
-        first argument to a user-defined function.
+        are common to all of system.arrays[i].module_parameters. Valid strings
+        are 'ashrae', 'interp', 'martin_ruiz', 'physical', 'sapm', 'schlick',
+        'no_loss'. The ModelChain instance will be passed as the first
+        argument to a user-defined function.
 
     spectral_model : str, or function, optional
         If not specified, the model will be inferred from the parameters that
-        are common to all of system.arrays[i].module_parameters.
-        Valid strings are 'sapm', 'first_solar', 'no_loss'.
-        The ModelChain instance will be passed as the first argument to
-        a user-defined function.
+        are common to all of system.arrays[i].module_parameters. Valid strings
+        are 'sapm', 'first_solar', 'no_loss'. The ModelChain instance will be
+        passed as the first argument to a user-defined function.
 
     temperature_model : str or function, optional
         Valid strings are: 'sapm', 'pvsyst', 'faiman', 'fuentes', 'noct_sam'.
@@ -385,7 +384,6 @@ class ModelChain:
         self.losses_model = losses_model
 
         self.results = ModelChainResult()
-
 
     @classmethod
     def with_pvwatts(cls, system, location,
@@ -770,62 +768,98 @@ class ModelChain:
             model = model.lower()
             if model == 'ashrae':
                 self._aoi_model = self.ashrae_aoi_loss
+            elif model == 'interp':
+                self._aoi_model = self.interp_aoi_loss
+            elif model == 'martin_ruiz':
+                self._aoi_model = self.martin_ruiz_aoi_loss
+            elif model == 'no_loss':
+                self._aoi_model = self.no_aoi_loss
             elif model == 'physical':
                 self._aoi_model = self.physical_aoi_loss
             elif model == 'sapm':
                 self._aoi_model = self.sapm_aoi_loss
-            elif model == 'martin_ruiz':
-                self._aoi_model = self.martin_ruiz_aoi_loss
-            elif model == 'interp':
-                self._aoi_model = self.interp_aoi_loss
-            elif model == 'no_loss':
-                self._aoi_model = self.no_aoi_loss
+            elif model == 'schlick':
+                self._aoi_model = self.schlick_aoi_loss
             else:
                 raise ValueError(model + ' is not a valid aoi loss model')
-        else:
+        elif callable(model):
             self._aoi_model = partial(model, self)
+        else:
+            raise ValueError(model + ' is not a valid aoi loss model')
 
     def infer_aoi_model(self):
+        """
+        Infer AOI model by checking for all required model paramters or at
+        least one optional model parameter in module_parameter collected
+        across all arrays.
+        """
         module_parameters = tuple(
-            array.module_parameters for array in self.system.arrays)
+            array.module_parameters for array in self.system.arrays
+        )
         params = _common_keys(module_parameters)
-        if iam._IAM_MODEL_PARAMS['physical'] <= params:
-            return self.physical_aoi_loss
-        elif iam._IAM_MODEL_PARAMS['sapm'] <= params:
-            return self.sapm_aoi_loss
-        elif iam._IAM_MODEL_PARAMS['ashrae'] <= params:
+        builtin_models = pvlib.iam._get_builtin_models()
+
+        if (builtin_models['ashrae']["params_required"] and (
+            builtin_models['ashrae']["params_required"] <= params)) or (
+            not builtin_models['ashrae']["params_required"] and
+            (builtin_models['ashrae']["params_optional"] & params)
+        ):
             return self.ashrae_aoi_loss
-        elif iam._IAM_MODEL_PARAMS['martin_ruiz'] <= params:
-            return self.martin_ruiz_aoi_loss
-        elif iam._IAM_MODEL_PARAMS['interp'] <= params:
+
+        if (builtin_models['interp']["params_required"] and (
+            builtin_models['interp']["params_required"] <= params)) or (
+            not builtin_models['interp']["params_required"] and
+            (builtin_models['interp']["params_optional"] & params)
+        ):
             return self.interp_aoi_loss
-        else:
-            raise ValueError('could not infer AOI model from '
-                             'system.arrays[i].module_parameters. Check that '
-                             'the module_parameters for all Arrays in '
-                             'system.arrays contain parameters for the '
-                             'physical, aoi, ashrae, martin_ruiz or interp '
-                             'model; explicitly set the model with the '
-                             'aoi_model kwarg; or set aoi_model="no_loss".')
+
+        if (builtin_models['martin_ruiz']["params_required"] and (
+            builtin_models['martin_ruiz']["params_required"] <= params)) or (
+            not builtin_models['martin_ruiz']["params_required"] and
+            (builtin_models['martin_ruiz']["params_optional"] & params)
+        ):
+            return self.martin_ruiz_aoi_loss
+
+        if (builtin_models['physical']["params_required"] and (
+            builtin_models['physical']["params_required"] <= params)) or (
+            not builtin_models['physical']["params_required"] and
+            (builtin_models['physical']["params_optional"] & params)
+        ):
+            return self.physical_aoi_loss
+
+        if (builtin_models['sapm']["params_required"] and (
+            builtin_models['sapm']["params_required"] <= params)) or (
+            not builtin_models['sapm']["params_required"] and
+            (builtin_models['sapm']["params_optional"] & params)
+        ):
+            return self.sapm_aoi_loss
+
+        # schlick model has no parameters to distinguish, esp. from no_loss.
+
+        raise ValueError(
+            'could not infer AOI model from '
+            'system.arrays[i].module_parameters. Check that the '
+            'module_parameters for all Arrays in system.arrays contain '
+            'parameters for the ashrae, interp, martin_ruiz, physical, or '
+            'sapm model; explicitly set the model (esp. the parameter-free '
+            'schlick) with the aoi_model kwarg or set aoi_model="no_loss".'
+        )
 
     def ashrae_aoi_loss(self):
         self.results.aoi_modifier = self.system.get_iam(
-            self.results.aoi,
-            iam_model='ashrae'
+            self.results.aoi, iam_model='ashrae'
         )
         return self
 
     def physical_aoi_loss(self):
         self.results.aoi_modifier = self.system.get_iam(
-            self.results.aoi,
-            iam_model='physical'
+            self.results.aoi, iam_model='physical'
         )
         return self
 
     def sapm_aoi_loss(self):
         self.results.aoi_modifier = self.system.get_iam(
-            self.results.aoi,
-            iam_model='sapm'
+            self.results.aoi, iam_model='sapm'
         )
         return self
 
@@ -837,8 +871,13 @@ class ModelChain:
 
     def interp_aoi_loss(self):
         self.results.aoi_modifier = self.system.get_iam(
-            self.results.aoi,
-            iam_model='interp'
+            self.results.aoi, iam_model='interp'
+        )
+        return self
+
+    def schlick_aoi_loss(self):
+        self.results.aoi_modifier = self.system.get_iam(
+            self.results.aoi, iam_model='schlick'
         )
         return self
 
@@ -867,8 +906,10 @@ class ModelChain:
                 self._spectral_model = self.no_spectral_loss
             else:
                 raise ValueError(model + ' is not a valid spectral loss model')
-        else:
+        elif callable(model):
             self._spectral_model = partial(model, self)
+        else:
+            raise ValueError(model + ' is not a valid spectral loss model')
 
     def infer_spectral_model(self):
         """Infer spectral model from system attributes."""

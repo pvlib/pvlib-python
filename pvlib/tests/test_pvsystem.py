@@ -25,16 +25,56 @@ from pvlib.tests.test_singlediode import get_pvsyst_fs_495
 
 @pytest.mark.parametrize('iam_model,model_params', [
     ('ashrae', {'b': 0.05}),
-    ('physical', {'K': 4, 'L': 0.002, 'n': 1.526}),
+    ('interp', {'iam_ref': (1., 0.85), 'theta_ref': (0., 80.)}),
     ('martin_ruiz', {'a_r': 0.16}),
+    ('physical', {'K': 4, 'L': 0.002, 'n': 1.526}),
+    (
+        'sapm',
+        {
+            k: v for k, v in pvsystem.retrieve_sam(
+                'SandiaMod')['Canadian_Solar_CS5P_220M___2009_'].items()
+            if k in ('B0', 'B1', 'B2', 'B3', 'B4', 'B5')
+        }
+    ),
+    ('schlick', {}),
 ])
 def test_PVSystem_get_iam(mocker, iam_model, model_params):
     m = mocker.spy(_iam, iam_model)
     system = pvsystem.PVSystem(module_parameters=model_params)
-    thetas = 1
+    thetas = 45
     iam = system.get_iam(thetas, iam_model=iam_model)
     m.assert_called_with(thetas, **model_params)
-    assert iam < 1.
+    assert 0 < iam < 1
+
+
+def test_PVSystem_get_iam_unsupported_model():
+    iam_model = 'foobar'
+    system = pvsystem.PVSystem()
+
+    with pytest.raises(
+        ValueError, match=f'{iam_model} is not a valid iam_model'
+    ):
+        system.get_iam(45, iam_model=iam_model)
+
+
+@pytest.mark.parametrize('iam_model,model_params', [
+    ('interp', {'iam_ref': (1., 0.85)}),  # missing theta_ref
+    (
+        'sapm',
+        {
+            k: v for k, v in pvsystem.retrieve_sam(
+                'SandiaMod')['Canadian_Solar_CS5P_220M___2009_'].items()
+            if k in ('B0', 'B1', 'B2', 'B3', 'B4')  # missing B5
+        }
+    ),
+])
+def test_PVSystem_get_iam_missing_required_param(iam_model, model_params):
+    system = pvsystem.PVSystem(module_parameters=model_params)
+
+    with pytest.raises(
+        KeyError, match="is missing in module_parameters"
+    ):
+        system.get_iam(45, iam_model=iam_model)
 
 
 def test_PVSystem_multi_array_get_iam():
@@ -58,7 +98,15 @@ def test_PVSystem_get_iam_sapm(sapm_module_params, mocker):
     mocker.spy(_iam, 'sapm')
     aoi = 0
     out = system.get_iam(aoi, 'sapm')
-    _iam.sapm.assert_called_once_with(aoi, sapm_module_params)
+    _iam.sapm.assert_called_once_with(
+        aoi,
+        sapm_module_params["B0"],
+        sapm_module_params["B1"],
+        sapm_module_params["B2"],
+        sapm_module_params["B3"],
+        sapm_module_params["B4"],
+        sapm_module_params["B5"],
+    )
     assert_allclose(out, 1.0, atol=0.01)
 
 
@@ -236,7 +284,14 @@ def test_PVSystem_multi_array_sapm(sapm_module_params):
 def test_sapm_spectral_loss_deprecated(sapm_module_params):
     with pytest.warns(pvlibDeprecationWarning,
                       match='Use pvlib.spectrum.spectral_factor_sapm'):
-        pvsystem.sapm_spectral_loss(1, sapm_module_params)
+        pvsystem.sapm_spectral_loss(
+            1,
+            sapm_module_params["A0"],
+            sapm_module_params["A1"],
+            sapm_module_params["A2"],
+            sapm_module_params["A3"],
+            sapm_module_params["A4"],
+        )
 
 
 def test_PVSystem_sapm_spectral_loss(sapm_module_params, mocker):
@@ -244,8 +299,14 @@ def test_PVSystem_sapm_spectral_loss(sapm_module_params, mocker):
     system = pvsystem.PVSystem(module_parameters=sapm_module_params)
     airmass = 2
     out = system.sapm_spectral_loss(airmass)
-    spectrum.spectral_factor_sapm.assert_called_once_with(airmass,
-                                                          sapm_module_params)
+    spectrum.spectral_factor_sapm.assert_called_once_with(
+        airmass,
+        sapm_module_params["A0"],
+        sapm_module_params["A1"],
+        sapm_module_params["A2"],
+        sapm_module_params["A3"],
+        sapm_module_params["A4"],
+    )
     assert_allclose(out, 1, atol=0.5)
 
 

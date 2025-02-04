@@ -21,6 +21,14 @@ Functions for fitting the single diode equation
 
     ivtools.sde.fit_sandia_simple
 
+Functions for converting between single diode models
+
+.. autosummary::
+   :toctree: ../generated/
+
+    ivtools.sdm.convert_cec_pvsyst
+    ivtools.sdm.convert_pvsyst_cec
+
 Utilities for working with IV curve data
 
 .. autosummary::

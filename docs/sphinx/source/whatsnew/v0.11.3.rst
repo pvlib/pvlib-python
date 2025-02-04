@@ -10,7 +10,8 @@ Deprecations
 
 Enhancements
 ~~~~~~~~~~~~
-
+* Fix a bug in :py:func:`pvlib.bifacial.get_irradiance_poa` which may have yielded non-zero
+  ground irradiance when the sun was below the horizon. (:issue:`2245`, :pull:`2359`)
 
 Documentation
 ~~~~~~~~~~~~~
@@ -37,4 +38,5 @@ Contributors
 ~~~~~~~~~~~~
 * Rajiv Daxini (:ghuser:`RDaxini`)
 * Mark Campanelli (:ghuser:`markcampanelli`)
+* Jason Lun Leung (:ghuser:`jason-rpkt`)
 * Manoj K S (:ghuser:`manojks1999`)

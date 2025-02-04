@@ -8,6 +8,8 @@ from pvlib.shading import masking_angle, ground_angle
 from pvlib.tools import cosd
 from scipy.integrate import trapezoid
 
+from pvlib._deprecation import pvlibDeprecationWarning
+
 
 @pytest.fixture
 def test_system_fixed_tilt():
@@ -91,17 +93,23 @@ def test__vf_ground_sky_2d(test_system_fixed_tilt):
     assert np.isclose(vf, vfs_gnd_sky[0])
 
 
-@pytest.mark.parametrize("vectorize", [True, False])
-def test_vf_ground_sky_2d_integ(test_system_fixed_tilt, vectorize):
-    ts, pts, vfs_gnd_sky = test_system_fixed_tilt
-    # pass rotation here since max_rows=1 for the hand-solved case in
-    # the fixture test_system, which means the ground-to-sky view factor
-    # isn't summed over enough rows for symmetry to hold.
-    vf_integ = utils.vf_ground_sky_2d_integ(
-        ts['rotation'], ts['gcr'], ts['height'], ts['pitch'],
-        max_rows=1, npoints=3, vectorize=vectorize)
-    expected_vf_integ = trapezoid(vfs_gnd_sky, pts, axis=0)
-    assert np.isclose(vf_integ, expected_vf_integ, rtol=0.1)
+def test_vf_ground_sky_2d_integ():
+    # test against numerical integration with vf_ground_sky_2d
+    x = np.linspace(0, 1, num=1000)
+    kwargs = dict(gcr=0.4, pitch=5.0, height=1.5)
+    vf_x = utils.vf_ground_sky_2d(rotation=-60, x=x, **kwargs)
+    vf_expected = trapezoid(vf_x, x, axis=0)
+
+    vf_actual = utils.vf_ground_sky_2d_integ(surface_tilt=60, **kwargs)
+    assert np.isclose(vf_expected, vf_actual)
+
+
+def test_vf_ground_sky_2d_integ_deprecated():
+    with pytest.warns(pvlibDeprecationWarning, match="have no effect"):
+        _ = utils.vf_ground_sky_2d_integ(0, 0.5, 1, 1, npoints=10)
+
+    with pytest.warns(pvlibDeprecationWarning, match="have no effect"):
+        _ = utils.vf_ground_sky_2d_integ(0, 0.5, 1, 1, vectorize=True)
 
 
 def test_vf_row_sky_2d(test_system_fixed_tilt):

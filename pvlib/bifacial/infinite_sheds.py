@@ -260,9 +260,8 @@ def get_irradiance_poa(surface_tilt, surface_azimuth, solar_zenith,
     Returns
     -------
     output : dict or DataFrame
-        Output is a "pandas.DataFrame" when "ghi" is a Series.
-        Otherwise it is a dict of "numpy.ndarray"
-        See Issue #2245
+        Output is a ``pandas.DataFrame`` when ``ghi`` is a Series.
+        Otherwise it is a dict of ``numpy.ndarray``
         See Notes for descriptions of content.
 
     Notes

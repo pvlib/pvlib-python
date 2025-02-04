@@ -10,7 +10,8 @@ Deprecations
 
 Enhancements
 ~~~~~~~~~~~~
-Fix syntax for unshaded ground fraction (:issue:`2245`, :pull:`2359`)
+Fix bug in :py:func:`pvlib.bifacial.get_irradiance_poa` which may had yielded non-zero ground
+irradiance with sun below horizon (:issue:`2245`, :pull:`2359`)
 
 Documentation
 ~~~~~~~~~~~~~

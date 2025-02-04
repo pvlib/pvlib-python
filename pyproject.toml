@@ -9,14 +9,14 @@ description = "A set of functions and classes for simulating the performance of 
 authors = [
     { name = "pvlib python Developers", email = "pvlib-admin@googlegroups.com" },
 ]
-requires-python = ">=3.9"
+requires-python = ">=3.9, <3.13"
 dependencies = [
-    'numpy >= 1.19.3',
-    'pandas >= 1.3.0',
+    'h5py >=3.12, <4',
+    'numpy >=1.19.3, <3',
+    'pandas >=1.3.0, <3',
     'pytz',
-    'requests',
-    'scipy >= 1.6.0',
-    'h5py',
+    'requests >=2, <3',
+    'scipy >=1.6.0, <2',
 ]
 license = { text = "BSD-3-Clause" }
 classifiers = [
@@ -49,34 +49,35 @@ dynamic = ["version"]
 optional = [
     'cython',
     'ephem',
-    'nrel-pysam',
-    'numba >= 0.17.0',
-    'solarfactors',
+    'nrel-pysam; python_version <"3.13"',
+    'numba >=0.17.0; python_version <"3.13"',
+    'solarfactors; python_version <"3.12"',
     'statsmodels',
 ]
 doc = [
+    'docutils ==0.21',
     'ipython',
-    'pickleshare',  # required by ipython
     'matplotlib',
-    'sphinx == 7.3.7',
-    'pydata-sphinx-theme == 0.15.4',
-    'sphinx-gallery',
-    'docutils == 0.21',
+    'pickleshare',  # required by ipython
     'pillow',
-    'sphinx-toggleprompt == 0.5.2',
+    'pydata-sphinx-theme ==0.15.4',
+    'sphinx ==7.3.7',
     'sphinx-favicon',
-    'solarfactors',
+    'sphinx-gallery',
     'sphinx-hoverxref',
+    'sphinx-toggleprompt ==0.5.2',
+    'solarfactors; python_version <"3.12"',
 ]
 test = [
+    'flake8 ==5.0.4',  # Should match version in github workflow flake8.yml.
+    'packaging',
     'pytest',
     'pytest-cov',
     'pytest-mock',
-    'requests-mock',
-    'pytest-timeout',
-    'pytest-rerunfailures',
     'pytest-remotedata',
-    'packaging',
+    'pytest-rerunfailures',
+    'pytest-timeout',
+    'requests-mock',
 ]
 all = ["pvlib[test,optional,doc]"]
 

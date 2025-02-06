@@ -8,13 +8,15 @@ import io
 import requests
 import pandas as pd
 from json import JSONDecodeError
-import warnings
-from pvlib._deprecation import pvlibDeprecationWarning
 
 NSRDB_API_BASE = "https://developer.nrel.gov"
-GOES_URL = NSRDB_API_BASE + "/api/nsrdb/v2/solar/nsrdb-GOES-aggregated-v4-0-0-download.csv"
-TMY_URL = NSRDB_API_BASE + "/api/nsrdb/v2/solar/nsrdb-GOES-tmy-v4-0-0-download.csv"
-GOESCONUS_URL = NSRDB_API_BASE + "/api/nsrdb/v2/solar/nsrdb-GOES-conus-v4-0-0-download.csv"
+API_STUB = "/api/nsrdb/v2/solar/"
+GOES_ENDPOINT = "nsrdb-GOES-aggregated-v4-0-0-download.csv"
+TMY_ENDPOINT = "nsrdb-GOES-tmy-v4-0-0-download.csv"
+GOESCONUS_ENDPOINT = "nsrdb-GOES-conus-v4-0-0-download.csv"
+GOES_URL = NSRDB_API_BASE + API_STUB + GOES_ENDPOINT
+TMY_URL = NSRDB_API_BASE + API_STUB + TMY_ENDPOINT
+GOESCONUS_URL = NSRDB_API_BASE + API_STUB + GOESCONUS_ENDPOINT
 
 ATTRIBUTES = (
     'air_temperature', 'dew_point', 'dhi', 'dni', 'ghi', 'surface_albedo',
@@ -74,7 +76,7 @@ def get_goes4(latitude, longitude, api_key, email, names='tmy', interval=60,
               timeout=30):
     """
     Retrieve NSRDB GOES4 timeseries weather data from the GOES4 API. The NSRDB
-    is described in [1]_ and the GOES4 API is described in [2]_, [3]_, and 
+    is described in [1]_ and the GOES4 API is described in [2]_, [3]_, and
     [4]_.
 
     Parameters

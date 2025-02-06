@@ -1,6 +1,7 @@
 """
 Get NSRDB GOES V4.0.0
-see https://developer.nrel.gov/docs/solar/nsrdb/nsrdb-GOES-aggregated-v4-0-0-download/
+see
+https://developer.nrel.gov/docs/solar/nsrdb/nsrdb-GOES-conus-v4-0-0-download/
 """
 
 import io
@@ -68,12 +69,13 @@ REQUEST_VARIABLE_MAP = {
 
 
 def get_goes4(latitude, longitude, api_key, email, names='tmy', interval=60,
-             attributes=ATTRIBUTES, leap_day=True, full_name=PVLIB_PYTHON,
-             affiliation=PVLIB_PYTHON, map_variables=True, url=None,
-             timeout=30):
+              attributes=ATTRIBUTES, leap_day=True, full_name=PVLIB_PYTHON,
+              affiliation=PVLIB_PYTHON, map_variables=True, url=None,
+              timeout=30):
     """
     Retrieve NSRDB GOES4 timeseries weather data from the GOES4 API. The NSRDB
-    is described in [1]_ and the GOES4 API is described in [2]_, [3]_, and [4]_.
+    is described in [1]_ and the GOES4 API is described in [2]_, [3]_, and 
+    [4]_.
 
     Parameters
     ----------
@@ -140,8 +142,8 @@ def get_goes4(latitude, longitude, api_key, email, names='tmy', interval=60,
     .. warning:: The "DEMO_KEY" `api_key` is severely rate limited and may
         result in rejected requests.
 
-    .. warning:: GOES4 is limited to data found in the NSRDB, please consult the
-        references below for locations with available data. Additionally,
+    .. warning:: GOES4 is limited to data found in the NSRDB, please consult
+        the references below for locations with available data. Additionally,
         querying data with < 30-minute resolution uses a different API endpoint
         with fewer available fields (see [4]_).
 

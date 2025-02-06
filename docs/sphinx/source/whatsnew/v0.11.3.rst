@@ -12,6 +12,7 @@ Enhancements
 ~~~~~~~~~~~~
 * Fix a bug in :py:func:`pvlib.bifacial.get_irradiance_poa` which may have yielded non-zero
   ground irradiance when the sun was below the horizon. (:issue:`2245`, :pull:`2359`)
+* Added NREL NSRDB GOES v4 to `pvlib.iotools` (:issue:`2326`, :pull:`2378`)
 
 Documentation
 ~~~~~~~~~~~~~
@@ -40,3 +41,4 @@ Contributors
 * Mark Campanelli (:ghuser:`markcampanelli`)
 * Jason Lun Leung (:ghuser:`jason-rpkt`)
 * Manoj K S (:ghuser:`manojks1999`)
+* Will Hobbs (:ghuser:`williamhobbs`)

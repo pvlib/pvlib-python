@@ -171,10 +171,10 @@ def get_goes4(latitude, longitude, api_key, email, names='tmy', interval=60,
     # convert to string to accomodate integer years being passed in
     names = str(names)
 
-    # convert pvlib names in attributes to psm3 convention
+    # convert pvlib names in attributes to psm3/goes4 convention
     attributes = [REQUEST_VARIABLE_MAP.get(a, a) for a in attributes]
 
-    # required query-string parameters for request to PSM3 API
+    # required query-string parameters for request to GOES4 API
     params = {
         'api_key': api_key,
         'full_name': full_name,
@@ -189,7 +189,7 @@ def get_goes4(latitude, longitude, api_key, email, names='tmy', interval=60,
         'utc': 'false',
         'interval': interval
     }
-    # request CSV download from NREL PSM3
+    # request CSV download from NREL GOES4
     if url is None:
         # determine the endpoint that suits the user inputs
         if any(prefix in names for prefix in ('tmy', 'tgy', 'tdy')):

@@ -11,7 +11,6 @@ import pytest
 from requests import HTTPError
 from io import StringIO
 import warnings
-from pvlib._deprecation import pvlibDeprecationWarning
 
 TMY_TEST_DATA = DATA_DIR / 'test_goes4_tmy-2023.csv'
 YEAR_TEST_DATA = DATA_DIR / 'test_goes4_2023.csv'
@@ -138,8 +137,8 @@ def test_get_goes4_tmy_errors(
     """
     with pytest.raises(HTTPError) as excinfo:
         goes4.get_goes4(latitude, longitude, api_key, PVLIB_EMAIL,
-                       names=names, interval=interval, leap_day=False,
-                       map_variables=False)
+                        names=names, interval=interval, leap_day=False,
+                        map_variables=False)
     # ensure the HTTPError caught isn't due to overuse of the API key
     assert "OVER_RATE_LIMIT" not in str(excinfo.value)
 
@@ -175,7 +174,7 @@ def test_read_goes4_map_variables():
                       'ghi_clear', 'Cloud Fill Flag', 'Cloud Type',
                       'temp_dew', 'dhi', 'dni', 'Fill Flag', 'ghi', 'Ozone',
                       'relative_humidity', 'solar_zenith', 'SSA', 'albedo',
-                      'pressure','precipitable_water', 'wind_direction',
+                      'pressure', 'precipitable_water', 'wind_direction',
                       'wind_speed']
     assert_index_equal(data.columns, pd.Index(columns_mapped))
 
@@ -185,10 +184,10 @@ def test_read_goes4_map_variables():
 def test_get_goes4_attribute_mapping(nrel_api_key):
     """Test that pvlib names can be passed in as attributes and get correctly
     reverse mapped to GOES4 names"""
-    data, meta = goes4.get_goes4(LATITUDE, LONGITUDE, nrel_api_key, PVLIB_EMAIL,
-                               names=2019, interval=60,
-                               attributes=['ghi', 'wind_speed'],
-                               leap_day=False, map_variables=True)
+    data, meta = goes4.get_goes4(LATITUDE, LONGITUDE, nrel_api_key,
+                                 PVLIB_EMAIL, names=2019, interval=60,
+                                 attributes=['ghi', 'wind_speed'],
+                                 leap_day=False, map_variables=True)
     # Check that columns are in the correct order (GH1647)
     expected_columns = [
         'Year', 'Month', 'Day', 'Hour', 'Minute', 'ghi', 'wind_speed']

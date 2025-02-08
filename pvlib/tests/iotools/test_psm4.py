@@ -1,9 +1,9 @@
 """
-test iotools for GOES4
+test iotools for PSM4
 """
 
 import os
-from pvlib.iotools import goes4
+from pvlib.iotools import psm4
 from ..conftest import DATA_DIR, RERUNS, RERUNS_DELAY, assert_index_equal
 import numpy as np
 import pandas as pd
@@ -12,10 +12,10 @@ from requests import HTTPError
 from io import StringIO
 import warnings
 
-TMY_TEST_DATA = DATA_DIR / 'test_goes4_tmy-2023.csv'
-YEAR_TEST_DATA = DATA_DIR / 'test_goes4_2023.csv'
-YEAR_TEST_DATA_5MIN = DATA_DIR / 'test_goes4_2023_5min.csv'
-MANUAL_TEST_DATA = DATA_DIR / 'test_read_goes4.csv'
+TMY_TEST_DATA = DATA_DIR / 'test_psm4_tmy-2023.csv'
+YEAR_TEST_DATA = DATA_DIR / 'test_psm4_2023.csv'
+YEAR_TEST_DATA_5MIN = DATA_DIR / 'test_psm4_2023_5min.csv'
+MANUAL_TEST_DATA = DATA_DIR / 'test_read_psm4.csv'
 LATITUDE, LONGITUDE = 40.5137, -108.5449
 METADATA_FIELDS = [
     'Source', 'Location ID', 'City', 'State', 'Country', 'Latitude',
@@ -46,8 +46,8 @@ def nrel_api_key():
     return demo_key
 
 
-def assert_goes4_equal(data, metadata, expected):
-    """check consistency of GOES4 data"""
+def assert_psm4_equal(data, metadata, expected):
+    """check consistency of PSM4 data"""
     # check datevec columns
     assert np.allclose(data.Year, expected.Year)
     assert np.allclose(data.Month, expected.Month)
@@ -73,46 +73,46 @@ def assert_goes4_equal(data, metadata, expected):
 
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
-def test_get_goes4_tmy(nrel_api_key):
-    """test get_goes4 with a TMY"""
-    data, metadata = goes4.get_goes4(LATITUDE, LONGITUDE, nrel_api_key,
-                                     PVLIB_EMAIL, names='tmy-2023',
-                                     leap_day=False, map_variables=False)
+def test_get_psm4_tmy(nrel_api_key):
+    """test get_psm4 with a TMY"""
+    data, metadata = psm4.get_psm4(LATITUDE, LONGITUDE, nrel_api_key,
+                                   PVLIB_EMAIL, names='tmy-2023',
+                                   leap_day=False, map_variables=False)
     expected = pd.read_csv(TMY_TEST_DATA)
-    assert_goes4_equal(data, metadata, expected)
+    assert_psm4_equal(data, metadata, expected)
 
 
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
-def test_get_goes4_singleyear(nrel_api_key):
-    """test get_goes4 with a single year"""
-    data, metadata = goes4.get_goes4(LATITUDE, LONGITUDE, nrel_api_key,
-                                     PVLIB_EMAIL, names='2023',
-                                     leap_day=False,  map_variables=False,
-                                     interval=30)
+def test_get_psm4_singleyear(nrel_api_key):
+    """test get_psm4 with a single year"""
+    data, metadata = psm4.get_psm4(LATITUDE, LONGITUDE, nrel_api_key,
+                                   PVLIB_EMAIL, names='2023',
+                                   leap_day=False,  map_variables=False,
+                                   interval=30)
     expected = pd.read_csv(YEAR_TEST_DATA)
-    assert_goes4_equal(data, metadata, expected)
+    assert_psm4_equal(data, metadata, expected)
 
 
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
-def test_get_goes4_5min(nrel_api_key):
-    """test get_goes4 for 5-minute data"""
-    data, metadata = goes4.get_goes4(LATITUDE, LONGITUDE, nrel_api_key,
-                                     PVLIB_EMAIL, names='2023', interval=5,
-                                     leap_day=False, map_variables=False)
+def test_get_psm4_5min(nrel_api_key):
+    """test get_psm4 for 5-minute data"""
+    data, metadata = psm4.get_psm4(LATITUDE, LONGITUDE, nrel_api_key,
+                                   PVLIB_EMAIL, names='2023', interval=5,
+                                   leap_day=False, map_variables=False)
     assert len(data) == 525600/5
     first_day = data.loc['2023-01-01']
     expected = pd.read_csv(YEAR_TEST_DATA_5MIN)
-    assert_goes4_equal(first_day, metadata, expected)
+    assert_psm4_equal(first_day, metadata, expected)
 
 
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
-def test_get_goes4_check_leap_day(nrel_api_key):
-    data_2012, _ = goes4.get_goes4(LATITUDE, LONGITUDE, nrel_api_key,
-                                   PVLIB_EMAIL, names="2012", interval=60,
-                                   leap_day=True, map_variables=False)
+def test_get_psm4_check_leap_day(nrel_api_key):
+    data_2012, _ = psm4.get_psm4(LATITUDE, LONGITUDE, nrel_api_key,
+                                 PVLIB_EMAIL, names="2012", interval=60,
+                                 leap_day=True, map_variables=False)
     assert len(data_2012) == (8760 + 24)
 
 
@@ -124,10 +124,10 @@ def test_get_goes4_check_leap_day(nrel_api_key):
                           ])
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
-def test_get_goes4_tmy_errors(
+def test_get_psm4_tmy_errors(
     latitude, longitude, api_key, names, interval
 ):
-    """Test get_goes4() for multiple erroneous input scenarios.
+    """Test get_psm4() for multiple erroneous input scenarios.
 
     These scenarios include:
     * Bad API key -> HTTP 403 forbidden because api_key is rejected
@@ -136,39 +136,39 @@ def test_get_goes4_tmy_errors(
     * Bad interval, single year -> Intervals can only be 30 or 60 minutes.
     """
     with pytest.raises(HTTPError) as excinfo:
-        goes4.get_goes4(latitude, longitude, api_key, PVLIB_EMAIL,
-                        names=names, interval=interval, leap_day=False,
-                        map_variables=False)
+        psm4.get_psm4(latitude, longitude, api_key, PVLIB_EMAIL,
+                      names=names, interval=interval, leap_day=False,
+                      map_variables=False)
     # ensure the HTTPError caught isn't due to overuse of the API key
     assert "OVER_RATE_LIMIT" not in str(excinfo.value)
 
 
 @pytest.fixture
 def io_input(request):
-    """file-like object for parse_goes4"""
+    """file-like object for parse_psm4"""
     with MANUAL_TEST_DATA.open() as f:
         data = f.read()
     obj = StringIO(data)
     return obj
 
 
-def test_parse_goes4(io_input):
-    """test parse_goes4"""
-    data, metadata = goes4.parse_goes4(io_input, map_variables=False)
+def test_parse_psm4(io_input):
+    """test parse_psm4"""
+    data, metadata = psm4.parse_psm4(io_input, map_variables=False)
     expected = pd.read_csv(YEAR_TEST_DATA)
-    assert_goes4_equal(data, metadata, expected)
+    assert_psm4_equal(data, metadata, expected)
 
 
-def test_read_goes4():
-    """test read_goes4"""
-    data, metadata = goes4.read_goes4(MANUAL_TEST_DATA, map_variables=False)
+def test_read_psm4():
+    """test read_psm4"""
+    data, metadata = psm4.read_psm4(MANUAL_TEST_DATA, map_variables=False)
     expected = pd.read_csv(YEAR_TEST_DATA)
-    assert_goes4_equal(data, metadata, expected)
+    assert_psm4_equal(data, metadata, expected)
 
 
-def test_read_goes4_map_variables():
-    """test read_goes4 map_variables=True"""
-    data, metadata = goes4.read_goes4(MANUAL_TEST_DATA, map_variables=True)
+def test_read_psm4_map_variables():
+    """test read_psm4 map_variables=True"""
+    data, metadata = psm4.read_psm4(MANUAL_TEST_DATA, map_variables=True)
     columns_mapped = ['Year', 'Month', 'Day', 'Hour', 'Minute', 'temp_air',
                       'alpha', 'aod', 'asymmetry', 'dhi_clear', 'dni_clear',
                       'ghi_clear', 'Cloud Fill Flag', 'Cloud Type',
@@ -181,13 +181,13 @@ def test_read_goes4_map_variables():
 
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
-def test_get_goes4_attribute_mapping(nrel_api_key):
+def test_get_psm4_attribute_mapping(nrel_api_key):
     """Test that pvlib names can be passed in as attributes and get correctly
-    reverse mapped to GOES4 names"""
-    data, meta = goes4.get_goes4(LATITUDE, LONGITUDE, nrel_api_key,
-                                 PVLIB_EMAIL, names=2019, interval=60,
-                                 attributes=['ghi', 'wind_speed'],
-                                 leap_day=False, map_variables=True)
+    reverse mapped to psm4 names"""
+    data, meta = psm4.get_psm4(LATITUDE, LONGITUDE, nrel_api_key,
+                               PVLIB_EMAIL, names=2019, interval=60,
+                               attributes=['ghi', 'wind_speed'],
+                               leap_day=False, map_variables=True)
     # Check that columns are in the correct order (GH1647)
     expected_columns = [
         'Year', 'Month', 'Day', 'Hour', 'Minute', 'ghi', 'wind_speed']

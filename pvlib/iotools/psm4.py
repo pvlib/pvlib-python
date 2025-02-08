@@ -75,8 +75,8 @@ def get_psm4(latitude, longitude, api_key, email, names='tmy', interval=60,
              affiliation=PVLIB_PYTHON, map_variables=True, url=None,
              timeout=30):
     """
-    Retrieve NSRDB PSM4 timeseries weather data from the GOES4 API. The NSRDB
-    is described in [1]_ and the GOES4 API is described in [2]_, [3]_, and
+    Retrieve NSRDB PSM4 timeseries weather data from the PSM4 API. The NSRDB
+    is described in [1]_ and the PSM4 API is described in [2]_, [3]_, and
     [4]_.
 
     Parameters
@@ -91,8 +91,8 @@ def get_psm4(latitude, longitude, api_key, email, names='tmy', interval=60,
         NREL API uses this to automatically communicate messages back
         to the user only if necessary
     names : str, default 'tmy'
-        GOES4 API parameter specifing year (e.g. ``2020``) or TMY variant
-        to download (e.g. ``'tmy'`` or ``'tgy-2022'``).  The allowed values
+        PSM4 API parameter specifing year (e.g. ``2020``) or TMY variant to
+        download (e.g. ``'tmy'`` or ``'tgy-2022'``).  The allowed values
         update periodically, so consult the NSRDB references below for the
         current set of options.
     interval : int, {60, 5, 15, 30}
@@ -178,7 +178,7 @@ def get_psm4(latitude, longitude, api_key, email, names='tmy', interval=60,
     # convert pvlib names in attributes to PSM4 convention
     attributes = [REQUEST_VARIABLE_MAP.get(a, a) for a in attributes]
 
-    # required query-string parameters for request to GOES4 API
+    # required query-string parameters for request to PSM4 API
     params = {
         'api_key': api_key,
         'full_name': full_name,
@@ -215,10 +215,10 @@ def get_psm4(latitude, longitude, api_key, email, names='tmy', interval=60,
     # the CSV is in the response content as a UTF-8 bytestring
     # to use pandas we need to create a file buffer from the response
     fbuf = io.StringIO(response.content.decode('utf-8'))
-    return parse_goes4(fbuf, map_variables)
+    return parse_psm4(fbuf, map_variables)
 
 
-def parse_goes4(fbuf, map_variables=True):
+def parse_psm4(fbuf, map_variables=True):
     """
     Parse an NSRDB PSM4 weather file (formatted as SAM CSV). The NSRDB
     is described in [1]_ and the SAM CSV format is described in [2]_.

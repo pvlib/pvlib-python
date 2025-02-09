@@ -278,8 +278,8 @@ def loss_townsend(snow_total, snow_events, surface_tilt, relative_humidity,
     axis to the module edge.
 
     The parameter `string_factor` is an enhancement added to the model after
-    publication of [1]_, as described in [2]_,
-    The defination for snow events documented above is based on [3]_.
+    publication of [1]_, as described in [2]_.
+    The definition for snow events documented above is based on [3]_.
 
     References
     ----------
@@ -290,7 +290,7 @@ def loss_townsend(snow_total, snow_events, surface_tilt, relative_humidity,
     .. [2] Townsend, T. (2025). Snow Loss Model Enhancements.
        Available at: https://www.nrel.gov/docs/fy25osti/90585.pdf
     .. [3] Townsend, T. (2025). Snow Events Definition.
-       DOI: 10.13140/RG.2.2.14299.68647
+       :doi:`10.13140/RG.2.2.14299.68647`
     '''
 
     # unit conversions from cm and m to in, from C to K, and from % to fraction

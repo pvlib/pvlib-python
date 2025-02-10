@@ -41,3 +41,4 @@ Contributors
 * Mark Campanelli (:ghuser:`markcampanelli`)
 * Jason Lun Leung (:ghuser:`jason-rpkt`)
 * Manoj K S (:ghuser:`manojks1999`)
+* Ayush jariyal (:ghuser:`ayushjariyal`)

@@ -287,9 +287,10 @@ def loss_townsend(snow_total, snow_events, surface_tilt, relative_humidity,
        update from two winters of measurements in the SIERRA. 37th IEEE
        Photovoltaic Specialists Conference, Seattle, WA, USA.
        :doi:`10.1109/PVSC.2011.6186627`
-    .. [2] Townsend, T. and Previtali, J. (2023). A Fresh Dusting: Current Uses of the
-       Townsend Snow Model. In "Photovoltaic Reliability Workshop (PVRW) 2023
-       Proceedings: Posters.", ed. Silverman, T. J. Dec. 2023. NREL/CP-5900-87918.
+    .. [2] Townsend, T. and Previtali, J. (2023). A Fresh Dusting: Current
+        Uses of the Townsend Snow Model. In "Photovoltaic Reliability
+        Workshop (PVRW) 2023 Proceedings: Posters.", ed. Silverman,
+        T. J. Dec. 2023. NREL/CP-5900-87918.
         Available at: https://www.nrel.gov/docs/fy25osti/90585.pdf
     .. [3] Townsend, T. (2025). Snow Events Definition.
        :doi:`10.13140/RG.2.2.14299.68647`

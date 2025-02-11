@@ -12,6 +12,8 @@ Enhancements
 ~~~~~~~~~~~~
 * Fix a bug in :py:func:`pvlib.bifacial.get_irradiance_poa` which may have yielded non-zero
   ground irradiance when the sun was below the horizon. (:issue:`2245`, :pull:`2359`)
+* Fix a bug where :py:func:`pvlib.transformer.simple_efficiency` could only be imported
+  using the `from pvlib.transformer` syntax (:pull:`2388`)
 
 Documentation
 ~~~~~~~~~~~~~
@@ -40,3 +42,4 @@ Contributors
 * Mark Campanelli (:ghuser:`markcampanelli`)
 * Jason Lun Leung (:ghuser:`jason-rpkt`)
 * Manoj K S (:ghuser:`manojks1999`)
+* Kurt Rhee (:ghuser:`kurt-rhee`)

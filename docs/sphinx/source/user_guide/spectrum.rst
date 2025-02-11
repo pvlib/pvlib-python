@@ -3,7 +3,15 @@
 Spectrum
 ========
 
-intro
+The spectrum functionality of pvlib-python includes simulating clear sky
+spectral irradiance curves, calculating the spectral mismatch factor for
+a range of single-junction PV cell technologies, and other calculations
+such as converting between spectral response and EQE, and computing average
+photon energy values from spectral irradiance data.
+
+This user guide page summarizes some of pvlib-python's spectrum-related
+capabilities, starting with a summary of spectral mismatch estimation models
+available in pvlib-python.
 
 Spectral mismatch models
 ------------------------

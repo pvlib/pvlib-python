@@ -32,6 +32,7 @@ Maintenance
   (:issue:`2357`, :pull:`2358`)
 * asv 0.4.2 upgraded to asv 0.6.4 to fix CI failure due to pinned older conda.
   (:pull:`2352`)
+* Replaced the explicit `readme.text` and `readme.content-type` fields with `readme="README.md"` in `pyproject.toml`. (:pull:`2389`)
 
 
 Contributors
@@ -40,3 +41,4 @@ Contributors
 * Mark Campanelli (:ghuser:`markcampanelli`)
 * Jason Lun Leung (:ghuser:`jason-rpkt`)
 * Manoj K S (:ghuser:`manojks1999`)
+* Aditi Juneja (:ghuser:`Schefflera-Arboricola`)

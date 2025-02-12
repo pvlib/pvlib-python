@@ -356,11 +356,6 @@ def read_psm4(filename, map_variables=True):
     Read an NSRDB PSM4 weather file (formatted as SAM CSV). The NSRDB
     is described in [1]_ and the SAM CSV format is described in [2]_.
 
-    .. versionchanged:: 0.9.0
-       The function now returns a tuple where the first element is a dataframe
-       and the second element is a dictionary containing metadata. Previous
-       versions of this function had the return values switched.
-
     Parameters
     ----------
     filename: str

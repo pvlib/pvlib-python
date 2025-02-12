@@ -10,11 +10,13 @@ Deprecations
 
 Enhancements
 ~~~~~~~~~~~~
-
+* Fix a bug in :py:func:`pvlib.bifacial.get_irradiance_poa` which may have yielded non-zero
+  ground irradiance when the sun was below the horizon. (:issue:`2245`, :pull:`2359`)
 
 Documentation
 ~~~~~~~~~~~~~
-
+* Fix Procedural and Object Oriented simulation examples having slightly different results, in :ref:`introtutorial`. (:issue:`2366`, :pull:`2367`)
+* Restructure the user guide with subsections (:issue:`2302`, :pull:`2310`)
 
 Testing
 ~~~~~~~
@@ -24,7 +26,17 @@ Requirements
 ~~~~~~~~~~~~
 
 
+Maintenance
+~~~~~~~~~~~
+* Fix ReadTheDocs builds by upgrading `readthedocs.yml` configuration
+  (:issue:`2357`, :pull:`2358`)
+* asv 0.4.2 upgraded to asv 0.6.4 to fix CI failure due to pinned older conda.
+  (:pull:`2352`)
+
+
 Contributors
 ~~~~~~~~~~~~
-
-
+* Rajiv Daxini (:ghuser:`RDaxini`)
+* Mark Campanelli (:ghuser:`markcampanelli`)
+* Jason Lun Leung (:ghuser:`jason-rpkt`)
+* Manoj K S (:ghuser:`manojks1999`)

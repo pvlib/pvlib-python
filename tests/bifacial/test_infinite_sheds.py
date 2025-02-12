@@ -130,6 +130,7 @@ def test_get_irradiance_poa():
     # series inputs
     surface_tilt = pd.Series(surface_tilt)
     surface_azimuth = pd.Series(data=surface_azimuth, index=surface_tilt.index)
+    ghi = pd.Series(data=ghi, index=surface_tilt.index)
     solar_zenith = pd.Series(solar_zenith, index=surface_tilt.index)
     solar_azimuth = pd.Series(data=solar_azimuth, index=surface_tilt.index)
     expected_diffuse = pd.Series(

@@ -185,7 +185,7 @@ def test_get_psm4_attribute_mapping(nrel_api_key):
     """Test that pvlib names can be passed in as attributes and get correctly
     reverse mapped to psm4 names"""
     data, meta = psm4.get_psm4(LATITUDE, LONGITUDE, nrel_api_key,
-                               PVLIB_EMAIL, names=2019, interval=60,
+                               PVLIB_EMAIL, names='2019', interval=60,
                                attributes=['ghi', 'wind_speed'],
                                leap_day=False, map_variables=True)
     # Check that columns are in the correct order (GH1647)

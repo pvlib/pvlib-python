@@ -294,7 +294,7 @@ def loss_townsend(snow_total, snow_events, surface_tilt, relative_humidity,
         Available at: https://www.nrel.gov/docs/fy25osti/90585.pdf
     .. [3] Townsend, T. (2013). Predicting PV Energy Loss Caused by Snow.
         Solar Power International, Chicago IL.
-        doi:`10.13140/RG.2.2.14299.68647`
+        :doi:`10.13140/RG.2.2.14299.68647`
     '''
 
     # unit conversions from cm and m to in, from C to K, and from % to fraction

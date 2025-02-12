@@ -10,6 +10,8 @@ Deprecations
 
 Enhancements
 ~~~~~~~~~~~~
+* :py:func:`~pvlib.irradiance.gti_dirint` now raises an informative message
+  when input data don't include values with AOI<90 (:issue:`1342`, :pull:`2347`)
 * Fix a bug in :py:func:`pvlib.bifacial.get_irradiance_poa` which may have yielded non-zero
   ground irradiance when the sun was below the horizon. (:issue:`2245`, :pull:`2359`)
 * Fix a bug where :py:func:`pvlib.transformer.simple_efficiency` could only be imported
@@ -41,6 +43,7 @@ Contributors
 ~~~~~~~~~~~~
 * Rajiv Daxini (:ghuser:`RDaxini`)
 * Mark Campanelli (:ghuser:`markcampanelli`)
+* Cliff Hansen (:ghuser:`cwhanse`)
 * Jason Lun Leung (:ghuser:`jason-rpkt`)
 * Manoj K S (:ghuser:`manojks1999`)
 * Kurt Rhee (:ghuser:`kurt-rhee`)

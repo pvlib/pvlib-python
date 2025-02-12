@@ -928,6 +928,23 @@ def test_gti_dirint():
     assert_frame_equal(output, expected)
 
 
+def test_gti_dirint_data_error():
+    times = pd.DatetimeIndex(
+        ['2014-06-24T06-0700', '2014-06-24T09-0700', '2014-06-24T12-0700'])
+    poa_global = np.array([20, 300, 1000])
+    zenith = np.array([80, 45, 20])
+    azimuth = np.array([90, 135, 180])
+    surface_tilt = 30
+    surface_azimuth = 180
+
+    aoi = np.array([100, 170, 110])
+    with pytest.raises(
+            ValueError, match="There are no times with AOI < 90"):
+        irradiance.gti_dirint(
+            poa_global, aoi, zenith, azimuth, times, surface_tilt,
+            surface_azimuth)
+
+
 def test_erbs():
     index = pd.DatetimeIndex(['20190101']*3 + ['20190620'])
     ghi = pd.Series([0, 50, 1000, 1000], index=index)

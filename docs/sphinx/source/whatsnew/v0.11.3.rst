@@ -19,6 +19,7 @@ Documentation
 ~~~~~~~~~~~~~
 * Fix Procedural and Object Oriented simulation examples having slightly different results, in :ref:`introtutorial`. (:issue:`2366`, :pull:`2367`)
 * Restructure the user guide with subsections (:issue:`2302`, :pull:`2310`)
+* Add references for :py:func:`pvlib.snow.loss_townsend`. (:issue:`2383`, :pull:`2384`)
 
 Testing
 ~~~~~~~
@@ -43,3 +44,4 @@ Contributors
 * Jason Lun Leung (:ghuser:`jason-rpkt`)
 * Manoj K S (:ghuser:`manojks1999`)
 * Kurt Rhee (:ghuser:`kurt-rhee`)
+* Ayush jariyal (:ghuser:`ayushjariyal`)

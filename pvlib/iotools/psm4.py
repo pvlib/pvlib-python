@@ -5,18 +5,18 @@ https://developer.nrel.gov/docs/solar/nsrdb/nsrdb-GOES-conus-v4-0-0-download/
 """
 
 import io
+from urllib.parse import urljoin
 import requests
 import pandas as pd
 from json import JSONDecodeError
 
-NSRDB_API_BASE = "https://developer.nrel.gov"
-API_STUB = "/api/nsrdb/v2/solar/"
+NSRDB_API_BASE = "https://developer.nrel.gov/api/nsrdb/v2/solar/"
 GOES_ENDPOINT = "nsrdb-GOES-aggregated-v4-0-0-download.csv"
 TMY_ENDPOINT = "nsrdb-GOES-tmy-v4-0-0-download.csv"
 GOESCONUS_ENDPOINT = "nsrdb-GOES-conus-v4-0-0-download.csv"
-GOES_URL = NSRDB_API_BASE + API_STUB + GOES_ENDPOINT
-TMY_URL = NSRDB_API_BASE + API_STUB + TMY_ENDPOINT
-GOESCONUS_URL = NSRDB_API_BASE + API_STUB + GOESCONUS_ENDPOINT
+GOES_URL = urljoin(NSRDB_API_BASE, GOES_ENDPOINT)
+TMY_URL = urljoin(NSRDB_API_BASE, TMY_ENDPOINT)
+GOESCONUS_URL = urljoin(NSRDB_API_BASE, GOESCONUS_ENDPOINT)
 
 ATTRIBUTES = (
     'air_temperature', 'dew_point', 'dhi', 'dni', 'ghi', 'surface_albedo',
@@ -355,11 +355,6 @@ def read_psm4(filename, map_variables=True):
     """
     Read an NSRDB PSM4 weather file (formatted as SAM CSV). The NSRDB
     is described in [1]_ and the SAM CSV format is described in [2]_.
-
-    .. versionchanged:: 0.9.0
-       The function now returns a tuple where the first element is a dataframe
-       and the second element is a dictionary containing metadata. Previous
-       versions of this function had the return values switched.
 
     Parameters
     ----------

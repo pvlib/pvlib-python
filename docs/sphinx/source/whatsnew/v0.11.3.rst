@@ -10,14 +10,19 @@ Deprecations
 
 Enhancements
 ~~~~~~~~~~~~
+* :py:func:`~pvlib.irradiance.gti_dirint` now raises an informative message
+  when input data don't include values with AOI<90 (:issue:`1342`, :pull:`2347`)
 * Fix a bug in :py:func:`pvlib.bifacial.get_irradiance_poa` which may have yielded non-zero
   ground irradiance when the sun was below the horizon. (:issue:`2245`, :pull:`2359`)
+* Fix a bug where :py:func:`pvlib.transformer.simple_efficiency` could only be imported
+  using the `from pvlib.transformer` syntax (:pull:`2388`)
 * Add NREL NSRDB PSM v4 API client to :py:mod:`pvlib.iotools`. See :py:func:`~pvlib.iotools.get_psm4`, :py:func:`~pvlib.iotools.read_psm4` and :py:func:`~pvlib.iotools.parse_psm4`. (:issue:`2326`, :pull:`2378`)
 
 Documentation
 ~~~~~~~~~~~~~
 * Fix Procedural and Object Oriented simulation examples having slightly different results, in :ref:`introtutorial`. (:issue:`2366`, :pull:`2367`)
 * Restructure the user guide with subsections (:issue:`2302`, :pull:`2310`)
+* Add references for :py:func:`pvlib.snow.loss_townsend`. (:issue:`2383`, :pull:`2384`)
 
 Testing
 ~~~~~~~
@@ -39,6 +44,9 @@ Contributors
 ~~~~~~~~~~~~
 * Rajiv Daxini (:ghuser:`RDaxini`)
 * Mark Campanelli (:ghuser:`markcampanelli`)
+* Cliff Hansen (:ghuser:`cwhanse`)
 * Jason Lun Leung (:ghuser:`jason-rpkt`)
 * Manoj K S (:ghuser:`manojks1999`)
+* Kurt Rhee (:ghuser:`kurt-rhee`)
+* Ayush jariyal (:ghuser:`ayushjariyal`)
 * Will Hobbs (:ghuser:`williamhobbs`)

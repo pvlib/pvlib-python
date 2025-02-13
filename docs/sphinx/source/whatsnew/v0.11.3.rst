@@ -12,7 +12,7 @@ Enhancements
 ~~~~~~~~~~~~
 * Fix a bug in :py:func:`pvlib.bifacial.get_irradiance_poa` which may have yielded non-zero
   ground irradiance when the sun was below the horizon. (:issue:`2245`, :pull:`2359`)
-* Add NREL NSRDB GOES v4 API client to :py:mod:`pvlib.iotools`. See :py:func:`~pvlib.iotools.get_goes4`, :py:func:`~pvlib.iotools.read_goes4` and :py:func:`~pvlib.iotools.parse_goes4`. (:issue:`2326`, :pull:`2378`)
+* Add NREL NSRDB GOES v4 API client to :py:mod:`pvlib.iotools`. See :py:func:`~pvlib.iotools.get_psm4`, :py:func:`~pvlib.iotools.read_psm4` and :py:func:`~pvlib.iotools.parse_psm4`. (:issue:`2326`, :pull:`2378`)
 
 Documentation
 ~~~~~~~~~~~~~

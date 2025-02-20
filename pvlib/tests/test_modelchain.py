@@ -1733,7 +1733,7 @@ def test_invalid_dc_model_params(sapm_dc_snl_ac_system, cec_dc_snl_ac_system,
               'aoi_model': 'no_loss', 'spectral_model': 'no_loss',
               'temperature_model': 'sapm', 'losses_model': 'no_loss'}
     for array in sapm_dc_snl_ac_system.arrays:
-        array.module_parameters.pop('A0')  # remove a parameter
+        array.module_parameters.pop('C0')  # remove a parameter
     with pytest.raises(ValueError):
         ModelChain(sapm_dc_snl_ac_system, location, **kwargs)
 

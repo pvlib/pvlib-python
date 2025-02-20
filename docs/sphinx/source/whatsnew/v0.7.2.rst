@@ -46,7 +46,7 @@ Bug fixes
 * Fix :py:func:`~pvlib.iotools.read_tmy3` parsing when February contains
   a leap year. (:pull:`866`)
 * Implement NREL Developer Network API key for consistent success with API
-  calls in `pvlib.tests.iotools.test_psm3`. (:pull:`873`)
+  calls in :py:mod:`!pvlib.tests.iotools.test_psm3`. (:pull:`873`)
 * Fix issue with :py:class:`pvlib.location.Location` creation when
   passing ``tz=datetime.timezone.utc``. (:pull:`879`)
 * Fix documentation homepage title to "pvlib python" based on first heading on

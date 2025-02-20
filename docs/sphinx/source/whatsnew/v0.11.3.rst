@@ -16,6 +16,10 @@ Enhancements
   ground irradiance when the sun was below the horizon. (:issue:`2245`, :pull:`2359`)
 * Fix a bug where :py:func:`pvlib.transformer.simple_efficiency` could only be imported
   using the `from pvlib.transformer` syntax (:pull:`2388`)
+* Reduced space requirements by excluding tests and test files from wheel.
+  Zipped wheel is now 66% of the previous size, and installed size is 50% of
+  the previous size.
+  (:issue:`2271`, :pull:`2277`)
 
 Documentation
 ~~~~~~~~~~~~~
@@ -25,7 +29,8 @@ Documentation
 
 Testing
 ~~~~~~~
-
+* Moved tests folder to `/tests` and data exclusively used for testing to `/tests/data`.
+  (:issue:`2271`, :pull:`2277`)
 
 Requirements
 ~~~~~~~~~~~~
@@ -48,3 +53,4 @@ Contributors
 * Manoj K S (:ghuser:`manojks1999`)
 * Kurt Rhee (:ghuser:`kurt-rhee`)
 * Ayush jariyal (:ghuser:`ayushjariyal`)
+* Echedey Luis (:ghuser:`echedey-ls`)

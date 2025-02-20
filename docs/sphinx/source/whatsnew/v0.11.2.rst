@@ -12,10 +12,6 @@ Deprecations
 
 Enhancements
 ~~~~~~~~~~~~
-* Reduced space requirements by excluding tests and test files from wheel.
-  Zipped wheel is now 66% of the previous size, and installed size is 50% of
-  the previous size.
-  (:issue:`2271`, :pull:`2277`)
 * Add :py:func:`~pvlib.atmosphere.rh_from_tdew` and :py:func:`~pvlib.atmosphere.tdew_from_rh`.
   (:issue:`1744`, :pull:`2286`)
 * :py:func:`~pvlib.ivtools.sdm.fit_desoto` now allows input of initial
@@ -67,12 +63,6 @@ Documentation
 
 Testing
 ~~~~~~~
-* Moved tests folder to `/tests` and data exclusively used for testing to `/tests/data`.
-  (:issue:`2271`, :pull:`2277`)
-
-Requirements
-~~~~~~~~~~~~
-
 * Update test files to track new PVGIS 5.3 data. (:pull:`2305`)
 
 Maintenance

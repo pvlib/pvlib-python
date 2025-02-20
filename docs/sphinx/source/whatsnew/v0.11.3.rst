@@ -10,7 +10,8 @@ Bug fixes
   ground irradiance when the sun was below the horizon. (:issue:`2245`, :pull:`2359`)
 * Fix a bug where :py:func:`pvlib.transformer.simple_efficiency` could only be imported
   using the `from pvlib.transformer` syntax (:pull:`2388`)
-
+* :py:class:`~pvlib.modelchain.ModelChain` now requires only a minimal set of
+  parameters to run the SAPM electrical model. (:issue:`2369`, :pull:`2393`)
 
 
 Deprecations
@@ -53,3 +54,4 @@ Contributors
 * Manoj K S (:ghuser:`manojks1999`)
 * Kurt Rhee (:ghuser:`kurt-rhee`)
 * Ayush jariyal (:ghuser:`ayushjariyal`)
+* Kevin Anderson (:ghuser:`kandersolar`)

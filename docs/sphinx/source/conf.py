@@ -282,6 +282,8 @@ def setup(app):
     app.add_css_file("reference_format.css")
     # Add a warning banner at the top of the page if viewing the "latest" docs
     app.add_js_file("version-alert.js")
+    # Match the color scheme of the hover tooltips to PyData Sphinx Theme
+    app.add_css_file("tooltips_matching_color_scheme.css")
 
 # -- Options for LaTeX output ---------------------------------------------
 

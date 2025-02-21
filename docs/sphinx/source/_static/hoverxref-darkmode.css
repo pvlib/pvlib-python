@@ -4,10 +4,7 @@
 
 /* These will ensure that the tooltip inherits the pydata-sphinx-theme colours */
 
-.tooltipster-sidetip.tooltipster-shadow .tooltipster-box {
-    background: var(--pst-color-background) !important;
-}
-
-.tooltipster-sidetip.tooltipster-shadow .tooltipster-content {
+.tooltipster-sidetip.tooltipster-shadow.tooltipster-shadow-custom .tooltipster-content {
+    background-color: var(--pst-color-background) !important;
     color: var(--pst-color-text-base) !important;
 }

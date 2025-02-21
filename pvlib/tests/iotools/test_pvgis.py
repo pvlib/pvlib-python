@@ -505,8 +505,8 @@ def _compare_pvgis_tmy_csv(expected, month_year_expected, inputs_expected,
     assert inputs['longitude'] == inputs_expected['location']['longitude']
     assert inputs['elevation'] == inputs_expected['location']['elevation']
     assert (inputs['irradiance time offset']
-        == inputs_expected['location']['irradiance time offset']
-    )
+            == inputs_expected['location']['irradiance time offset']
+            )
     for meta_value in meta:
         if not meta_value:
             continue

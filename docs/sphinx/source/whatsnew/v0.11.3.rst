@@ -16,6 +16,7 @@ Enhancements
   ground irradiance when the sun was below the horizon. (:issue:`2245`, :pull:`2359`)
 * Fix a bug where :py:func:`pvlib.transformer.simple_efficiency` could only be imported
   using the `from pvlib.transformer` syntax (:pull:`2388`)
+* Add NREL NSRDB PSM v4 API client to :py:mod:`pvlib.iotools`. See :py:func:`~pvlib.iotools.get_psm4`, :py:func:`~pvlib.iotools.read_psm4` and :py:func:`~pvlib.iotools.parse_psm4`. (:issue:`2326`, :pull:`2378`)
 
 Documentation
 ~~~~~~~~~~~~~
@@ -48,3 +49,4 @@ Contributors
 * Manoj K S (:ghuser:`manojks1999`)
 * Kurt Rhee (:ghuser:`kurt-rhee`)
 * Ayush jariyal (:ghuser:`ayushjariyal`)
+* Will Hobbs (:ghuser:`williamhobbs`)

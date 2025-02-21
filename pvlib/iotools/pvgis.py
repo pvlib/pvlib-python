@@ -559,6 +559,8 @@ def _parse_pvgis_tmy_csv(src):
     inputs['longitude'] = float(src.readline().split(b':')[1])
     # Elevation (m): 1389.0\r\n
     inputs['elevation'] = float(src.readline().split(b':')[1])
+    # Irradiance Time Offset (h): 0.1761\r\n
+    inputs['irradiance time offset'] = float(src.readline().split(b':')[1])
     # then there's a 13 row comma separated table with two columns: month, year
     # which contains the year used for that month in the
     src.readline()  # get "month,year\r\n"

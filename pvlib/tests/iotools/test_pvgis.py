@@ -321,7 +321,8 @@ def month_year_expected():
 @pytest.fixture
 def inputs_expected():
     return {
-        'location': {'latitude': 45.0, 'longitude': 8.0, 'elevation': 250.0},
+        'location': {'latitude': 45.0, 'longitude': 8.0, 'elevation': 250.0,
+                     'irradiance time offset': 0.1761},
         'meteo_data': {
             'radiation_db': 'PVGIS-SARAH3',
             'meteo_db': 'ERA5',
@@ -503,6 +504,9 @@ def _compare_pvgis_tmy_csv(expected, month_year_expected, inputs_expected,
     assert inputs['latitude'] == inputs_expected['location']['latitude']
     assert inputs['longitude'] == inputs_expected['location']['longitude']
     assert inputs['elevation'] == inputs_expected['location']['elevation']
+    assert (inputs['irradiance time offset']
+        == inputs_expected['location']['irradiance time offset']
+    )
     for meta_value in meta:
         if not meta_value:
             continue

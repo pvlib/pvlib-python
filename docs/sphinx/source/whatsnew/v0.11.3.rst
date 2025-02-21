@@ -17,6 +17,15 @@ Enhancements
 * Fix a bug where :py:func:`pvlib.transformer.simple_efficiency` could only be imported
   using the `from pvlib.transformer` syntax (:pull:`2388`)
 
+Bug Fixes
+~~~~~~~~~
+* Ensure proper tz and pytz types in pvlib.location.Location. To ensure that
+  the time zone in pvlib.location.Location remains internally consistent
+  if/when the time zone is updated, the tz attribute is now the single source
+  of time-zone truth, is the single time-zone setter interface, and its getter 
+  returns an IANA string. (:issue:`2340`, :pull:`2341`)
+
+
 Documentation
 ~~~~~~~~~~~~~
 * Fix Procedural and Object Oriented simulation examples having slightly different results, in :ref:`introtutorial`. (:issue:`2366`, :pull:`2367`)
@@ -25,6 +34,9 @@ Documentation
 
 Testing
 ~~~~~~~
+* Add tests for timezone types in pvlib.location.Location.
+  (:issue:`2340`, :pull:`2341`)
+* Add tests for time conversions in pvlib.tools. (:issue:`2340`, :pull:`2341`)
 
 
 Requirements
@@ -38,6 +50,11 @@ Maintenance
 * asv 0.4.2 upgraded to asv 0.6.4 to fix CI failure due to pinned older conda.
   (:pull:`2352`)
 
+Breaking Changes
+~~~~~~~~~~~~~~~~
+* The pytz attribute in pvlib.location.Location is now read only. pytz time
+  zones can still be passed to tz in the object initializer and in the tz
+  setter after object creation. (:issue:`2340`, :pull:`2341`)
 
 Contributors
 ~~~~~~~~~~~~

@@ -3,10 +3,11 @@ Collection of functions used in pvlib_python
 """
 
 import datetime as dt
+import warnings
+
 import numpy as np
 import pandas as pd
 import pytz
-import warnings
 
 
 def cosd(angle):
@@ -119,21 +120,21 @@ def atand(number):
 
 def localize_to_utc(time, location):
     """
-    Converts or localizes a time series to UTC.
+    Converts ``time`` to UTC, localizing if necessary using location.
 
     Parameters
     ----------
     time : datetime.datetime, pandas.DatetimeIndex,
            or pandas.Series/DataFrame with a DatetimeIndex.
-    location : pvlib.Location object
+    location : pvlib.Location object (unused if ``time`` is localized)
 
     Returns
     -------
-    pandas object localized to UTC.
+    datetime.datetime or pandas object localized to UTC.
     """
     if isinstance(time, dt.datetime):
         if time.tzinfo is None:
-            time = pytz.timezone(location.tz).localize(time)
+            time = location.pytz.localize(time)
         time_utc = time.astimezone(pytz.utc)
     else:
         try:

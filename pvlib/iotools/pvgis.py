@@ -559,11 +559,17 @@ def _parse_pvgis_tmy_csv(src):
     inputs['longitude'] = float(src.readline().split(b':')[1])
     # Elevation (m): 1389.0\r\n
     inputs['elevation'] = float(src.readline().split(b':')[1])
-    # Irradiance Time Offset (h): 0.1761\r\n
-    inputs['irradiance time offset'] = float(src.readline().split(b':')[1])
+
+    # TMY has an extra line here: Irradiance Time Offset (h): 0.1761\r\n
+    line = src.readline()
+    if line.startswith(b'Irradiance Time Offset'):
+        inputs['irradiance time offset'] = float(line.split(b':')[1])
+        src.readline()  # skip over the "month,year\r\n"
+    else:
+        # `line` is already the "month,year\r\n" line, so nothing to do
+        pass
     # then there's a 13 row comma separated table with two columns: month, year
-    # which contains the year used for that month in the
-    src.readline()  # get "month,year\r\n"
+    # which contains the year used for that month in the TMY
     months_selected = []
     for month in range(12):
         months_selected.append(

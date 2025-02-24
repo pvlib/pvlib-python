@@ -72,7 +72,7 @@ There is a convention on consistent variable names throughout the library:
         Global horizontal irradiance
 
     ghi_clear
-        Clearsky global horizontal irradiance [Wm⁻²]. 
+        Clearsky global horizontal irradiance [Wm⁻²]
 
     ghi_extra
         Horizontal irradiance at top of atmosphere (extraterrestrial)

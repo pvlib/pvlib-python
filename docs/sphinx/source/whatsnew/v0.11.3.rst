@@ -22,7 +22,7 @@ Documentation
 * Fix Procedural and Object Oriented simulation examples having slightly different results, in :ref:`introtutorial`. (:issue:`2366`, :pull:`2367`)
 * Restructure the user guide with subsections (:issue:`2302`, :pull:`2310`)
 * Add references for :py:func:`pvlib.snow.loss_townsend`. (:issue:`2383`, :pull:`2384`)
-* Add `ghi_clear` to the :ref:`nomenclature` page (:issue:`2272`, :pull`2397`)
+* Add :term:`ghi_clear` to the :ref:`nomenclature` page (:issue:`2272`, :pull`2397`)
 
 Testing
 ~~~~~~~

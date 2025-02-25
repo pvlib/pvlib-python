@@ -576,8 +576,8 @@ def spectral_factor_pvspec(airmass_absolute, clearsky_index,
     _coefficients = {}
     _coefficients['multisi'] = (0.9847, -0.05237, 0.03034)
     _coefficients['monosi'] = (0.9845, -0.05169, 0.03034)
-    _coefficients['fs-2'] = (1.002, -0.07108, 0.02465)
-    _coefficients['fs-4'] = (0.9981, -0.05776, 0.02336)
+    _coefficients['fs4-2'] = (1.002, -0.07108, 0.02465)
+    _coefficients['fs4-1'] = (0.9981, -0.05776, 0.02336)
     _coefficients['cigs'] = (0.9791, -0.03904, 0.03096)
     _coefficients['asi'] = (1.051, -0.1033, 0.009838)
 

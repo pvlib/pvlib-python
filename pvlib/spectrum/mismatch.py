@@ -520,7 +520,7 @@ def spectral_factor_pvspec(airmass_absolute, clearsky_index,
         One of the following PV technology strings from [1]_:
 
         * ``'fs4-1'`` - First Solar series 4-1 and earlier CdTe module.
-        * ``'fs4-2'`` - First Solar 4-2 and later CdTe module.
+        * ``'fs4-2'`` - First Solar series 4-2 and later CdTe module.
         * ``'monosi'`` - anonymous monocrystalline Si module.
         * ``'multisi'`` - anonymous multicrystalline Si module.
         * ``'cigs'`` - anonymous copper indium gallium selenide module.

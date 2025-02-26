@@ -233,12 +233,6 @@ def test_PVSystem_multi_array_sapm(sapm_module_params):
         system.sapm(500, temp_cell)
 
 
-def test_sapm_spectral_loss_deprecated(sapm_module_params):
-    with pytest.warns(pvlibDeprecationWarning,
-                      match='Use pvlib.spectrum.spectral_factor_sapm'):
-        pvsystem.sapm_spectral_loss(1, sapm_module_params)
-
-
 def test_PVSystem_sapm_spectral_loss(sapm_module_params, mocker):
     mocker.spy(spectrum, 'spectral_factor_sapm')
     system = pvsystem.PVSystem(module_parameters=sapm_module_params)

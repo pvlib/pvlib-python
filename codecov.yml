@@ -14,14 +14,15 @@ flags:
   core:
     paths:
       - pvlib/
+      - tests/
       - '!pvlib/iotools/'
-      - '!pvlib/tests/iotools/'
+      - '!tests/iotools/'
     carryforward: false
 
   remote-data:
     paths:
       - pvlib/iotools/
-      - pvlib/tests/iotools
+      - tests/iotools
     carryforward: true  # if not run, use coverage from previous commit
 
 
@@ -47,15 +48,15 @@ coverage:
       tests-core:
         target: 95%
         paths:
-          - 'pvlib/tests/.*'
-          - '!pvlib/tests/iotools/.*'
+          - 'tests/.*'
+          - '!tests/iotools/.*'
         flags:
           - core
 
       tests-remote-data:
         target: 95%
         paths:
-          - 'pvlib/tests/iotools/.*'
+          - 'tests/iotools/.*'
         flags:
           - remote-data
 

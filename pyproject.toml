@@ -66,7 +66,7 @@ doc = [
     'sphinx-toggleprompt == 0.5.2',
     'sphinx-favicon',
     'solarfactors',
-    'sphinx-hoverxref',
+    'sphinx-hoverxref ~= 1.4.2',  # when updating, check that _static/tooltipster_color_theming.css still works
 ]
 test = [
     'pytest',

@@ -1,0 +1,10 @@
+/* Overrides for sphinx-hoverxref since it does not support a native dark theme, see */
+/* https://github.com/readthedocs/sphinx-hoverxref/issues/231 */
+/* Inspired by https://github.com/pybamm-team/PyBaMM/pull/3083 */
+
+/* These will ensure that the tooltip inherits the pydata-sphinx-theme colours */
+
+.tooltipster-sidetip.tooltipster-shadow.tooltipster-shadow-custom .tooltipster-content {
+    background-color: var(--pst-color-background) !important;
+    color: var(--pst-color-text-base) !important;
+}

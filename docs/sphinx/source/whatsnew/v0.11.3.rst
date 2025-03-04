@@ -12,6 +12,7 @@ Bug fixes
   using the `from pvlib.transformer` syntax (:pull:`2388`)
 * :py:class:`~pvlib.modelchain.ModelChain` now requires only a minimal set of
   parameters to run the SAPM electrical model. (:issue:`2369`, :pull:`2393`)
+* Correct keys for First Solar modules in `~pvlib.spectrum.spectral_factor_pvspec` (:issue:`2398`, :pull:`2400`)
 
 
 Deprecations
@@ -23,11 +24,13 @@ Enhancements
 * :py:func:`~pvlib.irradiance.gti_dirint` now raises an informative message
   when input data don't include values with AOI<90 (:issue:`1342`, :pull:`2347`)
 
+
 Documentation
 ~~~~~~~~~~~~~
 * Fix Procedural and Object Oriented simulation examples having slightly different results, in :ref:`introtutorial`. (:issue:`2366`, :pull:`2367`)
 * Restructure the user guide with subsections (:issue:`2302`, :pull:`2310`)
 * Add references for :py:func:`pvlib.snow.loss_townsend`. (:issue:`2383`, :pull:`2384`)
+* Add :term:`ghi_clear` to the :ref:`nomenclature` page (:issue:`2272`, :pull`2397`)
 
 Testing
 ~~~~~~~

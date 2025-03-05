@@ -56,7 +56,7 @@ jobs:
     strategy:
       fail-fast: false  # don't cancel other matrix jobs when one fails
       matrix:
-        python-version: [3.9, "3.10", "3.11", "3.12"]
+        python-version: [3.9, "3.10", "3.11", "3.12", "3.13"]
         suffix: ['']  # the alternative to "-min"
         include:
           - python-version: 3.9
@@ -100,7 +100,7 @@ jobs:
           SOLARANYWHERE_API_KEY: ${{ secrets.SOLARANYWHERE_API_KEY }}
           BSRN_FTP_USERNAME: ${{ secrets.BSRN_FTP_USERNAME }}
           BSRN_FTP_PASSWORD: ${{ secrets.BSRN_FTP_PASSWORD }}
-        run: pytest pvlib/tests/iotools --cov=./ --cov-report=xml --remote-data
+        run: pytest tests/iotools --cov=./ --cov-report=xml --remote-data
 
       - name: Upload coverage to Codecov
         if: matrix.python-version == 3.9 && matrix.suffix == ''

@@ -22,15 +22,24 @@ Enhancements
   ground irradiance when the sun was below the horizon. (:issue:`2245`, :pull:`2359`)
 * Fix a bug where :py:func:`pvlib.transformer.simple_efficiency` could only be imported
   using the `from pvlib.transformer` syntax (:pull:`2388`)
+* Reduced space requirements by excluding tests and test files from wheel.
+  Zipped wheel is now 66% of the previous size, and installed size is 50% of
+  the previous size.
+  (:issue:`2271`, :pull:`2277`)
+* Correct keys for First Solar modules in `~pvlib.spectrum.spectral_factor_pvspec` (:issue:`2398`, :pull:`2400`)
 
 Documentation
 ~~~~~~~~~~~~~
 * Fix Procedural and Object Oriented simulation examples having slightly different results, in :ref:`introtutorial`. (:issue:`2366`, :pull:`2367`)
 * Restructure the user guide with subsections (:issue:`2302`, :pull:`2310`)
 * Add references for :py:func:`pvlib.snow.loss_townsend`. (:issue:`2383`, :pull:`2384`)
+* Add :term:`ghi_clear` to the :ref:`nomenclature` page (:issue:`2272`, :pull`2397`)
 
 Testing
 ~~~~~~~
+* Moved tests folder to `/tests` and data exclusively used for testing to `/tests/data`.
+  (:issue:`2271`, :pull:`2277`)
+* Added Python 3.13 to test suite. (:pull:`2258`)
 
 
 Requirements
@@ -54,3 +63,4 @@ Contributors
 * Manoj K S (:ghuser:`manojks1999`)
 * Kurt Rhee (:ghuser:`kurt-rhee`)
 * Ayush jariyal (:ghuser:`ayushjariyal`)
+* Echedey Luis (:ghuser:`echedey-ls`)

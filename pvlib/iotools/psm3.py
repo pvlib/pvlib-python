@@ -49,7 +49,7 @@ REQUEST_VARIABLE_MAP = {
     'ghi_clear': 'clearsky_ghi',
     'dhi_clear': 'clearsky_dhi',
     'dni_clear': 'clearsky_dni',
-    'zenith': 'solar_zenith_angle',
+    'solar_zenith': 'solar_zenith_angle',
     'temp_air': 'air_temperature',
     'temp_dew': 'dew_point',
     'relative_humidity': 'relative_humidity',

@@ -4,6 +4,12 @@
 v0.11.3 (Anticipated March, 2025)
 ---------------------------------
 
+Bug fixes
+~~~~~~~~~
+* :py:func:`~pvlib.iotools.get_pvgis_tmy` with ``outputformat='csv'`` now
+  works with the updated data format returned by PVGIS. (:issue:`2344`, :pull:`2395`)
+
+
 Deprecations
 ~~~~~~~~~~~~
 

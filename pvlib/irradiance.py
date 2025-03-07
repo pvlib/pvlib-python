@@ -2368,6 +2368,9 @@ def gti_dirint(poa_global, aoi, solar_zenith, solar_azimuth, times,
            irradiance, Solar Energy 122, 1037-1046.
            :doi:`10.1016/j.solener.2015.10.024`
     """
+    # check input data and raise Exceptions where data will cause the
+    # algorithm to fail
+    _gti_dirint_check_input(aoi)
 
     aoi_lt_90 = aoi < 90
 
@@ -2397,6 +2400,17 @@ def gti_dirint(poa_global, aoi, solar_zenith, solar_azimuth, times,
     output = pd.DataFrame(output, index=times)
 
     return output
+
+
+def _gti_dirint_check_input(aoi):
+    r"""
+    Helper for gti_dirint
+
+    Raises Exceptions from input data that cause the algorithm to fail.
+    """
+    if not (aoi < 90).any():
+        raise ValueError("There are no times with AOI < 90. "
+                         "gti_dirint requires some data with AOI < 90.")
 
 
 def _gti_dirint_lt_90(poa_global, aoi, aoi_lt_90, solar_zenith, solar_azimuth,

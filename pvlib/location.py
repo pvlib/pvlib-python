@@ -65,7 +65,7 @@ class Location:
     Raises
     ------
     ValueError
-        when the time-zone ``tz`` input cannot be converted.
+        when the time zone ``tz`` cannot be converted.
 
     zoneinfo.ZoneInfoNotFoundError
         when the time zone ``tz`` is not recognizable as an IANA time zone by

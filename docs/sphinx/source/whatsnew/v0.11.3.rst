@@ -45,9 +45,9 @@ Testing
 * Moved tests folder to `/tests` and data exclusively used for testing to `/tests/data`.
   (:issue:`2271`, :pull:`2277`)
 * Added Python 3.13 to test suite. (:pull:`2258`)
-* Add tests for timezone types in pvlib.location.Location.
+* Add tests for all input types for the pvlib.location.Location.tz attribute.
   (:issue:`2340`, :pull:`2341`)
-* Add tests for time conversions in pvlib.tools. (:issue:`2340`, :pull:`2341`)
+* Add tests for time-conversion functions in pvlib.tools. (:issue:`2340`, :pull:`2341`)
 
 
 Requirements
@@ -63,9 +63,9 @@ Maintenance
 
 Breaking Changes
 ~~~~~~~~~~~~~~~~
-* The pytz attribute in pvlib.location.Location is now read only. pytz time
-  zones can still be passed to tz in the object initializer and in the tz
-  setter after object creation. (:issue:`2340`, :pull:`2341`)
+* The pvlib.location.Location.pytz attribute is now read only. The
+  pytz attribute is now set internally to be consistent with the
+  pvlib.location.Location.tz attribute. (:issue:`2340`, :pull:`2341`)
 
 Contributors
 ~~~~~~~~~~~~

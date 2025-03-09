@@ -13,6 +13,11 @@ Bug fixes
 * :py:class:`~pvlib.modelchain.ModelChain` now requires only a minimal set of
   parameters to run the SAPM electrical model. (:issue:`2369`, :pull:`2393`)
 * Correct keys for First Solar modules in `~pvlib.spectrum.spectral_factor_pvspec` (:issue:`2398`, :pull:`2400`)
+* Ensure proper tz and pytz types in pvlib.location.Location. To ensure that
+  the time zone in pvlib.location.Location remains internally consistent
+  if/when the time zone is updated, the tz attribute is now the single source
+  of time-zone truth, is the single time-zone setter interface, and its getter 
+  returns an IANA string. (:issue:`2340`, :pull:`2341`)
 
 
 Deprecations
@@ -40,6 +45,9 @@ Testing
 * Moved tests folder to `/tests` and data exclusively used for testing to `/tests/data`.
   (:issue:`2271`, :pull:`2277`)
 * Added Python 3.13 to test suite. (:pull:`2258`)
+* Add tests for all input types for the pvlib.location.Location.tz attribute.
+  (:issue:`2340`, :pull:`2341`)
+* Add tests for time-conversion functions in pvlib.tools. (:issue:`2340`, :pull:`2341`)
 
 
 Requirements
@@ -53,11 +61,15 @@ Maintenance
 * asv 0.4.2 upgraded to asv 0.6.4 to fix CI failure due to pinned older conda.
   (:pull:`2352`)
 
+Breaking Changes
+~~~~~~~~~~~~~~~~
+* The pvlib.location.Location.pytz attribute is now read only. The
+  pytz attribute is now set internally to be consistent with the
+  pvlib.location.Location.tz attribute. (:issue:`2340`, :pull:`2341`)
 
 Contributors
 ~~~~~~~~~~~~
 * Rajiv Daxini (:ghuser:`RDaxini`)
-* Mark Campanelli (:ghuser:`markcampanelli`)
 * Cliff Hansen (:ghuser:`cwhanse`)
 * Jason Lun Leung (:ghuser:`jason-rpkt`)
 * Manoj K S (:ghuser:`manojks1999`)
@@ -65,3 +77,4 @@ Contributors
 * Ayush jariyal (:ghuser:`ayushjariyal`)
 * Kevin Anderson (:ghuser:`kandersolar`)
 * Echedey Luis (:ghuser:`echedey-ls`)
+* Mark Campanelli (:ghuser:`markcampanelli`)

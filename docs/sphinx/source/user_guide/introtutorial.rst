@@ -87,7 +87,7 @@ to accomplish our system modeling goal:
             longitude=longitude,
             altitude=altitude,
             temperature=weather["temp_air"],
-            pressure=pvlib.atmosphere.alt2pres(altitude),
+            pressure=weather["pressure"],
         )
         dni_extra = pvlib.irradiance.get_extra_radiation(weather.index)
         airmass = pvlib.atmosphere.get_relative_airmass(solpos['apparent_zenith'])

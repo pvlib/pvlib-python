@@ -18,7 +18,7 @@ dependencies:
     - pytest-timeout
     - pytest-rerunfailures
     - conda-forge::pytest-remotedata  # version in default channel is old
-    - python=3.12
+    - python=3.13
     - pytz
     - requests
     - scipy >= 1.6.0

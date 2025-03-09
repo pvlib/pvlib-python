@@ -4,13 +4,29 @@
 v0.11.3 (Anticipated March, 2025)
 ---------------------------------
 
+Bug fixes
+~~~~~~~~~
+* Fix a bug in :py:func:`pvlib.bifacial.get_irradiance_poa` which may have yielded non-zero
+  ground irradiance when the sun was below the horizon. (:issue:`2245`, :pull:`2359`)
+* Fix a bug where :py:func:`pvlib.transformer.simple_efficiency` could only be imported
+  using the `from pvlib.transformer` syntax (:pull:`2388`)
+* :py:class:`~pvlib.modelchain.ModelChain` now requires only a minimal set of
+  parameters to run the SAPM electrical model. (:issue:`2369`, :pull:`2393`)
+* Correct keys for First Solar modules in `~pvlib.spectrum.spectral_factor_pvspec` (:issue:`2398`, :pull:`2400`)
+
+
 Deprecations
 ~~~~~~~~~~~~
 
 
 Enhancements
 ~~~~~~~~~~~~
-
+* :py:func:`~pvlib.irradiance.gti_dirint` now raises an informative message
+  when input data don't include values with AOI<90 (:issue:`1342`, :pull:`2347`)
+* Reduced space requirements by excluding tests and test files from wheel.
+  Zipped wheel is now 66% of the previous size, and installed size is 50% of
+  the previous size.
+  (:issue:`2271`, :pull:`2277`)
 
 Bug Fixes
 ~~~~~~~~~
@@ -23,13 +39,19 @@ Bug Fixes
 
 Documentation
 ~~~~~~~~~~~~~
-
+* Fix Procedural and Object Oriented simulation examples having slightly different results, in :ref:`introtutorial`. (:issue:`2366`, :pull:`2367`)
+* Restructure the user guide with subsections (:issue:`2302`, :pull:`2310`)
+* Add references for :py:func:`pvlib.snow.loss_townsend`. (:issue:`2383`, :pull:`2384`)
+* Add :term:`ghi_clear` to the :ref:`nomenclature` page (:issue:`2272`, :pull`2397`)
 
 Testing
 ~~~~~~~
 * Add tests for timezone types in pvlib.location.Location.
   (:issue:`2340`, :pull:`2341`)
 * Add tests for time conversions in pvlib.tools. (:issue:`2340`, :pull:`2341`)
+* Moved tests folder to `/tests` and data exclusively used for testing to `/tests/data`.
+  (:issue:`2271`, :pull:`2277`)
+* Added Python 3.13 to test suite. (:pull:`2258`)
 
 
 Requirements
@@ -53,3 +75,10 @@ Contributors
 ~~~~~~~~~~~~
 * Rajiv Daxini (:ghuser:`RDaxini`)
 * Mark Campanelli (:ghuser:`markcampanelli`)
+* Cliff Hansen (:ghuser:`cwhanse`)
+* Jason Lun Leung (:ghuser:`jason-rpkt`)
+* Manoj K S (:ghuser:`manojks1999`)
+* Kurt Rhee (:ghuser:`kurt-rhee`)
+* Ayush jariyal (:ghuser:`ayushjariyal`)
+* Kevin Anderson (:ghuser:`kandersolar`)
+* Echedey Luis (:ghuser:`echedey-ls`)

@@ -87,7 +87,8 @@ def _unshaded_ground_fraction(surface_tilt, surface_azimuth, solar_zenith,
                                         surface_azimuth)
     f_gnd_beam = 1.0 - np.minimum(
         1.0, gcr * np.abs(cosd(surface_tilt) + sind(surface_tilt) * tan_phi))
-    np.where(solar_zenith > max_zenith, 0., f_gnd_beam)  # [1], Eq. 4
+    # [1], Eq. 4
+    f_gnd_beam = np.where(solar_zenith > max_zenith, 0., f_gnd_beam)
     return f_gnd_beam  # 1 - min(1, abs()) < 1 always
 
 

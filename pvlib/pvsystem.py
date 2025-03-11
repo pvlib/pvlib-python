@@ -1832,10 +1832,6 @@ def calcparams_cec(effective_irradiance, temp_cell,
     '''
 
     # pass adjusted temperature coefficient to desoto
-    # Returns the following: 
-    # IL: photocurrent, I0: saturation_current, Rs: resistance_series, 
-    # Rsh: resistance_shunt, nNsVth: product of thermal voltage, diode ideality factor and cells in series
-    
     return calcparams_desoto(effective_irradiance, temp_cell,
                              alpha_sc*(1.0 - Adjust/100),
                              a_ref, I_L_ref, I_o_ref,

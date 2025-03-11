@@ -1709,7 +1709,7 @@ def calcparams_desoto(effective_irradiance, temp_cell,
     Rs = R_s
 
     numeric_args = (effective_irradiance, temp_cell)
-    # IL: photocurrent, I0: saturation_current, Rs: resistance_series, 
+    # IL: photocurrent, I0: saturation_current, Rs: resistance_series,
     # Rsh: resistance_shunt
     out = (IL, I0, Rs, Rsh, nNsVth)
 
@@ -1977,7 +1977,7 @@ def calcparams_pvsyst(effective_irradiance, temp_cell,
     Rs = R_s
 
     numeric_args = (effective_irradiance, temp_cell)
-    # IL: photocurrent, I0: saturation_current, Rs: resistance_series, 
+    # IL: photocurrent, I0: saturation_current, Rs: resistance_series,
     # Rsh: resistance_shunt
     out = (IL, I0, Rs, Rsh, nNsVth)
 

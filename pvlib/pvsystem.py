@@ -1978,7 +1978,7 @@ def calcparams_pvsyst(effective_irradiance, temp_cell,
 
     numeric_args = (effective_irradiance, temp_cell)
     # IL: photocurrent, I0: saturation_current, Rs: resistance_series, 
-    # Rsh: resistance_shunt, nNsVth: product of thermal voltage, diode ideality factor and cells in series
+    # Rsh: resistance_shunt
     out = (IL, I0, Rs, Rsh, nNsVth)
 
     if all(map(np.isscalar, numeric_args)):

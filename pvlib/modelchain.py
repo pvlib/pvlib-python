@@ -873,7 +873,6 @@ class ModelChain:
         else:  # assume model is callable with 1st argument = the MC instance
             self._spectral_model = partial(model, self)
 
-
     def first_solar_spectral_loss(self):
         self.results.spectral_modifier = self.system.first_solar_spectral_loss(
             _tuple_from_dfs(self.results.weather, 'precipitable_water'),

@@ -4,6 +4,15 @@
 v0.11.3 (Anticipated March, 2025)
 ---------------------------------
 
+Breaking Changes
+~~~~~~~~~~~~~~~~
+* The pvlib.location.Location.pytz attribute is now read only. The
+  pytz attribute is now set internally to be consistent with the
+  pvlib.location.Location.tz attribute. (:issue:`2340`, :pull:`2341`)
+* Users must now provide ModelChain.spectral_model, or the 'no_loss' spectral
+  model is assumed. pvlib.modelchain.ModelChain no longer attempts to infer
+  the spectral from PVSystem attributes. (:issue:`2017`, :pull:`2253`)
+
 Bug fixes
 ~~~~~~~~~
 * Fix a bug in :py:func:`pvlib.bifacial.get_irradiance_poa` which may have yielded non-zero
@@ -62,11 +71,6 @@ Maintenance
 * asv 0.4.2 upgraded to asv 0.6.4 to fix CI failure due to pinned older conda.
   (:pull:`2352`)
 
-Breaking Changes
-~~~~~~~~~~~~~~~~
-* The pvlib.location.Location.pytz attribute is now read only. The
-  pytz attribute is now set internally to be consistent with the
-  pvlib.location.Location.tz attribute. (:issue:`2340`, :pull:`2341`)
 
 Contributors
 ~~~~~~~~~~~~

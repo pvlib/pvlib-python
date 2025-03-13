@@ -17,7 +17,7 @@ from dataclasses import dataclass
 from abc import ABC, abstractmethod
 from typing import Optional, Union
 
-from pvlib._deprecation import deprecated, warn_deprecated
+from pvlib._deprecation import deprecated
 
 import pvlib  # used to avoid albedo name collision in the Array class
 from pvlib import (atmosphere, iam, inverter, irradiance,
@@ -29,11 +29,10 @@ import pvlib.tools as tools
 # a dict of required parameter names for each DC power model
 _DC_MODEL_PARAMS = {
     'sapm': {
-        'A0', 'A1', 'A2', 'A3', 'A4', 'B0', 'B1', 'B2', 'B3',
-        'B4', 'B5', 'C0', 'C1', 'C2', 'C3', 'C4', 'C5', 'C6',
-        'C7', 'Isco', 'Impo', 'Voco', 'Vmpo', 'Aisc', 'Aimp', 'Bvoco',
+        'C0', 'C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'C7',
+        'Isco', 'Impo', 'Voco', 'Vmpo', 'Aisc', 'Aimp', 'Bvoco',
         'Mbvoc', 'Bvmpo', 'Mbvmp', 'N', 'Cells_in_Series',
-        'IXO', 'IXXO', 'FD'},
+        'IXO', 'IXXO'},
     'desoto': {
         'alpha_sc', 'a_ref', 'I_L_ref', 'I_o_ref',
         'R_sh_ref', 'R_s'},
@@ -104,22 +103,22 @@ class PVSystem:
     ----------
     arrays : Array or iterable of Array, optional
         An Array or list of arrays that are part of the system. If not
-        specified a single array is created from the other parameters (e.g.
+        specified, a single array is created from the other parameters (e.g.
         `surface_tilt`, `surface_azimuth`). If specified as a list, the list
         must contain at least one Array;
         if length of arrays is 0 a ValueError is raised. If `arrays` is
         specified the following PVSystem parameters are ignored:
 
-        - `surface_tilt`
-        - `surface_azimuth`
-        - `albedo`
-        - `surface_type`
-        - `module`
-        - `module_type`
-        - `module_parameters`
-        - `temperature_model_parameters`
-        - `modules_per_string`
-        - `strings_per_inverter`
+        - ``surface_tilt``
+        - ``surface_azimuth``
+        - ``albedo``
+        - ``surface_type``
+        - ``module``
+        - ``module_type``
+        - ``module_parameters``
+        - ``temperature_model_parameters``
+        - ``modules_per_string``
+        - ``strings_per_inverter``
 
     surface_tilt: float or array-like, default 0
         Surface tilt angles in decimal degrees.
@@ -127,7 +126,7 @@ class PVSystem:
         (e.g. surface facing up = 0, surface facing horizon = 90)
 
     surface_azimuth: float or array-like, default 180
-        Azimuth angle of the module surface.
+        Azimuth angle of the module surface in decimal degrees.
         North=0, East=90, South=180, West=270.
 
     albedo : float, optional
@@ -142,8 +141,6 @@ class PVSystem:
 
     module : string, optional
         The model name of the modules.
-        May be used to look up the module_parameters dictionary
-        via some other method.
 
     module_type : string, default 'glass_polymer'
          Describes the module's construction. Valid strings are 'glass_polymer'
@@ -154,7 +151,8 @@ class PVSystem:
 
     temperature_model_parameters : dict or Series, optional
         Temperature model parameters as required by one of the models in
-        pvlib.temperature (excluding poa_global, temp_air and wind_speed).
+        :py:mod:`pvlib.temperature` (excluding ``poa_global``, ``temp_air`` and
+        ``wind_speed``).
 
     modules_per_string: int or float, default 1
         See system topology discussion above.
@@ -164,15 +162,17 @@ class PVSystem:
 
     inverter : string, optional
         The model name of the inverters.
-        May be used to look up the inverter_parameters dictionary
-        via some other method.
 
     inverter_parameters : dict or Series, optional
         Inverter parameters as defined by the SAPM, CEC, or other.
 
-    racking_model : string, default 'open_rack'
-        Valid strings are 'open_rack', 'close_mount', and 'insulated_back'.
-        Used to identify a parameter set for the SAPM cell temperature model.
+    racking_model : string, optional
+        Valid strings are ``'open_rack'``, ``'close_mount'``,
+        ``'insulated_back'``, ``'freestanding'`` and ``'insulated'``.
+        Used to identify a parameter set for the SAPM or PVsyst cell
+        temperature model.
+        See :py:func:`~pvlib.temperature.sapm_module` and
+        :py:func:`~pvlib.temperature.pvsyst_cell` for definitions.
 
     losses_parameters : dict or Series, optional
         Losses parameters as defined by PVWatts or other.
@@ -186,7 +186,7 @@ class PVSystem:
     Raises
     ------
     ValueError
-        If `arrays` is not None and has length 0.
+        If ``arrays`` is not None and has length 0.
 
     See also
     --------
@@ -312,7 +312,7 @@ class PVSystem:
                        dni_extra=None, airmass=None, albedo=None,
                        model='haydavies', **kwargs):
         """
-        Uses the :py:func:`irradiance.get_total_irradiance` function to
+        Uses :py:func:`pvlib.irradiance.get_total_irradiance` to
         calculate the plane of array irradiance components on the tilted
         surfaces defined by each array's ``surface_tilt`` and
         ``surface_azimuth``.
@@ -323,11 +323,11 @@ class PVSystem:
             Solar zenith angle.
         solar_azimuth : float or Series
             Solar azimuth angle.
-        dni : float or Series or tuple of float or Series
+        dni : float, Series, or tuple of float or Series
             Direct Normal Irradiance. [W/m2]
-        ghi : float or Series or tuple of float or Series
+        ghi : float, Series, or tuple of float or Series
             Global horizontal irradiance. [W/m2]
-        dhi : float or Series or tuple of float or Series
+        dhi : float, Series, or tuple of float or Series
             Diffuse horizontal irradiance. [W/m2]
         dni_extra : float, Series or tuple of float or Series, optional
             Extraterrestrial direct normal irradiance. [W/m2]
@@ -339,15 +339,22 @@ class PVSystem:
             Irradiance model.
 
         kwargs
-            Extra parameters passed to :func:`irradiance.get_total_irradiance`.
+            Extra parameters passed to
+            :py:func:`pvlib.irradiance.get_total_irradiance`.
 
         Notes
         -----
-        Each of `dni`, `ghi`, and `dni` parameters may be passed as a tuple
-        to provide different irradiance for each array in the system. If not
-        passed as a tuple then the same value is used for input to each Array.
-        If passed as a tuple the length must be the same as the number of
-        Arrays.
+        Each of ``dni``, ``ghi``, and ``dni`` may be passed as a float, Series,
+        or tuple of float or Series. If passed as a float or Series, these
+        values are used for all Arrays. If passed as a tuple, the tuple length
+        must be the same as the number of Arrays. The first tuple element is
+        used for the first Array, the second tuple element for the second
+        Array, and so forth.
+
+        Some sky irradiance models require ``dni_extra``. For these models,
+        if ``dni_extra`` is not provided and ``solar_zenith`` has a
+        ``DatetimeIndex``, then ``dni_extra`` is calculated.
+        Otherwise, ``dni_extra=1367`` is assumed.
 
         Returns
         -------
@@ -1077,7 +1084,7 @@ class Array:
         """
         Get plane of array irradiance components.
 
-        Uses the :py:func:`pvlib.irradiance.get_total_irradiance` function to
+        Uses :py:func:`pvlib.irradiance.get_total_irradiance` to
         calculate the plane of array irradiance components for a surface
         defined by ``self.surface_tilt`` and ``self.surface_azimuth``.
 
@@ -1112,6 +1119,13 @@ class Array:
             Column names are: ``'poa_global', 'poa_direct', 'poa_diffuse',
             'poa_sky_diffuse', 'poa_ground_diffuse'``.
 
+        Notes
+        -----
+        Some sky irradiance models require ``dni_extra``. For these models,
+        if ``dni_extra`` is not provided and ``solar_zenith`` has a
+        ``DatetimeIndex``, then ``dni_extra`` is calculated.
+        Otherwise, ``dni_extra=1367`` is assumed.
+
         See also
         --------
         :py:func:`pvlib.irradiance.get_total_irradiance`
@@ -1119,9 +1133,16 @@ class Array:
         if albedo is None:
             albedo = self.albedo
 
-        # not needed for all models, but this is easier
+        # dni_extra is not needed for all models, but this is easier
         if dni_extra is None:
-            dni_extra = irradiance.get_extra_radiation(solar_zenith.index)
+            if (hasattr(solar_zenith, 'index') and
+                    isinstance(solar_zenith.index, pd.DatetimeIndex)):
+                # calculate extraterrestrial irradiance
+                dni_extra = irradiance.get_extra_radiation(
+                    solar_zenith.index)
+            else:
+                # use the solar constant
+                dni_extra = 1367.0
 
         if airmass is None:
             airmass = atmosphere.get_relative_airmass(solar_zenith)
@@ -1374,8 +1395,12 @@ class FixedMount(AbstractMount):
         West=270. [degrees]
 
     racking_model : str, optional
-        Valid strings are 'open_rack', 'close_mount', and 'insulated_back'.
-        Used to identify a parameter set for the SAPM cell temperature model.
+        Valid strings are ``'open_rack'``, ``'close_mount'``,
+        ``'insulated_back'``, ``'freestanding'`` and ``'insulated'``.
+        Used to identify a parameter set for the SAPM or PVsyst cell
+        temperature model.
+        See :py:func:`~pvlib.temperature.sapm_module`  and
+        :py:func:`~pvlib.temperature.pvsyst_cell` for definitions.
 
     module_height : float, optional
        The height above ground of the center of the module [m]. Used for
@@ -1451,8 +1476,13 @@ class SingleAxisTrackerMount(AbstractMount):
         `cross_axis_tilt`. [degrees]
 
     racking_model : str, optional
-        Valid strings are 'open_rack', 'close_mount', and 'insulated_back'.
-        Used to identify a parameter set for the SAPM cell temperature model.
+        Valid strings are ``'open_rack'``, ``'close_mount'``,
+        ``'insulated_back'``, ``'freestanding'`` and ``'insulated'``.
+        Used to identify a parameter set for the SAPM or PVsyst cell
+        temperature model. ``'open_rack'`` or ``'freestanding'`` should
+        be used for systems with single-axis trackers.
+        See :py:func:`~pvlib.temperature.sapm_module` and
+        :py:func:`~pvlib.temperature.pvsyst_cell` for definitions.
 
     module_height : float, optional
        The height above ground of the center of the module [m]. Used for
@@ -1679,6 +1709,8 @@ def calcparams_desoto(effective_irradiance, temp_cell,
     Rs = R_s
 
     numeric_args = (effective_irradiance, temp_cell)
+    # IL: photocurrent, I0: saturation_current, Rs: resistance_series,
+    # Rsh: resistance_shunt
     out = (IL, I0, Rs, Rsh, nNsVth)
 
     if all(map(np.isscalar, numeric_args)):
@@ -1945,6 +1977,8 @@ def calcparams_pvsyst(effective_irradiance, temp_cell,
     Rs = R_s
 
     numeric_args = (effective_irradiance, temp_cell)
+    # IL: photocurrent, I0: saturation_current, Rs: resistance_series,
+    # Rsh: resistance_shunt
     out = (IL, I0, Rs, Rsh, nNsVth)
 
     if all(map(np.isscalar, numeric_args)):
@@ -1965,10 +1999,10 @@ def retrieve_sam(name=None, path=None):
 
     This function will retrieve either:
 
-        * CEC module database
-        * Sandia Module database
-        * CEC Inverter database
-        * Anton Driesse Inverter database
+    * CEC module database
+    * Sandia Module database
+    * CEC Inverter database
+    * Anton Driesse Inverter database
 
     and return it as a pandas DataFrame.
 
@@ -1981,20 +2015,20 @@ def retrieve_sam(name=None, path=None):
         Use one of the following strings to retrieve a database bundled with
         pvlib:
 
-        * 'CECMod' - returns the CEC module database
-        * 'CECInverter' - returns the CEC Inverter database
-        * 'SandiaInverter' - returns the CEC Inverter database
+        * ``'CECMod'`` - returns the CEC module database
+        * ``'CECInverter'`` - returns the CEC Inverter database
+        * ``'SandiaInverter'`` - returns the CEC Inverter database
           (CEC is only current inverter db available; tag kept for
           backwards compatibility)
-        * 'SandiaMod' - returns the Sandia Module database
-        * 'ADRInverter' - returns the ADR Inverter database
+        * ``'SandiaMod'`` - returns the Sandia Module database
+        * ``'ADRInverter'`` - returns the ADR Inverter database
 
     path : string, optional
         Path to a CSV file or a URL.
 
     Returns
     -------
-    samfile : DataFrame
+    DataFrame
         A DataFrame containing all the elements of the desired database.
         Each column represents a module or inverter, and a specific
         dataset can be retrieved by the command
@@ -2012,14 +2046,13 @@ def retrieve_sam(name=None, path=None):
     -----
     Files available at
         https://github.com/NREL/SAM/tree/develop/deploy/libraries
-    Documentation for module and inverter data sets:
-        https://sam.nrel.gov/photovoltaic/pv-sub-page-2.html
 
     Examples
     --------
+    Using a database bundled with pvlib:
 
     >>> from pvlib import pvsystem
-    >>> invdb = pvsystem.retrieve_sam('CECInverter')
+    >>> invdb = pvsystem.retrieve_sam(name='CECInverter')
     >>> inverter = invdb.AE_Solar_Energy__AE6_0__277V_
     >>> inverter
     Vac                          277
@@ -2039,7 +2072,15 @@ def retrieve_sam(name=None, path=None):
     CEC_Date                     NaN
     CEC_Type     Utility Interactive
     Name: AE_Solar_Energy__AE6_0__277V_, dtype: object
-    """
+
+    Using a remote database, via URL:
+
+    >>> url = "https://raw.githubusercontent.com/NREL/SAM/refs/heads/develop/deploy/libraries/CEC%20Inverters.csv"
+    >>> inv_db = pvsystem.retrieve_sam(path=url)
+    >>> inv_db.keys()
+    Index(['ABB__PVI_3_0_OUTD_S_US_A__208V_', 'ABB__PVI_3_0_OUTD_S_US_A__240V_', ...],
+          dtype='object', length=...)
+    """  # noqa: E501
     # error: path was previously silently ignored if name was given GH#2018
     if name is not None and path is not None:
         raise ValueError("Please provide either 'name' or 'path', not both.")

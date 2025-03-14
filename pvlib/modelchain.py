@@ -330,7 +330,7 @@ class ModelChain:
         'interp' and 'no_loss'. The ModelChain instance will be passed as the
         first argument to a user-defined function.
 
-    spectral_model : str or function, default ``'no_loss'``
+    spectral_model : str or function, optional
         Valid strings are:
 
         - ``'sapm'``
@@ -338,7 +338,7 @@ class ModelChain:
         - ``'no_loss'``
 
         The ModelChain instance will be passed as the first argument to
-        a user-defined function.
+        a user-defined function. If not specified, ``'no_loss'`` is assumed.
 
     temperature_model : str or function, optional
         Valid strings are: 'sapm', 'pvsyst', 'faiman', 'fuentes', 'noct_sam'.
@@ -364,7 +364,7 @@ class ModelChain:
                  solar_position_method='nrel_numpy',
                  airmass_model='kastenyoung1989',
                  dc_model=None, ac_model=None, aoi_model=None,
-                 spectral_model='no_loss', temperature_model=None,
+                 spectral_model=None, temperature_model=None,
                  dc_ohmic_model='no_loss',
                  losses_model='no_loss', name=None):
 

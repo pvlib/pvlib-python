@@ -11,7 +11,7 @@ Breaking Changes
   pvlib.location.Location.tz attribute. (:issue:`2340`, :pull:`2341`)
 * Users must now provide ModelChain.spectral_model, or the 'no_loss' spectral
   model is assumed. pvlib.modelchain.ModelChain no longer attempts to infer
-  the spectral from PVSystem attributes. (:issue:`2017`, :pull:`2253`)
+  the spectral model from PVSystem attributes. (:issue:`2017`, :pull:`2253`)
 
 Bug fixes
 ~~~~~~~~~

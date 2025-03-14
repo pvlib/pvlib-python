@@ -1,7 +1,7 @@
 .. _testing:
 
-Testing
-=======
+Testing and benchmarking
+========================
 
 .. _overview:
 
@@ -11,7 +11,7 @@ Overview
 Developers **must** include comprehensive tests for any additions or
 modifications to pvlib. New unit test code should be placed in the
 corresponding test module in the
-`pvlib/tests <https://github.com/pvlib/pvlib-python/tree/main/pvlib/tests>`_
+`tests <https://github.com/pvlib/pvlib-python/tree/main/tests>`_
 directory.
 
 A pull request will automatically run the tests for you on a variety of
@@ -30,11 +30,11 @@ pvlib directory::
 
 or, for a single module::
 
-    pytest pvlib/tests/test_clearsky.py
+    pytest tests/test_clearsky.py
 
 or, for a single test::
 
-    pytest pvlib/tests/test_clearsky.py::test_ineichen_nans
+    pytest tests/test_clearsky.py::test_ineichen_nans
 
 We suggest using pytest's ``--pdb`` flag to debug test failures rather
 than using ``print`` or ``logging`` calls. For example::

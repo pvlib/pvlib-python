@@ -278,9 +278,8 @@ def loss_townsend(snow_total, snow_events, surface_tilt, relative_humidity,
     axis to the module edge.
 
     The parameter `string_factor` is an enhancement added to the model after
-    publication of [1]_ per private communication with the model's author. The
-    definition for snow events documented above is also based on private
-    communication with the model's author.
+    publication of [1]_, as described in [2]_.
+    The definition for snow events documented above is based on [3]_.
 
     References
     ----------
@@ -288,6 +287,14 @@ def loss_townsend(snow_total, snow_events, surface_tilt, relative_humidity,
        update from two winters of measurements in the SIERRA. 37th IEEE
        Photovoltaic Specialists Conference, Seattle, WA, USA.
        :doi:`10.1109/PVSC.2011.6186627`
+    .. [2] Townsend, T. and Previtali, J. (2023). A Fresh Dusting: Current
+        Uses of the Townsend Snow Model. In "Photovoltaic Reliability
+        Workshop (PVRW) 2023 Proceedings: Posters.", ed. Silverman,
+        T. J. Dec. 2023. NREL/CP-5900-87918.
+        Available at: https://www.nrel.gov/docs/fy25osti/90585.pdf
+    .. [3] Townsend, T. (2013). Predicting PV Energy Loss Caused by Snow.
+        Solar Power International, Chicago IL.
+        :doi:`10.13140/RG.2.2.14299.68647`
     '''
 
     # unit conversions from cm and m to in, from C to K, and from % to fraction

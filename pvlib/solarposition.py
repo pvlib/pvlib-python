@@ -22,16 +22,15 @@ import numpy as np
 import pandas as pd
 import scipy.optimize as so
 import warnings
-import datetime
 
-from pvlib import atmosphere
+from pvlib import atmosphere, tools
 from pvlib.tools import datetime_to_djd, djd_to_datetime
 
 
 def get_solarposition(time, latitude, longitude,
                       altitude=None, pressure=None,
                       method='nrel_numpy',
-                      temperature=12, **kwargs):
+                      temperature=12.0, **kwargs):
     """
     A convenience wrapper for the solar position calculators.
 
@@ -126,8 +125,8 @@ def get_solarposition(time, latitude, longitude,
     return ephem_df
 
 
-def spa_c(time, latitude, longitude, pressure=101325, altitude=0,
-          temperature=12, delta_t=67.0,
+def spa_c(time, latitude, longitude, pressure=101325., altitude=0.,
+          temperature=12., delta_t=67.0,
           raw_spa_output=False):
     r"""
     Calculate the solar position using the C implementation of the NREL
@@ -150,11 +149,11 @@ def spa_c(time, latitude, longitude, pressure=101325, altitude=0,
     longitude : float
         Longitude in decimal degrees. Positive east of prime meridian,
         negative to west.
-    pressure : float, default 101325
+    pressure : float, default 101325.0
         Pressure in Pascals
-    altitude : float, default 0
+    altitude : float, default 0.0
         Height above sea level. [m]
-    temperature : float, default 12
+    temperature : float, default 12.0
         Temperature in C
     delta_t : float, default 67.0
         Difference between terrestrial time and UT1.
@@ -200,11 +199,7 @@ def spa_c(time, latitude, longitude, pressure=101325, altitude=0,
         raise ImportError('Could not import built-in SPA calculator. ' +
                           'You may need to recompile the SPA code.')
 
-    # if localized, convert to UTC. otherwise, assume UTC.
-    try:
-        time_utc = time.tz_convert('UTC')
-    except TypeError:
-        time_utc = time
+    time_utc = tools._pandas_to_utc(time)
 
     spa_out = []
 
@@ -284,7 +279,7 @@ def _datetime_to_unixtime(dtindex):
 
 
 def spa_python(time, latitude, longitude,
-               altitude=0, pressure=101325, temperature=12, delta_t=67.0,
+               altitude=0., pressure=101325., temperature=12., delta_t=67.0,
                atmos_refract=None, how='numpy', numthreads=4):
     """
     Calculate the solar position using a python implementation of the
@@ -307,19 +302,17 @@ def spa_python(time, latitude, longitude,
     longitude : float
         Longitude in decimal degrees. Positive east of prime meridian,
         negative to west.
-    altitude : float, default 0
+    altitude : float, default 0.0
         Distance above sea level.
-    pressure : int or float, optional, default 101325
+    pressure : int or float, optional, default 101325.0
         avg. yearly air pressure in Pascals.
-    temperature : int or float, optional, default 12
+    temperature : int or float, optional, default 12.0
         avg. yearly air temperature in degrees C.
-    delta_t : float, optional, default 67.0
+    delta_t : float or array, optional, default 67.0
         Difference between terrestrial time and UT1.
         If delta_t is None, uses spa.calculate_deltat
         using time.year and time.month from pandas.DatetimeIndex.
         For most simulations the default delta_t is sufficient.
-        *Note: delta_t = None will break code using nrel_numba,
-        this will be fixed in a future version.*
         The USNO has historical and forecasted delta_t [3]_.
     atmos_refrac : float, optional
         The approximate atmospheric refraction (in degrees)
@@ -379,7 +372,9 @@ def spa_python(time, latitude, longitude,
 
     spa = _spa_python_import(how)
 
-    delta_t = delta_t or spa.calculate_deltat(time.year, time.month)
+    if delta_t is None:
+        time_utc = tools._pandas_to_utc(time)
+        delta_t = spa.calculate_deltat(time_utc.year, time_utc.month)
 
     app_zenith, zenith, app_elevation, elevation, azimuth, eot = \
         spa.solar_position(unixtime, lat, lon, elev, pressure, temperature,
@@ -419,13 +414,11 @@ def sun_rise_set_transit_spa(times, latitude, longitude, how='numpy',
         Options are 'numpy' or 'numba'. If numba >= 0.17.0
         is installed, how='numba' will compile the spa functions
         to machine code and run them multithreaded.
-    delta_t : float, optional, default 67.0
+    delta_t : float or array, optional, default 67.0
         Difference between terrestrial time and UT1.
         If delta_t is None, uses spa.calculate_deltat
         using times.year and times.month from pandas.DatetimeIndex.
         For most simulations the default delta_t is sufficient.
-        *Note: delta_t = None will break code using nrel_numba,
-        this will be fixed in a future version.*
     numthreads : int, optional, default 4
         Number of threads to use if how == 'numba'.
 
@@ -453,12 +446,13 @@ def sun_rise_set_transit_spa(times, latitude, longitude, how='numpy',
         raise ValueError('times must be localized')
 
     # must convert to midnight UTC on day of interest
-    utcday = pd.DatetimeIndex(times.date).tz_localize('UTC')
-    unixtime = _datetime_to_unixtime(utcday)
+    times_utc = times.tz_convert('UTC')
+    unixtime = _datetime_to_unixtime(times_utc.normalize())
 
     spa = _spa_python_import(how)
 
-    delta_t = delta_t or spa.calculate_deltat(times.year, times.month)
+    if delta_t is None:
+        delta_t = spa.calculate_deltat(times_utc.year, times_utc.month)
 
     transit, sunrise, sunset = spa.transit_sunrise_sunset(
         unixtime, lat, lon, delta_t, numthreads)
@@ -513,9 +507,9 @@ def _ephem_setup(latitude, longitude, altitude, pressure, temperature,
 
 def sun_rise_set_transit_ephem(times, latitude, longitude,
                                next_or_previous='next',
-                               altitude=0,
-                               pressure=101325,
-                               temperature=12, horizon='0:00'):
+                               altitude=0.,
+                               pressure=101325.,
+                               temperature=12., horizon='0:00'):
     """
     Calculate the next sunrise and sunset times using the PyEphem package.
 
@@ -529,11 +523,11 @@ def sun_rise_set_transit_ephem(times, latitude, longitude,
         Longitude in degrees, positive east of prime meridian, negative to west
     next_or_previous : str
         'next' or 'previous' sunrise and sunset relative to time
-    altitude : float, default 0
+    altitude : float, default 0.0
         distance above sea level in meters.
-    pressure : int or float, optional, default 101325
+    pressure : int or float, optional, default 101325.0
         air pressure in Pascals.
-    temperature : int or float, optional, default 12
+    temperature : int or float, optional, default 12.0
         air temperature in degrees C.
     horizon : string, format +/-X:YY
         arc degrees:arc minutes from geometrical horizon for sunrise and
@@ -582,12 +576,11 @@ def sun_rise_set_transit_ephem(times, latitude, longitude,
     sunrise = []
     sunset = []
     trans = []
-    for thetime in times:
-        thetime = thetime.to_pydatetime()
+    for thetime in tools._pandas_to_utc(times):
         # older versions of pyephem ignore timezone when converting to its
         # internal datetime format, so convert to UTC here to support
         # all versions.  GH #1449
-        obs.date = ephem.Date(thetime.astimezone(datetime.timezone.utc))
+        obs.date = ephem.Date(thetime)
         sunrise.append(_ephem_to_timezone(rising(sun), tzinfo))
         sunset.append(_ephem_to_timezone(setting(sun), tzinfo))
         trans.append(_ephem_to_timezone(transit(sun), tzinfo))
@@ -597,8 +590,8 @@ def sun_rise_set_transit_ephem(times, latitude, longitude,
                                            'transit': trans})
 
 
-def pyephem(time, latitude, longitude, altitude=0, pressure=101325,
-            temperature=12, horizon='+0:00'):
+def pyephem(time, latitude, longitude, altitude=0., pressure=101325.,
+            temperature=12., horizon='+0:00'):
     """
     Calculate the solar position using the PyEphem package.
 
@@ -612,11 +605,11 @@ def pyephem(time, latitude, longitude, altitude=0, pressure=101325,
     longitude : float
         Longitude in decimal degrees. Positive east of prime meridian,
         negative to west.
-    altitude : float, default 0
+    altitude : float, default 0.0
         Height above sea level in meters. [m]
-    pressure : int or float, optional, default 101325
+    pressure : int or float, optional, default 101325.0
         air pressure in Pascals.
-    temperature : int or float, optional, default 12
+    temperature : int or float, optional, default 12.0
         air temperature in degrees C.
     horizon : string, optional, default '+0:00'
         arc degrees:arc minutes from geometrical horizon for sunrise and
@@ -645,11 +638,7 @@ def pyephem(time, latitude, longitude, altitude=0, pressure=101325,
     except ImportError:
         raise ImportError('PyEphem must be installed')
 
-    # if localized, convert to UTC. otherwise, assume UTC.
-    try:
-        time_utc = time.tz_convert('UTC')
-    except TypeError:
-        time_utc = time
+    time_utc = tools._pandas_to_utc(time)
 
     sun_coords = pd.DataFrame(index=time)
 
@@ -690,7 +679,7 @@ def pyephem(time, latitude, longitude, altitude=0, pressure=101325,
     return sun_coords
 
 
-def ephemeris(time, latitude, longitude, pressure=101325, temperature=12):
+def ephemeris(time, latitude, longitude, pressure=101325.0, temperature=12.0):
     """
     Python-native solar position calculator.
     The accuracy of this code is not guaranteed.
@@ -706,9 +695,9 @@ def ephemeris(time, latitude, longitude, pressure=101325, temperature=12):
     longitude : float
         Longitude in decimal degrees. Positive east of prime meridian,
         negative to west.
-    pressure : float or Series, default 101325
+    pressure : float or Series, default 101325.0
         Ambient pressure (Pascals)
-    temperature : float or Series, default 12
+    temperature : float or Series, default 12.0
         Ambient temperature (C)
 
     Returns
@@ -718,11 +707,11 @@ def ephemeris(time, latitude, longitude, pressure=101325, temperature=12):
 
         * apparent_elevation : apparent sun elevation accounting for
           atmospheric refraction.
+          This is the complement of the apparent zenith angle.
         * elevation : actual elevation (not accounting for refraction)
           of the sun in decimal degrees, 0 = on horizon.
           The complement of the zenith angle.
         * azimuth : Azimuth of the sun in decimal degrees East of North.
-          This is the complement of the apparent zenith angle.
         * apparent_zenith : apparent sun zenith accounting for atmospheric
           refraction.
         * zenith : Solar zenith angle
@@ -766,11 +755,7 @@ def ephemeris(time, latitude, longitude, pressure=101325, temperature=12):
     # the SPA algorithm needs time to be expressed in terms of
     # decimal UTC hours of the day of the year.
 
-    # if localized, convert to UTC. otherwise, assume UTC.
-    try:
-        time_utc = time.tz_convert('UTC')
-    except TypeError:
-        time_utc = time
+    time_utc = tools._pandas_to_utc(time)
 
     # strip out the day of the year and calculate the decimal hour
     DayOfYear = time_utc.dayofyear
@@ -871,8 +856,8 @@ def ephemeris(time, latitude, longitude, pressure=101325, temperature=12):
 
 
 def calc_time(lower_bound, upper_bound, latitude, longitude, attribute, value,
-              altitude=0, pressure=101325, temperature=12, horizon='+0:00',
-              xtol=1.0e-12):
+              altitude=0.0, pressure=101325.0, temperature=12.0,
+              horizon='+0:00', xtol=1.0e-12):
     """
     Calculate the time between lower_bound and upper_bound
     where the attribute is equal to value. Uses PyEphem for
@@ -894,12 +879,12 @@ def calc_time(lower_bound, upper_bound, latitude, longitude, attribute, value,
         and 'az' (which must be given in radians).
     value : int or float
         The value of the attribute to solve for
-    altitude : float, default 0
+    altitude : float, default 0.0
         Distance above sea level.
-    pressure : int or float, optional, default 101325
+    pressure : int or float, optional, default 101325.0
         Air pressure in Pascals. Set to 0 for no
         atmospheric correction.
-    temperature : int or float, optional, default 12
+    temperature : int or float, optional, default 12.0
         Air temperature in degrees C.
     horizon : string, optional, default '+0:00'
         arc degrees:arc minutes from geometrical horizon for sunrise and
@@ -957,7 +942,10 @@ def pyephem_earthsun_distance(time):
 
     sun = ephem.Sun()
     earthsun = []
-    for thetime in time:
+    for thetime in tools._pandas_to_utc(time):
+        # older versions of pyephem ignore timezone when converting to its
+        # internal datetime format, so convert to UTC here to support
+        # all versions.  GH #1449
         sun.compute(ephem.Date(thetime))
         earthsun.append(sun.earth_distance)
 
@@ -981,13 +969,11 @@ def nrel_earthsun_distance(time, how='numpy', delta_t=67.0, numthreads=4):
         is installed, how='numba' will compile the spa functions
         to machine code and run them multithreaded.
 
-    delta_t : float, optional, default 67.0
+    delta_t : float or array, optional, default 67.0
         Difference between terrestrial time and UT1.
         If delta_t is None, uses spa.calculate_deltat
         using time.year and time.month from pandas.DatetimeIndex.
         For most simulations the default delta_t is sufficient.
-        *Note: delta_t = None will break code using nrel_numba,
-        this will be fixed in a future version.*
 
     numthreads : int, optional, default 4
         Number of threads to use if how == 'numba'.
@@ -1014,7 +1000,9 @@ def nrel_earthsun_distance(time, how='numpy', delta_t=67.0, numthreads=4):
 
     spa = _spa_python_import(how)
 
-    delta_t = delta_t or spa.calculate_deltat(time.year, time.month)
+    if delta_t is None:
+        time_utc = tools._pandas_to_utc(time)
+        delta_t = spa.calculate_deltat(time_utc.year, time_utc.month)
 
     dist = spa.earthsun_distance(unixtime, delta_t, numthreads)
 
@@ -1361,6 +1349,12 @@ def hour_angle(times, longitude, equation_of_time):
     times : :class:`pandas.DatetimeIndex`
         Corresponding timestamps, must be localized to the timezone for the
         ``longitude``.
+
+        A `pytz.exceptions.AmbiguousTimeError` will be raised if any of the
+        given times are on a day when the local daylight savings transition
+        happens at midnight.  If you're working with such a timezone,
+        consider converting to a non-DST timezone (e.g. GMT-4) before
+        calling this function.
     longitude : numeric
         Longitude in degrees
     equation_of_time : numeric
@@ -1387,22 +1381,26 @@ def hour_angle(times, longitude, equation_of_time):
     equation_of_time_spencer71
     equation_of_time_pvcdrom
     """
+
+    # times must be localized
+    if not times.tz:
+        raise ValueError('times must be localized')
+
     # hours - timezone = (times - normalized_times) - (naive_times - times)
-    if times.tz is None:
-        times = times.tz_localize('utc')
     tzs = np.array([ts.utcoffset().total_seconds() for ts in times]) / 3600
 
-    hrs_minus_tzs = (times - times.normalize()) / pd.Timedelta('1h') - tzs
+    hrs_minus_tzs = _times_to_hours_after_local_midnight(times) - tzs
 
-    # ensure array return instead of a version-dependent pandas <T>Index
-    return np.asarray(
-        15. * (hrs_minus_tzs - 12.) + longitude + equation_of_time / 4.)
+    return 15. * (hrs_minus_tzs - 12.) + longitude + equation_of_time / 4.
 
 
 def _hour_angle_to_hours(times, hourangle, longitude, equation_of_time):
     """converts hour angles in degrees to hours as a numpy array"""
-    if times.tz is None:
-        times = times.tz_localize('utc')
+
+    # times must be localized
+    if not times.tz:
+        raise ValueError('times must be localized')
+
     tzs = np.array([ts.utcoffset().total_seconds() for ts in times]) / 3600
     hours = (hourangle - longitude - equation_of_time / 4.) / 15. + 12. + tzs
     return np.asarray(hours)
@@ -1412,18 +1410,36 @@ def _local_times_from_hours_since_midnight(times, hours):
     """
     converts hours since midnight from an array of floats to localized times
     """
-    tz_info = times.tz  # pytz timezone info
-    naive_times = times.tz_localize(None)  # naive but still localized
-    # normalize local, naive times to previous midnight and add the hours until
+
+    # times must be localized
+    if not times.tz:
+        raise ValueError('times must be localized')
+
+    # normalize local times to previous local midnight and add the hours until
     # sunrise, sunset, and transit
-    return pd.DatetimeIndex(
-        naive_times.normalize() + pd.to_timedelta(hours, unit='h'), tz=tz_info)
+    return times.normalize() + pd.to_timedelta(hours, unit='h')
 
 
 def _times_to_hours_after_local_midnight(times):
     """convert local pandas datetime indices to array of hours as floats"""
-    times = times.tz_localize(None)
-    hrs = (times - times.normalize()) / pd.Timedelta('1h')
+
+    # times must be localized
+    if not times.tz:
+        raise ValueError('times must be localized')
+
+    # Some timezones have a DST shift at midnight:
+    #   11:59pm -> 1:00am - results in a nonexistent midnight
+    #   12:59am -> 12:00am - results in an ambiguous midnight
+    # We remove the timezone before normalizing for this reason.
+    naive_normalized_times = times.tz_localize(None).normalize()
+
+    # Use Pandas functionality for shifting nonexistent times forward
+    normalized_times = naive_normalized_times.tz_localize(
+        times.tz, nonexistent='shift_forward', ambiguous='raise')
+
+    hrs = (times - normalized_times) / pd.Timedelta('1h')
+
+    # ensure array return instead of a version-dependent pandas <T>Index
     return np.array(hrs)
 
 
@@ -1469,6 +1485,11 @@ def sun_rise_set_transit_geometric(times, latitude, longitude, declination,
        CRC Press (2012)
 
     """
+
+    # times must be localized
+    if not times.tz:
+        raise ValueError('times must be localized')
+
     latitude_rad = np.radians(latitude)  # radians
     sunset_angle_rad = np.arccos(-np.tan(declination) * np.tan(latitude_rad))
     sunset_angle = np.degrees(sunset_angle_rad)  # degrees

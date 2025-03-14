@@ -29,11 +29,10 @@ import pvlib.tools as tools
 # a dict of required parameter names for each DC power model
 _DC_MODEL_PARAMS = {
     'sapm': {
-        'A0', 'A1', 'A2', 'A3', 'A4', 'B0', 'B1', 'B2', 'B3',
-        'B4', 'B5', 'C0', 'C1', 'C2', 'C3', 'C4', 'C5', 'C6',
-        'C7', 'Isco', 'Impo', 'Voco', 'Vmpo', 'Aisc', 'Aimp', 'Bvoco',
+        'C0', 'C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'C7',
+        'Isco', 'Impo', 'Voco', 'Vmpo', 'Aisc', 'Aimp', 'Bvoco',
         'Mbvoc', 'Bvmpo', 'Mbvmp', 'N', 'Cells_in_Series',
-        'IXO', 'IXXO', 'FD'},
+        'IXO', 'IXXO'},
     'desoto': {
         'alpha_sc', 'a_ref', 'I_L_ref', 'I_o_ref',
         'R_sh_ref', 'R_s'},
@@ -1710,6 +1709,8 @@ def calcparams_desoto(effective_irradiance, temp_cell,
     Rs = R_s
 
     numeric_args = (effective_irradiance, temp_cell)
+    # IL: photocurrent, I0: saturation_current, Rs: resistance_series,
+    # Rsh: resistance_shunt
     out = (IL, I0, Rs, Rsh, nNsVth)
 
     if all(map(np.isscalar, numeric_args)):
@@ -1976,6 +1977,8 @@ def calcparams_pvsyst(effective_irradiance, temp_cell,
     Rs = R_s
 
     numeric_args = (effective_irradiance, temp_cell)
+    # IL: photocurrent, I0: saturation_current, Rs: resistance_series,
+    # Rsh: resistance_shunt
     out = (IL, I0, Rs, Rsh, nNsVth)
 
     if all(map(np.isscalar, numeric_args)):

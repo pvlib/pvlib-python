@@ -156,11 +156,10 @@ def coverage_nrel(snowfall, poa_irradiance, temp_air, surface_tilt,
     slide_amt.iloc[0] = 0
 
     if snow_depth is not None:
-        # all slides off if there is no snow on the ground
-        # described in [2] to avoid non-sliding snow for low-tilt systems.
-        # default threshold_depth of 1cm is from SAM's implementation and
-        # is different than the value of 0cm implied in [2].
-        # https://github.com.mcas-gov.ms/NREL/ssc/issues/1265
+        # All slides off if snow on the ground is less than threshold_depth.
+        # Described in [2] to avoid non-sliding snow for low-tilt systems.
+        # Default threshold_depth of 1cm is from [2[ and SAM's implementation.
+        # https://github.com/NREL/ssc/issues/1265
         slide_amt[snow_depth < threshold_depth] = 1.
 
     # build time series of cumulative slide amounts

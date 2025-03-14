@@ -42,7 +42,7 @@ def fully_covered_nrel(snowfall, snow_depth=None, threshold_snowfall=1.,
     Implements the model described in [1]_ with minor improvements in [2]_.
 
     ``snow_depth`` is used to return `False` (not fully covered) when snow
-    is less than ``threshold_depth. This check is described in [2]_ as needed
+    is less than ``threshold_depth``. This check is described in [2]_ as needed
     for systems with low tilt angle.
 
     References
@@ -101,9 +101,9 @@ def coverage_nrel(snowfall, poa_irradiance, temp_air, surface_tilt,
     initial_coverage : float, default 0
         Fraction of row's slant height that is covered with snow at the
         beginning of the simulation. [unitless]
-    threshold_snowfall : float, default 1.0
-        Hourly snowfall above which snow coverage is set to the row's slant
-        height. [cm/hr]
+    threshold_snowfall: float, default 1.0
+        Hourly snowfall above which the row is fully covered for that hour.
+        [cm/hr]
     threshold_depth: float, default 1.0
         Snow depth on the ground, above which snow can affect the modules. [cm]
     can_slide_coefficient : float, default -80.
@@ -125,7 +125,7 @@ def coverage_nrel(snowfall, poa_irradiance, temp_air, surface_tilt,
     ``slide_amount_coefficient`` is given in tenths of a module's slant height.
 
     ``snow_depth`` is used to set ``snow_coverage`` to 0 (not fully covered)
-    when snow is less than ``threshold_depth. . This check is described in
+    when snow is less than ``threshold_depth``. This check is described in
     [2]_ as needed for systems with low tilt angle.
 
     References

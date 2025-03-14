@@ -13,7 +13,7 @@ Breaking Changes
   model is assumed. pvlib.modelchain.ModelChain no longer attempts to infer
   the spectral model from PVSystem attributes. (:issue:`2017`, :pull:`2253`)
 * :py:func:`~pvlib.iotools.read_tmy3` now defaults to ``map_variables=True``.
-  Additionally, the deprecated ``recolumn`` parameter is now removed. (:pull:`2408`)
+  Additionally, the deprecated ``recolumn`` parameter is now removed. (:issue:`2324`, :pull:`2408`)
 
 
 Bug fixes

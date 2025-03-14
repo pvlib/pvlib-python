@@ -346,7 +346,7 @@ def test_with_pvwatts(pvwatts_dc_pvwatts_ac_system, location, weather):
 
 
 def test_run_model_with_irradiance(sapm_dc_snl_ac_system, location):
-    mc = ModelChain(sapm_dc_snl_ac_system, location)
+    mc = ModelChain(sapm_dc_snl_ac_system, location, spectral_model='sapm')
     times = pd.date_range('20160101 1200-0700', periods=2, freq='6h')
     irradiance = pd.DataFrame({'dni': 900, 'ghi': 600, 'dhi': 150},
                               index=times)
@@ -629,9 +629,13 @@ def test_run_model_arrays_weather(sapm_dc_snl_ac_system_same_arrays,
 
 
 def test_run_model_perez(sapm_dc_snl_ac_system, location):
-    mc = ModelChain(sapm_dc_snl_ac_system, location,
-                    transposition_model='perez')
-    times = pd.date_range('20160101 1200-0700', periods=2, freq='6h')
+    mc = ModelChain(
+        sapm_dc_snl_ac_system,
+        location,
+        transposition_model="perez",
+        spectral_model="sapm",
+    )
+    times = pd.date_range("20160101 1200-0700", periods=2, freq="6h")
     irradiance = pd.DataFrame({'dni': 900, 'ghi': 600, 'dhi': 150},
                               index=times)
     ac = mc.run_model(irradiance).results.ac
@@ -642,10 +646,14 @@ def test_run_model_perez(sapm_dc_snl_ac_system, location):
 
 
 def test_run_model_gueymard_perez(sapm_dc_snl_ac_system, location):
-    mc = ModelChain(sapm_dc_snl_ac_system, location,
-                    airmass_model='gueymard1993',
-                    transposition_model='perez')
-    times = pd.date_range('20160101 1200-0700', periods=2, freq='6h')
+    mc = ModelChain(
+        sapm_dc_snl_ac_system,
+        location,
+        airmass_model="gueymard1993",
+        transposition_model="perez",
+        spectral_model="sapm",
+    )
+    times = pd.date_range("20160101 1200-0700", periods=2, freq="6h")
     irradiance = pd.DataFrame({'dni': 900, 'ghi': 600, 'dhi': 150},
                               index=times)
     ac = mc.run_model(irradiance).results.ac
@@ -1270,18 +1278,6 @@ def test_singlediode_dc_arrays(location, dc_model,
     assert len(mc.results.dc) == system.num_arrays
     for dc in mc.results.dc:
         assert isinstance(dc, (pd.Series, pd.DataFrame))
-
-
-@pytest.mark.parametrize('dc_model', ['sapm', 'cec', 'cec_native'])
-def test_infer_spectral_model(location, sapm_dc_snl_ac_system,
-                              cec_dc_snl_ac_system,
-                              cec_dc_native_snl_ac_system, dc_model):
-    dc_systems = {'sapm': sapm_dc_snl_ac_system,
-                  'cec': cec_dc_snl_ac_system,
-                  'cec_native': cec_dc_native_snl_ac_system}
-    system = dc_systems[dc_model]
-    mc = ModelChain(system, location, aoi_model='physical')
-    assert isinstance(mc, ModelChain)
 
 
 @pytest.mark.parametrize('temp_model', [
@@ -2002,9 +1998,9 @@ def test__irrad_for_celltemp():
 
 
 def test_ModelChain___repr__(sapm_dc_snl_ac_system, location):
-
-    mc = ModelChain(sapm_dc_snl_ac_system, location,
-                    name='my mc')
+    mc = ModelChain(
+        sapm_dc_snl_ac_system, location, name="my mc", spectral_model="sapm"
+    )
 
     expected = '\n'.join([
         'ModelChain: ',

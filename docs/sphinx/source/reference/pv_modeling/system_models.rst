@@ -13,7 +13,6 @@ Sandia array performance model (SAPM)
    pvsystem.sapm
    pvsystem.sapm_effective_irradiance
    pvsystem.sapm_spectral_loss
-   spectrum.spectral_factor_sapm
    inverter.sandia
    temperature.sapm_cell
 

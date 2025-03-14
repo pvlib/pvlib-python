@@ -2314,12 +2314,6 @@ def sapm(effective_irradiance, temp_cell, module):
     return out
 
 
-sapm_spectral_loss = deprecated(
-    since='0.10.0',
-    alternative='pvlib.spectrum.spectral_factor_sapm'
-)(spectrum.spectral_factor_sapm)
-
-
 def sapm_effective_irradiance(poa_direct, poa_diffuse, airmass_absolute, aoi,
                               module):
     r"""

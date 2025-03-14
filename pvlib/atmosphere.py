@@ -413,12 +413,6 @@ def tdew_from_rh(temp_air, relative_humidity, coeff=(6.112, 17.62, 243.12)):
     return dewpoint
 
 
-first_solar_spectral_correction = deprecated(
-    since='0.10.0',
-    alternative='pvlib.spectrum.spectral_factor_firstsolar'
-)(pvlib.spectrum.spectral_factor_firstsolar)
-
-
 def bird_hulstrom80_aod_bb(aod380, aod500):
     """
     Approximate broadband aerosol optical depth.

@@ -1,10 +1,8 @@
 import numpy as np
 import pandas as pd
 from pvlib.iotools import tmy
-from pvlib._deprecation import pvlibDeprecationWarning
 from tests.conftest import TESTS_DATA_DIR, PVLIB_DATA_DIR
 import pytest
-import warnings
 
 # test the API works
 from pvlib.iotools import read_tmy3

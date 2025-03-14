@@ -3,8 +3,6 @@
 import datetime
 import re
 import pandas as pd
-import warnings
-from pvlib._deprecation import pvlibDeprecationWarning
 
 # Dictionary mapping TMY3 names to pvlib names
 VARIABLE_MAP = {

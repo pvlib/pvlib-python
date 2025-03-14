@@ -21,21 +21,9 @@ def test_read_tmy3():
     tmy.read_tmy3(TMY3_TESTFILE, map_variables=False)
 
 
-def test_read_tmy3_recolumn():
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore")
-        data, meta = tmy.read_tmy3(TMY3_TESTFILE, recolumn=True)
-    assert 'GHISource' in data.columns
-
-
 def test_read_tmy3_norecolumn():
     data, _ = tmy.read_tmy3(TMY3_TESTFILE, map_variables=False)
     assert 'GHI source' in data.columns
-
-
-def test_read_tmy3_raise_valueerror():
-    with pytest.raises(ValueError, match='`map_variables` and `recolumn`'):
-        _ = tmy.read_tmy3(TMY3_TESTFILE, recolumn=True, map_variables=True)
 
 
 def test_read_tmy3_map_variables():
@@ -53,11 +41,6 @@ def test_read_tmy3_map_variables():
     assert 'ghi_extra' in data.columns
     assert 'dni_extra' in data.columns
     assert 'precipitable_water' in data.columns
-
-
-def test_read_tmy3_map_variables_deprecating_warning():
-    with pytest.warns(pvlibDeprecationWarning, match='names will be renamed'):
-        data, meta = tmy.read_tmy3(TMY3_TESTFILE)
 
 
 def test_read_tmy3_coerce_year():

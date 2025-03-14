@@ -16,6 +16,8 @@ Breaking Changes
   Additionally, the deprecated ``recolumn`` parameter is now removed. (:issue:`2324`, :pull:`2408`)
 * Remove :py:func:`!pvlib.atmosphere.first_solar_spectral_correction`, deprecated in v0.10.0.
   Use :py:func:`~pvlib.spectrum.spectral_factor_firstsolar` instead. (:issue:`2130`, :pull:`2131`)
+* Remove deprecated :py:func:`!pvlib.spectrum.get_am15g` function; use
+  :py:func:`~pvlib.spectrum.get_reference_spectra` instead.  (:pull:`2409`)
 
 Bug fixes
 ~~~~~~~~~

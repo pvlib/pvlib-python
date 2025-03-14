@@ -3,17 +3,14 @@ from numpy.testing import assert_allclose, assert_approx_equal, assert_equal
 import pandas as pd
 import numpy as np
 from pvlib import spectrum
-from pvlib._deprecation import pvlibDeprecationWarning
 
 from tests.conftest import assert_series_equal, fail_on_pvlib_version
 
 
 @fail_on_pvlib_version('0.12')
-def test_get_am15g():
+def test_get_reference_spectra_am15g():
     # test that the reference spectrum is read and interpolated correctly
-    with pytest.warns(pvlibDeprecationWarning,
-                      match="get_reference_spectra instead"):
-        e = spectrum.get_am15g()
+    e = spectrum.get_reference_spectra()['global']
     assert_equal(len(e), 2002)
     assert_equal(np.sum(e.index), 2761442)
     assert_approx_equal(np.sum(e), 1002.88, significant=6)
@@ -21,9 +18,7 @@ def test_get_am15g():
     wavelength = [270, 850, 950, 1200, 1201.25, 4001]
     expected = [0.0, 0.893720, 0.147260, 0.448250, 0.4371025, 0.0]
 
-    with pytest.warns(pvlibDeprecationWarning,
-                      match="get_reference_spectra instead"):
-        e = spectrum.get_am15g(wavelength)
+    e = spectrum.get_reference_spectra(wavelength)['global']
     assert_equal(len(e), len(wavelength))
     assert_allclose(e, expected, rtol=1e-6)
 

@@ -41,6 +41,10 @@ Bug fixes
   returns an IANA string. (:issue:`2340`, :pull:`2341`)
 * :py:func:`~pvlib.iotools.get_pvgis_tmy` with ``outputformat='csv'`` now
   works with the updated data format returned by PVGIS. (:issue:`2344`, :pull:`2395`)
+* Changed the `g_poa_effective` parameter name to
+  `effective_irradiance` in :py:func:`~pvlib.pvsystem.PVSystem.pvwatts_dc`.
+  (:issue:`1253`, :pull:`2235`)
+
 
 Deprecations
 ~~~~~~~~~~~~

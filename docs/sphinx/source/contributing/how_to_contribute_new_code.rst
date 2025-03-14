@@ -153,8 +153,7 @@ We strongly recommend using virtual environments for development.
 Virtual environments make it easier to switch between different
 versions of software. This `scientific-python.org guide
 <https://learn.scientific-python.org/development/tutorials/dev-environment/>`_
-is a good reference for virtual environments. The pvlib-python `installation
-user guide <https://pvlib-python.readthedocs.io/en/stable/user_guide/
-installation.html#set-up-a-virtual-environment>`_ also provides instructions on
+is a good reference for virtual environments. The pvlib-python
+:ref:`installation guide <setupenvironment>` also provides instructions on
 setting up a virtual environment. If this is your first pull request, don't
 worry about using a virtual environment.

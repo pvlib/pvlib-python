@@ -66,6 +66,7 @@ doc = [
     'sphinx-toggleprompt == 0.5.2',
     'sphinx-favicon',
     'solarfactors',
+    'sphinx-hoverxref ~= 1.4.2',  # when updating, check that _static/tooltipster_color_theming.css still works
 ]
 test = [
     'pytest',
@@ -84,14 +85,22 @@ all = ["pvlib[test,optional,doc]"]
 Documentation = "https://pvlib-python.readthedocs.io/"
 "Source Code" = "https://github.com/pvlib/pvlib-python"
 
+[tool.setuptools]
+# do not include all non-python files in the bdist by default, but select them manually
+# https://setuptools.pypa.io/en/latest/userguide/datafiles.html#interplay-between-these-keywords (2024-10-22)
+include-package-data = false  # true by default
+
 [tool.setuptools.packages.find]
 include = ["pvlib*"]
+
+[tool.setuptools.package-data]
+pvlib = ["data/*"]
 
 [tool.setuptools_scm]
 
 [tool.pytest]
 junit_family = "xunit2"
-testpaths = "pvlib/tests"
+testpaths = "tests"
 # warning messages to suppress from pytest output.  useful in cases
 # where a dependency hasn't addressed a deprecation yet, and there's
 # nothing we can do to fix it ourselves.

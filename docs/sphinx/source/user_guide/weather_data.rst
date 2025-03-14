@@ -83,7 +83,7 @@ a :py:class:`pandas.DataFrame` of the actual dataset, plus a metadata
 dictionary.  Most :py:mod:`pvlib.iotools` functions also have
 a ``map_variables`` parameter to automatically translate
 the column names used in the data file (which vary widely from dataset to dataset)
-into standard pvlib names (see :ref:`variables_style_rules`).  
+into standard pvlib names (see :ref:`nomenclature`).  
 
 Typical usage looks something like this:
 

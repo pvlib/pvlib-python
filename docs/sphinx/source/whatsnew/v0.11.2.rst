@@ -6,9 +6,6 @@ v0.11.2 (December 16, 2024)
 
 Deprecations
 ~~~~~~~~~~~~
-* Changed the `g_poa_effective` parameter name to
-  `effective_irradiance` in :py:func:`~pvlib.pvsystem.PVSystem.pvwatts_dc`.
-  (:issue:`1253`, :pull:`2235`)
 * Deprecate terms ``dni_clearsky`` and ``clearsky_dni``, replace with ``dni_clear`` and ``ghi_clear``.
   Affected functions are :py:func:`~pvlib.irradiance.dirindex`, :py:func:`~pvlib.irradiance.dni`
   and :py:func:`~pvlib.irradiance.clearsky_index`.

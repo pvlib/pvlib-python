@@ -14,6 +14,12 @@ Breaking Changes
   the spectral model from PVSystem attributes. (:issue:`2017`, :pull:`2253`)
 * Remove deprecated :py:func:`!pvlib.pvsystem.sapm_spectral_loss`.
   (:issue:`2243`, :pull:`2244`)
+* :py:func:`~pvlib.iotools.read_tmy3` now defaults to ``map_variables=True``.
+  Additionally, the deprecated ``recolumn`` parameter is now removed. (:issue:`2324`, :pull:`2408`)
+* Remove :py:func:`!pvlib.atmosphere.first_solar_spectral_correction`, deprecated in v0.10.0.
+  Use :py:func:`~pvlib.spectrum.spectral_factor_firstsolar` instead. (:issue:`2130`, :pull:`2131`)
+* Remove deprecated :py:func:`!pvlib.spectrum.get_am15g` function; use
+  :py:func:`~pvlib.spectrum.get_reference_spectra` instead.  (:pull:`2409`)
 
 Bug fixes
 ~~~~~~~~~

@@ -3,8 +3,6 @@
 import datetime
 import re
 import pandas as pd
-import warnings
-from pvlib._deprecation import pvlibDeprecationWarning
 
 # Dictionary mapping TMY3 names to pvlib names
 VARIABLE_MAP = {
@@ -24,8 +22,7 @@ VARIABLE_MAP = {
 }
 
 
-def read_tmy3(filename, coerce_year=None, map_variables=None, recolumn=None,
-              encoding=None):
+def read_tmy3(filename, coerce_year=None, map_variables=True, encoding=None):
     """Read a TMY3 file into a pandas dataframe.
 
     Note that values contained in the metadata dictionary are unchanged
@@ -44,13 +41,9 @@ def read_tmy3(filename, coerce_year=None, map_variables=None, recolumn=None,
         If supplied, the year of the index will be set to ``coerce_year``, except
         for the last index value which will be set to the *next* year so that
         the index increases monotonically.
-    map_variables : bool, optional
+    map_variables : bool, default True
         When True, renames columns of the DataFrame to pvlib variable names
         where applicable. See variable :const:`VARIABLE_MAP`.
-    recolumn : bool (deprecated, use map_variables instead)
-        If ``True``, apply standard names to TMY3 columns. Typically this
-        results in stripping the units from the column name.
-        Cannot be used in combination with ``map_variables``.
     encoding : str, optional
         Encoding of the file. For files that contain non-UTF8 characters it may
         be necessary to specify an alternative encoding, e.g., for
@@ -233,72 +226,13 @@ def read_tmy3(filename, coerce_year=None, map_variables=None, recolumn=None,
     # unit must be in (D,h,m,s,ms,us,ns), but pandas>=0.24 allows unit='hour'
     data.index = data_ymd + pd.to_timedelta(shifted_hour, unit='h') \
         + pd.to_timedelta(minutes, unit='min')
-    # shouldnt' specify both recolumn and map_variables
-    if recolumn is not None and map_variables is not None:
-        msg = "`map_variables` and `recolumn` cannot both be specified"
-        raise ValueError(msg)
-    elif map_variables is None and recolumn is not None:
-        warnings.warn(
-            'The recolumn parameter is deprecated and will be removed in '
-            'pvlib 0.11.0. Use `map_variables` instead, although note that '
-            'its behavior is different from `recolumn`.',
-            pvlibDeprecationWarning)
-    elif map_variables is None and recolumn is None:
-        warnings.warn(
-            'TMY3 variable names will be renamed to pvlib conventions by '
-            'default starting in pvlib 0.11.0. Specify map_variables=True '
-            'to enable that behavior now, or specify map_variables=False '
-            'to hide this warning.', pvlibDeprecationWarning)
+
     if map_variables:
         data = data.rename(columns=VARIABLE_MAP)
-    elif recolumn or (recolumn is None and map_variables is None):
-        data = _recolumn(data)
 
     data = data.tz_localize(int(meta['TZ'] * 3600))
 
     return data, meta
-
-
-def _recolumn(tmy3_dataframe):
-    """
-    Rename the columns of the TMY3 DataFrame.
-
-    Parameters
-    ----------
-    tmy3_dataframe : DataFrame
-    inplace : bool
-        passed to DataFrame.rename()
-
-    Returns
-    -------
-    Recolumned DataFrame.
-    """
-    # paste in the header as one long line
-    raw_columns = 'ETR (W/m^2),ETRN (W/m^2),GHI (W/m^2),GHI source,GHI uncert (%),DNI (W/m^2),DNI source,DNI uncert (%),DHI (W/m^2),DHI source,DHI uncert (%),GH illum (lx),GH illum source,Global illum uncert (%),DN illum (lx),DN illum source,DN illum uncert (%),DH illum (lx),DH illum source,DH illum uncert (%),Zenith lum (cd/m^2),Zenith lum source,Zenith lum uncert (%),TotCld (tenths),TotCld source,TotCld uncert (code),OpqCld (tenths),OpqCld source,OpqCld uncert (code),Dry-bulb (C),Dry-bulb source,Dry-bulb uncert (code),Dew-point (C),Dew-point source,Dew-point uncert (code),RHum (%),RHum source,RHum uncert (code),Pressure (mbar),Pressure source,Pressure uncert (code),Wdir (degrees),Wdir source,Wdir uncert (code),Wspd (m/s),Wspd source,Wspd uncert (code),Hvis (m),Hvis source,Hvis uncert (code),CeilHgt (m),CeilHgt source,CeilHgt uncert (code),Pwat (cm),Pwat source,Pwat uncert (code),AOD (unitless),AOD source,AOD uncert (code),Alb (unitless),Alb source,Alb uncert (code),Lprecip depth (mm),Lprecip quantity (hr),Lprecip source,Lprecip uncert (code),PresWth (METAR code),PresWth source,PresWth uncert (code)'  # noqa: E501
-
-    new_columns = [
-        'ETR', 'ETRN', 'GHI', 'GHISource', 'GHIUncertainty',
-        'DNI', 'DNISource', 'DNIUncertainty', 'DHI', 'DHISource',
-        'DHIUncertainty', 'GHillum', 'GHillumSource', 'GHillumUncertainty',
-        'DNillum', 'DNillumSource', 'DNillumUncertainty', 'DHillum',
-        'DHillumSource', 'DHillumUncertainty', 'Zenithlum',
-        'ZenithlumSource', 'ZenithlumUncertainty', 'TotCld', 'TotCldSource',
-        'TotCldUncertainty', 'OpqCld', 'OpqCldSource', 'OpqCldUncertainty',
-        'DryBulb', 'DryBulbSource', 'DryBulbUncertainty', 'DewPoint',
-        'DewPointSource', 'DewPointUncertainty', 'RHum', 'RHumSource',
-        'RHumUncertainty', 'Pressure', 'PressureSource',
-        'PressureUncertainty', 'Wdir', 'WdirSource', 'WdirUncertainty',
-        'Wspd', 'WspdSource', 'WspdUncertainty', 'Hvis', 'HvisSource',
-        'HvisUncertainty', 'CeilHgt', 'CeilHgtSource', 'CeilHgtUncertainty',
-        'Pwat', 'PwatSource', 'PwatUncertainty', 'AOD', 'AODSource',
-        'AODUncertainty', 'Alb', 'AlbSource', 'AlbUncertainty',
-        'Lprecipdepth', 'Lprecipquantity', 'LprecipSource',
-        'LprecipUncertainty', 'PresWth', 'PresWthSource',
-        'PresWthUncertainty']
-
-    mapping = dict(zip(raw_columns.split(','), new_columns))
-
-    return tmy3_dataframe.rename(columns=mapping)
 
 
 def read_tmy2(filename):

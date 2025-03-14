@@ -53,7 +53,7 @@ Deprecations
   deprecated. Use :py:func:`pvlib.pvsystem.v_from_i` and
   :py:func:`pvlib.pvsystem.i_from_v` instead. (:issue:`1626`, :pull:`1743`)
 * Functions for calculating spectral modifiers have been moved to :py:mod:`pvlib.spectrum`:
-  :py:func:`pvlib.atmosphere.first_solar_spectral_correction` is deprecated and
+  :py:func:`!pvlib.atmosphere.first_solar_spectral_correction` is deprecated and
   replaced by :py:func:`~pvlib.spectrum.spectral_factor_firstsolar`, and
   :py:func:`!pvlib.pvsystem.sapm_spectral_loss` is deprecated and replaced by
   :py:func:`~pvlib.spectrum.spectral_factor_sapm`. (:pull:`1628`)

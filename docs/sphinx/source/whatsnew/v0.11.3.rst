@@ -12,6 +12,8 @@ Breaking Changes
 * Users must now provide ModelChain.spectral_model, or the 'no_loss' spectral
   model is assumed. pvlib.modelchain.ModelChain no longer attempts to infer
   the spectral model from PVSystem attributes. (:issue:`2017`, :pull:`2253`)
+* Removed :py:func:`pvlib.pvsystem.sapm_spectral_loss`. (:issue:`2243`,
+  :pull:`2244`)
 
 Bug fixes
 ~~~~~~~~~

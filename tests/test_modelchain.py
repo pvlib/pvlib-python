@@ -346,7 +346,7 @@ def test_with_pvwatts(pvwatts_dc_pvwatts_ac_system, location, weather):
 
 
 def test_run_model_with_irradiance(sapm_dc_snl_ac_system, location):
-    mc = ModelChain(sapm_dc_snl_ac_system, location)
+    mc = ModelChain(sapm_dc_snl_ac_system, location, spectral_model='sapm')
     times = pd.date_range('20160101 1200-0700', periods=2, freq='6h')
     irradiance = pd.DataFrame({'dni': 900, 'ghi': 600, 'dhi': 150},
                               index=times)
@@ -629,9 +629,13 @@ def test_run_model_arrays_weather(sapm_dc_snl_ac_system_same_arrays,
 
 
 def test_run_model_perez(sapm_dc_snl_ac_system, location):
-    mc = ModelChain(sapm_dc_snl_ac_system, location,
-                    transposition_model='perez')
-    times = pd.date_range('20160101 1200-0700', periods=2, freq='6h')
+    mc = ModelChain(
+        sapm_dc_snl_ac_system,
+        location,
+        transposition_model="perez",
+        spectral_model="sapm",
+    )
+    times = pd.date_range("20160101 1200-0700", periods=2, freq="6h")
     irradiance = pd.DataFrame({'dni': 900, 'ghi': 600, 'dhi': 150},
                               index=times)
     ac = mc.run_model(irradiance).results.ac
@@ -642,10 +646,14 @@ def test_run_model_perez(sapm_dc_snl_ac_system, location):
 
 
 def test_run_model_gueymard_perez(sapm_dc_snl_ac_system, location):
-    mc = ModelChain(sapm_dc_snl_ac_system, location,
-                    airmass_model='gueymard1993',
-                    transposition_model='perez')
-    times = pd.date_range('20160101 1200-0700', periods=2, freq='6h')
+    mc = ModelChain(
+        sapm_dc_snl_ac_system,
+        location,
+        airmass_model="gueymard1993",
+        transposition_model="perez",
+        spectral_model="sapm",
+    )
+    times = pd.date_range("20160101 1200-0700", periods=2, freq="6h")
     irradiance = pd.DataFrame({'dni': 900, 'ghi': 600, 'dhi': 150},
                               index=times)
     ac = mc.run_model(irradiance).results.ac
@@ -1217,6 +1225,22 @@ def test_infer_dc_model(sapm_dc_snl_ac_system, cec_dc_snl_ac_system,
     assert isinstance(mc.results.dc, (pd.Series, pd.DataFrame))
 
 
+def test_infer_dc_model_sapm_minimal(location):
+    # GH 2369 -- Omit A*, B*, FD parameters; specify only DC electrical keys
+    dc_keys = ['C0', 'C1', 'C2', 'C3', 'Isco', 'Impo', 'Voco', 'Vmpo',
+               'Aisc', 'Aimp', 'Bvoco', 'Bvmpo', 'Mbvoc', 'Mbvmp', 'N',
+               'Cells_in_Series', 'IXO', 'IXXO', 'C4', 'C5', 'C6', 'C7']
+    sapm_parameters = {key: 0 for key in dc_keys}
+
+    system = pvsystem.PVSystem(module_parameters=sapm_parameters,
+                               temperature_model_parameters={'u0': 0, 'u1': 0},
+                               inverter_parameters={'pdc0': 0})
+
+    mc = ModelChain(system, location, dc_model='sapm',
+                    spectral_model='no_loss', aoi_model='no_loss')
+    assert isinstance(mc, ModelChain)
+
+
 def test_infer_dc_model_incomplete(multi_array_sapm_dc_snl_ac_system,
                                    location):
     match = 'Could not infer DC model from the module_parameters attributes '
@@ -1254,18 +1278,6 @@ def test_singlediode_dc_arrays(location, dc_model,
     assert len(mc.results.dc) == system.num_arrays
     for dc in mc.results.dc:
         assert isinstance(dc, (pd.Series, pd.DataFrame))
-
-
-@pytest.mark.parametrize('dc_model', ['sapm', 'cec', 'cec_native'])
-def test_infer_spectral_model(location, sapm_dc_snl_ac_system,
-                              cec_dc_snl_ac_system,
-                              cec_dc_native_snl_ac_system, dc_model):
-    dc_systems = {'sapm': sapm_dc_snl_ac_system,
-                  'cec': cec_dc_snl_ac_system,
-                  'cec_native': cec_dc_native_snl_ac_system}
-    system = dc_systems[dc_model]
-    mc = ModelChain(system, location, aoi_model='physical')
-    assert isinstance(mc, ModelChain)
 
 
 @pytest.mark.parametrize('temp_model', [
@@ -1730,7 +1742,7 @@ def test_invalid_dc_model_params(sapm_dc_snl_ac_system, cec_dc_snl_ac_system,
               'aoi_model': 'no_loss', 'spectral_model': 'no_loss',
               'temperature_model': 'sapm', 'losses_model': 'no_loss'}
     for array in sapm_dc_snl_ac_system.arrays:
-        array.module_parameters.pop('A0')  # remove a parameter
+        array.module_parameters.pop('C0')  # remove a parameter
     with pytest.raises(ValueError):
         ModelChain(sapm_dc_snl_ac_system, location, **kwargs)
 
@@ -1986,9 +1998,9 @@ def test__irrad_for_celltemp():
 
 
 def test_ModelChain___repr__(sapm_dc_snl_ac_system, location):
-
-    mc = ModelChain(sapm_dc_snl_ac_system, location,
-                    name='my mc')
+    mc = ModelChain(
+        sapm_dc_snl_ac_system, location, name="my mc", spectral_model="sapm"
+    )
 
     expected = '\n'.join([
         'ModelChain: ',

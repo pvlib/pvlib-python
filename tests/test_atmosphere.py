@@ -9,8 +9,6 @@ import pytest
 
 from pvlib import atmosphere
 
-from pvlib._deprecation import pvlibDeprecationWarning
-
 
 def test_pres2alt():
     out = atmosphere.pres2alt(np.array([10000, 90000, 101325]))
@@ -233,12 +231,6 @@ def test_tdew_from_rh():
     )
 
     assert np.isclose(dewpoint_float, dewpoint.iloc[0])
-
-
-def test_first_solar_spectral_correction_deprecated():
-    with pytest.warns(pvlibDeprecationWarning,
-                      match='Use pvlib.spectrum.spectral_factor_firstsolar'):
-        atmosphere.first_solar_spectral_correction(1, 1, 'cdte')
 
 
 def test_kasten96_lt():

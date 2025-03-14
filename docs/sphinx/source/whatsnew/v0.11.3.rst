@@ -12,6 +12,8 @@ Breaking Changes
 * Users must now provide ModelChain.spectral_model, or the 'no_loss' spectral
   model is assumed. pvlib.modelchain.ModelChain no longer attempts to infer
   the spectral model from PVSystem attributes. (:issue:`2017`, :pull:`2253`)
+* :py:func:`~pvlib.iotools.read_tmy3` now defaults to ``map_variables=True``.
+  Additionally, the deprecated ``recolumn`` parameter is now removed. (:issue:`2324`, :pull:`2408`)
 * Remove :py:func:`!pvlib.atmosphere.first_solar_spectral_correction`, deprecated in v0.10.0.
   Use :py:func:`~pvlib.spectrum.spectral_factor_firstsolar` instead. (:issue:`2130`, :pull:`2131`)
 

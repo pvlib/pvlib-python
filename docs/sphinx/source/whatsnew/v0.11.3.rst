@@ -21,7 +21,9 @@ Breaking Changes
 * Remove deprecated :py:func:`!pvlib.spectrum.get_am15g` function; use
   :py:func:`~pvlib.spectrum.get_reference_spectra` instead.  (:pull:`2409`)
 * Remove ``label`` parameter in :py:func:`~pvlib.iotools.get_cams` resulting in the timestamps
-  referring to the start of the period for all options of ``time_step``.
+  referring to the start of the period for all options of ``time_step``. Also, to retrieve monthly data
+  the ``time_step`` parameter should now be ``'1MS'`` instead of ``'1M'``. The frequency ``'1M'``
+  is being phased out by Pandas.
 
 Bug fixes
 ~~~~~~~~~

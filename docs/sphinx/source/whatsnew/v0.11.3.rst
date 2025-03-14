@@ -20,6 +20,8 @@ Breaking Changes
   Use :py:func:`~pvlib.spectrum.spectral_factor_firstsolar` instead. (:issue:`2130`, :pull:`2131`)
 * Remove deprecated :py:func:`!pvlib.spectrum.get_am15g` function; use
   :py:func:`~pvlib.spectrum.get_reference_spectra` instead.  (:pull:`2409`)
+* Remove ``label`` parameter in :py:func:`~pvlib.iotools.get_cams` resulting in the timestamps
+  referring to the start of the period for all options of ``time_step``.
 
 Bug fixes
 ~~~~~~~~~

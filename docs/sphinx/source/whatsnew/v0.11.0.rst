@@ -28,7 +28,7 @@ Deprecations
 ~~~~~~~~~~~~
 * The ``pvlib.irradiance.SURFACE_ALBEDOS`` dictionary has been moved to
   :py:const:`pvlib.albedo.SURFACE_ALBEDOS`. (:pull:`2095`)
-* Function :py:func:`pvlib.spectrum.get_am15g` has been deprecated in favor
+* Function :py:func:`!pvlib.spectrum.get_am15g` has been deprecated in favor
   of the new function :py:func:`pvlib.spectrum.get_reference_spectra`. Use
   ``pvlib.spectrum.get_reference_spectra(standard="ASTM G173-03")["global"]``
   instead. (:pull:`2039`)

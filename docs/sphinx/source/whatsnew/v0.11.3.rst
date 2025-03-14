@@ -31,6 +31,8 @@ Bug fixes
   if/when the time zone is updated, the tz attribute is now the single source
   of time-zone truth, is the single time-zone setter interface, and its getter 
   returns an IANA string. (:issue:`2340`, :pull:`2341`)
+* :py:func:`~pvlib.iotools.get_pvgis_tmy` with ``outputformat='csv'`` now
+  works with the updated data format returned by PVGIS. (:issue:`2344`, :pull:`2395`)
 
 Deprecations
 ~~~~~~~~~~~~

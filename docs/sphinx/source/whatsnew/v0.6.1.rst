@@ -56,7 +56,7 @@ Enhancements
 * Use HRRR modeled surface temperature values instead of inferring from
   isobaric values and modeled wind speed instead of inferring from gust.
   (:issue:`604`)
-* Change :py:func:`pvlib.pvsystem.sapm_spectral_loss` to avoid numpy warning.
+* Change :py:func:`!pvlib.pvsystem.sapm_spectral_loss` to avoid numpy warning.
 * Add warning message when :py:func:`pvlib.spa` is reloaded. (:issue:`401`)
 * Add option for :py:func:`pvlib.irradiance.disc` to use relative airmass
   by supplying `pressure=None`. (:issue:`449`)

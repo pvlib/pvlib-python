@@ -6,9 +6,6 @@ speed at different heights.
 
 import numpy as np
 import pandas as pd
-import pvlib
-
-from pvlib._deprecation import deprecated
 
 APPARENT_ZENITH_MODELS = ('simple', 'kasten1966', 'kastenyoung1989',
                           'gueymard1993', 'pickering2002')
@@ -414,12 +411,6 @@ def tdew_from_rh(temp_air, relative_humidity, coeff=(6.112, 17.62, 243.12)):
     dewpoint = coeff[2] * ln_term / (coeff[1] - ln_term)
 
     return dewpoint
-
-
-first_solar_spectral_correction = deprecated(
-    since='0.10.0',
-    alternative='pvlib.spectrum.spectral_factor_firstsolar'
-)(pvlib.spectrum.spectral_factor_firstsolar)
 
 
 def bird_hulstrom80_aod_bb(aod380, aod500):

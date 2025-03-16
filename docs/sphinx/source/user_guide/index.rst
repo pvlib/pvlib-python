@@ -8,18 +8,18 @@ This user guide is an overview and explains some of the key features of pvlib.
 
 .. toctree::
    :caption: Getting started
-   :maxdepth: 2
+   :maxdepth: 1
    
    getting_started/index
    
 .. toctree::
    :caption: Modeling topics
-   :maxdepth: 2
+   :maxdepth: 1
    
    modeling_topics/index
 
 .. toctree::
    :caption: Extras
-   :maxdepth: 2
+   :maxdepth: 1
 
    extras/index

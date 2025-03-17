@@ -4,7 +4,7 @@ Modeling Topics
 ===============
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
 
    bifacial
    clearsky

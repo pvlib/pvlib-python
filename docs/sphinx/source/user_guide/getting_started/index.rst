@@ -4,7 +4,7 @@ Getting Started
 ===============
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
 
    package_overview
    installation

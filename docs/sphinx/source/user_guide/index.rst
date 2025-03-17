@@ -8,14 +8,14 @@ This user guide is an overview and explains some of the key features of pvlib.
 
 .. toctree::
    :caption: Getting started
-   :maxdepth: 1
+   :maxdepth: 2
 
    getting_started/package_overview
    getting_started/installation
    getting_started/introtutorial
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
    :caption: Getting started
 
    modeling_topics/pvsystem
@@ -27,7 +27,7 @@ This user guide is an overview and explains some of the key features of pvlib.
    modeling_topics/singlediode
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
    :caption: Getting started
 
    extras/nomenclature

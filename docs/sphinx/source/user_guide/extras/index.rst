@@ -8,4 +8,3 @@ Extras
 
    nomenclature
    faq
-   

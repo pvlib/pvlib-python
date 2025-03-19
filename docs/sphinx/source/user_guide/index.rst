@@ -16,7 +16,7 @@ This user guide is an overview and explains some of the key features of pvlib.
    :maxdepth: 2
    :caption: Modeling topics
 
-    modeling_topics/index
+   modeling_topics/index
 
 .. toctree::
    :maxdepth: 2

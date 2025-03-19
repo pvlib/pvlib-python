@@ -9,4 +9,3 @@ Getting Started
    package_overview
    installation
    introtutorial
-   

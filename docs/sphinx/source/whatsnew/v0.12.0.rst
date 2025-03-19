@@ -29,13 +29,13 @@ Bug fixes
   :py:func:`~pvlib.snow.coverage_nrel`. The check uses snow depth on the ground
   to improve modeling for systems with shallow tilt angles. The check
   adds a new, optional parameter ``snow_depth``. (:issue:`1171`, :pull:`2292`)
-* Fix a bug in :py:func:`pvlib.bifacial.get_irradiance_poa` which may have yielded non-zero
+* Fix a bug in :py:func:`pvlib.bifacial.infinite_sheds.get_irradiance_poa` which may have yielded non-zero
   ground irradiance when the sun was below the horizon. (:issue:`2245`, :pull:`2359`)
 * Fix a bug where :py:func:`pvlib.transformer.simple_efficiency` could only be imported
   using the ``from pvlib.transformer`` syntax. (:pull:`2388`)
 * :py:class:`~pvlib.modelchain.ModelChain` now requires only a minimal set of
   parameters to run the SAPM electrical model. (:issue:`2369`, :pull:`2393`)
-* Correct keys for First Solar modules in `~pvlib.spectrum.spectral_factor_pvspec`. (:issue:`2398`, :pull:`2400`)
+* Correct keys for First Solar modules in :py:func:`~pvlib.spectrum.spectral_factor_pvspec`. (:issue:`2398`, :pull:`2400`)
 * Ensure proper tz and pytz types in :py:class:`~pvlib.location.Location`. To ensure that
   the time zone in :py:class:`~pvlib.location.Location` remains internally consistent
   if/when the time zone is updated, the ``tz`` attribute is now the single source
@@ -73,7 +73,7 @@ Testing
 
 Maintenance
 ~~~~~~~~~~~
-* Fix ReadTheDocs builds by upgrading `readthedocs.yml` configuration
+* Fix ReadTheDocs builds by upgrading ``readthedocs.yml`` configuration
   (:issue:`2357`, :pull:`2358`)
 * asv 0.4.2 upgraded to asv 0.6.4 to fix CI failure due to pinned older conda.
   (:pull:`2352`)

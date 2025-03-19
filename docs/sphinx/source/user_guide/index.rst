@@ -16,7 +16,7 @@ This user guide is an overview and explains some of the key features of pvlib.
 
 .. toctree::
    :maxdepth: 2
-   :caption: Getting started
+   :caption: Modeling topics
 
    modeling_topics/pvsystem
    modeling_topics/modelchain
@@ -28,7 +28,7 @@ This user guide is an overview and explains some of the key features of pvlib.
 
 .. toctree::
    :maxdepth: 2
-   :caption: Getting started
+   :caption: Extras
 
    extras/nomenclature
    extras/faq

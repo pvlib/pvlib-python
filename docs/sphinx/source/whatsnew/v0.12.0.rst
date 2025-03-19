@@ -66,7 +66,7 @@ Testing
 ~~~~~~~
 * Move tests folder to ``/tests`` and data exclusively used for testing to ``/tests/data``.
   (:issue:`2271`, :pull:`2277`)
-* Add Python 3.13 to test suite. (:pull:`2258`)
+* Add Python 3.13 to test suite. (:issue:`2201`, :pull:`2258`)
 * Add tests for all input types for the :py:attr:`pvlib.location.Location.tz` attribute.
   (:issue:`2340`, :pull:`2341`)
 * Add tests for time-conversion functions in :py:mod:`pvlib.tools`. (:issue:`2340`, :pull:`2341`)

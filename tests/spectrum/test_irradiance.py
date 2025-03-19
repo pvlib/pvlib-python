@@ -4,10 +4,9 @@ import pandas as pd
 import numpy as np
 from pvlib import spectrum
 
-from tests.conftest import assert_series_equal, fail_on_pvlib_version
+from tests.conftest import assert_series_equal
 
 
-@fail_on_pvlib_version('0.12')
 def test_get_reference_spectra_am15g():
     # test that the reference spectrum is read and interpolated correctly
     e = spectrum.get_reference_spectra()['global']

@@ -9,12 +9,6 @@ Breaking Changes
 * The :py:attr:`pvlib.location.Location.pytz` attribute is now read only. The
   ``pytz`` attribute is now set internally to be consistent with the
   :py:attr:`pvlib.location.Location.tz` attribute. (:issue:`2340`, :pull:`2341`)
-* Users must now provide :py:attr:`ModelChain.spectral_model`, or the 'no_loss' spectral
-  model is assumed. :py:class:`~pvlib.modelchain.ModelChain` no longer attempts to infer
-  the spectral model from :py:class:`~pvlib.pvsystem.PVSystem` attributes. (:issue:`2017`, :pull:`2253`)
-* The :py:attr:`pvlib.location.Location.pytz` attribute is now read only. The
-  ``pytz`` attribute is now set internally to be consistent with the
-  :py:attr:`pvlib.location.Location.tz` attribute. (:issue:`2340`, :pull:`2341`)
 * Users must now provide :py:attr:`ModelChain.spectral_model`, or the ``'no_loss'`` spectral
   model is assumed. :py:class:`~pvlib.modelchain.ModelChain` no longer attempts to infer
   the spectral model from :py:class:`~pvlib.pvsystem.PVSystem` attributes. (:issue:`2017`, :pull:`2253`)

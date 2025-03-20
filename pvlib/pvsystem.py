@@ -17,7 +17,7 @@ from dataclasses import dataclass
 from abc import ABC, abstractmethod
 from typing import Optional, Union
 
-from pvlib._deprecation import deprecated
+from pvlib._deprecation import renamed_kwarg_warning
 
 import pvlib  # used to avoid albedo name collision in the Array class
 from pvlib import (atmosphere, iam, inverter, irradiance,
@@ -2801,7 +2801,6 @@ def scale_voltage_current_power(data, voltage=1, current=1):
     return df_sorted
 
 
-from pvlib._deprecation import renamed_kwarg_warning
 @renamed_kwarg_warning("0.12.0", "g_poa_effective", "effective_irradiance", "0.13.0")
 def pvwatts_dc(effective_irradiance, temp_cell, pdc0, gamma_pdc, temp_ref=25.):
     r"""

@@ -1,0 +1,35 @@
+.. _whatsnew_01300:
+
+
+v0.13.0 (September XX, 2025)
+------------------------
+
+Breaking Changes
+~~~~~~~~~~~~~~~~
+* Rename parameter name ``g_poa_effective`` to ``effective_irradiance`` in
+  :py:func:`~pvlib.pvsystem.PVSystem.pvwatts_dc` and :py:func:`~pvlib.pvsystem.pvwatts_dc`.
+  (:issue:`1253`, :pull:`2235`)
+
+Bug fixes
+~~~~~~~~~
+
+
+Enhancements
+~~~~~~~~~~~~
+
+
+Documentation
+~~~~~~~~~~~~~
+
+
+Testing
+~~~~~~~
+
+
+Maintenance
+~~~~~~~~~~~
+
+
+Contributors
+~~~~~~~~~~~~
+* Adam R. Jensen (:ghuser:`AdamRJensen`)

@@ -368,7 +368,7 @@ class Location:
 
         return airmass
 
-    def get_sun_rise_set_transit(self, times, method='pyephem', **kwargs):
+    def get_sun_rise_set_transit(self, times, method='spa', **kwargs):
         """
         Calculate sunrise, sunset and transit times.
 
@@ -376,7 +376,7 @@ class Location:
         ----------
         times : DatetimeIndex
             Must be localized to the Location
-        method : str, default 'pyephem'
+        method : str, default 'spa'
             'pyephem', 'spa', or 'geometric'
 
         kwargs :

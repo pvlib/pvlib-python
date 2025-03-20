@@ -117,7 +117,7 @@ def get_cams(latitude, longitude, start, end, email, identifier='mcclear',
     ========================  ======  =========================================
     **Mapped field names are returned when the map_variables argument is True**
     ---------------------------------------------------------------------------
-    Observation period        str     Start of time period
+    Observation period        str     Start of the time period (left labeled)
     TOA, ghi_extra            float   Horizontal radiation at top of atmosphere
     Clear sky GHI, ghi_clear  float   Clear sky global radiation on horizontal
     Clear sky BHI, bhi_clear  float   Clear sky beam radiation on horizontal
@@ -300,10 +300,6 @@ def parse_cams(fbuf, integrated=False, map_variables=True):
 
     # Set index as the start observation time (left) and localize to UTC
     data.index = pd.to_datetime(obs_period.str[0], utc=True)
-
-    # For time_steps '1d' and '1MS' drop timezone and round to nearest midnight
-    if (time_step == '1d') | time_step.endswith('MS'):  # noqa
-        data.index = pd.DatetimeIndex(data.index.date)
 
     if not integrated:  # Convert radiation values from Wh/m2 to W/m2
         integrated_cols = [c for c in CAMS_INTEGRATED_COLUMNS

@@ -6,10 +6,10 @@ Modeling Topics
 .. toctree::
    :maxdepth: 2
 
-   pvsystem
-   modelchain
-   timetimezones
-   bifacial
-   clearsky
-   weather_data
-   singlediode
+    pvsystem
+    modelchain
+    timetimezones
+    bifacial
+    clearsky
+    weather_data
+    singlediode

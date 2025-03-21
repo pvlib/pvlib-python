@@ -520,10 +520,12 @@ def get_pvgis_tmy(latitude, longitude, outputformat='json', usehorizon=True,
         with io.StringIO(res.content.decode('utf-8')) as src:
             data, meta = parse_epw(src)
             months_selected, inputs = None, None
+    # raise exception if pvgis format isn't in ['csv', 'json', 'epw']
     else:
-        # this line is never reached because if outputformat is not valid then
-        # the response is HTTP/1.1 400 BAD REQUEST which is handled earlier
-        pass
+        err_msg = (
+            "pvgis format '{:s}' was unknown, must be either 'json', 'csv', or 'epw'.")\
+            .format(outputformat)
+        raise ValueError(err_msg)
 
     if map_variables:
         data = data.rename(columns=VARIABLE_MAP)

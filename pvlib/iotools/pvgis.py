@@ -429,7 +429,7 @@ def get_pvgis_tmy(latitude, longitude, outputformat='json', usehorizon=True,
     longitude : float
         Longitude in degrees east
     outputformat : str, default 'json'
-        Must be in ``['csv', 'basic', 'epw', 'json']``. See PVGIS TMY tool
+        Must be in ``['csv', 'epw', 'json']``. See PVGIS TMY tool
         documentation [2]_ for more info.
     usehorizon : bool, default True
         include effects of horizon
@@ -461,11 +461,11 @@ def get_pvgis_tmy(latitude, longitude, outputformat='json', usehorizon=True,
     data : pandas.DataFrame
         the weather data
     months_selected : list
-        TMY year for each month, ``None`` for basic and EPW
+        TMY year for each month, ``None`` for EPW
     inputs : dict
-        the inputs, ``None`` for basic and EPW
+        the inputs, ``None`` for EPW
     metadata : list or dict
-        file metadata, ``None`` for basic
+        file metadata
 
     Raises
     ------
@@ -516,9 +516,6 @@ def get_pvgis_tmy(latitude, longitude, outputformat='json', usehorizon=True,
     elif outputformat == 'csv':
         with io.BytesIO(res.content) as src:
             data, months_selected, inputs, meta = _parse_pvgis_tmy_csv(src)
-    elif outputformat == 'basic':
-        with io.BytesIO(res.content) as src:
-            data, months_selected, inputs, meta = _parse_pvgis_tmy_basic(src)
     elif outputformat == 'epw':
         with io.StringIO(res.content.decode('utf-8')) as src:
             data, meta = parse_epw(src)
@@ -590,13 +587,6 @@ def _parse_pvgis_tmy_csv(src):
     return data, months_selected, inputs, meta
 
 
-def _parse_pvgis_tmy_basic(src):
-    data = pd.read_csv(src)
-    data.index = pd.to_datetime(
-        data['time(UTC)'], format='%Y%m%d:%H%M', utc=True)
-    data = data.drop('time(UTC)', axis=1)
-    return data, None, None, None
-
 
 def read_pvgis_tmy(filename, pvgis_format=None, map_variables=True):
     """
@@ -610,11 +600,9 @@ def read_pvgis_tmy(filename, pvgis_format=None, map_variables=True):
         Format of PVGIS file or buffer. Equivalent to the ``outputformat``
         parameter in the PVGIS TMY API. If ``filename`` is a file and
         ``pvgis_format`` is not specified then the file extension will be used
-        to determine the PVGIS format to parse. For PVGIS files from the API
-        with ``outputformat='basic'``, please set ``pvgis_format`` to
-        ``'basic'``.
+        to determine the PVGIS format to parse.
         If ``filename`` is a buffer, then ``pvgis_format`` is required and must
-        be in ``['csv', 'epw', 'json', 'basic']``.
+        be in ``['csv', 'epw', 'json']``.
     map_variables: bool, default True
         When true, renames columns of the Dataframe to pvlib variable names
         where applicable. See variable :const:`VARIABLE_MAP`.
@@ -625,18 +613,18 @@ def read_pvgis_tmy(filename, pvgis_format=None, map_variables=True):
     data : pandas.DataFrame
         the weather data
     months_selected : list
-        TMY year for each month, ``None`` for basic and EPW
+        TMY year for each month, ``None`` for EPW
     inputs : dict
-        the inputs, ``None`` for basic and EPW
+        the inputs, ``None`` for EPW
     metadata : list or dict
-        file metadata, ``None`` for basic
+        file metadata
 
     Raises
     ------
     ValueError
         if ``pvgis_format`` is not specified and the file extension is neither
         ``.csv``, ``.json``, nor ``.epw``, or if ``pvgis_format`` is provided
-        as input but isn't in ``['csv', 'epw', 'json', 'basic']``
+        as input but isn't in ``['csv', 'epw', 'json']``
     TypeError
         if ``pvgis_format`` is not specified and ``filename`` is a buffer
 
@@ -652,8 +640,7 @@ def read_pvgis_tmy(filename, pvgis_format=None, map_variables=True):
         outputformat = Path(filename).suffix[1:].lower()
     else:
         outputformat = pvgis_format
-    # parse the pvgis file based on the output format, either 'epw', 'json',
-    # 'csv', or 'basic'
+    # parse the pvgis file based on the output format, either 'epw', 'json', or 'csv'
 
     # EPW: use the EPW parser from the pvlib.iotools epw.py module
     if outputformat == 'epw':
@@ -663,8 +650,7 @@ def read_pvgis_tmy(filename, pvgis_format=None, map_variables=True):
             data, meta = read_epw(filename)
         months_selected, inputs = None, None
 
-    # NOTE: json, csv, and basic output formats have parsers defined as private
-    # functions in this module
+    # NOTE: json and csv output formats have parsers defined as private functions in this module
 
     # JSON: use Python built-in json module to convert file contents to a
     # Python dictionary, and pass the dictionary to the _parse_pvgis_tmy_json()
@@ -677,24 +663,18 @@ def read_pvgis_tmy(filename, pvgis_format=None, map_variables=True):
                 src = json.load(fbuf)
         data, months_selected, inputs, meta = _parse_pvgis_tmy_json(src)
 
-    # CSV or basic: use the correct parser from this module
-    # eg: _parse_pvgis_tmy_csv() or _parse_pvgist_tmy_basic()
-    elif outputformat in ['csv', 'basic']:
-        # get the correct parser function for this output format from globals()
-        pvgis_parser = globals()['_parse_pvgis_tmy_{:s}'.format(outputformat)]
-        # NOTE: pvgis_parse() is a pvgis parser function from this module,
-        # either _parse_pvgis_tmy_csv() or _parse_pvgist_tmy_basic()
+    elif outputformat == 'csv':
         try:
-            data, months_selected, inputs, meta = pvgis_parser(filename)
+            data, months_selected, inputs, meta = _parse_pvgis_tmy_csv(filename)
         except AttributeError:  # str/path has no .read() attribute
             with open(str(filename), 'rb') as fbuf:
-                data, months_selected, inputs, meta = pvgis_parser(fbuf)
+                data, months_selected, inputs, meta = _parse_pvgis_tmy_csv(fbuf)
 
     else:
-        # raise exception if pvgis format isn't in ['csv','basic','epw','json']
+        # raise exception if pvgis format isn't in ['csv','epw','json']
         err_msg = (
-            "pvgis format '{:s}' was unknown, must be either 'epw', 'json', "
-            "'csv', or 'basic'").format(outputformat)
+            "pvgis format '{:s}' was unknown, must be either 'epw', 'json', or 'csv'"
+            ).format(outputformat)
         raise ValueError(err_msg)
 
     if map_variables:

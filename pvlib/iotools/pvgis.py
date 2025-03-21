@@ -523,8 +523,8 @@ def get_pvgis_tmy(latitude, longitude, outputformat='json', usehorizon=True,
     # raise exception if pvgis format isn't in ['csv', 'json', 'epw']
     else:
         err_msg = (
-            "pvgis format '{:s}' was unknown, must be either 'json', 'csv', or 'epw'.")\
-            .format(outputformat)
+            "pvgis format '{:s}' was unknown, must be either 'json', 'csv', or"
+            " 'epw'.").format(outputformat)
         raise ValueError(err_msg)
 
     if map_variables:
@@ -589,7 +589,6 @@ def _parse_pvgis_tmy_csv(src):
     return data, months_selected, inputs, meta
 
 
-
 def read_pvgis_tmy(filename, pvgis_format=None, map_variables=True):
     """
     Read a file downloaded from PVGIS.
@@ -642,7 +641,7 @@ def read_pvgis_tmy(filename, pvgis_format=None, map_variables=True):
         outputformat = Path(filename).suffix[1:].lower()
     else:
         outputformat = pvgis_format
-    # parse the pvgis file based on the output format, either 'epw', 'json', or 'csv'
+    # parse pvgis file based on outputformat, either 'epw', 'json', or 'csv'
 
     # EPW: use the EPW parser from the pvlib.iotools epw.py module
     if outputformat == 'epw':
@@ -652,7 +651,8 @@ def read_pvgis_tmy(filename, pvgis_format=None, map_variables=True):
             data, meta = read_epw(filename)
         months_selected, inputs = None, None
 
-    # NOTE: json and csv output formats have parsers defined as private functions in this module
+    # NOTE: json and csv output formats have parsers defined as private
+    # functions in this module
 
     # JSON: use Python built-in json module to convert file contents to a
     # Python dictionary, and pass the dictionary to the _parse_pvgis_tmy_json()
@@ -667,16 +667,18 @@ def read_pvgis_tmy(filename, pvgis_format=None, map_variables=True):
 
     elif outputformat == 'csv':
         try:
-            data, months_selected, inputs, meta = _parse_pvgis_tmy_csv(filename)
+            data, months_selected, inputs, meta = \
+                _parse_pvgis_tmy_csv(filename)
         except AttributeError:  # str/path has no .read() attribute
             with open(str(filename), 'rb') as fbuf:
-                data, months_selected, inputs, meta = _parse_pvgis_tmy_csv(fbuf)
+                data, months_selected, inputs, meta = \
+                    _parse_pvgis_tmy_csv(fbuf)
 
     else:
         # raise exception if pvgis format isn't in ['csv','epw','json']
         err_msg = (
-            "pvgis format '{:s}' was unknown, must be either 'epw', 'json', or 'csv'"
-            ).format(outputformat)
+            "pvgis format '{:s}' was unknown, must be either 'json', 'csv',"
+            "or 'epw'").format(outputformat)
         raise ValueError(err_msg)
 
     if map_variables:

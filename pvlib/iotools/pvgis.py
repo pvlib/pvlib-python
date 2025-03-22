@@ -384,8 +384,8 @@ def read_pvgis_hourly(filename, pvgis_format=None, map_variables=True):
         return pvgis_data
 
     elif outputformat == 'basic':
-        err_msg = "outputformat='basic' is no longer supported, please use outputformat='csv'" \
-            " instead."
+        err_msg = "outputformat='basic' is no longer supported, please use "\
+            "outputformat='csv' instead."
         raise ValueError(err_msg)
 
     else:

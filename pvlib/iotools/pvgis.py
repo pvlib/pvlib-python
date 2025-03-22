@@ -373,7 +373,7 @@ def read_pvgis_hourly(filename, pvgis_format=None, map_variables=True):
         return _parse_pvgis_hourly_json(src, map_variables=map_variables)
 
     # CSV: use _parse_pvgis_hourly_csv()
-    if outputformat == 'csv':
+    elif outputformat == 'csv':
         try:
             pvgis_data = _parse_pvgis_hourly_csv(
                 filename, map_variables=map_variables)
@@ -383,11 +383,17 @@ def read_pvgis_hourly(filename, pvgis_format=None, map_variables=True):
                     fbuf, map_variables=map_variables)
         return pvgis_data
 
-    # raise exception if pvgis format isn't in ['csv', 'json']
-    err_msg = (
-        "pvgis format '{:s}' was unknown, must be either 'json' or 'csv'")\
-        .format(outputformat)
-    raise ValueError(err_msg)
+    elif outputformat == 'basic':
+        err_msg = "outputformat='basic' is no longer supported, please use outputformat='csv'" \
+            " instead."
+        raise ValueError(err_msg)
+
+    else:
+        # raise exception if pvgis format isn't in ['csv', 'json']
+        err_msg = (
+            "pvgis format '{:s}' was unknown, must be either 'json' or 'csv'")\
+            .format(outputformat)
+        raise ValueError(err_msg)
 
 
 def _coerce_and_roll_tmy(tmy_data, tz, year):
@@ -673,6 +679,11 @@ def read_pvgis_tmy(filename, pvgis_format=None, map_variables=True):
             with open(str(filename), 'rb') as fbuf:
                 data, months_selected, inputs, meta = \
                     _parse_pvgis_tmy_csv(fbuf)
+
+    elif outputformat == 'basic':
+        err_msg = "outputformat='basic' is no longer supported, please use " \
+            "outputformat='csv' instead."
+        raise ValueError(err_msg)
 
     else:
         # raise exception if pvgis format isn't in ['csv','epw','json']

@@ -410,7 +410,8 @@ def _coerce_and_roll_tmy(tmy_data, tz, year):
         np.roll(tmy_data, tz, axis=0),
         columns=tmy_data.columns,
         index=new_index)
-    new_tmy_data = new_tmy_data.astype(dtype=dict(zip(tmy_data.columns, tmy_data.dtypes)))
+    new_tmy_data = \
+        new_tmy_data.astype(dtype=dict(zip(tmy_data.columns, tmy_data.dtypes)))
     return new_tmy_data
 
 

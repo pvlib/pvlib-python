@@ -72,7 +72,6 @@ def get_example_spectral_response(wavelength=None):
 
     interpolator = make_interp_spline(x_data, y_data, k=3, bc_type='clamped')
 
-
     sr = pd.Series(data=interpolator(wavelength), index=wavelength)
 
     sr.index.name = 'wavelength'

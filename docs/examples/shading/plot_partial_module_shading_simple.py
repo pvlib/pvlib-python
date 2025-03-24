@@ -180,10 +180,13 @@ ax = plot_curves([cell_curve_full_sun, cell_curve_shaded],
 def interpolate(df, i):
     x = np.flipud(df['i'])
     y = np.flipud(df['v'])
-    
-    # Create a spline interpolation with linear (k=1) and extrapolation (default behavior)
-    spline = make_interp_spline(x, y, k=1, bc_type='clamped')  # Extrapolation is handled by default
-    
+
+    # Create a spline interpolation with
+    # linear (k=1) and extrapolation (default behavior)
+    spline = make_interp_spline(
+        x, y, k=1, bc_type='clamped'
+    )  # Extrapolation is handled by default
+
     return spline(i)
 
 

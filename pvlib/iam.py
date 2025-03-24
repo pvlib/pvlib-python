@@ -487,7 +487,9 @@ def interp(aoi, theta_ref, iam_ref, method='linear', normalize=True):
     theta_ref = np.asarray(theta_ref)
     iam_ref = np.asarray(iam_ref)
 
-    interpolator = make_interp_spline(theta_ref, iam_ref, k=method, bc_type='clamped')
+    interpolator = make_interp_spline(
+        theta_ref, iam_ref, k=method, bc_type='clamped'
+    )
     aoi_input = aoi
 
     aoi = np.asanyarray(aoi)

@@ -150,10 +150,10 @@ def get_relative_airmass(zenith, model='kastenyoung1989'):
         * 'kasten1966' - See [1]_ - requires apparent sun zenith
         * 'youngirvine1967' - See [2]_ - requires true sun zenith
         * 'kastenyoung1989' (default) - See [3]_ - requires apparent sun zenith
-        * 'gueymard1993' - See [4]_, [9]_ - requires apparent sun zenith
-        * 'young1994' - See [5]_ - requires true sun zenith
-        * 'pickering2002' - See [6]_ - requires apparent sun zenith
-        * 'gueymard2003' - See [7]_, [8]_ - requires apparent sun zenith
+        * 'gueymard1993' - See [4]_, [5]_ - requires apparent sun zenith
+        * 'young1994' - See [6]_ - requires true sun zenith
+        * 'pickering2002' - See [7]_ - requires apparent sun zenith
+        * 'gueymard2003' - See [8]_, [9]_ - requires apparent sun zenith
 
     Returns
     -------
@@ -186,24 +186,24 @@ def get_relative_airmass(zenith, model='kastenyoung1989'):
        clear sky solar irradiance models using theoretical and measured
        data," Solar Energy, vol. 51, pp. 121-138, 1993.
 
-    .. [5] A. T. Young, "AIR-MASS AND REFRACTION," Applied Optics, vol. 33,
+    .. [5] C. Gueymard, "Development and performance assessment of a clear
+       sky spectral radiation model,” in Proc. of the 22nd ASES Conference,
+       Solar ’93, 1993, pp. 433–438.
+
+    .. [6] A. T. Young, "AIR-MASS AND REFRACTION," Applied Optics, vol. 33,
        pp. 1108-1110, Feb 1994.
 
-    .. [6] Keith A. Pickering. "The Ancient Star Catalog". DIO 12:1, 20,
+    .. [7] Keith A. Pickering. "The Ancient Star Catalog". DIO 12:1, 20,
 
-    .. [7] C. Gueymard, "Direct solar transmittance and irradiance
+    .. [8] C. Gueymard, "Direct solar transmittance and irradiance
        predictions with broadband models. Part I: detailed theoretical
        performance assessment". Solar Energy, vol 74, pp. 355-379, 2003.
        :doi:`10.1016/S0038-092X(03)00195-6`
 
-    .. [8] C. Gueymard (2019). Clear-Sky Radiation Models and Aerosol Effects.
+    .. [9] C. Gueymard (2019). Clear-Sky Radiation Models and Aerosol Effects.
        In: Polo, J., Martín-Pomares, L., Sanfilippo, A. (eds) Solar Resources
        Mapping. Green Energy and Technology. Springer, Cham.
        :doi:`10.1007/978-3-319-97484-2_5`
-
-    .. [9] C. Gueymard, "Development and performance assessment of a clear
-       sky spectral radiation model,” in Proc. of the 22nd ASES Conference,
-       Solar ’93, 1993, pp. 433–438.
 
     .. [10] Matthew J. Reno, Clifford W. Hansen and Joshua S. Stein, "Global
        Horizontal Irradiance Clear Sky Models: Implementation and Analysis"
@@ -236,7 +236,7 @@ def get_relative_airmass(zenith, model='kastenyoung1989'):
               (np.cos(zenith_rad) ** 3 +
               0.149864*(np.cos(zenith_rad) ** 2) +
               0.0102963*(np.cos(zenith_rad)) + 0.000303978))
-    elif 'gueymard1993' == model:  # [4], Eq. 22 and [9], Eq. 3b
+    elif 'gueymard1993' == model:  # [4], Eq. 22 and [5], Eq. 3b
         am = (1.0 / (np.cos(zenith_rad) +
               0.00176759*(z)*((94.37515 - z) ** - 1.21563)))
     elif 'gueymard2003' == model:

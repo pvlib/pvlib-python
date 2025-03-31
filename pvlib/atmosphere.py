@@ -147,20 +147,13 @@ def get_relative_airmass(zenith, model='kastenyoung1989'):
 
         * 'simple' - secant(apparent zenith angle) -
           Note that this gives -Inf at zenith=90
-        * 'kasten1966' - See reference [1] -
-          requires apparent sun zenith
-        * 'youngirvine1967' - See reference [2] -
-          requires true sun zenith
-        * 'kastenyoung1989' (default) - See reference [3] -
-          requires apparent sun zenith
-        * 'gueymard1993' - See references [4] and [9] -
-          requires apparent sun zenith
-        * 'young1994' - See reference [5] -
-          requires true sun zenith
-        * 'pickering2002' - See reference [6] -
-          requires apparent sun zenith
-        * 'gueymard2003' - See references [7] and [8] -
-          requires apparent sun zenith
+        * 'kasten1966' - See [1]_ - requires apparent sun zenith
+        * 'youngirvine1967' - See [2]_ - requires true sun zenith
+        * 'kastenyoung1989' (default) - See [3]_ - requires apparent sun zenith
+        * 'gueymard1993' - See [4]_, [9]_ - requires apparent sun zenith
+        * 'young1994' - See [5]_ - requires true sun zenith
+        * 'pickering2002' - See [6]_ - requires apparent sun zenith
+        * 'gueymard2003' - See [7]_, [8]_ - requires apparent sun zenith
 
     Returns
     -------
@@ -174,7 +167,7 @@ def get_relative_airmass(zenith, model='kastenyoung1989'):
     other models use true (not refraction-adjusted) zenith angle. Apparent
     zenith angles should be calculated at sea level.
 
-    Comparison among several models is reported in [10].
+    Comparison among several models is reported in [10]_.
 
     References
     ----------

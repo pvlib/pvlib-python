@@ -153,7 +153,7 @@ def get_relative_airmass(zenith, model='kastenyoung1989'):
           requires true sun zenith
         * 'kastenyoung1989' (default) - See reference [3] -
           requires apparent sun zenith
-        * 'gueymard1993' - See reference [4] -
+        * 'gueymard1993' - See references [4] and [9] -
           requires apparent sun zenith
         * 'young1994' - See reference [5] -
           requires true sun zenith
@@ -173,6 +173,8 @@ def get_relative_airmass(zenith, model='kastenyoung1989'):
     Some models use apparent (refraction-adjusted) zenith angle while
     other models use true (not refraction-adjusted) zenith angle. Apparent
     zenith angles should be calculated at sea level.
+
+    Comparison among several models is reported in [10].
 
     References
     ----------
@@ -206,9 +208,14 @@ def get_relative_airmass(zenith, model='kastenyoung1989'):
        Mapping. Green Energy and Technology. Springer, Cham.
        :doi:`10.1007/978-3-319-97484-2_5`
 
-    .. [9] Matthew J. Reno, Clifford W. Hansen and Joshua S. Stein, "Global
+    .. [9] C. Gueymard, "Development and performance assessment of a clear
+       sky spectral radiation model,” in Proc. of the 22nd ASES Conference,
+       Solar ’93, 1993, pp. 433–438.
+
+    .. [10] Matthew J. Reno, Clifford W. Hansen and Joshua S. Stein, "Global
        Horizontal Irradiance Clear Sky Models: Implementation and Analysis"
        Sandia Report, (2012).
+
     '''
 
     # set zenith values greater than 90 to nans
@@ -236,7 +243,7 @@ def get_relative_airmass(zenith, model='kastenyoung1989'):
               (np.cos(zenith_rad) ** 3 +
               0.149864*(np.cos(zenith_rad) ** 2) +
               0.0102963*(np.cos(zenith_rad)) + 0.000303978))
-    elif 'gueymard1993' == model:
+    elif 'gueymard1993' == model:  # [4], Eq. 22 and [9], Eq. 3b
         am = (1.0 / (np.cos(zenith_rad) +
               0.00176759*(z)*((94.37515 - z) ** - 1.21563)))
     elif 'gueymard2003' == model:

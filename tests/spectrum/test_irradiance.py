@@ -143,7 +143,7 @@ def test_average_photon_energy_nan_irr():
     spectra_series_singlenan = spectra_series_nan.copy()
     spectra_series_singlenan.loc[315.0] = np.nan
     spectra_series_allnan = spectra_series_nan*np.nan
-    
+
     out = [
         spectrum.average_photon_energy(spectra_df_singlenan),
         spectrum.average_photon_energy(spectra_df_allnan),

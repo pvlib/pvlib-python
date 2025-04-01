@@ -131,6 +131,7 @@ def test_average_photon_energy_zero_irr():
     assert_allclose(out_1, expected_1, atol=1e-3)
     assert_allclose(out_2, expected_2, atol=1e-3)
 
+
 def test_average_photon_energy_nan_irr():
     # test for handling NaN input
 
@@ -144,11 +145,11 @@ def test_average_photon_energy_nan_irr():
     spectra_series_singlenan.loc[315.0] = np.nan
     spectra_series_allnan = spectra_series_nan*np.nan
 
-    out = [
+    output = [
         spectrum.average_photon_energy(spectra_df_singlenan),
         spectrum.average_photon_energy(spectra_df_allnan),
         spectrum.average_photon_energy(spectra_series_singlenan),
         spectrum.average_photon_energy(spectra_series_allnan)
     ]
 
-    assert all(np.isnan(out))
+    assert (all(np.isnan(out)) for out in output)

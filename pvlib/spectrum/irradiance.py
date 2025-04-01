@@ -138,7 +138,8 @@ def average_photon_energy(spectra):
     ape : numeric or pandas.Series
         Average Photon Energy [eV].
         Note: returns ``np.nan`` in the case of all-zero spectral irradiance
-        input.
+        input, or where one or more spectral irradiance values equal
+        ``np.nan``.
 
     Notes
     -----

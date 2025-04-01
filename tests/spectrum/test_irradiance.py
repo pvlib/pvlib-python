@@ -136,20 +136,19 @@ def test_average_photon_energy_nan_irr():
     # test for handling NaN input
 
     spectra_df_nan = spectrum.get_reference_spectra().T
-    spectra_df_singlenan = spectra_df_nan.copy()
-    spectra_df_singlenan.loc["global", 315.0] = np.nan
-    spectra_df_allnan = spectra_df_nan * np.nan
+    spectra_df_nan.loc["global", 315.0] = np.nan
+    spectra_df_nan.loc['extraterrestrial', :] = np.nan
 
     spectra_series_nan = spectrum.get_reference_spectra()['global']
     spectra_series_singlenan = spectra_series_nan.copy()
     spectra_series_singlenan.loc[315.0] = np.nan
     spectra_series_allnan = spectra_series_nan*np.nan
 
-    output = [
-        spectrum.average_photon_energy(spectra_df_singlenan),
-        spectrum.average_photon_energy(spectra_df_allnan),
-        spectrum.average_photon_energy(spectra_series_singlenan),
-        spectrum.average_photon_energy(spectra_series_allnan)
-    ]
+    out1 = spectrum.average_photon_energy(spectra_df_nan)
+    out2 = spectrum.average_photon_energy(spectra_series_singlenan)
+    out3 = spectrum.average_photon_energy(spectra_series_allnan)
 
-    assert (all(np.isnan(out)) for out in output)
+    assert np.all(np.isnan(out1['global']))
+    assert np.all(np.isnan(out1['extraterrestrial']))
+    assert np.all(np.isnan(out2))
+    assert np.all(np.isnan(out3))

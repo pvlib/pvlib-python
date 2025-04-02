@@ -177,9 +177,9 @@ def get_relative_airmass(zenith, model='kastenyoung1989'):
        :doi:`11681/5671`
 
     .. [2] A. T. Young and W. M. Irvine, "Multicolor Photoelectric
-       Photometry of the Brighter Planets," The Astronomical Journal, vol.
-       72, pp. 945-950, 1967.
-       :doi:`10.2172/110366`
+       Photometry of the Brighter Planets. I. Program and Procedure,"
+       The Astronomical Journal, vol. 72, pp. 945-950, 1967.
+       :doi:`10.1086/110366`
 
     .. [3] Fritz Kasten and Andrew Young, "Revised optical air mass tables
        and approximation formula," Applied Optics 28:4735-4738, 1989.
@@ -199,7 +199,7 @@ def get_relative_airmass(zenith, model='kastenyoung1989'):
        :doi:`10.1364/AO.33.001108`
 
     .. [7] Keith A. Pickering, "The Southern Limits of the Ancient Star Catalog
-       and the Commentary fo Hipparchos," DIO, vol. 12, pp. 3-27, Sept. 2002.
+       and the Commentary of Hipparchos," DIO, vol. 12, pp. 3-27, Sept. 2002.
 
     .. [8] C. Gueymard, "Direct solar transmittance and irradiance
        predictions with broadband models. Part I: detailed theoretical

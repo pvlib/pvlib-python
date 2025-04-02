@@ -200,6 +200,7 @@ def get_relative_airmass(zenith, model='kastenyoung1989'):
 
     .. [7] Keith A. Pickering, "The Southern Limits of the Ancient Star Catalog
        and the Commentary of Hipparchos," DIO, vol. 12, pp. 3-27, Sept. 2002.
+       Available at `DIO <http://dioi.org/jc01.pdf>`_
 
     .. [8] C. Gueymard, "Direct solar transmittance and irradiance
        predictions with broadband models. Part I: detailed theoretical

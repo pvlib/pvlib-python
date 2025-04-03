@@ -1,7 +1,9 @@
 """
-Get NSRDB PSM4
-see
+Functions for reading and retrieving data from NSRDB PSM4. See:
+https://developer.nrel.gov/docs/solar/nsrdb/nsrdb-GOES-aggregated-v4-0-0-download/
+https://developer.nrel.gov/docs/solar/nsrdb/nsrdb-GOES-tmy-v4-0-0-download/
 https://developer.nrel.gov/docs/solar/nsrdb/nsrdb-GOES-conus-v4-0-0-download/
+https://developer.nrel.gov/docs/solar/nsrdb/nsrdb-GOES-full-disc-v4-0-0-download/
 """
 
 import io
@@ -11,12 +13,14 @@ import pandas as pd
 from json import JSONDecodeError
 
 NSRDB_API_BASE = "https://developer.nrel.gov/api/nsrdb/v2/solar/"
-GOES_ENDPOINT = "nsrdb-GOES-aggregated-v4-0-0-download.csv"
-TMY_ENDPOINT = "nsrdb-GOES-tmy-v4-0-0-download.csv"
-GOESCONUS_ENDPOINT = "nsrdb-GOES-conus-v4-0-0-download.csv"
-GOES_URL = urljoin(NSRDB_API_BASE, GOES_ENDPOINT)
-TMY_URL = urljoin(NSRDB_API_BASE, TMY_ENDPOINT)
-GOESCONUS_URL = urljoin(NSRDB_API_BASE, GOESCONUS_ENDPOINT)
+PSM4_AGG_ENDPOINT = "nsrdb-GOES-aggregated-v4-0-0-download.csv"
+PSM4_TMY_ENDPOINT = "nsrdb-GOES-tmy-v4-0-0-download.csv"
+PSM4_CON_ENDPOINT = "nsrdb-GOES-conus-v4-0-0-download.csv"
+PSM4_FUL_ENDPOINT = "nsrdb-GOES-full-disc-v4-0-0-download.csv"
+PSM4_AGG_URL = urljoin(NSRDB_API_BASE, PSM4_AGG_ENDPOINT)
+PSM4_TMY_URL = urljoin(NSRDB_API_BASE, PSM4_TMY_ENDPOINT)
+PSM4_CON_URL = urljoin(NSRDB_API_BASE, PSM4_CON_ENDPOINT)
+PSM4_FUL_URL = urljoin(NSRDB_API_BASE, PSM4_FUL_ENDPOINT)
 
 ATTRIBUTES = (
     'air_temperature', 'dew_point', 'dhi', 'dni', 'ghi', 'surface_albedo',
@@ -70,14 +74,19 @@ REQUEST_VARIABLE_MAP = {
 }
 
 
-def get_psm4(latitude, longitude, api_key, email, names='tmy', interval=60,
-             attributes=ATTRIBUTES, leap_day=True, full_name=PVLIB_PYTHON,
-             affiliation=PVLIB_PYTHON, map_variables=True, url=None,
-             timeout=30):
+def get_nsrdb_psm4_aggregated(latitude, longitude, api_key, email,
+                              names='2023', time_period=60,
+                              attributes=ATTRIBUTES, leap_day=True,
+                              full_name=PVLIB_PYTHON,
+                              affiliation=PVLIB_PYTHON,
+                              map_variables=True, url=None, timeout=30,
+                              utc=False):
     """
-    Retrieve NSRDB PSM4 timeseries weather data from the PSM4 API. The NSRDB
-    is described in [1]_ and the PSM4 API is described in [2]_, [3]_, and
-    [4]_.
+    Retrieve NSRDB PSM4 timeseries weather data from the PSM4 NSRDB GOES
+    Aggregated v4 API.
+    
+    The NSRDB is described in [1]_ and the PSM4 NSRDB GOES Aggregated v4 API is
+    described in [2]_,.
 
     Parameters
     ----------
@@ -90,23 +99,21 @@ def get_psm4(latitude, longitude, api_key, email, names='tmy', interval=60,
     email : str
         NREL API uses this to automatically communicate messages back
         to the user only if necessary
-    names : str, default 'tmy'
-        PSM4 API parameter specifing year (e.g. ``2020``) or TMY variant to
-        download (e.g. ``'tmy'`` or ``'tgy-2022'``).  The allowed values
-        update periodically, so consult the NSRDB references below for the
-        current set of options.
-    interval : int, {60, 5, 15, 30}
-        interval size in minutes, must be 5, 15, 30 or 60. Must be 60 for
-        typical year requests (i.e., tmy/tgy/tdy).
+    names : str, default '2023'
+        PSM4 API parameter specifing year (e.g. ``2023``) to download. The
+        allowed values update periodically, so consult the NSRDB reference
+        below for the current set of options.
+    time_period : int, {60, 30}
+        time period in minutes, must be 60 or 30 for PSM4 Aggregated. Called
+        ``interval`` in NSRDB API.
     attributes : list of str, optional
         meteorological fields to fetch. If not specified, defaults to
-        ``pvlib.iotools.psm4.ATTRIBUTES``. See references [2]_, [3]_, and [4]_
-        for lists of available fields. Alternatively, pvlib names may also be
-        used (e.g. 'ghi' rather than 'GHI'); see :const:`REQUEST_VARIABLE_MAP`.
-        To retrieve all available fields, set ``attributes=[]``.
+        ``pvlib.iotools.psm4.ATTRIBUTES``. See reference [2]_ for a list of
+        available fields. Alternatively, pvlib names may also be used (e.g.
+        'ghi' rather than 'GHI'); see :const:`REQUEST_VARIABLE_MAP`. To
+        retrieve all available fields, set ``attributes=[]``.
     leap_day : bool, default : True
-        include leap day in the results. Only used for single-year requests
-        (i.e., it is ignored for tmy/tgy/tdy requests).
+        include leap day in the results
     full_name : str, default 'pvlib python'
         optional
     affiliation : str, default 'pvlib python'
@@ -115,10 +122,13 @@ def get_psm4(latitude, longitude, api_key, email, names='tmy', interval=60,
         When true, renames columns of the Dataframe to pvlib variable names
         where applicable. See variable :const:`VARIABLE_MAP`.
     url : str, optional
-        API endpoint URL.  If not specified, the endpoint is determined from
-        the ``names`` and ``interval`` parameters.
+        Full API endpoint URL. If not specified, the PSM4 GOES Aggregated v4
+        URL is used.
     timeout : int, default 30
         time in seconds to wait for server response before timeout
+    utc: bool, default : False
+        retrieve data with timestamps converted to UTC. False returns
+        timestamps in local standard time of the selected location
 
     Returns
     -------
@@ -126,7 +136,7 @@ def get_psm4(latitude, longitude, api_key, email, names='tmy', interval=60,
         timeseries data from NREL PSM4
     metadata : dict
         metadata from NREL PSM4 about the record, see
-        :func:`pvlib.iotools.parse_psm4` for fields
+        :func:`pvlib.iotools.parse_nsrdb_psm4` for fields
 
     Raises
     ------
@@ -151,7 +161,9 @@ def get_psm4(latitude, longitude, api_key, email, names='tmy', interval=60,
 
     See Also
     --------
-    pvlib.iotools.read_psm4, pvlib.iotools.parse_psm4
+    pvlib.iotools.get_nsrdb_psm4_tmy, pvlib.iotools.get_nsrdb_psm4_conus,
+    pvlib.iotools.get_nsrdb_psm4_full_disc, pvlib.iotools.read_nsrdb_psm4,
+    pvlib.iotools.parse_nsrdb_psm4
 
     References
     ----------
@@ -160,9 +172,292 @@ def get_psm4(latitude, longitude, api_key, email, names='tmy', interval=60,
        <https://nsrdb.nrel.gov/>`_
     .. [2] `NSRDB GOES Aggregated V4.0.0
        <https://developer.nrel.gov/docs/solar/nsrdb/nsrdb-GOES-aggregated-v4-0-0-download/>`_
-    .. [3] `NSRDB GOES Tmy V4.0.0
+    """
+    # The well know text (WKT) representation of geometry notation is strict.
+    # A POINT object is a string with longitude first, then the latitude, with
+    # four decimals each, and exactly one space between them.
+    longitude = ('%9.4f' % longitude).strip()
+    latitude = ('%8.4f' % latitude).strip()
+    # TODO: make format_WKT(object_type, *args) in tools.py
+
+    # convert to string to accomodate integer years being passed in
+    names = str(names)
+
+    # convert pvlib names in attributes to PSM4 convention
+    attributes = [REQUEST_VARIABLE_MAP.get(a, a) for a in attributes]
+
+    # required query-string parameters for request to PSM4 API
+    params = {
+        'api_key': api_key,
+        'full_name': full_name,
+        'email': email,
+        'affiliation': affiliation,
+        'reason': PVLIB_PYTHON,
+        'mailing_list': 'false',
+        'wkt': 'POINT(%s %s)' % (longitude, latitude),
+        'names': names,
+        'attributes':  ','.join(attributes),
+        'leap_day': str(leap_day).lower(),
+        'utc': str(utc).lower(),
+        'interval': time_period
+    }
+    # request CSV download from NREL PSM4
+    if url is None:
+        url = PSM4_AGG_URL
+
+    response = requests.get(url, params=params, timeout=timeout)
+    if not response.ok:
+        # if the API key is rejected, then the response status will be 403
+        # Forbidden, and then the error is in the content and there is no JSON
+        try:
+            errors = response.json()['errors']
+        except JSONDecodeError:
+            errors = response.content.decode('utf-8')
+        raise requests.HTTPError(errors, response=response)
+    # the CSV is in the response content as a UTF-8 bytestring
+    # to use pandas we need to create a file buffer from the response
+    fbuf = io.StringIO(response.content.decode('utf-8'))
+    return parse_nsrdb_psm4(fbuf, map_variables)
+
+
+def get_nsrdb_psm4_tmy(latitude, longitude, api_key, email, names='2023',
+                       time_period=60, attributes=ATTRIBUTES, leap_day=False,
+                       full_name=PVLIB_PYTHON, affiliation=PVLIB_PYTHON,
+                       map_variables=True, url=None, timeout=30, utc=False):
+    """
+    Retrieve NSRDB PSM4 timeseries weather data from the PSM4 NSRDB GOES
+    TMY v4 API.
+    
+    The NSRDB is described in [1]_ and the PSM4 NSRDB GOES TMY v4 API is
+    described in [2]_,.
+
+    Parameters
+    ----------
+    latitude : float or int
+        in decimal degrees, between -90 and 90, north is positive
+    longitude : float or int
+        in decimal degrees, between -180 and 180, east is positive
+    api_key : str
+        NREL Developer Network API key
+    email : str
+        NREL API uses this to automatically communicate messages back
+        to the user only if necessary
+    names : str, default 'tmy'
+        PSM4 API parameter specifing TMY variant to download (e.g. ``'tmy'``
+        or ``'tgy-2022'``).  The allowed values update periodically, so
+        consult the NSRDB references below for the current set of options.
+    time_period : int, {60}
+        time period in minutes. Must be 60 for typical year requests. Called
+        ``interval`` in NSRDB API.
+    attributes : list of str, optional
+        meteorological fields to fetch. If not specified, defaults to
+        ``pvlib.iotools.psm4.ATTRIBUTES``. See reference [2]_ for a list of
+        available fields. Alternatively, pvlib names may also be used (e.g.
+        'ghi' rather than 'GHI'); see :const:`REQUEST_VARIABLE_MAP`. To
+        retrieve all available fields, set ``attributes=[]``.
+    leap_day : bool, default : False
+        Include leap day in the results. Ignored for tmy/tgy/tdy requests.
+    full_name : str, default 'pvlib python'
+        optional
+    affiliation : str, default 'pvlib python'
+        optional
+    map_variables : bool, default True
+        When true, renames columns of the Dataframe to pvlib variable names
+        where applicable. See variable :const:`VARIABLE_MAP`.
+    url : str, optional
+        Full API endpoint URL. If not specified, the PSM4 GOES TMY v4 URL is
+        used.
+    timeout : int, default 30
+        time in seconds to wait for server response before timeout
+    utc: bool, default : False
+        retrieve data with timestamps converted to UTC. False returns
+        timestamps in local standard time of the selected location
+
+    Returns
+    -------
+    data : pandas.DataFrame
+        timeseries data from NREL PSM4
+    metadata : dict
+        metadata from NREL PSM4 about the record, see
+        :func:`pvlib.iotools.parse_nsrdb_psm4` for fields
+
+    Raises
+    ------
+    requests.HTTPError
+        if the request response status is not ok, then the ``'errors'`` field
+        from the JSON response or any error message in the content will be
+        raised as an exception, for example if the `api_key` was rejected or if
+        the coordinates were not found in the NSRDB
+
+    Notes
+    -----
+    The required NREL developer key, `api_key`, is available for free by
+    registering at the `NREL Developer Network <https://developer.nrel.gov/>`_.
+
+    .. warning:: The "DEMO_KEY" `api_key` is severely rate limited and may
+        result in rejected requests.
+
+    .. warning:: PSM4 is limited to data found in the NSRDB, please consult
+        the references below for locations with available data. Additionally,
+        querying data with < 30-minute resolution uses a different API endpoint
+        with fewer available fields (see [4]_).
+
+    See Also
+    --------
+    pvlib.iotools.get_nsrdb_psm4_aggregated,
+    pvlib.iotools.get_nsrdb_psm4_conus, pvlib.iotools.get_nsrdb_psm4_full_disc,
+    pvlib.iotools.read_nsrdb_psm4,pvlib.iotools.parse_nsrdb_psm4
+
+    References
+    ----------
+
+    .. [1] `NREL National Solar Radiation Database (NSRDB)
+       <https://nsrdb.nrel.gov/>`_
+    .. [2] `NSRDB GOES Tmy V4.0.0
        <https://developer.nrel.gov/docs/solar/nsrdb/nsrdb-GOES-tmy-v4-0-0-download/>`_
-    .. [4] `NSRDB GOES Conus V4.0.0
+    """
+    # The well know text (WKT) representation of geometry notation is strict.
+    # A POINT object is a string with longitude first, then the latitude, with
+    # four decimals each, and exactly one space between them.
+    longitude = ('%9.4f' % longitude).strip()
+    latitude = ('%8.4f' % latitude).strip()
+    # TODO: make format_WKT(object_type, *args) in tools.py
+
+    # convert to string to accomodate integer years being passed in
+    names = str(names)
+
+    # convert pvlib names in attributes to PSM4 convention
+    attributes = [REQUEST_VARIABLE_MAP.get(a, a) for a in attributes]
+
+    # required query-string parameters for request to PSM4 API
+    params = {
+        'api_key': api_key,
+        'full_name': full_name,
+        'email': email,
+        'affiliation': affiliation,
+        'reason': PVLIB_PYTHON,
+        'mailing_list': 'false',
+        'wkt': 'POINT(%s %s)' % (longitude, latitude),
+        'names': names,
+        'attributes':  ','.join(attributes),
+        'leap_day': str(leap_day).lower(),
+        'utc': str(utc).lower(),
+        'interval': time_period
+    }
+    # request CSV download from NREL PSM4
+    if url is None:
+        url = PSM4_TMY_URL
+
+    response = requests.get(url, params=params, timeout=timeout)
+    if not response.ok:
+        # if the API key is rejected, then the response status will be 403
+        # Forbidden, and then the error is in the content and there is no JSON
+        try:
+            errors = response.json()['errors']
+        except JSONDecodeError:
+            errors = response.content.decode('utf-8')
+        raise requests.HTTPError(errors, response=response)
+    # the CSV is in the response content as a UTF-8 bytestring
+    # to use pandas we need to create a file buffer from the response
+    fbuf = io.StringIO(response.content.decode('utf-8'))
+    return parse_nsrdb_psm4(fbuf, map_variables)
+
+
+def get_nsrdb_psm4_conus(latitude, longitude, api_key, email, names='2023',
+                         time_period=60, attributes=ATTRIBUTES, leap_day=True,
+                         full_name=PVLIB_PYTHON, affiliation=PVLIB_PYTHON,
+                         map_variables=True, url=None, timeout=30,
+                         utc=False):
+    """
+    Retrieve NSRDB PSM4 timeseries weather data from the PSM4 NSRDB GOES CONUS
+    v4 API.
+    
+    The NSRDB is described in [1]_ and the PSM4 NSRDB GOES CONUS v4 API is
+    described in [2]_,.
+
+    Parameters
+    ----------
+    latitude : float or int
+        in decimal degrees, between -90 and 90, north is positive
+    longitude : float or int
+        in decimal degrees, between -180 and 180, east is positive
+    api_key : str
+        NREL Developer Network API key
+    email : str
+        NREL API uses this to automatically communicate messages back
+        to the user only if necessary
+    names : str, default '2023'
+        PSM4 API parameter specifing year (e.g. ``2023``) to download. The
+        allowed values update periodically, so consult the NSRDB reference
+        below for the current set of options.
+    time_period : int, {60, 5, 15, 30}
+        time period in minutes, must be 5, 15, 30 or 60. Called ``interval`` in
+        NSRDB API.
+    attributes : list of str, optional
+        meteorological fields to fetch. If not specified, defaults to
+        ``pvlib.iotools.psm4.ATTRIBUTES``. See reference [2]_ for a list of
+        available fields. Alternatively, pvlib names may also be used (e.g.
+        'ghi' rather than 'GHI'); see :const:`REQUEST_VARIABLE_MAP`. To
+        retrieve all available fields, set ``attributes=[]``.
+    leap_day : bool, default : True
+        include leap day in the results
+    full_name : str, default 'pvlib python'
+        optional
+    affiliation : str, default 'pvlib python'
+        optional
+    map_variables : bool, default True
+        When true, renames columns of the Dataframe to pvlib variable names
+        where applicable. See variable :const:`VARIABLE_MAP`.
+    url : str, optional
+        Full API endpoint URL. If not specified, the PSM4 GOES CONUS v4 URL is
+        used.
+    timeout : int, default 30
+        time in seconds to wait for server response before timeout
+    utc: bool, default : False
+        retrieve data with timestamps converted to UTC. False returns
+        timestamps in local standard time of the selected location
+
+    Returns
+    -------
+    data : pandas.DataFrame
+        timeseries data from NREL PSM4
+    metadata : dict
+        metadata from NREL PSM4 about the record, see
+        :func:`pvlib.iotools.parse_nsrdb_psm4` for fields
+
+    Raises
+    ------
+    requests.HTTPError
+        if the request response status is not ok, then the ``'errors'`` field
+        from the JSON response or any error message in the content will be
+        raised as an exception, for example if the `api_key` was rejected or if
+        the coordinates were not found in the NSRDB
+
+    Notes
+    -----
+    The required NREL developer key, `api_key`, is available for free by
+    registering at the `NREL Developer Network <https://developer.nrel.gov/>`_.
+
+    .. warning:: The "DEMO_KEY" `api_key` is severely rate limited and may
+        result in rejected requests.
+
+    .. warning:: PSM4 is limited to data found in the NSRDB, please consult
+        the references below for locations with available data. Additionally,
+        querying data with < 30-minute resolution uses a different API endpoint
+        with fewer available fields (see [4]_).
+
+    See Also
+    --------
+    pvlib.iotools.get_nsrdb_psm4_aggregated,
+    pvlib.iotools.get_nsrdb_psm4_tmy, pvlib.iotools.get_nsrdb_psm4_full_disc,
+    pvlib.iotools.read_nsrdb_psm4, pvlib.iotools.parse_nsrdb_psm4
+
+    References
+    ----------
+
+    .. [1] `NREL National Solar Radiation Database (NSRDB)
+       <https://nsrdb.nrel.gov/>`_
+    .. [2] `NSRDB GOES Conus V4.0.0
        <https://developer.nrel.gov/docs/solar/nsrdb/nsrdb-GOES-conus-v4-0-0-download/>`_
     """
     # The well know text (WKT) representation of geometry notation is strict.
@@ -190,18 +485,12 @@ def get_psm4(latitude, longitude, api_key, email, names='tmy', interval=60,
         'names': names,
         'attributes':  ','.join(attributes),
         'leap_day': str(leap_day).lower(),
-        'utc': 'false',
-        'interval': interval
+        'utc': str(utc).lower(),
+        'interval': time_period
     }
     # request CSV download from NREL PSM4
     if url is None:
-        # determine the endpoint that suits the user inputs
-        if any(prefix in names for prefix in ('tmy', 'tgy', 'tdy')):
-            url = TMY_URL
-        elif interval in (5, 15):
-            url = GOESCONUS_URL
-        else:
-            url = GOES_URL
+        url = PSM4_CON_URL
 
     response = requests.get(url, params=params, timeout=timeout)
     if not response.ok:
@@ -215,10 +504,155 @@ def get_psm4(latitude, longitude, api_key, email, names='tmy', interval=60,
     # the CSV is in the response content as a UTF-8 bytestring
     # to use pandas we need to create a file buffer from the response
     fbuf = io.StringIO(response.content.decode('utf-8'))
-    return parse_psm4(fbuf, map_variables)
+    return parse_nsrdb_psm4(fbuf, map_variables)
 
 
-def parse_psm4(fbuf, map_variables=True):
+def get_nsrdb_psm4_full_disc(latitude, longitude, api_key, email,
+                             names='2023', time_period=60,
+                             attributes=ATTRIBUTES, leap_day=True,
+                             full_name=PVLIB_PYTHON,
+                             affiliation=PVLIB_PYTHON, map_variables=True,
+                             url=None, timeout=30, utc=False):
+    """
+    Retrieve NSRDB PSM4 timeseries weather data from the PSM4 NSRDB GOES Full
+    Disc v4 API.
+    
+    The NSRDB is described in [1]_ and the PSM4 NSRDB GOES Full Disc v4 API is
+    described in [2]_,.
+
+    Parameters
+    ----------
+    latitude : float or int
+        in decimal degrees, between -90 and 90, north is positive
+    longitude : float or int
+        in decimal degrees, between -180 and 180, east is positive
+    api_key : str
+        NREL Developer Network API key
+    email : str
+        NREL API uses this to automatically communicate messages back
+        to the user only if necessary
+    names : str, default '2023'
+        PSM4 API parameter specifing year (e.g. ``2023``) to download. The
+        allowed values update periodically, so consult the NSRDB reference
+        below for the current set of options.
+    time_period : int, {60, 10, 30}
+        time period in minutes, must be 10, 30 or 60. Called ``interval`` in
+        NSRDB API.
+    attributes : list of str, optional
+        meteorological fields to fetch. If not specified, defaults to
+        ``pvlib.iotools.psm4.ATTRIBUTES``. See reference [2]_ for a list of
+        available fields. Alternatively, pvlib names may also be used (e.g.
+        'ghi' rather than 'GHI'); see :const:`REQUEST_VARIABLE_MAP`. To
+        retrieve all available fields, set ``attributes=[]``.
+    leap_day : bool, default : True
+        include leap day in the results
+    full_name : str, default 'pvlib python'
+        optional
+    affiliation : str, default 'pvlib python'
+        optional
+    map_variables : bool, default True
+        When true, renames columns of the Dataframe to pvlib variable names
+        where applicable. See variable :const:`VARIABLE_MAP`.
+    url : str, optional
+        Full API endpoint URL. If not specified, the PSM4 GOES Full Disc v4
+        URL is used.
+    timeout : int, default 30
+        time in seconds to wait for server response before timeout
+    utc: bool, default : False
+        retrieve data with timestamps converted to UTC. False returns
+        timestamps in local standard time of the selected location
+
+    Returns
+    -------
+    data : pandas.DataFrame
+        timeseries data from NREL PSM4
+    metadata : dict
+        metadata from NREL PSM4 about the record, see
+        :func:`pvlib.iotools.parse_nsrdb_psm4` for fields
+
+    Raises
+    ------
+    requests.HTTPError
+        if the request response status is not ok, then the ``'errors'`` field
+        from the JSON response or any error message in the content will be
+        raised as an exception, for example if the `api_key` was rejected or if
+        the coordinates were not found in the NSRDB
+
+    Notes
+    -----
+    The required NREL developer key, `api_key`, is available for free by
+    registering at the `NREL Developer Network <https://developer.nrel.gov/>`_.
+
+    .. warning:: The "DEMO_KEY" `api_key` is severely rate limited and may
+        result in rejected requests.
+
+    .. warning:: PSM4 is limited to data found in the NSRDB, please consult
+        the references below for locations with available data. Additionally,
+        querying data with < 30-minute resolution uses a different API endpoint
+        with fewer available fields (see [4]_).
+
+    See Also
+    --------
+    pvlib.iotools.get_nsrdb_psm4_aggregated,
+    pvlib.iotools.get_nsrdb_psm4_tmy, pvlib.iotools.get_nsrdb_psm4_conus,
+    pvlib.iotools.read_nsrdb_psm4, pvlib.iotools.parse_nsrdb_psm4
+
+    References
+    ----------
+
+    .. [1] `NREL National Solar Radiation Database (NSRDB)
+       <https://nsrdb.nrel.gov/>`_
+    .. [2] `NSRDB GOES Full Disc V4.0.0
+       <https://developer.nrel.gov/docs/solar/nsrdb/nsrdb-GOES-full-disc-v4-0-0-download/>`_
+    """
+    # The well know text (WKT) representation of geometry notation is strict.
+    # A POINT object is a string with longitude first, then the latitude, with
+    # four decimals each, and exactly one space between them.
+    longitude = ('%9.4f' % longitude).strip()
+    latitude = ('%8.4f' % latitude).strip()
+    # TODO: make format_WKT(object_type, *args) in tools.py
+
+    # convert to string to accomodate integer years being passed in
+    names = str(names)
+
+    # convert pvlib names in attributes to PSM4 convention
+    attributes = [REQUEST_VARIABLE_MAP.get(a, a) for a in attributes]
+
+    # required query-string parameters for request to PSM4 API
+    params = {
+        'api_key': api_key,
+        'full_name': full_name,
+        'email': email,
+        'affiliation': affiliation,
+        'reason': PVLIB_PYTHON,
+        'mailing_list': 'false',
+        'wkt': 'POINT(%s %s)' % (longitude, latitude),
+        'names': names,
+        'attributes':  ','.join(attributes),
+        'leap_day': str(leap_day).lower(),
+        'utc': str(utc).lower(),
+        'interval': time_period
+    }
+    # request CSV download from NREL PSM4
+    if url is None:
+        url = PSM4_FUL_URL
+
+    response = requests.get(url, params=params, timeout=timeout)
+    if not response.ok:
+        # if the API key is rejected, then the response status will be 403
+        # Forbidden, and then the error is in the content and there is no JSON
+        try:
+            errors = response.json()['errors']
+        except JSONDecodeError:
+            errors = response.content.decode('utf-8')
+        raise requests.HTTPError(errors, response=response)
+    # the CSV is in the response content as a UTF-8 bytestring
+    # to use pandas we need to create a file buffer from the response
+    fbuf = io.StringIO(response.content.decode('utf-8'))
+    return parse_nsrdb_psm4(fbuf, map_variables)
+
+
+def parse_nsrdb_psm4(fbuf, map_variables=True):
     """
     Parse an NSRDB PSM4 weather file (formatted as SAM CSV). The NSRDB
     is described in [1]_ and the SAM CSV format is described in [2]_.
@@ -297,11 +731,11 @@ def parse_psm4(fbuf, map_variables=True):
     --------
     >>> # Read a local PSM4 file:
     >>> with open(filename, 'r') as f:  # doctest: +SKIP
-    ...     df, metadata = iotools.parse_psm4(f)  # doctest: +SKIP
+    ...     df, metadata = iotools.parse_nsrdb_psm4(f)  # doctest: +SKIP
 
     See Also
     --------
-    pvlib.iotools.read_psm4, pvlib.iotools.get_psm4
+    pvlib.iotools.read_nsrdb_psm4, pvlib.iotools.get_psm4
 
     References
     ----------
@@ -351,14 +785,14 @@ def parse_psm4(fbuf, map_variables=True):
     return data, metadata
 
 
-def read_psm4(filename, map_variables=True):
+def read_nsrdb_psm4(filename, map_variables=True):
     """
     Read an NSRDB PSM4 weather file (formatted as SAM CSV). The NSRDB
     is described in [1]_ and the SAM CSV format is described in [2]_.
 
     Parameters
     ----------
-    filename: str
+    filename: str or path-like
         Filename of a file containing data to read.
     map_variables: bool, default True
         When true, renames columns of the Dataframe to pvlib variable names
@@ -370,11 +804,11 @@ def read_psm4(filename, map_variables=True):
         timeseries data from NREL PSM4
     metadata : dict
         metadata from NREL PSM4 about the record, see
-        :func:`pvlib.iotools.parse_psm4` for fields
+        :func:`pvlib.iotools.parse_nsrdb_psm4` for fields
 
     See Also
     --------
-    pvlib.iotools.parse_psm4, pvlib.iotools.get_psm4
+    pvlib.iotools.parse_nsrdb_psm4, pvlib.iotools.get_psm4
 
     References
     ----------
@@ -384,5 +818,5 @@ def read_psm4(filename, map_variables=True):
        <https://web.archive.org/web/20170207203107/https://sam.nrel.gov/sites/default/files/content/documents/pdf/wfcsv.pdf>`_
     """
     with open(str(filename), 'r') as fbuf:
-        content = parse_psm4(fbuf, map_variables)
+        content = parse_nsrdb_psm4(fbuf, map_variables)
     return content

@@ -22,7 +22,7 @@ PSM4_TMY_URL = urljoin(NSRDB_API_BASE, PSM4_TMY_ENDPOINT)
 PSM4_CON_URL = urljoin(NSRDB_API_BASE, PSM4_CON_ENDPOINT)
 PSM4_FUL_URL = urljoin(NSRDB_API_BASE, PSM4_FUL_ENDPOINT)
 
-ATTRIBUTES = (
+PARAMETERS = (
     'air_temperature', 'dew_point', 'dhi', 'dni', 'ghi', 'surface_albedo',
     'surface_pressure', 'wind_direction', 'wind_speed')
 PVLIB_PYTHON = 'pvlib python'
@@ -45,8 +45,6 @@ VARIABLE_MAP = {
     'Surface Albedo': 'albedo',
     'Precipitable Water': 'precipitable_water',
     'AOD': 'aod',
-    'Alpha': 'alpha',
-    'Asymmetry': 'asymmetry',
 }
 
 # Dictionary mapping pvlib names to PSM4 request names
@@ -76,7 +74,7 @@ REQUEST_VARIABLE_MAP = {
 
 def get_nsrdb_psm4_aggregated(latitude, longitude, api_key, email,
                               names='2023', time_period=60,
-                              attributes=ATTRIBUTES, leap_day=True,
+                              parameters=PARAMETERS, leap_day=True,
                               full_name=PVLIB_PYTHON,
                               affiliation=PVLIB_PYTHON,
                               map_variables=True, url=None, timeout=30,
@@ -106,12 +104,12 @@ def get_nsrdb_psm4_aggregated(latitude, longitude, api_key, email,
     time_period : int, {60, 30}
         time period in minutes, must be 60 or 30 for PSM4 Aggregated. Called
         ``interval`` in NSRDB API.
-    attributes : list of str, optional
+    parameters : list of str, optional
         meteorological fields to fetch. If not specified, defaults to
-        ``pvlib.iotools.psm4.ATTRIBUTES``. See reference [2]_ for a list of
+        ``pvlib.iotools.psm4.PARAMETERS``. See reference [2]_ for a list of
         available fields. Alternatively, pvlib names may also be used (e.g.
         'ghi' rather than 'GHI'); see :const:`REQUEST_VARIABLE_MAP`. To
-        retrieve all available fields, set ``attributes=[]``.
+        retrieve all available fields, set ``parameters=[]``.
     leap_day : bool, default : True
         include leap day in the results
     full_name : str, default 'pvlib python'
@@ -183,8 +181,8 @@ def get_nsrdb_psm4_aggregated(latitude, longitude, api_key, email,
     # convert to string to accomodate integer years being passed in
     names = str(names)
 
-    # convert pvlib names in attributes to PSM4 convention
-    attributes = [REQUEST_VARIABLE_MAP.get(a, a) for a in attributes]
+    # convert pvlib names in parameters to PSM4 convention
+    parameters = [REQUEST_VARIABLE_MAP.get(a, a) for a in parameters]
 
     # required query-string parameters for request to PSM4 API
     params = {
@@ -196,7 +194,7 @@ def get_nsrdb_psm4_aggregated(latitude, longitude, api_key, email,
         'mailing_list': 'false',
         'wkt': 'POINT(%s %s)' % (longitude, latitude),
         'names': names,
-        'attributes':  ','.join(attributes),
+        'attributes':  ','.join(parameters),
         'leap_day': str(leap_day).lower(),
         'utc': str(utc).lower(),
         'interval': time_period
@@ -221,7 +219,7 @@ def get_nsrdb_psm4_aggregated(latitude, longitude, api_key, email,
 
 
 def get_nsrdb_psm4_tmy(latitude, longitude, api_key, email, names='2023',
-                       time_period=60, attributes=ATTRIBUTES, leap_day=False,
+                       time_period=60, parameters=PARAMETERS, leap_day=False,
                        full_name=PVLIB_PYTHON, affiliation=PVLIB_PYTHON,
                        map_variables=True, url=None, timeout=30, utc=False):
     """
@@ -249,12 +247,12 @@ def get_nsrdb_psm4_tmy(latitude, longitude, api_key, email, names='2023',
     time_period : int, {60}
         time period in minutes. Must be 60 for typical year requests. Called
         ``interval`` in NSRDB API.
-    attributes : list of str, optional
+    parameters : list of str, optional
         meteorological fields to fetch. If not specified, defaults to
-        ``pvlib.iotools.psm4.ATTRIBUTES``. See reference [2]_ for a list of
+        ``pvlib.iotools.psm4.PARAMETERS``. See reference [2]_ for a list of
         available fields. Alternatively, pvlib names may also be used (e.g.
         'ghi' rather than 'GHI'); see :const:`REQUEST_VARIABLE_MAP`. To
-        retrieve all available fields, set ``attributes=[]``.
+        retrieve all available fields, set ``parameters=[]``.
     leap_day : bool, default : False
         Include leap day in the results. Ignored for tmy/tgy/tdy requests.
     full_name : str, default 'pvlib python'
@@ -326,8 +324,8 @@ def get_nsrdb_psm4_tmy(latitude, longitude, api_key, email, names='2023',
     # convert to string to accomodate integer years being passed in
     names = str(names)
 
-    # convert pvlib names in attributes to PSM4 convention
-    attributes = [REQUEST_VARIABLE_MAP.get(a, a) for a in attributes]
+    # convert pvlib names in parameters to PSM4 convention
+    parameters = [REQUEST_VARIABLE_MAP.get(a, a) for a in parameters]
 
     # required query-string parameters for request to PSM4 API
     params = {
@@ -339,7 +337,7 @@ def get_nsrdb_psm4_tmy(latitude, longitude, api_key, email, names='2023',
         'mailing_list': 'false',
         'wkt': 'POINT(%s %s)' % (longitude, latitude),
         'names': names,
-        'attributes':  ','.join(attributes),
+        'attributes':  ','.join(parameters),
         'leap_day': str(leap_day).lower(),
         'utc': str(utc).lower(),
         'interval': time_period
@@ -364,7 +362,7 @@ def get_nsrdb_psm4_tmy(latitude, longitude, api_key, email, names='2023',
 
 
 def get_nsrdb_psm4_conus(latitude, longitude, api_key, email, names='2023',
-                         time_period=60, attributes=ATTRIBUTES, leap_day=True,
+                         time_period=60, parameters=PARAMETERS, leap_day=True,
                          full_name=PVLIB_PYTHON, affiliation=PVLIB_PYTHON,
                          map_variables=True, url=None, timeout=30,
                          utc=False):
@@ -393,12 +391,12 @@ def get_nsrdb_psm4_conus(latitude, longitude, api_key, email, names='2023',
     time_period : int, {60, 5, 15, 30}
         time period in minutes, must be 5, 15, 30 or 60. Called ``interval`` in
         NSRDB API.
-    attributes : list of str, optional
+    parameters : list of str, optional
         meteorological fields to fetch. If not specified, defaults to
-        ``pvlib.iotools.psm4.ATTRIBUTES``. See reference [2]_ for a list of
+        ``pvlib.iotools.psm4.PARAMETERS``. See reference [2]_ for a list of
         available fields. Alternatively, pvlib names may also be used (e.g.
         'ghi' rather than 'GHI'); see :const:`REQUEST_VARIABLE_MAP`. To
-        retrieve all available fields, set ``attributes=[]``.
+        retrieve all available fields, set ``parameters=[]``.
     leap_day : bool, default : True
         include leap day in the results
     full_name : str, default 'pvlib python'
@@ -470,8 +468,8 @@ def get_nsrdb_psm4_conus(latitude, longitude, api_key, email, names='2023',
     # convert to string to accomodate integer years being passed in
     names = str(names)
 
-    # convert pvlib names in attributes to PSM4 convention
-    attributes = [REQUEST_VARIABLE_MAP.get(a, a) for a in attributes]
+    # convert pvlib names in parameters to PSM4 convention
+    parameters = [REQUEST_VARIABLE_MAP.get(a, a) for a in parameters]
 
     # required query-string parameters for request to PSM4 API
     params = {
@@ -483,7 +481,7 @@ def get_nsrdb_psm4_conus(latitude, longitude, api_key, email, names='2023',
         'mailing_list': 'false',
         'wkt': 'POINT(%s %s)' % (longitude, latitude),
         'names': names,
-        'attributes':  ','.join(attributes),
+        'attributes':  ','.join(parameters),
         'leap_day': str(leap_day).lower(),
         'utc': str(utc).lower(),
         'interval': time_period
@@ -509,7 +507,7 @@ def get_nsrdb_psm4_conus(latitude, longitude, api_key, email, names='2023',
 
 def get_nsrdb_psm4_full_disc(latitude, longitude, api_key, email,
                              names='2023', time_period=60,
-                             attributes=ATTRIBUTES, leap_day=True,
+                             parameters=PARAMETERS, leap_day=True,
                              full_name=PVLIB_PYTHON,
                              affiliation=PVLIB_PYTHON, map_variables=True,
                              url=None, timeout=30, utc=False):
@@ -538,12 +536,12 @@ def get_nsrdb_psm4_full_disc(latitude, longitude, api_key, email,
     time_period : int, {60, 10, 30}
         time period in minutes, must be 10, 30 or 60. Called ``interval`` in
         NSRDB API.
-    attributes : list of str, optional
+    parameters : list of str, optional
         meteorological fields to fetch. If not specified, defaults to
-        ``pvlib.iotools.psm4.ATTRIBUTES``. See reference [2]_ for a list of
+        ``pvlib.iotools.psm4.PARAMETERS``. See reference [2]_ for a list of
         available fields. Alternatively, pvlib names may also be used (e.g.
         'ghi' rather than 'GHI'); see :const:`REQUEST_VARIABLE_MAP`. To
-        retrieve all available fields, set ``attributes=[]``.
+        retrieve all available fields, set ``parameters=[]``.
     leap_day : bool, default : True
         include leap day in the results
     full_name : str, default 'pvlib python'
@@ -615,8 +613,8 @@ def get_nsrdb_psm4_full_disc(latitude, longitude, api_key, email,
     # convert to string to accomodate integer years being passed in
     names = str(names)
 
-    # convert pvlib names in attributes to PSM4 convention
-    attributes = [REQUEST_VARIABLE_MAP.get(a, a) for a in attributes]
+    # convert pvlib names in parameters to PSM4 convention
+    parameters = [REQUEST_VARIABLE_MAP.get(a, a) for a in parameters]
 
     # required query-string parameters for request to PSM4 API
     params = {
@@ -628,7 +626,7 @@ def get_nsrdb_psm4_full_disc(latitude, longitude, api_key, email,
         'mailing_list': 'false',
         'wkt': 'POINT(%s %s)' % (longitude, latitude),
         'names': names,
-        'attributes':  ','.join(attributes),
+        'attributes':  ','.join(parameters),
         'leap_day': str(leap_day).lower(),
         'utc': str(utc).lower(),
         'interval': time_period
@@ -654,8 +652,9 @@ def get_nsrdb_psm4_full_disc(latitude, longitude, api_key, email,
 
 def parse_nsrdb_psm4(fbuf, map_variables=True):
     """
-    Parse an NSRDB PSM4 weather file (formatted as SAM CSV). The NSRDB
-    is described in [1]_ and the SAM CSV format is described in [2]_.
+    Parse an NSRDB PSM4 weather file (formatted as SAM CSV).
+    
+    The NSRDB is described in [1]_ and the SAM CSV format is described in [2]_.
 
     Parameters
     ----------
@@ -787,8 +786,9 @@ def parse_nsrdb_psm4(fbuf, map_variables=True):
 
 def read_nsrdb_psm4(filename, map_variables=True):
     """
-    Read an NSRDB PSM4 weather file (formatted as SAM CSV). The NSRDB
-    is described in [1]_ and the SAM CSV format is described in [2]_.
+    Read an NSRDB PSM4 weather file (formatted as SAM CSV).
+    
+    The NSRDB is described in [1]_ and the SAM CSV format is described in [2]_.
 
     Parameters
     ----------

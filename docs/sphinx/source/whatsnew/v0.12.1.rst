@@ -14,6 +14,13 @@ Bug fixes
 
 Enhancements
 ~~~~~~~~~~~~
+* Add NREL NSRDB PSM v4 API client to :py:mod:`pvlib.iotools`. See
+  :py:func:`~pvlib.iotools.get_nsrdb_psm4_aggregated`,
+  :py:func:`~pvlib.iotools.get_nsrdb_psm4_tmy`,
+  :py:func:`~pvlib.iotools.get_nsrdb_psm4_conus`,
+  :py:func:`~pvlib.iotools.get_nsrdb_psm4_full_disc`,
+  :py:func:`~pvlib.iotools.read_nsrdb_psm4`, and
+  :py:func:`~pvlib.iotools.parse_nsrdb_psm4`. (:issue:`2326`, :pull:`2378`)
 
 
 Documentation
@@ -31,3 +38,4 @@ Maintenance
 Contributors
 ~~~~~~~~~~~~
 * Cliff Hansen (:ghuser:`cwhanse`)
+* Will Hobbs (:ghuser:`williamhobbs`)

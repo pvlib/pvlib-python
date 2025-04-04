@@ -26,6 +26,8 @@ Enhancements
 Documentation
 ~~~~~~~~~~~~~
 * Add a supporting reference to :py:func:`pvlib.atmosphere.get_relative_airmass` (:issue:`2390`, :pull:`2424`)
+* Documented how `np.nan` values are handled by :py:func:`~pvlib.spectrum.average_photon_energy`
+  (:issue:`2423`, :pull:`2426`)
 
 Testing
 ~~~~~~~
@@ -38,4 +40,5 @@ Maintenance
 Contributors
 ~~~~~~~~~~~~
 * Cliff Hansen (:ghuser:`cwhanse`)
+* Rajiv Daxini (:ghuser:`RDaxini`)
 * Will Hobbs (:ghuser:`williamhobbs`)

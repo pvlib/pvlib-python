@@ -2,16 +2,15 @@
 test iotools for PSM3
 """
 
-import os
 from pvlib.iotools import psm3
-from ..conftest import DATA_DIR, RERUNS, RERUNS_DELAY, assert_index_equal
+from ..conftest import (
+    DATA_DIR, RERUNS, RERUNS_DELAY, assert_index_equal, nrel_api_key
+)
 import numpy as np
 import pandas as pd
 import pytest
 from requests import HTTPError
 from io import StringIO
-import warnings
-from pvlib._deprecation import pvlibDeprecationWarning
 
 TMY_TEST_DATA = DATA_DIR / 'test_psm3_tmy-2017.csv'
 YEAR_TEST_DATA = DATA_DIR / 'test_psm3_2017.csv'
@@ -25,26 +24,6 @@ METADATA_FIELDS = [
     'Temperature Units', 'Pressure Units', 'Wind Direction Units',
     'Wind Speed Units', 'Surface Albedo Units', 'Version']
 PVLIB_EMAIL = 'pvlib-admin@googlegroups.com'
-
-
-@pytest.fixture(scope="module")
-def nrel_api_key():
-    """Supplies pvlib-python's NREL Developer Network API key.
-
-    Azure Pipelines CI utilizes a secret variable set to NREL_API_KEY
-    to mitigate failures associated with using the default key of
-    "DEMO_KEY". A user is capable of using their own key this way if
-    desired however the default key should suffice for testing purposes.
-    """
-    try:
-        demo_key = os.environ["NREL_API_KEY"]
-    except KeyError:
-        warnings.warn(
-            "WARNING: NREL API KEY environment variable not set! "
-            "Using DEMO_KEY instead. Unexpected failures may occur."
-        )
-        demo_key = 'DEMO_KEY'
-    return demo_key
 
 
 def assert_psm3_equal(data, metadata, expected):

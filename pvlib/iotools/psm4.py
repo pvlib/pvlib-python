@@ -82,7 +82,7 @@ def get_nsrdb_psm4_aggregated(latitude, longitude, api_key, email,
     """
     Retrieve NSRDB PSM4 timeseries weather data from the PSM4 NSRDB GOES
     Aggregated v4 API.
-    
+
     The NSRDB is described in [1]_ and the PSM4 NSRDB GOES Aggregated v4 API is
     described in [2]_,.
 
@@ -225,7 +225,7 @@ def get_nsrdb_psm4_tmy(latitude, longitude, api_key, email, names='2023',
     """
     Retrieve NSRDB PSM4 timeseries weather data from the PSM4 NSRDB GOES
     TMY v4 API.
-    
+
     The NSRDB is described in [1]_ and the PSM4 NSRDB GOES TMY v4 API is
     described in [2]_,.
 
@@ -369,7 +369,7 @@ def get_nsrdb_psm4_conus(latitude, longitude, api_key, email, names='2023',
     """
     Retrieve NSRDB PSM4 timeseries weather data from the PSM4 NSRDB GOES CONUS
     v4 API.
-    
+
     The NSRDB is described in [1]_ and the PSM4 NSRDB GOES CONUS v4 API is
     described in [2]_,.
 
@@ -514,7 +514,7 @@ def get_nsrdb_psm4_full_disc(latitude, longitude, api_key, email,
     """
     Retrieve NSRDB PSM4 timeseries weather data from the PSM4 NSRDB GOES Full
     Disc v4 API.
-    
+
     The NSRDB is described in [1]_ and the PSM4 NSRDB GOES Full Disc v4 API is
     described in [2]_,.
 
@@ -653,7 +653,7 @@ def get_nsrdb_psm4_full_disc(latitude, longitude, api_key, email,
 def parse_nsrdb_psm4(fbuf, map_variables=True):
     """
     Parse an NSRDB PSM4 weather file (formatted as SAM CSV).
-    
+
     The NSRDB is described in [1]_ and the SAM CSV format is described in [2]_.
 
     Parameters
@@ -787,7 +787,7 @@ def parse_nsrdb_psm4(fbuf, map_variables=True):
 def read_nsrdb_psm4(filename, map_variables=True):
     """
     Read an NSRDB PSM4 weather file (formatted as SAM CSV).
-    
+
     The NSRDB is described in [1]_ and the SAM CSV format is described in [2]_.
 
     Parameters

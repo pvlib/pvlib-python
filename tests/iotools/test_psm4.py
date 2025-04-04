@@ -4,7 +4,7 @@ test iotools for PSM4
 
 from pvlib.iotools import psm4
 from ..conftest import (
-    DATA_DIR, RERUNS, RERUNS_DELAY, assert_index_equal, nrel_api_key
+    TESTS_DATA_DIR, RERUNS, RERUNS_DELAY, assert_index_equal, nrel_api_key
 )
 import numpy as np
 import pandas as pd
@@ -12,10 +12,10 @@ import pytest
 from requests import HTTPError
 from io import StringIO
 
-TMY_TEST_DATA = DATA_DIR / 'test_psm4_tmy-2023.csv'
-YEAR_TEST_DATA = DATA_DIR / 'test_psm4_2023.csv'
-YEAR_TEST_DATA_5MIN = DATA_DIR / 'test_psm4_2023_5min.csv'
-MANUAL_TEST_DATA = DATA_DIR / 'test_read_psm4.csv'
+TMY_TEST_DATA = TESTS_DATA_DIR / 'test_psm4_tmy-2023.csv'
+YEAR_TEST_DATA = TESTS_DATA_DIR / 'test_psm4_2023.csv'
+YEAR_TEST_DATA_5MIN = TESTS_DATA_DIR / 'test_psm4_2023_5min.csv'
+MANUAL_TEST_DATA = TESTS_DATA_DIR / 'test_read_psm4.csv'
 LATITUDE, LONGITUDE = 40.5137, -108.5449
 METADATA_FIELDS = [
     'Source', 'Location ID', 'City', 'State', 'Country', 'Latitude',

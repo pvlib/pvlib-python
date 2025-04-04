@@ -1,0 +1,34 @@
+.. _whatsnew_01300:
+
+
+v0.13.0 (June XX, 2025)
+------------------------
+
+Breaking Changes
+~~~~~~~~~~~~~~~~
+* Remove the ``outputformat='basic'`` option in :py:func:`~pvlib.iotools.get_pvgis_tmy`
+  and :py:func:`~pvlib.iotools.read_pvgis_tmy`. (:pull:`2416`)
+
+Bug fixes
+~~~~~~~~~
+
+
+Enhancements
+~~~~~~~~~~~~
+
+
+Documentation
+~~~~~~~~~~~~~
+
+
+Testing
+~~~~~~~
+
+
+Maintenance
+~~~~~~~~~~~
+
+
+Contributors
+~~~~~~~~~~~~
+* Adam R. Jensen (:ghuser:`AdamRJensen`)

@@ -9,6 +9,7 @@ from scipy.special import lambertw
 
 from pvlib.pvsystem import singlediode, v_from_i
 from pvlib.ivtools.utils import rectify_iv_curve, _numdiff
+from pvlib.pvsystem import _pvsyst_Rsh
 
 
 def _initial_iv_params(ivcurves, ee, voc, isc, rsh, nnsvth):
@@ -167,7 +168,10 @@ def _extract_sdm_params(ee, tc, iph, io, rs, rsh, n, u, specs, const,
         # Find parameters for Rsh equation
 
         def fun_rsh(x, rshexp, ee, e0, rsh):
-            tf = np.log10(_rsh_pvsyst(x, R_sh_exp, ee, e0)) - np.log10(rsh)
+            tf = (
+                np.log10(_pvsyst_Rsh(ee, x[1], x[0], R_sh_exp, e0))
+                - np.log10(rsh)
+            )
             return tf
 
         x0 = np.array([grsh0, grshref])
@@ -291,20 +295,6 @@ def _update_io(voc, iph, io, rs, rsh, nnsvth):
         k += 1.
 
     return new_io
-
-
-def _rsh_pvsyst(x, rshexp, g, go):
-    # computes rsh for PVsyst model where the parameters are in vector xL
-    # x[0] = Rsh0
-    # x[1] = Rshref
-
-    rsho = x[0]
-    rshref = x[1]
-
-    rshb = np.maximum(
-        (rshref - rsho * np.exp(-rshexp)) / (1. - np.exp(-rshexp)), 0.)
-    rsh = rshb + (rsho - rshb) * np.exp(-rshexp * g / go)
-    return rsh
 
 
 def _filter_params(ee, isc, io, rs, rsh):

@@ -14,6 +14,7 @@ Bug fixes
 
 Enhancements
 ~~~~~~~~~~~~
+* ``pvlib.ivtools.sdm`` is now a subpackage. (:issue:`2252`, :pull:`2256`)
 
 
 Documentation
@@ -34,3 +35,4 @@ Contributors
 ~~~~~~~~~~~~
 * Cliff Hansen (:ghuser:`cwhanse`)
 * Rajiv Daxini (:ghuser:`RDaxini`)
+* Kevin Anderson (:ghuser:`kandersolar`)

@@ -14,6 +14,9 @@ from pvlib.ivtools.sdm._fit_desoto_pvsyst_sandia import (
     _extract_sdm_params, _initial_iv_params, _update_iv_params
 )
 
+from pvlib.pvsystem import (
+    _pvsyst_Rsh, _pvsyst_IL, _pvsyst_Io, _pvsyst_nNsVth, _pvsyst_gamma
+)
 
 CONSTANTS = {'E0': 1000.0, 'T0': 25.0, 'k': constants.k, 'q': constants.e}
 
@@ -305,3 +308,310 @@ def pvsyst_temperature_coeff(alpha_sc, gamma_ref, mu_gamma, I_L_ref, I_o_ref,
     gamma_pdc = _first_order_centered_difference(maxp, x0=temp_ref, args=args)
 
     return gamma_pdc / pmp
+
+
+def fit_pvsyst_iec61853_sandia(effective_irradiance, temp_cell,
+                               i_sc, v_oc, i_mp, v_mp,
+                               cells_in_series, EgRef=1.121,
+                               alpha_sc=None, beta_mp=None,
+                               r_sh_coeff=0.12, R_s=None,
+                               min_Rsh_irradiance=None):
+    """
+    Estimate parameters for the PVsyst module performance model using
+    IEC 61853-1 matrix measurements.
+
+    Parameters
+    ----------
+    effective_irradiance : array
+        Effective irradiance for each test condition [W/m²]
+    temp_cell : array
+        Cell temperature for each test condition [C]
+    i_sc : array
+        Short circuit current for each test condition [A]
+    v_oc : array
+        Open circuit voltage for each test condition [V]
+    i_mp : array
+        Current at maximum power point for each test condition [A]
+    v_mp : array
+        Voltage at maximum power point for each test condition [V]
+    cells_in_series : int
+        The number of cells connected in series.
+    EgRef : float, optional
+        The energy bandgap at reference temperature in units of eV.
+        1.121 eV for crystalline silicon. EgRef must be >0.
+    alpha_sc : float, optional
+        Temperature coefficient of short circuit current.  If not specified,
+        it will be estimated using the ``i_sc`` values at irradiance of
+        1000 W/m2. [A/K]
+    beta_mp : float, optional
+        Temperature coefficient of maximum power voltage.  If not specified,
+        it will be estimated using the ``v_mp`` values at irradiance of
+        1000 W/m2. [1/K]
+    r_sh_coeff : float, default 0.12
+        Shunt resistance fitting coefficient.  The default value is taken
+        from [1]_.
+    R_s : float, optional
+        Series resistance value.  If not provided, a value will be estimated
+        from the input measurements. [ohm]
+    min_Rsh_irradiance : float, optional
+        Irradiance threshold below which values are excluded when estimating
+        shunt resistance parameter values.  May be useful for modules
+        with problematic low-light measurements. [W/m²]
+
+    Returns
+    -------
+    dict
+        alpha_sc : float
+            short circuit current temperature coefficient [A/K]
+        gamma_ref : float
+            diode (ideality) factor at STC [unitless]
+        mu_gamma : float
+            temperature coefficient for diode (ideality) factor [1/K]
+        I_L_ref : float
+            light current at STC [A]
+        I_o_ref : float
+            dark current at STC [A]
+        R_sh_ref : float
+            shunt resistance at STC [ohm]
+        R_sh_0 : float
+            shunt resistance at zero irradiance [ohm]
+        R_sh_exp : float
+            exponential factor defining decrease in shunt resistance with
+            increasing effective irradiance
+        R_s : float
+            series resistance at STC [ohm]
+        cells_in_series : int
+            number of cells in series
+        EgRef : float
+            effective band gap at STC [eV]
+
+    See also
+    --------
+    pvlib.pvsystem.calcparams_pvsyst
+    pvlib.ivtools.sdm.fit_pvsyst_sandia
+
+    Notes
+    -----
+    This method is non-iterative.  In some cases, it may be desirable to
+    refine the estimated parameter values using a numerical optimizer like
+    those provided in ``scipy.optimize``.
+
+    References
+    ----------
+    .. [1] K. S. Anderson, C. W. Hansen, and M. Theristis, "A Noniterative
+       Method of Estimating Parameter Values for the PVsyst Version 6
+       Single-Diode Model From IEC 61853-1 Matrix Measurements," IEEE Journal
+       of Photovoltaics, vol. 15, 3, 2025. :doi:`10.1109/JPHOTOV.2025.3554338`
+    """
+
+    try:
+        import statsmodels.api as sm
+    except ImportError:
+        raise ImportError('fit_pvsyst_iec61853_sandia requires statsmodels')
+
+    if alpha_sc is None:
+        mu_i_sc = _fit_tempco(i_sc[effective_irradiance==1000],
+                              temp_cell[effective_irradiance==1000])
+        i_sc_ref = float(i_sc[(effective_irradiance==1000) & (temp_cell==25)])
+        alpha_sc = mu_i_sc * i_sc_ref
+
+    if beta_mp is None:
+        beta_mp = _fit_tempco(v_mp[effective_irradiance==1000],
+                              temp_cell[effective_irradiance==1000])
+
+    R_sh_ref, R_sh_0, R_sh_exp = _fit_shunt_resistances(
+        i_sc, i_mp, v_mp, effective_irradiance, temp_cell, beta_mp,
+        coeff=r_sh_coeff, min_irradiance=min_Rsh_irradiance
+    )
+
+    if R_s is None:
+        R_s = _fit_series_resistance(sm, v_oc, i_mp, v_mp)
+
+    filt = temp_cell == 25
+    gamma_ref, mu_gamma = _fit_diode_ideality_factor(
+        sm, i_sc[filt], v_oc[filt], i_mp[filt], v_mp[filt],
+        effective_irradiance[filt], temp_cell[filt],
+        R_sh_ref, R_sh_0, R_sh_exp, R_s, cells_in_series
+    )
+
+    I_o_ref = _fit_saturation_current(
+        i_sc, v_oc, effective_irradiance, temp_cell, gamma_ref, mu_gamma,
+        R_sh_ref, R_sh_0, R_sh_exp, R_s, cells_in_series, EgRef
+    )
+
+    I_L_ref = _fit_photocurrent(
+        sm, i_sc, effective_irradiance, temp_cell, alpha_sc,
+        gamma_ref, mu_gamma,
+        I_o_ref, R_sh_ref, R_sh_0, R_sh_exp, R_s, cells_in_series, EgRef
+    )
+
+    gamma_ref, mu_gamma = \
+        _fit_diode_ideality_factor_post(sm, i_mp, v_mp, effective_irradiance,
+                                        temp_cell, alpha_sc, I_L_ref, I_o_ref, 
+                                        R_sh_ref, R_sh_0, R_sh_exp, R_s,
+                                        cells_in_series, EgRef)
+
+    fitted_params = dict(
+        alpha_sc=alpha_sc,
+        gamma_ref=gamma_ref,
+        mu_gamma=mu_gamma,
+        I_L_ref=I_L_ref,
+        I_o_ref=I_o_ref,
+        R_sh_ref=R_sh_ref,
+        R_sh_0=R_sh_0,
+        R_sh_exp=R_sh_exp,
+        R_s=R_s,
+        cells_in_series=cells_in_series,
+        EgRef=EgRef,
+    )
+    return fitted_params
+
+
+def _fit_tempco(values, temp_cell, temp_cell_ref=25):
+    fit = np.polynomial.polynomial.Polynomial.fit(temp_cell, values, deg=1)
+    intercept, slope = fit.convert().coef
+    value_ref = intercept + slope*temp_cell_ref
+    return slope / value_ref
+
+
+def _fit_shunt_resistances(i_sc, i_mp, v_mp, effective_irradiance, temp_cell,
+                           beta_v_mp, coeff=0.2, min_irradiance=None):
+    if min_irradiance is None:
+        min_irradiance = 0
+
+    mask = effective_irradiance >= min_irradiance
+    i_sc = i_sc[mask]
+    i_mp = i_mp[mask]
+    v_mp = v_mp[mask]
+    effective_irradiance = effective_irradiance[mask]
+    temp_cell = temp_cell[mask]
+    
+    # Equation 10
+    Rsh_est = (
+        (v_mp / (1 + beta_v_mp * (temp_cell - 25)))
+        / (coeff * (i_sc - i_mp))
+    )
+    Rshexp = 5.5
+    
+    # Eq 11
+    y = Rsh_est
+    x = np.exp(-Rshexp * effective_irradiance / 1000)
+    
+    fit = np.polynomial.polynomial.Polynomial.fit(x, y, deg=1)
+    intercept, slope = fit.convert().coef
+    Rshbase = intercept
+    Rsh0 = slope + Rshbase
+
+    # Eq 12
+    expRshexp = np.exp(-Rshexp)
+    Rshref = Rshbase * (1 - expRshexp) + Rsh0 * expRshexp
+
+    return Rshref, Rsh0, Rshexp
+
+
+def _fit_series_resistance(sm, v_oc, i_mp, v_mp):
+    # Stein et al 2014, https://doi.org/10.1109/PVSC.2014.6925326
+    
+    # Eq 13
+    x = np.array([i_mp, np.log(i_mp), v_mp]).T
+    x = sm.add_constant(x)
+    y = v_oc
+    
+    results = sm.OLS(endog=y, exog=x).fit()
+    R_s = results.params['x1']
+    return R_s
+
+
+def _fit_diode_ideality_factor(sm, i_sc, v_oc, i_mp, v_mp,
+                               effective_irradiance, temp_cell,
+                               R_sh_ref, R_sh_0, R_sh_exp, R_s,
+                               cells_in_series):
+
+    NsVth = _pvsyst_nNsVth(temp_cell, gamma=1, cells_in_series=cells_in_series)
+    Rsh = _pvsyst_Rsh(effective_irradiance, R_sh_ref, R_sh_0, R_sh_exp)
+    term1 = (i_sc * (1 + R_s/Rsh) - v_oc / Rsh)  # Eq 15
+    term2 = (i_sc - i_mp) * (1 + R_s/Rsh) - v_mp / Rsh  # Eq 16
+
+    # Eq 14
+    x1 = NsVth * np.log(term2 / term1)
+
+    x = np.array([x1]).T
+    y = v_mp + i_mp*R_s - v_oc
+
+    results = sm.OLS(endog=y, exog=x).fit()
+    gamma_ref = results.params[0]
+    return gamma_ref, 0
+
+
+def _fit_saturation_current(i_sc, v_oc, effective_irradiance, temp_cell,
+                            gamma_ref, mu_gamma,
+                            R_sh_ref, R_sh_0, R_sh_exp, R_s,
+                            cells_in_series, EgRef):
+    R_sh = _pvsyst_Rsh(effective_irradiance, R_sh_ref, R_sh_0, R_sh_exp)
+    gamma = _pvsyst_gamma(temp_cell, gamma_ref, mu_gamma)
+    nNsVth = _pvsyst_nNsVth(temp_cell, gamma, cells_in_series)
+
+    # Eq 17
+    I_o_est = (i_sc * (1 + R_s/R_sh) - v_oc/R_sh) / (np.expm1(v_oc / nNsVth))
+    x = _pvsyst_Io(temp_cell, gamma, I_o_ref=1, EgRef=EgRef)
+
+    # Eq 18
+    log_I_o_ref = np.mean(np.log(I_o_est) - np.log(x))
+    I_o_ref = np.exp(log_I_o_ref)
+
+    return I_o_ref
+
+
+def _fit_photocurrent(sm, i_sc, effective_irradiance, temp_cell,
+                      alpha_sc, gamma_ref, mu_gamma, I_o_ref, 
+                      R_sh_ref, R_sh_0, R_sh_exp, R_s,
+                      cells_in_series, EgRef):
+    R_sh = _pvsyst_Rsh(effective_irradiance, R_sh_ref, R_sh_0, R_sh_exp)
+    gamma = _pvsyst_gamma(temp_cell, gamma_ref, mu_gamma)
+    I_o = _pvsyst_Io(temp_cell, gamma, I_o_ref, EgRef)
+    nNsVth = _pvsyst_nNsVth(temp_cell, gamma, cells_in_series)
+
+    # Eq 19
+    I_L_est = i_sc + I_o * (np.expm1(i_sc * R_s / nNsVth)) + i_sc * R_s / R_sh
+
+    # Eq 20
+    x = np.array([effective_irradiance / 1000]).T
+    y = I_L_est - effective_irradiance / 1000 * alpha_sc * (temp_cell - 25)
+    results = sm.OLS(endog=y, exog=x).fit()
+    I_L_ref = results.params['x1']
+    return I_L_ref
+
+
+def _fit_diode_ideality_factor_post(sm, i_mp, v_mp, effective_irradiance,
+                                    temp_cell, alpha_sc, I_L_ref, I_o_ref, 
+                                    R_sh_ref, R_sh_0, R_sh_exp, R_s,
+                                    cells_in_series, EgRef):
+
+    Rsh = _pvsyst_Rsh(effective_irradiance, R_sh_ref, R_sh_0, R_sh_exp)
+    I_L = _pvsyst_IL(effective_irradiance, temp_cell, I_L_ref, alpha_sc)
+    NsVth = _pvsyst_nNsVth(temp_cell, gamma=1, cells_in_series=cells_in_series)
+
+    Tref_K = 25 + 273.15
+    Tcell_K = temp_cell + 273.15
+
+    # Eq 21
+    k = constants.k  # Boltzmann constant in J/K
+    q = constants.e  # elementary charge in coulomb
+    numerator = (
+        (q * EgRef / k) * (1/Tref_K - 1/Tcell_K)
+        + (v_mp + i_mp*R_s) / NsVth
+    )
+    denominator = (
+        np.log((I_L - i_mp - (v_mp+i_mp*R_s) / Rsh) / I_o_ref)
+        - 3 * np.log(Tcell_K / Tref_K)
+    )
+    gamma_est = numerator / denominator
+
+    # Eq 22
+    x = np.array([temp_cell - 25]).T
+    x = sm.add_constant(x)
+    y = gamma_est
+
+    results = sm.OLS(endog=y, exog=x).fit()
+    gamma_ref, mu_gamma = results.params
+    return gamma_ref, mu_gamma

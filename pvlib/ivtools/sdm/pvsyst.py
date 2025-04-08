@@ -409,15 +409,16 @@ def fit_pvsyst_iec61853_sandia(effective_irradiance, temp_cell,
     except ImportError:
         raise ImportError('fit_pvsyst_iec61853_sandia requires statsmodels')
 
+    is_g_stc = effective_irradiance == 1000
+    is_t_stc = temp_cell == 25
+
     if alpha_sc is None:
-        mu_i_sc = _fit_tempco(i_sc[effective_irradiance==1000],
-                              temp_cell[effective_irradiance==1000])
-        i_sc_ref = float(i_sc[(effective_irradiance==1000) & (temp_cell==25)])
+        mu_i_sc = _fit_tempco(i_sc[is_g_stc], temp_cell[is_g_stc])
+        i_sc_ref = float(i_sc[is_g_stc & is_t_stc])
         alpha_sc = mu_i_sc * i_sc_ref
 
     if beta_mp is None:
-        beta_mp = _fit_tempco(v_mp[effective_irradiance==1000],
-                              temp_cell[effective_irradiance==1000])
+        beta_mp = _fit_tempco(v_mp[is_g_stc], temp_cell[is_g_stc])
 
     R_sh_ref, R_sh_0, R_sh_exp = _fit_shunt_resistances(
         i_sc, i_mp, v_mp, effective_irradiance, temp_cell, beta_mp,
@@ -427,10 +428,9 @@ def fit_pvsyst_iec61853_sandia(effective_irradiance, temp_cell,
     if R_s is None:
         R_s = _fit_series_resistance(sm, v_oc, i_mp, v_mp)
 
-    filt = temp_cell == 25
     gamma_ref, mu_gamma = _fit_diode_ideality_factor(
-        sm, i_sc[filt], v_oc[filt], i_mp[filt], v_mp[filt],
-        effective_irradiance[filt], temp_cell[filt],
+        sm, i_sc[is_t_stc], v_oc[is_t_stc], i_mp[is_t_stc], v_mp[is_t_stc],
+        effective_irradiance[is_t_stc], temp_cell[is_t_stc],
         R_sh_ref, R_sh_0, R_sh_exp, R_s, cells_in_series
     )
 
@@ -447,7 +447,7 @@ def fit_pvsyst_iec61853_sandia(effective_irradiance, temp_cell,
 
     gamma_ref, mu_gamma = \
         _fit_diode_ideality_factor_post(sm, i_mp, v_mp, effective_irradiance,
-                                        temp_cell, alpha_sc, I_L_ref, I_o_ref, 
+                                        temp_cell, alpha_sc, I_L_ref, I_o_ref,
                                         R_sh_ref, R_sh_0, R_sh_exp, R_s,
                                         cells_in_series, EgRef)
 
@@ -485,18 +485,18 @@ def _fit_shunt_resistances(i_sc, i_mp, v_mp, effective_irradiance, temp_cell,
     v_mp = v_mp[mask]
     effective_irradiance = effective_irradiance[mask]
     temp_cell = temp_cell[mask]
-    
+
     # Equation 10
     Rsh_est = (
         (v_mp / (1 + beta_v_mp * (temp_cell - 25)))
         / (coeff * (i_sc - i_mp))
     )
     Rshexp = 5.5
-    
+
     # Eq 11
     y = Rsh_est
     x = np.exp(-Rshexp * effective_irradiance / 1000)
-    
+
     fit = np.polynomial.polynomial.Polynomial.fit(x, y, deg=1)
     intercept, slope = fit.convert().coef
     Rshbase = intercept
@@ -511,12 +511,12 @@ def _fit_shunt_resistances(i_sc, i_mp, v_mp, effective_irradiance, temp_cell,
 
 def _fit_series_resistance(sm, v_oc, i_mp, v_mp):
     # Stein et al 2014, https://doi.org/10.1109/PVSC.2014.6925326
-    
+
     # Eq 13
     x = np.array([i_mp, np.log(i_mp), v_mp]).T
     x = sm.add_constant(x)
     y = v_oc
-    
+
     results = sm.OLS(endog=y, exog=x).fit()
     R_s = results.params['x1']
     return R_s
@@ -563,7 +563,7 @@ def _fit_saturation_current(i_sc, v_oc, effective_irradiance, temp_cell,
 
 
 def _fit_photocurrent(sm, i_sc, effective_irradiance, temp_cell,
-                      alpha_sc, gamma_ref, mu_gamma, I_o_ref, 
+                      alpha_sc, gamma_ref, mu_gamma, I_o_ref,
                       R_sh_ref, R_sh_0, R_sh_exp, R_s,
                       cells_in_series, EgRef):
     R_sh = _pvsyst_Rsh(effective_irradiance, R_sh_ref, R_sh_0, R_sh_exp)
@@ -583,7 +583,7 @@ def _fit_photocurrent(sm, i_sc, effective_irradiance, temp_cell,
 
 
 def _fit_diode_ideality_factor_post(sm, i_mp, v_mp, effective_irradiance,
-                                    temp_cell, alpha_sc, I_L_ref, I_o_ref, 
+                                    temp_cell, alpha_sc, I_L_ref, I_o_ref,
                                     R_sh_ref, R_sh_0, R_sh_exp, R_s,
                                     cells_in_series, EgRef):
 

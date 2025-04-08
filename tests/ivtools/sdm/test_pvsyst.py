@@ -294,7 +294,7 @@ def test_fit_pvsyst_iec61853_sandia_optional(pvsyst_iec61853_table3,
                                                    r_sh_coeff=0.3)
     assert not np.isclose(fitted_params['R_sh_ref'], expected['R_sh_ref'],
                           atol=0, rtol=1e-3)
-    
+
     fitted_params = sdm.fit_pvsyst_iec61853_sandia(**main_inputs,
                                                    R_s=0.5)
     assert not np.isclose(fitted_params['R_s'], expected['R_s'],

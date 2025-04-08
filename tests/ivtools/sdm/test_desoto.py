@@ -11,7 +11,6 @@ from pvlib import pvsystem
 from tests.conftest import requires_statsmodels
 
 
-
 def test_fit_desoto():
     result, _ = sdm.fit_desoto(v_mp=31.0, i_mp=8.71, v_oc=38.3, i_sc=9.43,
                                alpha_sc=0.005658, beta_voc=-0.13788,

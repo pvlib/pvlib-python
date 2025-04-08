@@ -1,9 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Tue Apr  8 09:05:56 2025
-
-@author: ksande
-"""
 
 def fit_cec_sam(celltype, v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
                 gamma_pmp, cells_in_series, temp_ref=25):
@@ -97,5 +91,3 @@ def fit_cec_sam(celltype, v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
                       'Adj']])
     else:
         raise RuntimeError('Parameter estimation failed')
-
-

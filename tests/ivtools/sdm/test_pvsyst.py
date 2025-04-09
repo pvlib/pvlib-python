@@ -304,3 +304,36 @@ def test_fit_pvsyst_iec61853_sandia_optional(pvsyst_iec61853_table3,
                                                    min_Rsh_irradiance=500)
     assert not np.isclose(fitted_params['R_sh_ref'], expected['R_sh_ref'],
                           atol=0, rtol=1e-3)
+
+
+@requires_statsmodels
+def test_fit_pvsyst_iec61853_sandia_tolerance(pvsyst_iec61853_table3,
+                                              iec61853_conditions):
+    # verify that the *_tolerance parameters allow non-"perfect" irradiance
+    # and temperature values
+    ee, tc = iec61853_conditions
+    ee[ee == 1000] = 999
+    tc[tc == 25] = 25.1
+    case = pvsyst_iec61853_table3['high current']
+    true_params = case['true']
+    expected = case['estimated']
+    sde_params = pvsystem.calcparams_pvsyst(ee, tc, **true_params)
+    iv = pvsystem.singlediode(*sde_params)
+
+    inputs = dict(
+        effective_irradiance=ee, temp_cell=tc, i_sc=iv['i_sc'],
+        v_oc=iv['v_oc'], i_mp=iv['i_mp'], v_mp=iv['v_mp'],
+        cells_in_series=true_params['cells_in_series']
+    )
+    fitted_params = sdm.fit_pvsyst_iec61853_sandia(**inputs)
+    # still get approximately the expected values
+    for key in expected.keys():
+        assert np.isclose(fitted_params[key], expected[key], atol=0, rtol=1e-2)
+
+    # but if the changes exceed the specified tolerance, then error:
+    with pytest.raises(ValueError, match='Coefficient array is empty'):
+        sdm.fit_pvsyst_iec61853_sandia(**inputs, irradiance_tolerance=0.1)
+
+    with pytest.raises(ValueError, match='can only convert an array of size 1'):
+        sdm.fit_pvsyst_iec61853_sandia(**inputs, temperature_tolerance=0.1)
+    

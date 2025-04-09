@@ -315,7 +315,9 @@ def fit_pvsyst_iec61853_sandia(effective_irradiance, temp_cell,
                                cells_in_series, EgRef=1.121,
                                alpha_sc=None, beta_mp=None,
                                r_sh_coeff=0.12, R_s=None,
-                               min_Rsh_irradiance=None):
+                               min_Rsh_irradiance=None,
+                               irradiance_tolerance=20,
+                               temperature_tolerance=1):
     """
     Estimate parameters for the PVsyst module performance model using
     IEC 61853-1 matrix measurements.
@@ -357,6 +359,14 @@ def fit_pvsyst_iec61853_sandia(effective_irradiance, temp_cell,
         Irradiance threshold below which values are excluded when estimating
         shunt resistance parameter values.  May be useful for modules
         with problematic low-light measurements. [W/m²]
+    irradiance_tolerance : float, default 20
+        Tolerance for irradiance variation around the STC value.
+        The default value corresponds to a +/- 2% interval around the STC
+        value of 1000 W/m². [W/m²]
+    temperature_tolerance : float, default 1
+        Tolerance for temperature variation around the STC value.
+        The default value corresponds to a +/- 1 degree interval around the STC
+        value of 25 degrees. [C]
 
     Returns
     -------
@@ -409,8 +419,10 @@ def fit_pvsyst_iec61853_sandia(effective_irradiance, temp_cell,
     except ImportError:
         raise ImportError('fit_pvsyst_iec61853_sandia requires statsmodels')
 
-    is_g_stc = effective_irradiance == 1000
-    is_t_stc = temp_cell == 25
+    is_g_stc = np.isclose(effective_irradiance, 1000, rtol=0,
+                          atol=irradiance_tolerance)
+    is_t_stc = np.isclose(temp_cell, 25, rtol=0,
+                          atol=temperature_tolerance)
 
     if alpha_sc is None:
         i_sc_ref = float(i_sc[is_g_stc & is_t_stc])

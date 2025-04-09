@@ -334,6 +334,6 @@ def test_fit_pvsyst_iec61853_sandia_tolerance(pvsyst_iec61853_table3,
     with pytest.raises(ValueError, match='Coefficient array is empty'):
         sdm.fit_pvsyst_iec61853_sandia(**inputs, irradiance_tolerance=0.1)
 
-    with pytest.raises(ValueError, match='can only convert an array of size 1'):
+    with pytest.raises(ValueError,
+                       match='can only convert an array of size 1'):
         sdm.fit_pvsyst_iec61853_sandia(**inputs, temperature_tolerance=0.1)
-    

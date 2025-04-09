@@ -21,6 +21,7 @@ Enhancements
   :py:func:`~pvlib.iotools.get_nsrdb_psm4_full_disc`,
   :py:func:`~pvlib.iotools.read_nsrdb_psm4`, and
   :py:func:`~pvlib.iotools.parse_nsrdb_psm4`. (:issue:`2326`, :pull:`2378`)
+* ``pvlib.ivtools.sdm`` is now a subpackage. (:issue:`2252`, :pull:`2256`)
 
 
 Documentation
@@ -42,3 +43,5 @@ Contributors
 * Cliff Hansen (:ghuser:`cwhanse`)
 * Rajiv Daxini (:ghuser:`RDaxini`)
 * Will Hobbs (:ghuser:`williamhobbs`)
+* Kevin Anderson (:ghuser:`kandersolar`)
+* Will Holmgren (:ghuser:`wholmgren`)

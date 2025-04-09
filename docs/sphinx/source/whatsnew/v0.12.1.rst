@@ -36,3 +36,4 @@ Contributors
 * Cliff Hansen (:ghuser:`cwhanse`)
 * Rajiv Daxini (:ghuser:`RDaxini`)
 * Kevin Anderson (:ghuser:`kandersolar`)
+* Will Holmgren (:ghuser:`wholmgren`)

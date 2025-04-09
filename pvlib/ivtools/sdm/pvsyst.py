@@ -425,9 +425,9 @@ def fit_pvsyst_iec61853_sandia(effective_irradiance, temp_cell,
                           atol=temperature_tolerance)
 
     if alpha_sc is None:
-        i_sc_ref = float(i_sc[is_g_stc & is_t_stc])
         mu_i_sc = _fit_tempco_pvsyst_iec61853_sandia(i_sc[is_g_stc],
                                                      temp_cell[is_g_stc])
+        i_sc_ref = float(i_sc[is_g_stc & is_t_stc].item())
         alpha_sc = mu_i_sc * i_sc_ref
 
     if beta_mp is None:
@@ -553,7 +553,7 @@ def _fit_diode_ideality_factor_pvsyst_iec61853_sandia(
     y = v_mp + i_mp*R_s - v_oc
 
     results = sm.OLS(endog=y, exog=x).fit()
-    gamma_ref = results.params[0]
+    gamma_ref = results.params['x1']
     return gamma_ref, 0
 
 

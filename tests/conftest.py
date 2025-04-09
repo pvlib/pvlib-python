@@ -88,7 +88,7 @@ skip_windows = pytest.mark.skipif(platform_is_windows,
 def nrel_api_key():
     """Supplies pvlib-python's NREL Developer Network API key.
 
-    Azure Pipelines CI utilizes a secret variable set to NREL_API_KEY
+    pvlib's CI utilizes a secret variable set to NREL_API_KEY
     to mitigate failures associated with using the default key of
     "DEMO_KEY". A user is capable of using their own key this way if
     desired however the default key should suffice for testing purposes.

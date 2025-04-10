@@ -15,6 +15,6 @@ from pvlib.ivtools.sdm.desoto import (  # noqa: F401
 
 from pvlib.ivtools.sdm.pvsyst import (  # noqa: F401
     fit_pvsyst_sandia,
-    fit_pvsyst_iec61853_sandia,
+    fit_pvsyst_iec61853_sandia_2025,
     pvsyst_temperature_coeff,
 )

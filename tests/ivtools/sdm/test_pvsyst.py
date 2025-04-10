@@ -238,8 +238,8 @@ def iec61853_conditions():
     return ee, tc
 
 
-def test_fit_pvsyst_iec61853_sandia(pvsyst_iec61853_table3,
-                                    iec61853_conditions):
+def test_fit_pvsyst_iec61853_sandia_2025(pvsyst_iec61853_table3,
+                                         iec61853_conditions):
     ee, tc = iec61853_conditions
     for _, case in pvsyst_iec61853_table3.items():
         true_params = case['true']
@@ -248,7 +248,7 @@ def test_fit_pvsyst_iec61853_sandia(pvsyst_iec61853_table3,
         sde_params = pvsystem.calcparams_pvsyst(ee, tc, **true_params)
         iv = pvsystem.singlediode(*sde_params)
 
-        fitted_params = sdm.fit_pvsyst_iec61853_sandia(
+        fitted_params = sdm.fit_pvsyst_iec61853_sandia_2025(
             ee, tc, iv['i_sc'], iv['v_oc'], iv['i_mp'], iv['v_mp'],
             true_params['cells_in_series'], EgRef=true_params['EgRef'],
         )
@@ -257,8 +257,8 @@ def test_fit_pvsyst_iec61853_sandia(pvsyst_iec61853_table3,
                               atol=0, rtol=1e-3)
 
 
-def test_fit_pvsyst_iec61853_sandia_optional(pvsyst_iec61853_table3,
-                                             iec61853_conditions):
+def test_fit_pvsyst_iec61853_sandia_2025_optional(pvsyst_iec61853_table3,
+                                                  iec61853_conditions):
     # verify that modifying each optional parameter results in different output
     ee, tc = iec61853_conditions
     case = pvsyst_iec61853_table3['high current']
@@ -273,39 +273,39 @@ def test_fit_pvsyst_iec61853_sandia_optional(pvsyst_iec61853_table3,
         cells_in_series=true_params['cells_in_series']
     )
 
-    fitted_params = sdm.fit_pvsyst_iec61853_sandia(**main_inputs,
-                                                   EgRef=1.0)
+    fitted_params = sdm.fit_pvsyst_iec61853_sandia_2025(**main_inputs,
+                                                        EgRef=1.0)
     assert not np.isclose(fitted_params['I_o_ref'], expected['I_o_ref'],
                           atol=0, rtol=1e-3)
 
-    fitted_params = sdm.fit_pvsyst_iec61853_sandia(**main_inputs,
-                                                   alpha_sc=0.5e-3)
+    fitted_params = sdm.fit_pvsyst_iec61853_sandia_2025(**main_inputs,
+                                                        alpha_sc=0.5e-3)
     assert not np.isclose(fitted_params['alpha_sc'], expected['alpha_sc'],
                           atol=0, rtol=1e-3)
 
-    fitted_params = sdm.fit_pvsyst_iec61853_sandia(**main_inputs,
-                                                   beta_mp=-1e-4)
+    fitted_params = sdm.fit_pvsyst_iec61853_sandia_2025(**main_inputs,
+                                                        beta_mp=-1e-4)
     assert not np.isclose(fitted_params['R_sh_ref'], expected['R_sh_ref'],
                           atol=0, rtol=1e-3)
 
-    fitted_params = sdm.fit_pvsyst_iec61853_sandia(**main_inputs,
-                                                   r_sh_coeff=0.3)
+    fitted_params = sdm.fit_pvsyst_iec61853_sandia_2025(**main_inputs,
+                                                        r_sh_coeff=0.3)
     assert not np.isclose(fitted_params['R_sh_ref'], expected['R_sh_ref'],
                           atol=0, rtol=1e-3)
 
-    fitted_params = sdm.fit_pvsyst_iec61853_sandia(**main_inputs,
-                                                   R_s=0.5)
+    fitted_params = sdm.fit_pvsyst_iec61853_sandia_2025(**main_inputs,
+                                                        R_s=0.5)
     assert not np.isclose(fitted_params['R_s'], expected['R_s'],
                           atol=0, rtol=1e-3)
 
-    fitted_params = sdm.fit_pvsyst_iec61853_sandia(**main_inputs,
-                                                   min_Rsh_irradiance=500)
+    fitted_params = sdm.fit_pvsyst_iec61853_sandia_2025(**main_inputs,
+                                                        min_Rsh_irradiance=500)
     assert not np.isclose(fitted_params['R_sh_ref'], expected['R_sh_ref'],
                           atol=0, rtol=1e-3)
 
 
-def test_fit_pvsyst_iec61853_sandia_tolerance(pvsyst_iec61853_table3,
-                                              iec61853_conditions):
+def test_fit_pvsyst_iec61853_sandia_2025_tolerance(pvsyst_iec61853_table3,
+                                                   iec61853_conditions):
     # verify that the *_tolerance parameters allow non-"perfect" irradiance
     # and temperature values
     ee, tc = iec61853_conditions
@@ -322,15 +322,16 @@ def test_fit_pvsyst_iec61853_sandia_tolerance(pvsyst_iec61853_table3,
         v_oc=iv['v_oc'], i_mp=iv['i_mp'], v_mp=iv['v_mp'],
         cells_in_series=true_params['cells_in_series']
     )
-    fitted_params = sdm.fit_pvsyst_iec61853_sandia(**inputs)
+    fitted_params = sdm.fit_pvsyst_iec61853_sandia_2025(**inputs)
     # still get approximately the expected values
     for key in expected.keys():
         assert np.isclose(fitted_params[key], expected[key], atol=0, rtol=1e-2)
 
     # but if the changes exceed the specified tolerance, then error:
     with pytest.raises(ValueError, match='Coefficient array is empty'):
-        sdm.fit_pvsyst_iec61853_sandia(**inputs, irradiance_tolerance=0.1)
+        sdm.fit_pvsyst_iec61853_sandia_2025(**inputs, irradiance_tolerance=0.1)
 
     with pytest.raises(ValueError,
                        match='can only convert an array of size 1'):
-        sdm.fit_pvsyst_iec61853_sandia(**inputs, temperature_tolerance=0.1)
+        sdm.fit_pvsyst_iec61853_sandia_2025(**inputs,
+                                            temperature_tolerance=0.1)

@@ -279,6 +279,13 @@ def test_get_pvgis_hourly_bad_outputformat(requests_mock):
         get_pvgis_hourly(latitude=45, longitude=8, outputformat='basic')
 
 
+def test_get_pvgis_tmy_basic_outputformat():
+    # Test if a ValueError is raised if an unsupported outputformat is used
+    # E.g. 'basic' is a valid PVGIS format, but is not supported by pvlib
+    with pytest.raises(ValueError):
+        get_pvgis_tmy(latitude=45, longitude=8, outputformat='basic')
+
+
 url_additional_inputs = 'https://re.jrc.ec.europa.eu/api/seriescalc?lat=55.6814&lon=12.5758&outputformat=csv&angle=0&aspect=0&pvcalculation=1&pvtechchoice=crystSi&mountingplace=free&trackingtype=0&components=1&usehorizon=1&optimalangles=1&optimalinclination=0&loss=2&userhorizon=10%2C15%2C20%2C10&peakpower=5'  # noqa: E501
 
 
@@ -425,21 +432,6 @@ def test_get_pvgis_tmy_kwargs(userhorizon_expected):
     assert inputs['meteo_data']['year_min'] == 2005
     _, _, inputs, _ = get_pvgis_tmy(45, 8, endyear=2016, map_variables=False)
     assert inputs['meteo_data']['year_max'] == 2016
-
-
-@pytest.mark.remote_data
-@pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
-def test_get_pvgis_tmy_basic(expected, meta_expected):
-    pvgis_data = get_pvgis_tmy(45, 8, outputformat='basic',
-                               map_variables=False)
-    _compare_pvgis_tmy_basic(expected, meta_expected, pvgis_data)
-
-
-def _compare_pvgis_tmy_basic(expected, meta_expected, pvgis_data):
-    data, _, _, _ = pvgis_data
-    # check each column of output separately
-    for outvar in meta_expected['outputs']['tmy_hourly']['variables'].keys():
-        assert np.allclose(data[outvar], expected[outvar])
 
 
 @pytest.mark.remote_data
@@ -628,23 +620,6 @@ def test_read_pvgis_tmy_csv(expected, month_year_expected, inputs_expected,
                                     map_variables=False)
         _compare_pvgis_tmy_csv(expected, month_year_expected, inputs_expected,
                                meta_expected, csv_meta, pvgis_data)
-
-
-def test_read_pvgis_tmy_basic(expected, meta_expected):
-    fn = TESTS_DATA_DIR / 'tmy_45.000_8.000_2005_2023.txt'
-    # XXX: can't infer outputformat from file extensions for basic
-    with pytest.raises(ValueError, match="pvgis format 'txt' was unknown"):
-        read_pvgis_tmy(fn, map_variables=False)
-    # explicit pvgis outputformat
-    pvgis_data = read_pvgis_tmy(fn, pvgis_format='basic', map_variables=False)
-    _compare_pvgis_tmy_basic(expected, meta_expected, pvgis_data)
-    with fn.open('rb') as fbuf:
-        pvgis_data = read_pvgis_tmy(fbuf, pvgis_format='basic',
-                                    map_variables=False)
-        _compare_pvgis_tmy_basic(expected, meta_expected, pvgis_data)
-        # file buffer raises TypeError if passed to pathlib.Path()
-        with pytest.raises(TypeError):
-            read_pvgis_tmy(fbuf, map_variables=False)
 
 
 def test_read_pvgis_tmy_exception():

@@ -389,8 +389,7 @@ def get_nsrdb_psm4_conus(latitude, longitude, api_key, email, names='2023',
         allowed values update periodically, so consult the NSRDB reference
         below for the current set of options.
     time_period : int, {60, 5, 15, 30}
-        time period in minutes, must be 5, 15, 30 or 60. Called ``interval`` in
-        NSRDB API.
+        time period in minutes. Called ``interval`` in NSRDB API.
     parameters : list of str, optional
         meteorological fields to fetch. If not specified, defaults to
         ``pvlib.iotools.psm4.PARAMETERS``. See reference [2]_ for a list of

@@ -314,7 +314,7 @@ def fit_pvsyst_iec61853_sandia(effective_irradiance, temp_cell,
                                i_sc, v_oc, i_mp, v_mp,
                                cells_in_series, EgRef=1.121,
                                alpha_sc=None, beta_mp=None,
-                               r_sh_coeff=0.12, R_s=None,
+                               R_s=None, r_sh_coeff=0.12,
                                min_Rsh_irradiance=None,
                                irradiance_tolerance=20,
                                temperature_tolerance=1):
@@ -349,12 +349,12 @@ def fit_pvsyst_iec61853_sandia(effective_irradiance, temp_cell,
         Temperature coefficient of maximum power voltage.  If not specified,
         it will be estimated using the ``v_mp`` values at irradiance of
         1000 W/m2. [1/K]
-    r_sh_coeff : float, default 0.12
-        Shunt resistance fitting coefficient.  The default value is taken
-        from [1]_.
     R_s : float, optional
         Series resistance value.  If not provided, a value will be estimated
         from the input measurements. [ohm]
+    r_sh_coeff : float, default 0.12
+        Shunt resistance fitting coefficient.  The default value is taken
+        from [1]_.
     min_Rsh_irradiance : float, optional
         Irradiance threshold below which values are excluded when estimating
         shunt resistance parameter values.  May be useful for modules

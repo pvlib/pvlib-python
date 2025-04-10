@@ -406,8 +406,8 @@ def fit_pvsyst_iec61853_sandia_2025(effective_irradiance, temp_cell,
     1-D with equal lengths.
 
     This method is non-iterative.  In some cases, it may be desirable to
-    refine the estimated parameter values using a numerical optimizer like
-    those provided in ``scipy.optimize``.
+    refine the estimated parameter values using a numerical optimizer such as
+    the default method in ``scipy.optimize.minimize``.
 
     References
     ----------

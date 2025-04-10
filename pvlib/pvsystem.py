@@ -2224,9 +2224,11 @@ def sapm(effective_irradiance, temp_cell, module):
         * v_mp : Voltage at maximum-power point (V)
         * p_mp : Power at maximum-power point (W)
         * i_x : Current at module V = 0.5Voc, defines 4th point on I-V
-          curve for modeling curve shape
+          curve for modeling curve shape.  Omitted if ``C4`` and ``C5``
+          parameters are not supplied.
         * i_xx : Current at module V = 0.5(Voc+Vmp), defines 5th point on
-          I-V curve for modeling curve shape
+          I-V curve for modeling curve shape.  Omitted if ``C6`` and ``C7``
+          parameters are not supplied.
 
     Notes
     -----
@@ -2334,13 +2336,15 @@ def sapm(effective_irradiance, temp_cell, module):
 
     out['p_mp'] = out['i_mp'] * out['v_mp']
 
-    out['i_x'] = (
-        module['IXO'] * (module['C4']*Ee + module['C5']*(Ee**2)) *
-        (1 + module['Aisc']*(temp_cell - temp_ref)))
+    if 'C4' in module and 'C5' in module:
+        out['i_x'] = (
+            module['IXO'] * (module['C4']*Ee + module['C5']*(Ee**2)) *
+            (1 + module['Aisc']*(temp_cell - temp_ref)))
 
-    out['i_xx'] = (
-        module['IXXO'] * (module['C6']*Ee + module['C7']*(Ee**2)) *
-        (1 + module['Aimp']*(temp_cell - temp_ref)))
+    if 'C6' in module and 'C7' in module:
+        out['i_xx'] = (
+            module['IXXO'] * (module['C6']*Ee + module['C7']*(Ee**2)) *
+            (1 + module['Aimp']*(temp_cell - temp_ref)))
 
     if isinstance(out['i_sc'], pd.Series):
         out = pd.DataFrame(out)

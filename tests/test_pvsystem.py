@@ -197,6 +197,15 @@ def test_sapm(sapm_module_params):
     pvsystem.sapm(effective_irradiance, temp_cell,
                   pd.Series(sapm_module_params))
 
+    # ensure C4-C7 are optional
+    optional_keys = ['C4', 'C5', 'C6', 'C7']
+    params_no_c4c7 = {
+        k: v for k, v in sapm_module_params.items() if k not in optional_keys
+    }
+    out = pvsystem.sapm(effective_irradiance, temp_cell, params_no_c4c7)
+    assert 'i_x' not in out.keys()
+    assert 'i_xx' not in out.keys()        
+
 
 def test_PVSystem_sapm(sapm_module_params, mocker):
     mocker.spy(pvsystem, 'sapm')

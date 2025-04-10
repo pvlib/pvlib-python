@@ -2235,7 +2235,7 @@ def sapm(effective_irradiance, temp_cell, module):
     Both databases can be accessed using :py:func:`retrieve_sam`. The full list
     of SAPM parameters is presented in the table below. Those that are required
     in ``module`` are: `Bvmpo`, `Mbvmp`, `Bvoco`, `Mbvoc`, `N`, and
-    `Cells_in_Series`
+    `Cells_in_Series`.
 
     ================   ========================================================
     Key                Description

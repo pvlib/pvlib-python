@@ -203,7 +203,7 @@ def test_sapm(sapm_module_params):
     }
     out = pvsystem.sapm(effective_irradiance, temp_cell, params_no_c4c7)
     assert 'i_x' not in out.keys()
-    assert 'i_xx' not in out.keys()        
+    assert 'i_xx' not in out.keys()
 
 
 def test_PVSystem_sapm(sapm_module_params, mocker):

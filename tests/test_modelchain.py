@@ -1767,7 +1767,7 @@ def test_sapm_optional_params(sapm_dc_snl_ac_system, location):
     for array in sapm_dc_snl_ac_system.arrays:
         for key in ['C4', 'C5', 'C6', 'C7']:
             array.module_parameters.pop(key)
-        
+
     # no error:
     ModelChain(sapm_dc_snl_ac_system, location)
 

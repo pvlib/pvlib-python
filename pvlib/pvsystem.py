@@ -29,7 +29,7 @@ import pvlib.tools as tools
 # a dict of required parameter names for each DC power model
 _DC_MODEL_PARAMS = {
     'sapm': {
-        'C0', 'C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'C7',
+        'C0', 'C1', 'C2', 'C3',  # C4-C7 (i_x and i_xx params) not required
         'Isco', 'Impo', 'Voco', 'Vmpo', 'Aisc', 'Aimp', 'Bvoco',
         'Mbvoc', 'Bvmpo', 'Mbvmp', 'N', 'Cells_in_Series',
         'IXO', 'IXXO'},

@@ -414,11 +414,6 @@ def fit_pvsyst_iec61853_sandia(effective_irradiance, temp_cell,
        of Photovoltaics, vol. 15, 3, 2025. :doi:`10.1109/JPHOTOV.2025.3554338`
     """
 
-    try:
-        import statsmodels.api as sm
-    except ImportError:
-        raise ImportError('fit_pvsyst_iec61853_sandia requires statsmodels')
-
     is_g_stc = np.isclose(effective_irradiance, 1000, rtol=0,
                           atol=irradiance_tolerance)
     is_t_stc = np.isclose(temp_cell, 25, rtol=0,
@@ -440,11 +435,10 @@ def fit_pvsyst_iec61853_sandia(effective_irradiance, temp_cell,
     )
 
     if R_s is None:
-        R_s = _fit_series_resistance_pvsyst_iec61853_sandia(sm, v_oc,
-                                                            i_mp, v_mp)
+        R_s = _fit_series_resistance_pvsyst_iec61853_sandia(v_oc, i_mp, v_mp)
 
     gamma_ref, mu_gamma = _fit_diode_ideality_factor_pvsyst_iec61853_sandia(
-        sm, i_sc[is_t_stc], v_oc[is_t_stc], i_mp[is_t_stc], v_mp[is_t_stc],
+        i_sc[is_t_stc], v_oc[is_t_stc], i_mp[is_t_stc], v_mp[is_t_stc],
         effective_irradiance[is_t_stc], temp_cell[is_t_stc],
         R_sh_ref, R_sh_0, R_sh_exp, R_s, cells_in_series
     )
@@ -455,14 +449,14 @@ def fit_pvsyst_iec61853_sandia(effective_irradiance, temp_cell,
     )
 
     I_L_ref = _fit_photocurrent_pvsyst_iec61853_sandia(
-        sm, i_sc, effective_irradiance, temp_cell, alpha_sc,
+        i_sc, effective_irradiance, temp_cell, alpha_sc,
         gamma_ref, mu_gamma,
         I_o_ref, R_sh_ref, R_sh_0, R_sh_exp, R_s, cells_in_series, EgRef
     )
 
     gamma_ref, mu_gamma = \
         _fit_diode_ideality_factor_post_pvsyst_iec61853_sandia(
-            sm, i_mp, v_mp, effective_irradiance, temp_cell, alpha_sc, I_L_ref,
+            i_mp, v_mp, effective_irradiance, temp_cell, alpha_sc, I_L_ref,
             I_o_ref, R_sh_ref, R_sh_0, R_sh_exp, R_s, cells_in_series, EgRef)
 
     fitted_params = dict(
@@ -524,21 +518,20 @@ def _fit_shunt_resistances_pvsyst_iec61853_sandia(
     return Rshref, Rsh0, Rshexp
 
 
-def _fit_series_resistance_pvsyst_iec61853_sandia(sm, v_oc, i_mp, v_mp):
+def _fit_series_resistance_pvsyst_iec61853_sandia(v_oc, i_mp, v_mp):
     # Stein et al 2014, https://doi.org/10.1109/PVSC.2014.6925326
 
     # Eq 13
-    x = np.array([i_mp, np.log(i_mp), v_mp]).T
-    x = sm.add_constant(x)
+    x = np.array([np.ones(len(i_mp)), i_mp, np.log(i_mp), v_mp]).T
     y = v_oc
 
-    results = sm.OLS(endog=y, exog=x).fit()
-    R_s = results.params['x1']
+    coeff, _, _, _ = np.linalg.lstsq(x, y, rcond=None)
+    R_s = coeff[1]
     return R_s
 
 
 def _fit_diode_ideality_factor_pvsyst_iec61853_sandia(
-        sm, i_sc, v_oc, i_mp, v_mp, effective_irradiance, temp_cell,
+        i_sc, v_oc, i_mp, v_mp, effective_irradiance, temp_cell,
         R_sh_ref, R_sh_0, R_sh_exp, R_s, cells_in_series):
 
     NsVth = _pvsyst_nNsVth(temp_cell, gamma=1, cells_in_series=cells_in_series)
@@ -552,8 +545,8 @@ def _fit_diode_ideality_factor_pvsyst_iec61853_sandia(
     x = np.array([x1]).T
     y = v_mp + i_mp*R_s - v_oc
 
-    results = sm.OLS(endog=y, exog=x).fit()
-    gamma_ref = results.params['x1']
+    coeff, _, _, _ = np.linalg.lstsq(x, y, rcond=None)
+    gamma_ref = coeff[0]
     return gamma_ref, 0
 
 
@@ -576,7 +569,7 @@ def _fit_saturation_current_pvsyst_iec61853_sandia(
 
 
 def _fit_photocurrent_pvsyst_iec61853_sandia(
-        sm, i_sc, effective_irradiance, temp_cell, alpha_sc, gamma_ref,
+        i_sc, effective_irradiance, temp_cell, alpha_sc, gamma_ref,
         mu_gamma, I_o_ref, R_sh_ref, R_sh_0, R_sh_exp, R_s, cells_in_series,
         EgRef):
     R_sh = _pvsyst_Rsh(effective_irradiance, R_sh_ref, R_sh_0, R_sh_exp)
@@ -590,13 +583,13 @@ def _fit_photocurrent_pvsyst_iec61853_sandia(
     # Eq 20
     x = np.array([effective_irradiance / 1000]).T
     y = I_L_est - effective_irradiance / 1000 * alpha_sc * (temp_cell - 25)
-    results = sm.OLS(endog=y, exog=x).fit()
-    I_L_ref = results.params['x1']
+    coeff, _, _, _ = np.linalg.lstsq(x, y, rcond=None)
+    I_L_ref = coeff[0]
     return I_L_ref
 
 
 def _fit_diode_ideality_factor_post_pvsyst_iec61853_sandia(
-        sm, i_mp, v_mp, effective_irradiance, temp_cell, alpha_sc, I_L_ref,
+        i_mp, v_mp, effective_irradiance, temp_cell, alpha_sc, I_L_ref,
         I_o_ref, R_sh_ref, R_sh_0, R_sh_exp, R_s, cells_in_series, EgRef):
 
     Rsh = _pvsyst_Rsh(effective_irradiance, R_sh_ref, R_sh_0, R_sh_exp)
@@ -620,10 +613,9 @@ def _fit_diode_ideality_factor_post_pvsyst_iec61853_sandia(
     gamma_est = numerator / denominator
 
     # Eq 22
-    x = np.array([temp_cell - 25]).T
-    x = sm.add_constant(x)
+    x = np.array([np.ones(len(i_mp)), temp_cell - 25]).T
     y = gamma_est
 
-    results = sm.OLS(endog=y, exog=x).fit()
-    gamma_ref, mu_gamma = results.params
+    coeff, _, _, _ = np.linalg.lstsq(x, y, rcond=None)
+    gamma_ref, mu_gamma = coeff
     return gamma_ref, mu_gamma

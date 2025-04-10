@@ -238,7 +238,6 @@ def iec61853_conditions():
     return ee, tc
 
 
-@requires_statsmodels
 def test_fit_pvsyst_iec61853_sandia(pvsyst_iec61853_table3,
                                     iec61853_conditions):
     ee, tc = iec61853_conditions
@@ -258,7 +257,6 @@ def test_fit_pvsyst_iec61853_sandia(pvsyst_iec61853_table3,
                               atol=0, rtol=1e-3)
 
 
-@requires_statsmodels
 def test_fit_pvsyst_iec61853_sandia_optional(pvsyst_iec61853_table3,
                                              iec61853_conditions):
     # verify that modifying each optional parameter results in different output
@@ -306,7 +304,6 @@ def test_fit_pvsyst_iec61853_sandia_optional(pvsyst_iec61853_table3,
                           atol=0, rtol=1e-3)
 
 
-@requires_statsmodels
 def test_fit_pvsyst_iec61853_sandia_tolerance(pvsyst_iec61853_table3,
                                               iec61853_conditions):
     # verify that the *_tolerance parameters allow non-"perfect" irradiance

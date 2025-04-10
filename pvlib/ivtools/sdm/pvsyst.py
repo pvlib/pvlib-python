@@ -404,7 +404,7 @@ def fit_pvsyst_iec61853_sandia_2025(effective_irradiance, temp_cell,
     -----
     Input arrays of operating conditions and electrical measurements must be
     1-D with equal lengths.
-    
+
     This method is non-iterative.  In some cases, it may be desirable to
     refine the estimated parameter values using a numerical optimizer like
     those provided in ``scipy.optimize``.
@@ -435,8 +435,7 @@ def fit_pvsyst_iec61853_sandia_2025(effective_irradiance, temp_cell,
     R_sh_ref, R_sh_0, R_sh_exp = \
         _fit_shunt_resistances_pvsyst_iec61853_sandia_2025(
             i_sc, i_mp, v_mp, effective_irradiance, temp_cell, beta_mp,
-            coeff=r_sh_coeff, min_irradiance=min_Rsh_irradiance
-    )
+            coeff=r_sh_coeff, min_irradiance=min_Rsh_irradiance)
 
     if R_s is None:
         R_s = _fit_series_resistance_pvsyst_iec61853_sandia_2025(v_oc, i_mp,
@@ -446,8 +445,7 @@ def fit_pvsyst_iec61853_sandia_2025(effective_irradiance, temp_cell,
         _fit_diode_ideality_factor_pvsyst_iec61853_sandia_2025(
             i_sc[is_t_stc], v_oc[is_t_stc], i_mp[is_t_stc], v_mp[is_t_stc],
             effective_irradiance[is_t_stc], temp_cell[is_t_stc],
-            R_sh_ref, R_sh_0, R_sh_exp, R_s, cells_in_series
-    )
+            R_sh_ref, R_sh_0, R_sh_exp, R_s, cells_in_series)
 
     I_o_ref = _fit_saturation_current_pvsyst_iec61853_sandia_2025(
         i_sc, v_oc, effective_irradiance, temp_cell, gamma_ref, mu_gamma,

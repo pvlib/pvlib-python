@@ -17,7 +17,6 @@ from pvlib import spectrum
 from pvlib.location import Location
 from pvlib.pvsystem import FixedMount
 from pvlib import temperature
-from pvlib._deprecation import pvlibDeprecationWarning
 from pvlib.tools import cosd
 from pvlib.singlediode import VOLTAGE_BUILTIN
 

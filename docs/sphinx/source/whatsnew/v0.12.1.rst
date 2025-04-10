@@ -15,7 +15,10 @@ Bug fixes
 Enhancements
 ~~~~~~~~~~~~
 * ``pvlib.ivtools.sdm`` is now a subpackage. (:issue:`2252`, :pull:`2256`)
-
+* The parameters for the Ix and Ixx points are now optional when using
+  :py:func:`pvlib.pvsystem.sapm` directly and through
+  :py:class:`~pvlib.pvsystem.PVSystem` and :py:class:`~pvlib.modelchain.ModelChain`.
+  (:issue:`2402`, :pull:`2433`)
 
 Documentation
 ~~~~~~~~~~~~~

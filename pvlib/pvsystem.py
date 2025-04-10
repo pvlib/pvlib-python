@@ -2206,7 +2206,7 @@ def sapm(effective_irradiance, temp_cell, module, reference_temperature = 25,
     ----------
     effective_irradiance : numeric
         Irradiance reaching the module's cells, after reflections and
-        adjustment for spectrum. [W/m2]
+        adjustment for spectrum. [Wm⁻²]
 
     temp_cell : numeric
         Cell temperature [C].
@@ -2215,6 +2215,12 @@ def sapm(effective_irradiance, temp_cell, module, reference_temperature = 25,
         A dict or Series defining the SAPM parameters. See the notes section
         for more details.
 
+    reference_temperature : numeric, optional
+        Reference temperature [C]
+    
+    reference_irradiance : numeric, optional
+        Reference irradiance [Wm⁻²]
+    
     Returns
     -------
     A DataFrame with the columns:
@@ -2312,7 +2318,8 @@ def sapm(effective_irradiance, temp_cell, module, reference_temperature = 25,
     out = OrderedDict()
 
     out['i_sc'] = (
-        module['Isco'] * Ee * (1 + module['Aisc']*(temp_cell - reference_temperature)))
+        module['Isco'] * Ee * (1 + module['Aisc']*(temp_cell -
+                                                   reference_temperature)))
 
     out['i_mp'] = (
         module['Impo'] * (module['C0']*Ee + module['C1']*(Ee**2)) *

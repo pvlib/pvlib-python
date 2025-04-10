@@ -2230,12 +2230,12 @@ def sapm(effective_irradiance, temp_cell, module):
 
     Notes
     -----
-    The SAPM parameters which are required in ``module`` are
-    listed in the following table.
-
     The Sandia module database contains parameter values for a limited set
     of modules. The CEC module database does not contain these parameters.
-    Both databases can be accessed using :py:func:`retrieve_sam`.
+    Both databases can be accessed using :py:func:`retrieve_sam`. The full list
+    of SAPM parameters is presented in the table below. Those that are required
+    in ``module`` are: `Bvmpo`, `Mbvmp`, `Bvoco`, `Mbvoc`, `N`,
+    `Cells_in_Series`
 
     ================   ========================================================
     Key                Description

@@ -197,7 +197,7 @@ def test_sapm(sapm_module_params):
                   pd.Series(sapm_module_params))
 
     # ensure C4-C7 are optional
-    optional_keys = ['C4', 'C5', 'C6', 'C7']
+    optional_keys = ['IXO', 'IXXO', 'C4', 'C5', 'C6', 'C7']
     params_no_c4c7 = {
         k: v for k, v in sapm_module_params.items() if k not in optional_keys
     }

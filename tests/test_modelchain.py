@@ -1765,7 +1765,7 @@ def test_invalid_dc_model_params(sapm_dc_snl_ac_system, cec_dc_snl_ac_system,
 def test_sapm_optional_params(sapm_dc_snl_ac_system, location):
     # inference works when the optional (i_x, i_xx) SAPM parameters are missing
     for array in sapm_dc_snl_ac_system.arrays:
-        for key in ['C4', 'C5', 'C6', 'C7']:
+        for key in ['IXO', 'IXXO', 'C4', 'C5', 'C6', 'C7']:
             array.module_parameters.pop(key)
 
     # no error:

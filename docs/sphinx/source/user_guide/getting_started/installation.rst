@@ -133,7 +133,7 @@ Follow these steps to obtain the library using git/GitHub:
    This button is circled in the image below. Remember the system path that
    you clone the library to.
 
-.. image:: ../_images/clonebutton.png
+.. image:: ../../_images/clonebutton.png
 
 Please see GitHub's
 `Forking Projects <https://guides.github.com/activities/forking/>`_,

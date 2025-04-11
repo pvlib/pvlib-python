@@ -405,6 +405,10 @@ def fit_pvsyst_iec61853_sandia_2025(effective_irradiance, temp_cell,
     Input arrays of operating conditions and electrical measurements must be
     1-D with equal lengths.
 
+    Values supplied for ``alpha_sc``, ``beta_mp``, and ``R_s`` must be
+    consistent with the matrix data, as these values are used when estimating
+    other model parameters.
+
     This method is non-iterative.  In some cases, it may be desirable to
     refine the estimated parameter values using a numerical optimizer such as
     the default method in ``scipy.optimize.minimize``.

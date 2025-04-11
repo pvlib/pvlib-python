@@ -15,8 +15,9 @@ Bug fixes
 Enhancements
 ~~~~~~~~~~~~
 * ``pvlib.ivtools.sdm`` is now a subpackage. (:issue:`2252`, :pull:`2256`)
-* Add optional arguments `reference_temperature` and `reference_irradiance` to
-  :py:func:`~pvlib.pvsystem.sapm`(:issue:`2432`, :pull:`2434`)
+* Rename `temp_ref` and `irrad_ref` to `temperature_ref` and `irradiance_ref`
+  in :py:func:`~pvlib.pvsystem.sapm, and add both as optional arguments to the
+  function. (:issue:`2432`, :issue:`825`, :pull:`2434`)
 
 Documentation
 ~~~~~~~~~~~~~

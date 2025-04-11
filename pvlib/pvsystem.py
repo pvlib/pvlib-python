@@ -17,8 +17,6 @@ from dataclasses import dataclass
 from abc import ABC, abstractmethod
 from typing import Optional, Union
 
-from pvlib._deprecation import deprecated
-
 import pvlib  # used to avoid albedo name collision in the Array class
 from pvlib import (atmosphere, iam, inverter, irradiance,
                    singlediode as _singlediode, spectrum, temperature)
@@ -29,10 +27,10 @@ import pvlib.tools as tools
 # a dict of required parameter names for each DC power model
 _DC_MODEL_PARAMS = {
     'sapm': {
-        'C0', 'C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'C7',
+        # i_x and i_xx params (IXO, IXXO, C4-C7) not required
+        'C0', 'C1', 'C2', 'C3',
         'Isco', 'Impo', 'Voco', 'Vmpo', 'Aisc', 'Aimp', 'Bvoco',
-        'Mbvoc', 'Bvmpo', 'Mbvmp', 'N', 'Cells_in_Series',
-        'IXO', 'IXXO'},
+        'Mbvoc', 'Bvmpo', 'Mbvmp', 'N', 'Cells_in_Series'},
     'desoto': {
         'alpha_sc', 'a_ref', 'I_L_ref', 'I_o_ref',
         'R_sh_ref', 'R_s'},
@@ -2224,9 +2222,11 @@ def sapm(effective_irradiance, temp_cell, module):
         * v_mp : Voltage at maximum-power point (V)
         * p_mp : Power at maximum-power point (W)
         * i_x : Current at module V = 0.5Voc, defines 4th point on I-V
-          curve for modeling curve shape
+          curve for modeling curve shape.  Omitted if ``IXO``, ``C4``, and
+          ``C5`` parameters are not supplied.
         * i_xx : Current at module V = 0.5(Voc+Vmp), defines 5th point on
-          I-V curve for modeling curve shape
+          I-V curve for modeling curve shape.  Omitted if ``IXXO``, ``C6``,
+          and ``C7`` parameters are not supplied.
 
     Notes
     -----
@@ -2334,13 +2334,15 @@ def sapm(effective_irradiance, temp_cell, module):
 
     out['p_mp'] = out['i_mp'] * out['v_mp']
 
-    out['i_x'] = (
-        module['IXO'] * (module['C4']*Ee + module['C5']*(Ee**2)) *
-        (1 + module['Aisc']*(temp_cell - temp_ref)))
+    if 'IXO' in module and 'C4' in module and 'C5' in module:
+        out['i_x'] = (
+            module['IXO'] * (module['C4']*Ee + module['C5']*(Ee**2)) *
+            (1 + module['Aisc']*(temp_cell - temp_ref)))
 
-    out['i_xx'] = (
-        module['IXXO'] * (module['C6']*Ee + module['C7']*(Ee**2)) *
-        (1 + module['Aimp']*(temp_cell - temp_ref)))
+    if 'IXXO' in module and 'C6' in module and 'C7' in module:
+        out['i_xx'] = (
+            module['IXXO'] * (module['C6']*Ee + module['C7']*(Ee**2)) *
+            (1 + module['Aimp']*(temp_cell - temp_ref)))
 
     if isinstance(out['i_sc'], pd.Series):
         out = pd.DataFrame(out)

@@ -611,7 +611,7 @@ class ModelChain:
         """Infer DC power model from Array module parameters."""
         params = _common_keys(
             tuple(array.module_parameters for array in self.system.arrays))
-        if {'A0', 'A1', 'C7'} <= params:
+        if {'A0', 'A1', 'C3'} <= params:
             return self.sapm, 'sapm'
         elif {'a_ref', 'I_L_ref', 'I_o_ref', 'R_sh_ref', 'R_s',
               'Adjust'} <= params:

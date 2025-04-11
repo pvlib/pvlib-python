@@ -21,7 +21,8 @@ TEMPERATURE_MODEL_PARAMETERS = {
         'insulated_back_glass_polymer': {'a': -2.81, 'b': -.0455, 'deltaT': 0},
     },
     'pvsyst': {'freestanding': {'u_c': 29.0, 'u_v': 0},
-               'insulated': {'u_c': 15.0, 'u_v': 0}}
+               'insulated': {'u_c': 15.0, 'u_v': 0},
+               'semi_integrated': {'u_c': 20.0, 'u_v': 0}}
 }
 """Dictionary of temperature parameters organized by model.
 
@@ -364,6 +365,16 @@ def pvsyst_cell(poa_global, temp_air, wind_speed=1.0, u_c=29.0, u_v=0.0,
 
     alpha_absorption : numeric, default 0.9
         Absorption coefficient. Parameter :math:`\alpha` in :eq:`pvsyst`.
+
+    freestanding : Uc = 29 W/(m^2*C), Uv = 0 W/(m^2*C*m/s)
+    
+    insulated : Uc = 15 W/(m^2*C), Uv = 0 W/(m^2*C*m/s)
+
+    semi_integrated :  Uc = 20 W/(m^2*C), Uv = 0 W/(m^2*C*m/s)
+      (for roof mounted systems with air flow beneath modules)
+    
+    PVUSA : Uc = 25 W/(m^2*C), Uv = 1.2 W/(m^2*C*m/s)
+
 
     Returns
     -------

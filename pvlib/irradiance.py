@@ -46,14 +46,14 @@ def get_extra_radiation(datetime_or_doy, solar_constant=1366.1,
     solar_constant : float, default 1366.1
         The solar constant. [Wm⁻²]
 
-    method : string, default 'spencer'
+    method : string, default `spencer`
         The method by which the extraterrestrial radiation should be
-        calculated. Options include: 'pyephem', 'spencer' [4]_, 'asce' [5]_,
+        calculated. Options include: `pyephem`, `spencer` [4]_, `asce` [5]_,
         'nrel' [6]_.
 
     epoch_year : int, default 2014
         The year in which a day of year input will be calculated. Only
-        applies to day of year input used with the 'pyephem' or 'nrel'
+        applies to day of year input used with the `pyephem` or `nrel`
         methods.
 
     kwargs :

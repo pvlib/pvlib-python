@@ -18,12 +18,13 @@ Spectral mismatch models
 
 pvlib-python contains several models to estimate the spectral mismatch factor
 using atmospheric variables such as air mass, or system and meteorological
-data such as spectral response and spectral irradiance. An example
-demonstrating the application of three pvlib-python spectral mismatch models
-is also available: :ref:`sphx_glr_gallery_spectrum_spectral_factor.py`. Here,
-a comparison of all models available in pvlib-python is presented. An extended
-review of a wider range of models available in the published literature may be
-found in Reference [1]_.
+data such as spectral response and spectral irradiance. Two separate examples
+demonstrating the application of four pvlib-python spectral mismatch models
+are also available: :ref:`sphx_glr_gallery_spectrum_spectral_factor.py` and
+Ref. [1]_, the latter of which also contains downloadable spectral response
+and spectral irradiance data. On this page, a comparison of all models
+available in pvlib-python is presented. An extended review of a wider range of
+models available in the published literature may be found in Reference [2]_.
 
 The table below summarises the models currently available in pvlib, the inputs
 required, cell technologies for which model coefficients have been published, 
@@ -37,24 +38,24 @@ of commerical module products.
 +=========================================================+============================+=================+===========+
 | :py:func:`~pvlib.spectrum.spectral_factor_caballero`    | :term:`absolute_airmass`,  | CdTe,           |           |
 |                                                         | :term:`precipitable_water`,| mono-Si,        |           |
-|                                                         | aerosol optical depth      | poly-Si,        | [2]_      |
+|                                                         | aerosol optical depth      | poly-Si,        | [3]_      |
 |                                                         |                            | aSi,            |           |
 |                                                         |                            | CIGS,           |           |
 |                                                         |                            | Perovskite      |           |
 +---------------------------------------------------------+----------------------------+-----------------+-----------+
 | :py:func:`~pvlib.spectrum.spectral_factor_firstsolar`   | :term:`absolute_airmass`,  | CdTe,           |           |
-|                                                         | :term:`precipitable_water` | poly-Si         | [3]_      |
+|                                                         | :term:`precipitable_water` | poly-Si         | [4]_      |
 +---------------------------------------------------------+----------------------------+-----------------+-----------+
-| :py:func:`~pvlib.spectrum.spectral_factor_sapm`         | :term:`absolute_airmass`   | Multiple        | [4]_      |
+| :py:func:`~pvlib.spectrum.spectral_factor_sapm`         | :term:`absolute_airmass`   | Multiple        | [5]_      |
 +---------------------------------------------------------+----------------------------+-----------------+-----------+
 | :py:func:`~pvlib.spectrum.spectral_factor_pvspec`       | :term:`absolute_airmass`,  | CdTe,           |           |
 |                                                         | clearsky index             | poly-Si,        |           |
 |                                                         |                            | mono-Si,        |           |
-|                                                         |                            | CIGS,           | [5]_      |
+|                                                         |                            | CIGS,           | [6]_      |
 |                                                         |                            | aSi             |           |
 +---------------------------------------------------------+----------------------------+-----------------+-----------+
 | :py:func:`~pvlib.spectrum.spectral_factor_jrc`          | :term:`relative_airmass`,  | CdTe,           |           |
-|                                                         | clearsky index             | poly-Si         | [6]_      |
+|                                                         | clearsky index             | poly-Si         | [7]_      |
 +---------------------------------------------------------+----------------------------+-----------------+-----------+
 | :py:func:`~pvlib.spectrum.calc_spectral_mismatch_field` | spectral response,         | Any single      |           |
 |                                                         | :term:`spectra`            | junction        |           |
@@ -63,28 +64,34 @@ of commerical module products.
 
 References
 ----------
-.. [1] R. Daxini and Y. Wu, "Review of methods to account for the solar
+.. [1] A. Driesse, J. S. Stein, and M. Theristis, "Global horizontal spectral
+       irradiance and module spectral response measurements: an open dataset
+       for PV research Sandia National Laboratories, ALbuquerque, NM, USA, Rep.
+       SAND2023-02045, 2023. Available:
+       https://datahub.duramat.org/dataset/module-sr-library
+
+.. [2] R. Daxini and Y. Wu, "Review of methods to account for the solar
        spectral influence on photovoltaic device performance," Energy, 
        vol. 286, p. 129461, Jan. 2024. :doi:`10.1016/j.energy.2023.129461`
-.. [2] J. A. Caballero, E. Fernández, M. Theristis, F. Almonacid, and
+.. [3] J. A. Caballero, E. Fernández, M. Theristis, F. Almonacid, and
        G. Nofuentes, "Spectral Corrections Based on Air Mass, Aerosol Optical
        Depth and Precipitable Water for PV Performance Modeling," IEEE Journal
        of Photovoltaics, vol. 8, no. 2, pp. 552–558, Mar. 2018. 
        :doi:`10.1109/JPHOTOV.2017.2787019`
-.. [3] M. Lee and A. Panchula, "Spectral Correction for Photovoltaic Module
+.. [4] M. Lee and A. Panchula, "Spectral Correction for Photovoltaic Module
        Performance Based on Air Mass and Precipitable Water," 2016 IEEE 43rd
        Photovoltaic Specialists Conference (PVSC), Portland, OR, USA, 2016,
        pp. 3696-3699. :doi:`10.1109/PVSC.2016.7749836`
-.. [4] D. L. King, W. E. Boyson, and J. A. Kratochvil, Photovoltaic Array
+.. [5] D. L. King, W. E. Boyson, and J. A. Kratochvil, Photovoltaic Array
        Performance Model, Sandia National Laboratories, Albuquerque, NM, USA,
        Tech. Rep. SAND2004-3535, Aug. 2004. :doi:`10.2172/919131`
-.. [5] S. Pelland, J. Remund, and J. Kleissl, "Development and Testing of the
+.. [6] S. Pelland, J. Remund, and J. Kleissl, "Development and Testing of the
        PVSPEC Model of Photovoltaic Spectral Mismatch Factor," in Proc. 2020
        IEEE 47th Photovoltaic Specialists Conference (PVSC), Calgary, AB,
        Canada, 2020, pp. 1–6. :doi:`10.1109/PVSC45281.2020.9300932`
-.. [6] H. Thomas, S. Tony, and D. Ewan, “A Simple Model for Estimating the
+.. [7] H. Thomas, S. Tony, and D. Ewan, “A Simple Model for Estimating the
        Influence of Spectrum Variations on PV Performance,” pp. 3385–3389, Nov.
        2009, :doi:10.4229/24THEUPVSEC2009-4AV.3.27
-.. [7] IEC 60904-7:2019, Photovoltaic devices — Part 7: Computation of the
+.. [8] IEC 60904-7:2019, Photovoltaic devices — Part 7: Computation of the
        spectral mismatch correction for measurements of photovoltaic devices, 
        International Electrotechnical Commission, Geneva, Switzerland, 2019.

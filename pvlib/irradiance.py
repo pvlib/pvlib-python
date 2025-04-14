@@ -73,8 +73,9 @@ def get_extra_radiation(datetime_or_doy, solar_constant=1366.1,
        Clear Sky Models: Implementation and Analysis", Sandia National
        Laboratories, SAND2012-2389, 2012.
 
-    .. [2] Duffie, J. A. and Beckman, W. A. 1991. Solar Engineering of
-       Thermal Processes, 2nd edn. J. Wiley and Sons, New York.
+    .. [2] J. A. Duffie and W. A. Beckman, "Solar Radiation" in Solar
+       Engineering of Thermal Processes, 5th ed, New York, USA, J. Wiley
+       and Sons, 2020.
 
     .. [3] "Solar Radiation Basics". University of Oregon. Accessed: 04 April,
        2025. [Online.] Available https://web.archive.org/web/20240424224453/http://solardata.uoregon.edu/SolarRadiationBasics.html

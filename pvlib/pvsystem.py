@@ -2193,7 +2193,7 @@ def _parse_raw_sam_df(csvdata):
     return df
 
 
-def sapm(effective_irradiance, temp_cell, module, temperature_ref=25,
+def sapm(effective_irradiance, temp_cell, module, *, temperature_ref=25,
          irradiance_ref=1000):
     '''
     The Sandia PV Array Performance Model (SAPM) generates 5 points on a

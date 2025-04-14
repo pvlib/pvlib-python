@@ -16,7 +16,7 @@ Enhancements
 ~~~~~~~~~~~~
 * ``pvlib.ivtools.sdm`` is now a subpackage. (:issue:`2252`, :pull:`2256`)
 * Rename `temp_ref` and `irrad_ref` to `temperature_ref` and `irradiance_ref`
-  in :py:func:`~pvlib.pvsystem.sapm, and add both as optional arguments to the
+  in :py:func:`~pvlib.pvsystem.sapm`, and add both as optional arguments to the
   function. (:issue:`2432`, :issue:`825`, :pull:`2434`)
 * :py:mod:`pvlib.ivtools.sdm` is now a subpackage. (:issue:`2252`, :pull:`2256`)
 * Add a function for estimating PVsyst SDM parameters from IEC 61853-1 matrix

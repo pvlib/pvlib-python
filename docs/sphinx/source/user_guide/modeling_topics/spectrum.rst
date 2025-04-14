@@ -21,8 +21,8 @@ using atmospheric variables such as air mass, or system and meteorological
 data such as spectral response and spectral irradiance. Two separate examples
 demonstrating the application of four pvlib-python spectral mismatch models
 are also available: :ref:`sphx_glr_gallery_spectrum_spectral_factor.py` and
-Ref. [1]_, the latter of which also contains downloadable spectral response
-and spectral irradiance data. On this page, a comparison of all models
+Reference [1]_, the latter of which also contains downloadable spectral
+response and spectral irradiance data. On this page, a comparison of all models
 available in pvlib-python is presented. An extended review of a wider range of
 models available in the published literature may be found in Reference [2]_.
 

@@ -32,30 +32,33 @@ technologies, the Sandia Array Performance Model (SAPM) and spectral mismatch
 calculation are not specific to cell type; the former is validated for a range
 of commerical module products.
 
-+---------------------------------------------------------+--------------------------------------------------------------+-----------------+------------+
-| Model                                                   | Inputs                                                       | Cell technology | Reference  |
-+=========================================================+==============================================================+=================+============+
-| :py:func:`~pvlib.spectrum.spectral_factor_caballero`    | :term:`absolute airmass`,                                    | CdTe,           |            |
-|                                                         | :term:`precipitable water`,                                  | mono-Si,        |            |
-|                                                         | aerosol optical depth                                        | poly-Si, CIGS,  | [2]_       |
-|                                                         |                                                              | aSi, perovskite |            |
-+---------------------------------------------------------+--------------------------------------------------------------+-----------------+------------+
-| :py:func:`~pvlib.spectrum.spectral_factor_firstsolar`   | :term:`absolute airmass`,                                    | CdTe,           |            |
-|                                                         | :term:`precipitable water`                                   | poly-Si         | [3]_       |
-+---------------------------------------------------------+--------------------------------------------------------------+-----------------+------------+
-| :py:func:`~pvlib.spectrum.spectral_factor_sapm`         | :term:`absolute airmass`                                     | Multiple        | [4]_       |
-+---------------------------------------------------------+--------------------------------------------------------------+-----------------+------------+
-| :py:func:`~pvlib.spectrum.spectral_factor_pvspec`       | :term:`absolute airmass`,                                    | CdTe,           |            |
-|                                                         | clearsky index                                               | poly-Si,        |            |
-|                                                         |                                                              | mono-Si,        |            |
-|                                                         |                                                              | CIGS,           | [5]_       |
-|                                                         |                                                              | aSi             |            |
-+---------------------------------------------------------+--------------------------------------------------------------+-----------------+------------+
-| :py:func:`~pvlib.spectrum.spectral_factor_jrc`          | :term:`absolute airmass`, clearsky index                     | CdTe,           |            |
-|                                                         |                                                              | poly-Si         | [6]_       |
-+---------------------------------------------------------+--------------------------------------------------------------+-----------------+------------+
-| :py:func:`~pvlib.spectrum.calc_spectral_mismatch_field` | spectral response, :term:`spectra`                           |       -         | [7]_       |
-+---------------------------------------------------------+--------------------------------------------------------------+-----------------+------------+
++---------------------------------------------------------+----------------------------+-----------------------------+
+| Model                                                   | Inputs                     | Cell technology | Reference |
++=========================================================+============================+=============================+
+| :py:func:`~pvlib.spectrum.spectral_factor_caballero`    | :term:`absolute airmass`,  | CdTe,           |           |
+|                                                         | :term:`precipitable water`,| mono-Si,        |           |
+|                                                         | aerosol optical depth      | poly-Si,        | [2]_      |
+|                                                         |                            | aSi,            |           |
+|                                                         |                            | CIGS,           |           |
+|                                                         |                            | Perovskite      |           |
++---------------------------------------------------------+----------------------------+-----------------------------+
+| :py:func:`~pvlib.spectrum.spectral_factor_firstsolar`   | :term:`absolute airmass`,  | CdTe,           |           |
+|                                                         | :term:`precipitable water` | poly-Si         | [3]_      |
++---------------------------------------------------------+----------------------------+-----------------------------+
+| :py:func:`~pvlib.spectrum.spectral_factor_sapm`         | :term:`absolute airmass`   | Multiple        | [4]_      |
++---------------------------------------------------------+----------------------------+-----------------------------+
+| :py:func:`~pvlib.spectrum.spectral_factor_pvspec`       | :term:`absolute airmass`,  | CdTe,           |           |
+|                                                         | clearsky index             | poly-Si,        |           |
+|                                                         |                            | mono-Si,        |           |
+|                                                         |                            | CIGS,           | [5]_      |
+|                                                         |                            | aSi             |           |
++---------------------------------------------------------+----------------------------+-----------------------------+
+| :py:func:`~pvlib.spectrum.spectral_factor_jrc`          | :term:`absolute airmass`,  | CdTe,           |           |
+|                                                         | clearsky index             | poly-Si         | [6]_      |
++---------------------------------------------------------+----------------------------+-----------------------------+
+| :py:func:`~pvlib.spectrum.calc_spectral_mismatch_field` | spectral response,         | -               |           |
+|                                                         | :term:`spectra`            |                 |           |
++---------------------------------------------------------+----------------------------+-----------------------------+
 
 
 References

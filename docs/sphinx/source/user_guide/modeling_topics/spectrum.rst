@@ -69,7 +69,6 @@ References
        for PV research Sandia National Laboratories, ALbuquerque, NM, USA, Rep.
        SAND2023-02045, 2023. Available:
        https://datahub.duramat.org/dataset/module-sr-library
-
 .. [2] R. Daxini and Y. Wu, "Review of methods to account for the solar
        spectral influence on photovoltaic device performance," Energy, 
        vol. 286, p. 129461, Jan. 2024. :doi:`10.1016/j.energy.2023.129461`
@@ -91,7 +90,7 @@ References
        Canada, 2020, pp. 1–6. :doi:`10.1109/PVSC45281.2020.9300932`
 .. [7] H. Thomas, S. Tony, and D. Ewan, “A Simple Model for Estimating the
        Influence of Spectrum Variations on PV Performance,” pp. 3385–3389, Nov.
-       2009, :doi:10.4229/24THEUPVSEC2009-4AV.3.27
+       2009, :doi:`10.4229/24THEUPVSEC2009-4AV.3.27`
 .. [8] IEC 60904-7:2019, Photovoltaic devices — Part 7: Computation of the
        spectral mismatch correction for measurements of photovoltaic devices, 
        International Electrotechnical Commission, Geneva, Switzerland, 2019.

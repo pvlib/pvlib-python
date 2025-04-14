@@ -78,9 +78,8 @@ def get_extra_radiation(datetime_or_doy, solar_constant=1366.1,
        reference evapotranspiration equation. Reston, Va.: American Society of
        Civil Engineers, 2005
 
-    .. [4] Reda, I., Andreas, A., 2003. Solar position algorithm for solar
-       radiation applications. Technical report: NREL/TP-560- 34302. Golden,
-       USA, http://www.nrel.gov
+    .. [4] I. Reda, A. Andreas, "Solar position algorithm for solar
+       radiation applications" NREL Golden, USA. NREL/TP-560- 34302, 2008.
 
     .. [5] http://solardata.uoregon.edu/SolarRadiationBasics.html, Eqs.
        SR1 and SR2

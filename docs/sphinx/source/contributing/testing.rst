@@ -11,7 +11,7 @@ Overview
 Developers **must** include comprehensive tests for any additions or
 modifications to pvlib. New unit test code should be placed in the
 corresponding test module in the
-`pvlib/tests <https://github.com/pvlib/pvlib-python/tree/main/pvlib/tests>`_
+`tests <https://github.com/pvlib/pvlib-python/tree/main/tests>`_
 directory.
 
 A pull request will automatically run the tests for you on a variety of
@@ -20,26 +20,26 @@ typically more efficient to run and debug the tests in your own local
 environment.
 
 To run the tests locally, install the ``test`` dependencies specified in the
-`setup.py <https://github.com/pvlib/pvlib-python/blob/main/setup.py>`_
+`pyproject.toml <https://github.com/pvlib/pvlib-python/blob/main/pyproject.toml>`_
 file. See :ref:`installation` instructions for more information.
 
 pvlib's unit tests can easily be run by executing ``pytest`` on the
-pvlib directory::
+tests directory::
 
-    pytest pvlib
+    pytest tests
 
 or, for a single module::
 
-    pytest pvlib/tests/test_clearsky.py
+    pytest tests/test_clearsky.py
 
 or, for a single test::
 
-    pytest pvlib/tests/test_clearsky.py::test_ineichen_nans
+    pytest tests/test_clearsky.py::test_ineichen_nans
 
 We suggest using pytest's ``--pdb`` flag to debug test failures rather
 than using ``print`` or ``logging`` calls. For example::
 
-    pytest pvlib --pdb
+    pytest tests --pdb
 
 will drop you into the
 `pdb debugger <https://docs.python.org/3/library/pdb.html>`_ at the
@@ -50,7 +50,7 @@ to the test suite (with rare exceptions).
 To include all network-dependent tests, include the ``--remote-data`` flag to
 your ``pytest`` call::
 
-    pytest pvlib --remote-data
+    pytest tests --remote-data
 
 And consider adding ``@pytest.mark.remote_data`` to any network dependent test
 you submit for a PR.

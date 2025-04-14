@@ -29,11 +29,10 @@ import pvlib.tools as tools
 # a dict of required parameter names for each DC power model
 _DC_MODEL_PARAMS = {
     'sapm': {
-        'A0', 'A1', 'A2', 'A3', 'A4', 'B0', 'B1', 'B2', 'B3',
-        'B4', 'B5', 'C0', 'C1', 'C2', 'C3', 'C4', 'C5', 'C6',
-        'C7', 'Isco', 'Impo', 'Voco', 'Vmpo', 'Aisc', 'Aimp', 'Bvoco',
+        'C0', 'C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'C7',
+        'Isco', 'Impo', 'Voco', 'Vmpo', 'Aisc', 'Aimp', 'Bvoco',
         'Mbvoc', 'Bvmpo', 'Mbvmp', 'N', 'Cells_in_Series',
-        'IXO', 'IXXO', 'FD'},
+        'IXO', 'IXXO'},
     'desoto': {
         'alpha_sc', 'a_ref', 'I_L_ref', 'I_o_ref',
         'R_sh_ref', 'R_s'},
@@ -1710,6 +1709,8 @@ def calcparams_desoto(effective_irradiance, temp_cell,
     Rs = R_s
 
     numeric_args = (effective_irradiance, temp_cell)
+    # IL: photocurrent, I0: saturation_current, Rs: resistance_series,
+    # Rsh: resistance_shunt
     out = (IL, I0, Rs, Rsh, nNsVth)
 
     if all(map(np.isscalar, numeric_args)):
@@ -1947,35 +1948,23 @@ def calcparams_pvsyst(effective_irradiance, temp_cell,
 
     '''
 
-    # Boltzmann constant in J/K
-    k = constants.k
+    gamma = _pvsyst_gamma(temp_cell, gamma_ref, mu_gamma, temp_ref)
 
-    # elementary charge in coulomb
-    q = constants.e
+    nNsVth = _pvsyst_nNsVth(temp_cell, gamma, cells_in_series)
 
-    # reference temperature
-    Tref_K = temp_ref + 273.15
-    Tcell_K = temp_cell + 273.15
+    IL = _pvsyst_IL(effective_irradiance, temp_cell, I_L_ref, alpha_sc,
+                    irrad_ref, temp_ref)
 
-    gamma = gamma_ref + mu_gamma * (Tcell_K - Tref_K)
-    nNsVth = gamma * k / q * cells_in_series * Tcell_K
+    I0 = _pvsyst_Io(temp_cell, gamma, I_o_ref, EgRef, temp_ref)
 
-    IL = effective_irradiance / irrad_ref * \
-        (I_L_ref + alpha_sc * (Tcell_K - Tref_K))
-
-    I0 = I_o_ref * ((Tcell_K / Tref_K) ** 3) * \
-        (np.exp((q * EgRef) / (k * gamma) * (1 / Tref_K - 1 / Tcell_K)))
-
-    Rsh_tmp = \
-        (R_sh_ref - R_sh_0 * np.exp(-R_sh_exp)) / (1.0 - np.exp(-R_sh_exp))
-    Rsh_base = np.maximum(0.0, Rsh_tmp)
-
-    Rsh = Rsh_base + (R_sh_0 - Rsh_base) * \
-        np.exp(-R_sh_exp * effective_irradiance / irrad_ref)
+    Rsh = _pvsyst_Rsh(effective_irradiance, R_sh_ref, R_sh_0, R_sh_exp,
+                      irrad_ref)
 
     Rs = R_s
 
     numeric_args = (effective_irradiance, temp_cell)
+    # IL: photocurrent, I0: saturation_current, Rs: resistance_series,
+    # Rsh: resistance_shunt
     out = (IL, I0, Rs, Rsh, nNsVth)
 
     if all(map(np.isscalar, numeric_args)):
@@ -1987,6 +1976,54 @@ def calcparams_pvsyst(effective_irradiance, temp_cell,
         return np.broadcast_arrays(*out)
 
     return tuple(pd.Series(a, index=index).rename(None) for a in out)
+
+
+def _pvsyst_Rsh(effective_irradiance, R_sh_ref, R_sh_0, R_sh_exp=5.5,
+                irrad_ref=1000):
+    Rsh_tmp = \
+        (R_sh_ref - R_sh_0 * np.exp(-R_sh_exp)) / (1.0 - np.exp(-R_sh_exp))
+    Rsh_base = np.maximum(0.0, Rsh_tmp)
+
+    Rsh = Rsh_base + (R_sh_0 - Rsh_base) * \
+        np.exp(-R_sh_exp * effective_irradiance / irrad_ref)
+
+    return Rsh
+
+
+def _pvsyst_IL(effective_irradiance, temp_cell, I_L_ref, alpha_sc,
+               irrad_ref=1000, temp_ref=25):
+    Tref_K = temp_ref + 273.15
+    Tcell_K = temp_cell + 273.15
+    IL = effective_irradiance / irrad_ref * \
+        (I_L_ref + alpha_sc * (Tcell_K - Tref_K))
+    return IL
+
+
+def _pvsyst_Io(temp_cell, gamma, I_o_ref, EgRef, temp_ref=25):
+    k = constants.k  # Boltzmann constant in J/K
+    q = constants.e  # elementary charge in coulomb
+
+    Tref_K = temp_ref + 273.15
+    Tcell_K = temp_cell + 273.15
+
+    Io = I_o_ref * ((Tcell_K / Tref_K) ** 3) * \
+        (np.exp((q * EgRef) / (k * gamma) * (1 / Tref_K - 1 / Tcell_K)))
+
+    return Io
+
+
+def _pvsyst_gamma(temp_cell, gamma_ref, mu_gamma, temp_ref=25):
+    gamma = gamma_ref + mu_gamma * (temp_cell - temp_ref)
+    return gamma
+
+
+def _pvsyst_nNsVth(temp_cell, gamma, cells_in_series):
+    k = constants.k  # Boltzmann constant in J/K
+    q = constants.e  # elementary charge in coulomb
+    Tcell_K = temp_cell + 273.15
+
+    nNsVth = gamma * k / q * cells_in_series * Tcell_K
+    return nNsVth
 
 
 def retrieve_sam(name=None, path=None):
@@ -2309,12 +2346,6 @@ def sapm(effective_irradiance, temp_cell, module):
         out = pd.DataFrame(out)
 
     return out
-
-
-sapm_spectral_loss = deprecated(
-    since='0.10.0',
-    alternative='pvlib.spectrum.spectral_factor_sapm'
-)(spectrum.spectral_factor_sapm)
 
 
 def sapm_effective_irradiance(poa_direct, poa_diffuse, airmass_absolute, aoi,

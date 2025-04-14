@@ -41,7 +41,7 @@ def get_extra_radiation(datetime_or_doy, solar_constant=1366.1,
         Day of year, array of days of year, or datetime-like object
 
     solar_constant : float, default 1366.1
-        The solar constant.
+        The solar constant. [Wm⁻²]
 
     method : string, default 'spencer'
         The method by which the ET radiation should be calculated.

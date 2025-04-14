@@ -79,10 +79,9 @@ References
        PVSPEC Model of Photovoltaic Spectral Mismatch Factor," in Proc. 2020
        IEEE 47th Photovoltaic Specialists Conference (PVSC), Calgary, AB,
        Canada, 2020, pp. 1–6. :doi:`10.1109/PVSC45281.2020.9300932`
-.. [6] T. Huld, T. C. Sample, and E. D. Dunlop, "A Simple Model for Estimating
-       the Influence of Spectral Variations on the Performance of PV Modules,
-       "AerosolSolar Energy Materials and Solar Cells, vol. 92, no. 12,
-       pp. 1645–1656, Dec. 2008. :doi:`10.1016/j.solmat.2008.07.016`
+.. [6] H. Thomas, S. Tony, and D. Ewan, “A Simple Model for Estimating the
+       Influence of Spectrum Variations on PV Performance,” pp. 3385–3389, Nov.
+       2009, :doi:10.4229/24THEUPVSEC2009-4AV.3.27
 .. [7] IEC 60904-7:2019, Photovoltaic devices — Part 7: Computation of the
        spectral mismatch correction for measurements of photovoltaic devices, 
        International Electrotechnical Commission, Geneva, Switzerland, 2019.

@@ -77,8 +77,7 @@ def get_extra_radiation(datetime_or_doy, solar_constant=1366.1,
        Thermal Processes, 2nd edn. J. Wiley and Sons, New York.
 
     .. [3] "Solar Radiation Basics". University of Oregon. Accessed: 04 April,
-       2025. [Online.] Available <https://web.archive.org/web/20240424224453/ \
-           http://solardata.uoregon.edu/SolarRadiationBasics.html>
+       2025. [Online.] Available https://web.archive.org/web/20240424224453/http://solardata.uoregon.edu/SolarRadiationBasics.html #noqa: E501
 
     .. [4] J. W. Spencer, "Fourier series representation of the sun," Search,
        vol. 2, p. 172, 1971.

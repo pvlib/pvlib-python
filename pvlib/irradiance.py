@@ -45,8 +45,8 @@ def get_extra_radiation(datetime_or_doy, solar_constant=1366.1,
 
     method : string, default 'spencer'
         The method by which the extraterrestrial radiation should be
-        calculated. Options include: ``'pyephem', 'spencer' [2]_, 'asce' [3]_,
-        'nrel'``.
+        calculated. Options include: 'pyephem', 'spencer' [2]_, 'asce' [3]_,
+        'nrel' [4]_.
 
     epoch_year : int, default 2014
         The year in which a day of year input will be calculated. Only
@@ -78,13 +78,17 @@ def get_extra_radiation(datetime_or_doy, solar_constant=1366.1,
        reference evapotranspiration equation. Reston, Va.: American Society of
        Civil Engineers, 2005
 
-    .. [4] http://solardata.uoregon.edu/SolarRadiationBasics.html, Eqs.
+    .. [4] Reda, I., Andreas, A., 2003. Solar position algorithm for solar
+       radiation applications. Technical report: NREL/TP-560- 34302. Golden,
+       USA, http://www.nrel.gov
+
+    .. [5] http://solardata.uoregon.edu/SolarRadiationBasics.html, Eqs.
        SR1 and SR2
 
-    .. [5] Partridge, G. W. and Platt, C. M. R. 1976. Radiative Processes
+    .. [6] Partridge, G. W. and Platt, C. M. R. 1976. Radiative Processes
        in Meteorology and Climatology.
 
-    .. [6] Duffie, J. A. and Beckman, W. A. 1991. Solar Engineering of
+    .. [7] Duffie, J. A. and Beckman, W. A. 1991. Solar Engineering of
        Thermal Processes, 2nd edn. J. Wiley and Sons, New York.
 
     """

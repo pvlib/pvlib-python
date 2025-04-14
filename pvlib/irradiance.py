@@ -33,7 +33,10 @@ def __getattr__(attr):
 def get_extra_radiation(datetime_or_doy, solar_constant=1366.1,
                         method='spencer', epoch_year=2014, **kwargs):
     """
-    Determine extraterrestrial radiation from day of year.
+    Determine extraterrestrial radiation from day of year. Specific references
+    for each method of caclulating the earth-sun distance are cited in the
+    parameter descriptions below, while a more general discussion of the
+    different models may also be found in [1]_ and [2]_.
 
     Parameters
     ----------
@@ -54,7 +57,7 @@ def get_extra_radiation(datetime_or_doy, solar_constant=1366.1,
         methods.
 
     kwargs :
-        Passed to :py:func:`~pvlib.solarposition.nrel_earthsun_distance`
+        Passed to :py:func:`~pvlib.solarposition.nrel_earthsun_distance`.
 
     Returns
     -------
@@ -70,25 +73,25 @@ def get_extra_radiation(datetime_or_doy, solar_constant=1366.1,
        Clear Sky Models: Implementation and Analysis", Sandia National
        Laboratories, SAND2012-2389, 2012.
 
-    .. [2] J. W. Spencer, "Fourier series representation of the sun," Search,
+    .. [2] Duffie, J. A. and Beckman, W. A. 1991. Solar Engineering of
+       Thermal Processes, 2nd edn. J. Wiley and Sons, New York.
+       
+       [3] J. W. Spencer, "Fourier series representation of the sun," Search,
        vol. 2, p. 172, 1971.
 
-    .. [3] R. G. Allen, Environmental, and E. Water Resources institute. Task
+    .. [4] R. G. Allen, Environmental, and E. Water Resources institute. Task
        Committee on Standardization of Reference, The ASCE standardized
        reference evapotranspiration equation. Reston, Va.: American Society of
        Civil Engineers, 2005
 
-    .. [4] I. Reda, A. Andreas, "Solar position algorithm for solar
+    .. [5] I. Reda, A. Andreas, "Solar position algorithm for solar
        radiation applications" NREL Golden, USA. NREL/TP-560- 34302, 2008.
 
-    .. [5] http://solardata.uoregon.edu/SolarRadiationBasics.html, Eqs.
+    .. [6] http://solardata.uoregon.edu/SolarRadiationBasics.html, Eqs.
        SR1 and SR2
 
-    .. [6] Partridge, G. W. and Platt, C. M. R. 1976. Radiative Processes
-       in Meteorology and Climatology.
-
-    .. [7] Duffie, J. A. and Beckman, W. A. 1991. Solar Engineering of
-       Thermal Processes, 2nd edn. J. Wiley and Sons, New York.
+    .. [7] Partridge, G. W. and Platt, C. M. R. 1976. Radiative Processes
+       in Meteorology and Climatology. 
 
     """
 

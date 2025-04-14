@@ -56,8 +56,8 @@ of commerical module products.
 | :py:func:`~pvlib.spectrum.spectral_factor_jrc`          | :term:`relative_airmass`,  | CdTe,           |           |
 |                                                         | clearsky index             | poly-Si         | [6]_      |
 +---------------------------------------------------------+----------------------------+-----------------------------+
-| :py:func:`~pvlib.spectrum.calc_spectral_mismatch_field` | spectral response,         | -               |           |
-|                                                         | :term:`spectra`            |                 |           |
+| :py:func:`~pvlib.spectrum.calc_spectral_mismatch_field` | spectral response,         | Any single      |           |
+|                                                         | :term:`spectra`            | junction        |           |
 +---------------------------------------------------------+----------------------------+-----------------------------+
 
 

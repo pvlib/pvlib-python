@@ -44,12 +44,13 @@ def get_extra_radiation(datetime_or_doy, solar_constant=1366.1,
         The solar constant. [Wm⁻²]
 
     method : string, default 'spencer'
-        The method by which the ET radiation should be calculated.
-        Options include ``'pyephem', 'spencer', 'asce', 'nrel'``.
+        The method by which the extraterrestrial radiation should be
+        calculated. Options include: ``'pyephem', 'spencer' [2]_, 'asce' [3]_,
+        'nrel'``.
 
     epoch_year : int, default 2014
         The year in which a day of year input will be calculated. Only
-        applies to day of year input used with the pyephem or nrel
+        applies to day of year input used with the 'pyephem' or 'nrel'
         methods.
 
     kwargs :
@@ -69,18 +70,23 @@ def get_extra_radiation(datetime_or_doy, solar_constant=1366.1,
        Clear Sky Models: Implementation and Analysis", Sandia National
        Laboratories, SAND2012-2389, 2012.
 
-    .. [2] http://solardata.uoregon.edu/SolarRadiationBasics.html, Eqs.
+    .. [2] J. W. Spencer, "Fourier series representation of the sun," Search,
+       vol. 2, p. 172, 1971.
+
+    .. [3] R. G. Allen, Environmental, and E. Water Resources institute. Task
+       Committee on Standardization of Reference, The ASCE standardized
+       reference evapotranspiration equation. Reston, Va.: American Society of
+       Civil Engineers, 2005
+
+    .. [4] http://solardata.uoregon.edu/SolarRadiationBasics.html, Eqs.
        SR1 and SR2
 
-    .. [3] Partridge, G. W. and Platt, C. M. R. 1976. Radiative Processes
+    .. [5] Partridge, G. W. and Platt, C. M. R. 1976. Radiative Processes
        in Meteorology and Climatology.
 
-    .. [4] Duffie, J. A. and Beckman, W. A. 1991. Solar Engineering of
+    .. [6] Duffie, J. A. and Beckman, W. A. 1991. Solar Engineering of
        Thermal Processes, 2nd edn. J. Wiley and Sons, New York.
 
-    .. [5] ASCE, 2005. The ASCE Standardized Reference Evapotranspiration
-       Equation, Environmental and Water Resources Institute of the American
-       Civil Engineers, Ed. R. G. Allen et al.
     """
 
     to_doy, to_datetimeindex, to_output = \

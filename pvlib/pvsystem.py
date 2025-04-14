@@ -17,8 +17,6 @@ from dataclasses import dataclass
 from abc import ABC, abstractmethod
 from typing import Optional, Union
 
-from pvlib._deprecation import deprecated
-
 import pvlib  # used to avoid albedo name collision in the Array class
 from pvlib import (atmosphere, iam, inverter, irradiance,
                    singlediode as _singlediode, spectrum, temperature)

@@ -90,7 +90,7 @@ def get_extra_radiation(datetime_or_doy, solar_constant=1366.1,
     .. [6] I. Reda, A. Andreas, "Solar position algorithm for solar
        radiation applications" NREL Golden, USA. NREL/TP-560- 34302, 2008.
 
-    """ # noqa: E501
+    """  # noqa: E501
 
     to_doy, to_datetimeindex, to_output = \
         _handle_extra_radiation_types(datetime_or_doy, epoch_year)

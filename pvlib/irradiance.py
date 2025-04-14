@@ -53,7 +53,7 @@ def get_extra_radiation(datetime_or_doy, solar_constant=1366.1,
         methods.
 
     kwargs :
-        Passed to solarposition.nrel_earthsun_distance
+        Passed to :py:func:`~pvlib.solarposition.nrel_earthsun_distance`
 
     Returns
     -------

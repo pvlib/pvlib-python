@@ -2199,16 +2199,16 @@ def sapm(effective_irradiance, temp_cell, module):
     '''
     The Sandia PV Array Performance Model (SAPM) generates 5 points on a
     PV module's I-V curve (Voc, Isc, Ix, Ixx, Vmp/Imp) according to
-    SAND2004-3535. Assumes a reference cell temperature of 25 C.
+    SAND2004-3535. Assumes a reference cell temperature of 25°C.
 
     Parameters
     ----------
     effective_irradiance : numeric
         Irradiance reaching the module's cells, after reflections and
-        adjustment for spectrum. [W/m2]
+        adjustment for spectrum. [Wm⁻²]
 
     temp_cell : numeric
-        Cell temperature [C].
+        Cell temperature [°C].
 
     module : dict-like
         A dict or Series defining the SAPM parameters. See the notes section
@@ -2233,9 +2233,9 @@ def sapm(effective_irradiance, temp_cell, module):
     The Sandia module database contains parameter values for a limited set
     of modules. The CEC module database does not contain these parameters.
     Both databases can be accessed using :py:func:`retrieve_sam`. The full list
-    of SAPM parameters is presented in the table below. Those that are required
-    in ``module`` are: `Bvmpo`, `Mbvmp`, `Bvoco`, `Mbvoc`, `N`, and
-    `Cells_in_Series`.
+    of SAPM parameters is presented in the table below. All but ``A0`` to
+    ``A4``, ``B0`` to ``B5``, ``C4`` to ``C7``, ``IX0``, and ``IXX0`` are
+    required in the ``module`` parameter.
 
     ================   ========================================================
     Key                Description
@@ -2251,19 +2251,19 @@ def sapm(effective_irradiance, temp_cell, module):
     Voco               Open circuit voltage at reference condition (amps)
     Vmpo               Maximum power voltage at reference condition (amps)
     Aisc               Short circuit current temperature coefficient at
-                       reference condition (1/C)
+                       reference condition (1/°C)
     Aimp               Maximum power current temperature coefficient at
-                       reference condition (1/C)
+                       reference condition (1/°C)
     Bvoco              Open circuit voltage temperature coefficient at
-                       reference condition (V/C)
+                       reference condition (V/°C)
     Mbvoc              Coefficient providing the irradiance dependence for the
                        BetaVoc temperature coefficient at reference irradiance
-                       (V/C)
+                       (V/°C)
     Bvmpo              Maximum power voltage temperature coefficient at
                        reference condition
     Mbvmp              Coefficient providing the irradiance dependence for the
                        BetaVmp temperature coefficient at reference irradiance
-                       (V/C)
+                       (V/°C)
     N                  Empirically determined "diode factor" (dimensionless)
     Cells_in_Series    Number of cells in series in a module's cell string(s)
     IXO                Ix at reference conditions

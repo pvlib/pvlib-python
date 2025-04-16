@@ -20,10 +20,10 @@ Enhancements
 Documentation
 ~~~~~~~~~~~~~
 * Add a supporting reference to :py:func:`pvlib.atmosphere.get_relative_airmass` (:issue:`2390`, :pull:`2424`)
-* Documented how `np.nan` values are handled by :py:func:`~pvlib.spectrum.average_photon_energy`
+* Document how ``np.nan`` values are handled by :py:func:`~pvlib.spectrum.average_photon_energy`
   (:issue:`2423`, :pull:`2426`)
-* Clarify which SAPM coefficients are required by the `module` parameter in
-  `:py:func:`~pvlib.pvsystem.sapm` (:issue:`2392`, :pull:`2435`)
+* Clarify which SAPM coefficients are required by the ``module`` parameter in
+  :py:func:`~pvlib.pvsystem.sapm` (:issue:`2392`, :pull:`2435`)
 
 Testing
 ~~~~~~~

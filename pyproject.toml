@@ -18,10 +18,9 @@ dependencies = [
     'scipy >= 1.6.0',
     'h5py',
 ]
-license = { text = "BSD-3-Clause" }
+license = "BSD-3-Clause"
 classifiers = [
     'Development Status :: 4 - Beta',
-    'License :: OSI Approved :: BSD License',
     'Operating System :: OS Independent',
     'Intended Audience :: Science/Research',
     'Programming Language :: Python',

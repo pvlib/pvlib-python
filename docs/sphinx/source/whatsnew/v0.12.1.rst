@@ -26,7 +26,7 @@ Documentation
 
 Requirements
 ~~~~~~~~~~~~
-* ``wheel`` is no longer a required build dependency. (:pull:`2439`)
+* ``wheel`` is no longer a build dependency. (:pull:`2439`)
 
 Testing
 ~~~~~~~

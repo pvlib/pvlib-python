@@ -24,6 +24,10 @@ Documentation
 * Documented how `np.nan` values are handled by :py:func:`~pvlib.spectrum.average_photon_energy`
   (:issue:`2423`, :pull:`2426`)
 
+Requirements
+~~~~~~~~~~~~
+* ``wheel`` is no longer a required build dependency. (:pull:`2439`)
+
 Testing
 ~~~~~~~
 

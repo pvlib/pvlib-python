@@ -2234,7 +2234,7 @@ def sapm(effective_irradiance, temp_cell, module):
     of modules. The CEC module database does not contain these parameters.
     Both databases can be accessed using :py:func:`retrieve_sam`. The full list
     of SAPM parameters is presented in the table below. All but ``A0`` to
-    ``A4``, ``B0`` to ``B5``, ``C4`` to ``C7``, ``IX0``, and ``IXX0`` are
+    ``A4``, ``B0`` to ``B5``, ``C4`` to ``C7``, ``IXO``, and ``IXXO`` are
     required in the ``module`` parameter.
 
     ================   ========================================================

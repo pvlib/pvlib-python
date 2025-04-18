@@ -33,7 +33,10 @@ def __getattr__(attr):
 def get_extra_radiation(datetime_or_doy, solar_constant=1366.1,
                         method='spencer', epoch_year=2014, **kwargs):
     """
-    Determine extraterrestrial radiation from day of year.
+    Determine extraterrestrial radiation from day of year. Specific references
+    for each method of caclulating the earth-sun distance are cited in the
+    parameter descriptions below, while a more general discussion of the
+    different models may also be found in [1]_, [2]_, and [3]_.
 
     Parameters
     ----------
@@ -41,19 +44,20 @@ def get_extra_radiation(datetime_or_doy, solar_constant=1366.1,
         Day of year, array of days of year, or datetime-like object
 
     solar_constant : float, default 1366.1
-        The solar constant.
+        The solar constant. [Wm⁻²]
 
-    method : string, default 'spencer'
-        The method by which the ET radiation should be calculated.
-        Options include ``'pyephem', 'spencer', 'asce', 'nrel'``.
+    method : string, default `spencer`
+        The method by which the extraterrestrial radiation should be
+        calculated. Options include: `pyephem`, `spencer` [4]_, `asce` [5]_,
+        'nrel' [6]_.
 
     epoch_year : int, default 2014
         The year in which a day of year input will be calculated. Only
-        applies to day of year input used with the pyephem or nrel
+        applies to day of year input used with the `pyephem` or `nrel`
         methods.
 
     kwargs :
-        Passed to solarposition.nrel_earthsun_distance
+        Passed to :py:func:`~pvlib.solarposition.nrel_earthsun_distance`.
 
     Returns
     -------
@@ -69,19 +73,25 @@ def get_extra_radiation(datetime_or_doy, solar_constant=1366.1,
        Clear Sky Models: Implementation and Analysis", Sandia National
        Laboratories, SAND2012-2389, 2012.
 
-    .. [2] http://solardata.uoregon.edu/SolarRadiationBasics.html, Eqs.
-       SR1 and SR2
+    .. [2] J. A. Duffie and W. A. Beckman, "Solar Radiation" in Solar
+       Engineering of Thermal Processes, 5th ed, New York, USA, J. Wiley
+       and Sons, 2020.
 
-    .. [3] Partridge, G. W. and Platt, C. M. R. 1976. Radiative Processes
-       in Meteorology and Climatology.
+    .. [3] "Solar Radiation Basics". University of Oregon. Accessed: 04 April,
+       2025. [Online.] Available https://web.archive.org/web/20240424224453/http://solardata.uoregon.edu/SolarRadiationBasics.html
 
-    .. [4] Duffie, J. A. and Beckman, W. A. 1991. Solar Engineering of
-       Thermal Processes, 2nd edn. J. Wiley and Sons, New York.
+    .. [4] J. W. Spencer, "Fourier series representation of the sun," Search,
+       vol. 2, p. 172, 1971.
 
-    .. [5] ASCE, 2005. The ASCE Standardized Reference Evapotranspiration
-       Equation, Environmental and Water Resources Institute of the American
-       Civil Engineers, Ed. R. G. Allen et al.
-    """
+    .. [5] R. G. Allen, Environmental, and E. Water Resources institute. Task
+       Committee on Standardization of Reference, The ASCE standardized
+       reference evapotranspiration equation. Reston, Va.: American Society of
+       Civil Engineers, 2005
+
+    .. [6] I. Reda, A. Andreas, "Solar position algorithm for solar
+       radiation applications" NREL Golden, USA. NREL/TP-560- 34302, 2008.
+
+    """  # noqa: E501
 
     to_doy, to_datetimeindex, to_output = \
         _handle_extra_radiation_types(datetime_or_doy, epoch_year)

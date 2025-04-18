@@ -17,7 +17,7 @@ Enhancements
 * :py:mod:`pvlib.ivtools.sdm` is now a subpackage. (:issue:`2252`, :pull:`2256`)
 * Add a function for estimating PVsyst SDM parameters from IEC 61853-1 matrix
   data (:py:func:`~pvlib.ivtools.sdm.fit_pvsyst_iec61853_sandia_2025`). (:issue:`2185`, :pull:`2429`)
-* Add optional arguments `temperature_ref` and `irradiance_ref` to
+* Add optional arguments ``temperature_ref`` and ``irradiance_ref`` to
   :py:func:`~pvlib.pvsystem.sapm`(:issue:`2432`, :pull:`2434`)
 
 Documentation

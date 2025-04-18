@@ -77,8 +77,8 @@ def get_nsrdb_psm4_aggregated(latitude, longitude, api_key, email,
                               parameters=PARAMETERS, leap_day=True,
                               full_name=PVLIB_PYTHON,
                               affiliation=PVLIB_PYTHON,
-                              map_variables=True, url=None, timeout=30,
-                              utc=False):
+                              utc=False, map_variables=True, url=None,
+                              timeout=30):
     """
     Retrieve NSRDB PSM4 timeseries weather data from the PSM4 NSRDB GOES
     Aggregated v4 API.
@@ -116,6 +116,9 @@ def get_nsrdb_psm4_aggregated(latitude, longitude, api_key, email,
         optional
     affiliation : str, default 'pvlib python'
         optional
+    utc: bool, default : False
+        retrieve data with timestamps converted to UTC. False returns
+        timestamps in local standard time of the selected location
     map_variables : bool, default True
         When true, renames columns of the Dataframe to pvlib variable names
         where applicable. See variable :const:`VARIABLE_MAP`.
@@ -124,9 +127,6 @@ def get_nsrdb_psm4_aggregated(latitude, longitude, api_key, email,
         URL is used.
     timeout : int, default 30
         time in seconds to wait for server response before timeout
-    utc: bool, default : False
-        retrieve data with timestamps converted to UTC. False returns
-        timestamps in local standard time of the selected location
 
     Returns
     -------
@@ -221,7 +221,7 @@ def get_nsrdb_psm4_aggregated(latitude, longitude, api_key, email,
 def get_nsrdb_psm4_tmy(latitude, longitude, api_key, email, names='tmy',
                        time_period=60, parameters=PARAMETERS, leap_day=False,
                        full_name=PVLIB_PYTHON, affiliation=PVLIB_PYTHON,
-                       map_variables=True, url=None, timeout=30, utc=False):
+                       utc=False, map_variables=True, url=None, timeout=30):
     """
     Retrieve NSRDB PSM4 timeseries weather data from the PSM4 NSRDB GOES
     TMY v4 API.
@@ -259,6 +259,9 @@ def get_nsrdb_psm4_tmy(latitude, longitude, api_key, email, names='tmy',
         optional
     affiliation : str, default 'pvlib python'
         optional
+    utc: bool, default : False
+        retrieve data with timestamps converted to UTC. False returns
+        timestamps in local standard time of the selected location
     map_variables : bool, default True
         When true, renames columns of the Dataframe to pvlib variable names
         where applicable. See variable :const:`VARIABLE_MAP`.
@@ -267,9 +270,6 @@ def get_nsrdb_psm4_tmy(latitude, longitude, api_key, email, names='tmy',
         used.
     timeout : int, default 30
         time in seconds to wait for server response before timeout
-    utc: bool, default : False
-        retrieve data with timestamps converted to UTC. False returns
-        timestamps in local standard time of the selected location
 
     Returns
     -------
@@ -364,8 +364,7 @@ def get_nsrdb_psm4_tmy(latitude, longitude, api_key, email, names='tmy',
 def get_nsrdb_psm4_conus(latitude, longitude, api_key, email, names='2023',
                          time_period=60, parameters=PARAMETERS, leap_day=True,
                          full_name=PVLIB_PYTHON, affiliation=PVLIB_PYTHON,
-                         map_variables=True, url=None, timeout=30,
-                         utc=False):
+                         utc=False, map_variables=True, url=None, timeout=30):
     """
     Retrieve NSRDB PSM4 timeseries weather data from the PSM4 NSRDB GOES CONUS
     v4 API.
@@ -402,6 +401,9 @@ def get_nsrdb_psm4_conus(latitude, longitude, api_key, email, names='2023',
         optional
     affiliation : str, default 'pvlib python'
         optional
+    utc: bool, default : False
+        retrieve data with timestamps converted to UTC. False returns
+        timestamps in local standard time of the selected location
     map_variables : bool, default True
         When true, renames columns of the Dataframe to pvlib variable names
         where applicable. See variable :const:`VARIABLE_MAP`.
@@ -410,9 +412,6 @@ def get_nsrdb_psm4_conus(latitude, longitude, api_key, email, names='2023',
         used.
     timeout : int, default 30
         time in seconds to wait for server response before timeout
-    utc: bool, default : False
-        retrieve data with timestamps converted to UTC. False returns
-        timestamps in local standard time of the selected location
 
     Returns
     -------
@@ -508,8 +507,8 @@ def get_nsrdb_psm4_full_disc(latitude, longitude, api_key, email,
                              names='2023', time_period=60,
                              parameters=PARAMETERS, leap_day=True,
                              full_name=PVLIB_PYTHON,
-                             affiliation=PVLIB_PYTHON, map_variables=True,
-                             url=None, timeout=30, utc=False):
+                             affiliation=PVLIB_PYTHON, utc=False, 
+                             map_variables=True, url=None, timeout=30):
     """
     Retrieve NSRDB PSM4 timeseries weather data from the PSM4 NSRDB GOES Full
     Disc v4 API.
@@ -547,6 +546,9 @@ def get_nsrdb_psm4_full_disc(latitude, longitude, api_key, email,
         optional
     affiliation : str, default 'pvlib python'
         optional
+    utc: bool, default : False
+        retrieve data with timestamps converted to UTC. False returns
+        timestamps in local standard time of the selected location
     map_variables : bool, default True
         When true, renames columns of the Dataframe to pvlib variable names
         where applicable. See variable :const:`VARIABLE_MAP`.
@@ -555,9 +557,6 @@ def get_nsrdb_psm4_full_disc(latitude, longitude, api_key, email,
         URL is used.
     timeout : int, default 30
         time in seconds to wait for server response before timeout
-    utc: bool, default : False
-        retrieve data with timestamps converted to UTC. False returns
-        timestamps in local standard time of the selected location
 
     Returns
     -------

@@ -1,4 +1,4 @@
-.. _whatsnew_0XXYY:
+.. _whatsnew_0_X_Y:
 
 
 v0.X.Y (Month XX, 20YY)

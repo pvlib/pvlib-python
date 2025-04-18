@@ -218,7 +218,7 @@ def get_nsrdb_psm4_aggregated(latitude, longitude, api_key, email,
     return parse_nsrdb_psm4(fbuf, map_variables)
 
 
-def get_nsrdb_psm4_tmy(latitude, longitude, api_key, email, names='2023',
+def get_nsrdb_psm4_tmy(latitude, longitude, api_key, email, names='tmy',
                        time_period=60, parameters=PARAMETERS, leap_day=False,
                        full_name=PVLIB_PYTHON, affiliation=PVLIB_PYTHON,
                        map_variables=True, url=None, timeout=30, utc=False):

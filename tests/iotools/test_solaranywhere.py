@@ -283,7 +283,8 @@ def test_get_solaranywhere_timeout_tgy(solaranywhere_api_key):
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_get_solaranywhere_not_available(solaranywhere_api_key):
     # Test if RuntimeError is raised if location in the ocean is requested
-    with pytest.raises(RuntimeError, match="Tile is outside of our coverage"):
+    with pytest.raises(RuntimeError,
+                       match="Location is outside of our coverage area"):
         pvlib.iotools.get_solaranywhere(
             latitude=40, longitude=-70,
             api_key=solaranywhere_api_key,

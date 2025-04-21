@@ -33,10 +33,11 @@ def __getattr__(attr):
 def get_extra_radiation(datetime_or_doy, solar_constant=1366.1,
                         method='spencer', epoch_year=2014, **kwargs):
     """
-    Determine extraterrestrial radiation from day of year. Specific references
-    for each method of caclulating the earth-sun distance are cited in the
-    parameter descriptions below, while a more general discussion of the
-    different models may also be found in [1]_, [2]_, and [3]_.
+    Determine extraterrestrial radiation from day of year.
+    
+    Specific references for each method of caclulating the earth-sun distance
+    are cited in the parameter descriptions below, while a more general
+    discussion of the different models may also be found in [1]_ and [2]_.
 
     Parameters
     ----------
@@ -48,7 +49,7 @@ def get_extra_radiation(datetime_or_doy, solar_constant=1366.1,
 
     method : string, default `spencer`
         The method by which the extraterrestrial radiation should be
-        calculated. Options include: `pyephem`, `spencer` [4]_, `asce` [5]_,
+        calculated. Options include: `pyephem`, `spencer` [3]_, `asce` [4]_,
         'nrel' [6]_.
 
     epoch_year : int, default 2014
@@ -72,26 +73,25 @@ def get_extra_radiation(datetime_or_doy, solar_constant=1366.1,
     .. [1] M. Reno, C. Hansen, and J. Stein, "Global Horizontal Irradiance
        Clear Sky Models: Implementation and Analysis", Sandia National
        Laboratories, SAND2012-2389, 2012.
+       :doi:`10.2172/1039404`
 
-    .. [2] J. A. Duffie and W. A. Beckman, "Solar Radiation" in Solar
-       Engineering of Thermal Processes, 5th ed, New York, USA, J. Wiley
-       and Sons, 2020.
+    .. [2] J. A. Duffie, W. A. Beckman, N. Blair, "Solar Radiation", in Solar
+       Engineering of Thermal Processes, Photovoltaics and Wind, 5th ed,
+       New York, USA: J. Wiley and Sons, 2020, pp. 3-44.
+       :doi:`10.1002/9781119540328`
 
-    .. [3] "Solar Radiation Basics". University of Oregon. Accessed: 04 April,
-       2025. [Online.] Available https://web.archive.org/web/20240424224453/http://solardata.uoregon.edu/SolarRadiationBasics.html
-
-    .. [4] J. W. Spencer, "Fourier series representation of the sun," Search,
+    .. [3] J. W. Spencer, "Fourier series representation of the sun," Search,
        vol. 2, p. 172, 1971.
 
-    .. [5] R. G. Allen, Environmental, and E. Water Resources institute. Task
+    .. [4] R. G. Allen, Environmental, and E. Water Resources institute. Task
        Committee on Standardization of Reference, The ASCE standardized
        reference evapotranspiration equation. Reston, Va.: American Society of
-       Civil Engineers, 2005
+       Civil Engineers, 2005. :doi:`10.1061/9780784408056`
 
     .. [6] I. Reda, A. Andreas, "Solar position algorithm for solar
-       radiation applications" NREL Golden, USA. NREL/TP-560- 34302, 2008.
-
-    """  # noqa: E501
+       radiation applications" NREL Golden, USA. NREL/TP-560-34302,
+       Revised 2008. :doi:`10.2172/15003974`
+    """
 
     to_doy, to_datetimeindex, to_output = \
         _handle_extra_radiation_types(datetime_or_doy, epoch_year)

@@ -172,12 +172,12 @@ def test_read_nsrdb_psm4_map_variables():
 
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
-def test_get_nsrdb_psm4_aggregated_attribute_mapping(nrel_api_key):
-    """Test that pvlib names can be passed in as attributes and get correctly
+def test_get_nsrdb_psm4_aggregated_parameter_mapping(nrel_api_key):
+    """Test that pvlib names can be passed in as parameters and get correctly
     reverse mapped to psm4 names"""
     data, meta = psm4.get_nsrdb_psm4_aggregated(
         LATITUDE, LONGITUDE, nrel_api_key, PVLIB_EMAIL, year='2019',
-        time_step=60, attributes=['ghi', 'wind_speed'], leap_day=False,
+        time_step=60, parameters=['ghi', 'wind_speed'], leap_day=False,
         map_variables=True)
     # Check that columns are in the correct order (GH1647)
     expected_columns = [

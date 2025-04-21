@@ -776,6 +776,7 @@ def parse_nsrdb_psm4(fbuf, map_variables=True):
 
     if map_variables:
         data = data.rename(columns=VARIABLE_MAP)
+        data = data.drop(columns=[col for col in data if col not in VARIABLE_MAP])
         metadata['latitude'] = metadata.pop('Latitude')
         metadata['longitude'] = metadata.pop('Longitude')
         metadata['altitude'] = metadata.pop('Elevation')

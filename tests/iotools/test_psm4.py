@@ -74,7 +74,7 @@ def test_get_nsrdb_psm4_conus_singleyear(nrel_api_key):
                                                     year='2023',
                                                     leap_day=False,
                                                     map_variables=False,
-                                                    interval=30)
+                                                    time_step=30)
     expected = pd.read_csv(YEAR_TEST_DATA)
     assert_psm4_equal(data, metadata, expected)
 
@@ -85,7 +85,7 @@ def test_get_nsrdb_psm4_conus_5min(nrel_api_key):
     """test get_nsrdb_psm4_conus for 5-minute data"""
     data, metadata = psm4.get_nsrdb_psm4_conus(LATITUDE, LONGITUDE,
                                                nrel_api_key, PVLIB_EMAIL,
-                                               year='2023', interval=5,
+                                               year='2023', time_step=5,
                                                leap_day=False,
                                                map_variables=False)
     assert len(data) == 525600/5
@@ -100,13 +100,13 @@ def test_get_nsrdb_psm4_aggregated_check_leap_day(nrel_api_key):
     """test get_nsrdb_psm4_aggregated for leap day"""
     data_2012, _ = psm4.get_nsrdb_psm4_aggregated(LATITUDE, LONGITUDE,
                                                   nrel_api_key, PVLIB_EMAIL,
-                                                  year="2012", interval=60,
+                                                  year="2012", time_step=60,
                                                   leap_day=True,
                                                   map_variables=False)
     assert len(data_2012) == (8760 + 24)
 
 
-@pytest.mark.parametrize('latitude, longitude, api_key, year, interval',
+@pytest.mark.parametrize('latitude, longitude, api_key, year, time_step',
                          [(LATITUDE, LONGITUDE, 'BAD', '2023', 60),
                           (51, -5, nrel_api_key, '2023', 60),
                           (LATITUDE, LONGITUDE, nrel_api_key, 'bad', 60),
@@ -115,7 +115,7 @@ def test_get_nsrdb_psm4_aggregated_check_leap_day(nrel_api_key):
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_get_nsrdb_psm4_aggregated_errors(
-    latitude, longitude, api_key, year, interval
+    latitude, longitude, api_key, year, time_step
 ):
     """Test get_nsrdb_psm4_aggregated() for multiple erroneous input scenarios.
 
@@ -123,12 +123,12 @@ def test_get_nsrdb_psm4_aggregated_errors(
     * Bad API key -> HTTP 403 forbidden because api_key is rejected
     * Bad latitude/longitude -> Coordinates were not found in the NSRDB.
     * Bad name -> Name is not one of the available options.
-    * Bad interval, single year -> Intervals can only be 30 or 60 minutes
+    * Bad time_step, single year -> time_step can only be 30 or 60 minutes
     """
     with pytest.raises(HTTPError) as excinfo:
         psm4.get_nsrdb_psm4_aggregated(latitude, longitude, api_key,
                                        PVLIB_EMAIL, year=year,
-                                       interval=interval, leap_day=False,
+                                       time_step=time_step, leap_day=False,
                                        map_variables=False)
     # ensure the HTTPError caught isn't due to overuse of the API key
     assert "OVER_RATE_LIMIT" not in str(excinfo.value)
@@ -177,7 +177,7 @@ def test_get_nsrdb_psm4_aggregated_attribute_mapping(nrel_api_key):
     reverse mapped to psm4 names"""
     data, meta = psm4.get_nsrdb_psm4_aggregated(
         LATITUDE, LONGITUDE, nrel_api_key, PVLIB_EMAIL, year='2019',
-        interval=60, attributes=['ghi', 'wind_speed'], leap_day=False,
+        time_step=60, attributes=['ghi', 'wind_speed'], leap_day=False,
         map_variables=True)
     # Check that columns are in the correct order (GH1647)
     expected_columns = [

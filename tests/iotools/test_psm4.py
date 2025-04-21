@@ -176,11 +176,12 @@ def test_read_nsrdb_psm4_map_variables():
     """test read_nsrdb_psm4 map_variables=True"""
     data, metadata = psm4.read_nsrdb_psm4(MANUAL_TEST_DATA, map_variables=True)
     columns_mapped = ['Year', 'Month', 'Day', 'Hour', 'Minute', 'temp_air',
-                      'aod', 'dhi_clear', 'dni_clear', 'ghi_clear',
-                      'Cloud Fill Flag', 'Cloud Type', 'temp_dew', 'dhi',
-                      'dni', 'Fill Flag', 'ghi', 'Ozone', 'relative_humidity',
-                      'solar_zenith', 'SSA', 'albedo', 'pressure',
-                      'precipitable_water', 'wind_direction', 'wind_speed']
+                      'Alpha', 'aod', 'Asymmetry', 'dhi_clear', 'dni_clear',
+                      'ghi_clear', 'Cloud Fill Flag', 'Cloud Type',
+                      'temp_dew', 'dhi', 'dni', 'Fill Flag', 'ghi', 'Ozone',
+                      'relative_humidity', 'solar_zenith', 'SSA', 'albedo',
+                      'pressure', 'precipitable_water', 'wind_direction',
+                      'wind_speed']
     assert_index_equal(data.columns, pd.Index(columns_mapped))
 
 

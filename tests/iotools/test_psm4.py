@@ -13,6 +13,7 @@ from requests import HTTPError
 from io import StringIO
 
 TMY_TEST_DATA = TESTS_DATA_DIR / 'test_psm4_tmy-2023.csv'
+FULL_DISC_TEST_DATA = TESTS_DATA_DIR / 'test_psm4_full_disc_2023.csv'
 YEAR_TEST_DATA = TESTS_DATA_DIR / 'test_psm4_2023.csv'
 YEAR_TEST_DATA_5MIN = TESTS_DATA_DIR / 'test_psm4_2023_5min.csv'
 MANUAL_TEST_DATA = TESTS_DATA_DIR / 'test_read_psm4.csv'
@@ -61,6 +62,19 @@ def test_get_nsrdb_psm4_tmy(nrel_api_key):
                                              leap_day=False,
                                              map_variables=False)
     expected = pd.read_csv(TMY_TEST_DATA)
+    assert_psm4_equal(data, metadata, expected)
+
+
+@pytest.mark.remote_data
+@pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
+def test_get_nsrdb_psm4_full_disc(nrel_api_key):
+    """test get_nsrdb_psm4_full_disc with a single year"""
+    data, metadata = psm4.get_nsrdb_psm4_full_disc(LATITUDE, LONGITUDE,
+                                                   nrel_api_key, PVLIB_EMAIL,
+                                                   year='2023',
+                                                   leap_day=False,
+                                                   map_variables=False)
+    expected = pd.read_csv(FULL_DISC_TEST_DATA)
     assert_psm4_equal(data, metadata, expected)
 
 

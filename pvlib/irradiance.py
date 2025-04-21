@@ -35,9 +35,9 @@ def get_extra_radiation(datetime_or_doy, solar_constant=1366.1,
     """
     Determine extraterrestrial radiation from day of year.
 
-    Specific references for each method of caclulating the earth-sun distance
-    are cited in the parameter descriptions below, while a more general
-    discussion of the different models may also be found in [1]_ and [2]_.
+    Specific references for each method are cited in the parameter descriptions
+    below, while a more general discussion of the different models may also be
+    found in [1]_ and [2]_.
 
     Parameters
     ----------

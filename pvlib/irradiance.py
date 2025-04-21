@@ -34,7 +34,7 @@ def get_extra_radiation(datetime_or_doy, solar_constant=1366.1,
                         method='spencer', epoch_year=2014, **kwargs):
     """
     Determine extraterrestrial radiation from day of year.
-    
+
     Specific references for each method of caclulating the earth-sun distance
     are cited in the parameter descriptions below, while a more general
     discussion of the different models may also be found in [1]_ and [2]_.
@@ -83,10 +83,9 @@ def get_extra_radiation(datetime_or_doy, solar_constant=1366.1,
     .. [3] J. W. Spencer, "Fourier series representation of the sun," Search,
        vol. 2, p. 172, 1971.
 
-    .. [4] R. G. Allen, Environmental, and E. Water Resources institute. Task
-       Committee on Standardization of Reference, The ASCE standardized
-       reference evapotranspiration equation. Reston, Va.: American Society of
-       Civil Engineers, 2005. :doi:`10.1061/9780784408056`
+    .. [4] R. G. Allen et al., Eds. The ASCE standardized reference
+       evapotranspiration equation. Reston, Va.: American Society of Civil
+       Engineers, 2005. :doi:`10.1061/9780784408056`
 
     .. [6] I. Reda, A. Andreas, "Solar position algorithm for solar
        radiation applications" NREL Golden, USA. NREL/TP-560-34302,

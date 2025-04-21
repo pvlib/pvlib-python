@@ -73,7 +73,7 @@ REQUEST_VARIABLE_MAP = {
 
 
 def get_nsrdb_psm4_aggregated(latitude, longitude, api_key, email,
-                              names='2023', time_period=60,
+                              names='2023', time_step=60,
                               parameters=PARAMETERS, leap_day=True,
                               full_name=PVLIB_PYTHON,
                               affiliation=PVLIB_PYTHON,
@@ -101,8 +101,8 @@ def get_nsrdb_psm4_aggregated(latitude, longitude, api_key, email,
         PSM4 API parameter specifing year (e.g. ``2023``) to download. The
         allowed values update periodically, so consult the NSRDB reference
         below for the current set of options.
-    time_period : int, {60, 30}
-        time period in minutes, must be 60 or 30 for PSM4 Aggregated. Called
+    time_step : int, {60, 30}
+        time step in minutes, must be 60 or 30 for PSM4 Aggregated. Called
         ``interval`` in NSRDB API.
     parameters : list of str, optional
         meteorological fields to fetch. If not specified, defaults to
@@ -197,7 +197,7 @@ def get_nsrdb_psm4_aggregated(latitude, longitude, api_key, email,
         'attributes':  ','.join(parameters),
         'leap_day': str(leap_day).lower(),
         'utc': str(utc).lower(),
-        'interval': time_period
+        'interval': time_step
     }
     # request CSV download from NREL PSM4
     if url is None:
@@ -219,7 +219,7 @@ def get_nsrdb_psm4_aggregated(latitude, longitude, api_key, email,
 
 
 def get_nsrdb_psm4_tmy(latitude, longitude, api_key, email, names='tmy',
-                       time_period=60, parameters=PARAMETERS, leap_day=False,
+                       time_step=60, parameters=PARAMETERS, leap_day=False,
                        full_name=PVLIB_PYTHON, affiliation=PVLIB_PYTHON,
                        utc=False, map_variables=True, url=None, timeout=30):
     """
@@ -244,8 +244,8 @@ def get_nsrdb_psm4_tmy(latitude, longitude, api_key, email, names='tmy',
         PSM4 API parameter specifing TMY variant to download (e.g. ``'tmy'``
         or ``'tgy-2022'``).  The allowed values update periodically, so
         consult the NSRDB references below for the current set of options.
-    time_period : int, {60}
-        time period in minutes. Must be 60 for typical year requests. Called
+    time_step : int, {60}
+        time step in minutes. Must be 60 for typical year requests. Called
         ``interval`` in NSRDB API.
     parameters : list of str, optional
         meteorological fields to fetch. If not specified, defaults to
@@ -340,7 +340,7 @@ def get_nsrdb_psm4_tmy(latitude, longitude, api_key, email, names='tmy',
         'attributes':  ','.join(parameters),
         'leap_day': str(leap_day).lower(),
         'utc': str(utc).lower(),
-        'interval': time_period
+        'interval': time_step
     }
     # request CSV download from NREL PSM4
     if url is None:
@@ -362,7 +362,7 @@ def get_nsrdb_psm4_tmy(latitude, longitude, api_key, email, names='tmy',
 
 
 def get_nsrdb_psm4_conus(latitude, longitude, api_key, email, names='2023',
-                         time_period=60, parameters=PARAMETERS, leap_day=True,
+                         time_step=60, parameters=PARAMETERS, leap_day=True,
                          full_name=PVLIB_PYTHON, affiliation=PVLIB_PYTHON,
                          utc=False, map_variables=True, url=None, timeout=30):
     """
@@ -387,8 +387,8 @@ def get_nsrdb_psm4_conus(latitude, longitude, api_key, email, names='2023',
         PSM4 API parameter specifing year (e.g. ``2023``) to download. The
         allowed values update periodically, so consult the NSRDB reference
         below for the current set of options.
-    time_period : int, {60, 5, 15, 30}
-        time period in minutes. Called ``interval`` in NSRDB API.
+    time_step : int, {60, 5, 15, 30}
+        time step in minutes. Called ``interval`` in NSRDB API.
     parameters : list of str, optional
         meteorological fields to fetch. If not specified, defaults to
         ``pvlib.iotools.psm4.PARAMETERS``. See reference [2]_ for a list of
@@ -482,7 +482,7 @@ def get_nsrdb_psm4_conus(latitude, longitude, api_key, email, names='2023',
         'attributes':  ','.join(parameters),
         'leap_day': str(leap_day).lower(),
         'utc': str(utc).lower(),
-        'interval': time_period
+        'interval': time_step
     }
     # request CSV download from NREL PSM4
     if url is None:
@@ -504,7 +504,7 @@ def get_nsrdb_psm4_conus(latitude, longitude, api_key, email, names='2023',
 
 
 def get_nsrdb_psm4_full_disc(latitude, longitude, api_key, email,
-                             names='2023', time_period=60,
+                             names='2023', time_step=60,
                              parameters=PARAMETERS, leap_day=True,
                              full_name=PVLIB_PYTHON,
                              affiliation=PVLIB_PYTHON, utc=False, 
@@ -531,8 +531,8 @@ def get_nsrdb_psm4_full_disc(latitude, longitude, api_key, email,
         PSM4 API parameter specifing year (e.g. ``2023``) to download. The
         allowed values update periodically, so consult the NSRDB reference
         below for the current set of options.
-    time_period : int, {60, 10, 30}
-        time period in minutes, must be 10, 30 or 60. Called ``interval`` in
+    time_step : int, {60, 10, 30}
+        time step in minutes, must be 10, 30 or 60. Called ``interval`` in
         NSRDB API.
     parameters : list of str, optional
         meteorological fields to fetch. If not specified, defaults to
@@ -627,7 +627,7 @@ def get_nsrdb_psm4_full_disc(latitude, longitude, api_key, email,
         'attributes':  ','.join(parameters),
         'leap_day': str(leap_day).lower(),
         'utc': str(utc).lower(),
-        'interval': time_period
+        'interval': time_step
     }
     # request CSV download from NREL PSM4
     if url is None:

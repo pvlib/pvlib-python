@@ -21,6 +21,8 @@ Enhancements
   :py:func:`pvlib.pvsystem.sapm` directly and through
   :py:class:`~pvlib.pvsystem.PVSystem` and :py:class:`~pvlib.modelchain.ModelChain`.
   (:issue:`2402`, :pull:`2433`)
+* Add optional arguments ``temperature_ref`` and ``irradiance_ref`` to
+  :py:func:`~pvlib.pvsystem.sapm`(:issue:`2432`, :pull:`2434`)
 
 Documentation
 ~~~~~~~~~~~~~
@@ -28,12 +30,18 @@ Documentation
 * Documented how `np.nan` values are handled by :py:func:`~pvlib.spectrum.average_photon_energy`
   (:issue:`2423`, :pull:`2426`)
 
+Requirements
+~~~~~~~~~~~~
+* ``wheel`` is no longer a build dependency. (:pull:`2439`)
+
 Testing
 ~~~~~~~
 
 
 Maintenance
 ~~~~~~~~~~~
+* Update ``pyproject.toml`` to replace deprecated license table and
+  classifiers. (:issue:`2440`, :pull:`2441`)
 
 
 Contributors

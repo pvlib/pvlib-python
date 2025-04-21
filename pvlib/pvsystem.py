@@ -2193,24 +2193,31 @@ def _parse_raw_sam_df(csvdata):
     return df
 
 
-def sapm(effective_irradiance, temp_cell, module):
+def sapm(effective_irradiance, temp_cell, module, *, temperature_ref=25,
+         irradiance_ref=1000):
     '''
     The Sandia PV Array Performance Model (SAPM) generates 5 points on a
     PV module's I-V curve (Voc, Isc, Ix, Ixx, Vmp/Imp) according to
-    SAND2004-3535. Assumes a reference cell temperature of 25 C.
+    SAND2004-3535. Assumes a reference cell temperature of 25°C.
 
     Parameters
     ----------
     effective_irradiance : numeric
         Irradiance reaching the module's cells, after reflections and
-        adjustment for spectrum. [W/m2]
+        adjustment for spectrum. [Wm⁻²]
 
     temp_cell : numeric
-        Cell temperature [C].
+        Cell temperature [°C].
 
     module : dict-like
         A dict or Series defining the SAPM parameters. See the notes section
         for more details.
+
+    temperature_ref : numeric, optional
+        Reference temperature [°C]
+
+    irradiance_ref : numeric, optional
+        Reference irradiance [Wm⁻²]
 
     Returns
     -------
@@ -2251,19 +2258,19 @@ def sapm(effective_irradiance, temp_cell, module):
     Voco               Open circuit voltage at reference condition (amps)
     Vmpo               Maximum power voltage at reference condition (amps)
     Aisc               Short circuit current temperature coefficient at
-                       reference condition (1/C)
+                       reference condition (1/°C)
     Aimp               Maximum power current temperature coefficient at
-                       reference condition (1/C)
+                       reference condition (1/°C)
     Bvoco              Open circuit voltage temperature coefficient at
-                       reference condition (V/C)
+                       reference condition (V/°C)
     Mbvoc              Coefficient providing the irradiance dependence for the
                        BetaVoc temperature coefficient at reference irradiance
-                       (V/C)
+                       (V/°C)
     Bvmpo              Maximum power voltage temperature coefficient at
                        reference condition
     Mbvmp              Coefficient providing the irradiance dependence for the
                        BetaVmp temperature coefficient at reference irradiance
-                       (V/C)
+                       (V/°C)
     N                  Empirically determined "diode factor" (dimensionless)
     Cells_in_Series    Number of cells in series in a module's cell string(s)
     IXO                Ix at reference conditions
@@ -2284,16 +2291,11 @@ def sapm(effective_irradiance, temp_cell, module):
     pvlib.temperature.sapm_module
     '''
 
-    # TODO: someday, change temp_ref and irrad_ref to reference_temperature and
-    # reference_irradiance and expose
-    temp_ref = 25
-    irrad_ref = 1000
-
     q = constants.e  # Elementary charge in units of coulombs
     kb = constants.k  # Boltzmann's constant in units of J/K
 
     # avoid problem with integer input
-    Ee = np.array(effective_irradiance, dtype='float64') / irrad_ref
+    Ee = np.array(effective_irradiance, dtype='float64') / irradiance_ref
 
     # set up masking for 0, positive, and nan inputs
     Ee_gt_0 = np.full_like(Ee, False, dtype='bool')
@@ -2316,33 +2318,34 @@ def sapm(effective_irradiance, temp_cell, module):
     out = OrderedDict()
 
     out['i_sc'] = (
-        module['Isco'] * Ee * (1 + module['Aisc']*(temp_cell - temp_ref)))
+        module['Isco'] * Ee * (1 + module['Aisc']*(temp_cell -
+                                                   temperature_ref)))
 
     out['i_mp'] = (
         module['Impo'] * (module['C0']*Ee + module['C1']*(Ee**2)) *
-        (1 + module['Aimp']*(temp_cell - temp_ref)))
+        (1 + module['Aimp']*(temp_cell - temperature_ref)))
 
     out['v_oc'] = np.maximum(0, (
         module['Voco'] + cells_in_series * delta * logEe +
-        Bvoco*(temp_cell - temp_ref)))
+        Bvoco*(temp_cell - temperature_ref)))
 
     out['v_mp'] = np.maximum(0, (
         module['Vmpo'] +
         module['C2'] * cells_in_series * delta * logEe +
         module['C3'] * cells_in_series * ((delta * logEe) ** 2) +
-        Bvmpo*(temp_cell - temp_ref)))
+        Bvmpo*(temp_cell - temperature_ref)))
 
     out['p_mp'] = out['i_mp'] * out['v_mp']
 
     if 'IXO' in module and 'C4' in module and 'C5' in module:
         out['i_x'] = (
             module['IXO'] * (module['C4']*Ee + module['C5']*(Ee**2)) *
-            (1 + module['Aisc']*(temp_cell - temp_ref)))
+            (1 + module['Aisc']*(temp_cell - temperature_ref)))
 
     if 'IXXO' in module and 'C6' in module and 'C7' in module:
         out['i_xx'] = (
             module['IXXO'] * (module['C6']*Ee + module['C7']*(Ee**2)) *
-            (1 + module['Aimp']*(temp_cell - temp_ref)))
+            (1 + module['Aimp']*(temp_cell - temperature_ref)))
 
     if isinstance(out['i_sc'], pd.Series):
         out = pd.DataFrame(out)

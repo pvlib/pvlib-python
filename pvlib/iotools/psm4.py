@@ -508,7 +508,7 @@ def get_nsrdb_psm4_full_disc(latitude, longitude, api_key, email,
                              year='2023', time_step=60,
                              parameters=PARAMETERS, leap_day=True,
                              full_name=PVLIB_PYTHON,
-                             affiliation=PVLIB_PYTHON, utc=False, 
+                             affiliation=PVLIB_PYTHON, utc=False,
                              map_variables=True, url=None, timeout=30):
     """
     Retrieve NSRDB PSM4 timeseries weather data from the PSM4 NSRDB GOES Full

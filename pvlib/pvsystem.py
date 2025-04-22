@@ -17,8 +17,6 @@ from dataclasses import dataclass
 from abc import ABC, abstractmethod
 from typing import Optional, Union
 
-from pvlib._deprecation import deprecated
-
 import pvlib  # used to avoid albedo name collision in the Array class
 from pvlib import (atmosphere, iam, inverter, irradiance,
                    singlediode as _singlediode, spectrum, temperature)
@@ -2195,7 +2193,8 @@ def _parse_raw_sam_df(csvdata):
     return df
 
 
-def sapm(effective_irradiance, temp_cell, module):
+def sapm(effective_irradiance, temp_cell, module, *, temperature_ref=25,
+         irradiance_ref=1000):
     '''
     The Sandia PV Array Performance Model (SAPM) generates 5 points on a
     PV module's I-V curve (Voc, Isc, Ix, Ixx, Vmp/Imp) according to
@@ -2213,6 +2212,12 @@ def sapm(effective_irradiance, temp_cell, module):
     module : dict-like
         A dict or Series defining the SAPM parameters. See the notes section
         for more details.
+
+    temperature_ref : numeric, optional
+        Reference temperature [°C]
+
+    irradiance_ref : numeric, optional
+        Reference irradiance [Wm⁻²]
 
     Returns
     -------
@@ -2284,16 +2289,11 @@ def sapm(effective_irradiance, temp_cell, module):
     pvlib.temperature.sapm_module
     '''
 
-    # TODO: someday, change temp_ref and irrad_ref to reference_temperature and
-    # reference_irradiance and expose
-    temp_ref = 25
-    irrad_ref = 1000
-
     q = constants.e  # Elementary charge in units of coulombs
     kb = constants.k  # Boltzmann's constant in units of J/K
 
     # avoid problem with integer input
-    Ee = np.array(effective_irradiance, dtype='float64') / irrad_ref
+    Ee = np.array(effective_irradiance, dtype='float64') / irradiance_ref
 
     # set up masking for 0, positive, and nan inputs
     Ee_gt_0 = np.full_like(Ee, False, dtype='bool')
@@ -2316,31 +2316,32 @@ def sapm(effective_irradiance, temp_cell, module):
     out = OrderedDict()
 
     out['i_sc'] = (
-        module['Isco'] * Ee * (1 + module['Aisc']*(temp_cell - temp_ref)))
+        module['Isco'] * Ee * (1 + module['Aisc']*(temp_cell -
+                                                   temperature_ref)))
 
     out['i_mp'] = (
         module['Impo'] * (module['C0']*Ee + module['C1']*(Ee**2)) *
-        (1 + module['Aimp']*(temp_cell - temp_ref)))
+        (1 + module['Aimp']*(temp_cell - temperature_ref)))
 
     out['v_oc'] = np.maximum(0, (
         module['Voco'] + cells_in_series * delta * logEe +
-        Bvoco*(temp_cell - temp_ref)))
+        Bvoco*(temp_cell - temperature_ref)))
 
     out['v_mp'] = np.maximum(0, (
         module['Vmpo'] +
         module['C2'] * cells_in_series * delta * logEe +
         module['C3'] * cells_in_series * ((delta * logEe) ** 2) +
-        Bvmpo*(temp_cell - temp_ref)))
+        Bvmpo*(temp_cell - temperature_ref)))
 
     out['p_mp'] = out['i_mp'] * out['v_mp']
 
     out['i_x'] = (
         module['IXO'] * (module['C4']*Ee + module['C5']*(Ee**2)) *
-        (1 + module['Aisc']*(temp_cell - temp_ref)))
+        (1 + module['Aisc']*(temp_cell - temperature_ref)))
 
     out['i_xx'] = (
         module['IXXO'] * (module['C6']*Ee + module['C7']*(Ee**2)) *
-        (1 + module['Aimp']*(temp_cell - temp_ref)))
+        (1 + module['Aimp']*(temp_cell - temperature_ref)))
 
     if isinstance(out['i_sc'], pd.Series):
         out = pd.DataFrame(out)

@@ -741,16 +741,7 @@ def read_nsrdb_psm4(filename, map_variables=True):
     with context as fbuf:
         # The first 2 lines of the response are headers with metadata
         metadata_fields = fbuf.readline().split(',')
-        metadata_fields[-1] = metadata_fields[-1].strip()  # trailing newline
         metadata_values = fbuf.readline().split(',')
-        metadata_values[-1] = metadata_values[-1].strip()  # trailing newline
-        metadata = dict(zip(metadata_fields, metadata_values))
-        # the response is all strings, so set some metadata types to numbers
-        metadata['Local Time Zone'] = int(metadata['Local Time Zone'])
-        metadata['Time Zone'] = int(metadata['Time Zone'])
-        metadata['Latitude'] = float(metadata['Latitude'])
-        metadata['Longitude'] = float(metadata['Longitude'])
-        metadata['Elevation'] = int(metadata['Elevation'])
         # get the column names so we can set the dtypes
         columns = fbuf.readline().split(',')
         columns[-1] = columns[-1].strip()  # strip trailing newline
@@ -764,6 +755,16 @@ def read_nsrdb_psm4(filename, map_variables=True):
         data = pd.read_csv(
             fbuf, header=None, names=columns, usecols=columns, dtype=dtypes,
             delimiter=',', lineterminator='\n')  # skip carriage returns \r
+
+    metadata_fields[-1] = metadata_fields[-1].strip()  # trailing newline
+    metadata_values[-1] = metadata_values[-1].strip()  # trailing newline
+    metadata = dict(zip(metadata_fields, metadata_values))
+    # the response is all strings, so set some metadata types to numbers
+    metadata['Local Time Zone'] = int(metadata['Local Time Zone'])
+    metadata['Time Zone'] = int(metadata['Time Zone'])
+    metadata['Latitude'] = float(metadata['Latitude'])
+    metadata['Longitude'] = float(metadata['Longitude'])
+    metadata['Elevation'] = int(metadata['Elevation'])
 
     # the response 1st 5 columns are a date vector, convert to datetime
     dtidx = pd.to_datetime(data[['Year', 'Month', 'Day', 'Hour', 'Minute']])

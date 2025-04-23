@@ -17,6 +17,10 @@ Enhancements
 * :py:mod:`pvlib.ivtools.sdm` is now a subpackage. (:issue:`2252`, :pull:`2256`)
 * Add a function for estimating PVsyst SDM parameters from IEC 61853-1 matrix
   data (:py:func:`~pvlib.ivtools.sdm.fit_pvsyst_iec61853_sandia_2025`). (:issue:`2185`, :pull:`2429`)
+* The parameters for the Ix and Ixx points are now optional when using
+  :py:func:`pvlib.pvsystem.sapm` directly and through
+  :py:class:`~pvlib.pvsystem.PVSystem` and :py:class:`~pvlib.modelchain.ModelChain`.
+  (:issue:`2402`, :pull:`2433`)
 * Add optional arguments ``temperature_ref`` and ``irradiance_ref`` to
   :py:func:`~pvlib.pvsystem.sapm`(:issue:`2432`, :pull:`2434`)
 * Add NREL NSRDB PSM v4 API client to :py:mod:`pvlib.iotools`. See

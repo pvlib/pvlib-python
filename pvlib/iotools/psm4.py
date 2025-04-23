@@ -11,7 +11,7 @@ from urllib.parse import urljoin
 import requests
 import pandas as pd
 from json import JSONDecodeError
-import contextlib
+from pvlib import tools
 
 NSRDB_API_BASE = "https://developer.nrel.gov/api/nsrdb/v2/solar/"
 PSM4_AGG_ENDPOINT = "nsrdb-GOES-aggregated-v4-0-0-download.csv"
@@ -735,14 +735,7 @@ def read_nsrdb_psm4(filename, map_variables=True):
     .. [2] `Standard Time Series Data File Format
        <https://web.archive.org/web/20170207203107/https://sam.nrel.gov/sites/default/files/content/documents/pdf/wfcsv.pdf>`_
     """
-    if hasattr(filename, "read"):
-        # already a file-like object
-        context = contextlib.nullcontext(filename)
-    else:
-        # otherwise, assume a filename or path
-        context = open(str(filename), 'r')
-
-    with context as fbuf:
+    with tools._file_context_manager(filename) as fbuf:
         # The first 2 lines of the response are headers with metadata
         metadata_fields = fbuf.readline().split(',')
         metadata_values = fbuf.readline().split(',')

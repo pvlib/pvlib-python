@@ -32,6 +32,8 @@ Documentation
 * Add a supporting reference to :py:func:`pvlib.atmosphere.get_relative_airmass` (:issue:`2390`, :pull:`2424`)
 * Documented how `np.nan` values are handled by :py:func:`~pvlib.spectrum.average_photon_energy`
   (:issue:`2423`, :pull:`2426`)
+* Update references in :py:func`~pvlib.irradiance.get_extra_radiation`
+  (:issue:`2333`, :pull:`2347`)
 
 Requirements
 ~~~~~~~~~~~~

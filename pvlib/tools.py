@@ -578,7 +578,7 @@ def _file_context_manager(filename_or_object, mode='r'):
         A file-like object to be used via python's "with [context] as buffer:"
         syntax.
     """
-    
+
     if hasattr(filename_or_object, "read"):
         # already a file-like object
         context = contextlib.nullcontext(filename_or_object)

@@ -19,6 +19,13 @@ Enhancements
   data (:py:func:`~pvlib.ivtools.sdm.fit_pvsyst_iec61853_sandia_2025`). (:issue:`2185`, :pull:`2429`)
 * Add optional arguments ``temperature_ref`` and ``irradiance_ref`` to
   :py:func:`~pvlib.pvsystem.sapm`(:issue:`2432`, :pull:`2434`)
+* Add NREL NSRDB PSM v4 API client to :py:mod:`pvlib.iotools`. See
+  :py:func:`~pvlib.iotools.get_nsrdb_psm4_aggregated`,
+  :py:func:`~pvlib.iotools.get_nsrdb_psm4_tmy`,
+  :py:func:`~pvlib.iotools.get_nsrdb_psm4_conus`,
+  :py:func:`~pvlib.iotools.get_nsrdb_psm4_full_disc`,
+  :py:func:`~pvlib.iotools.read_nsrdb_psm4`, and
+  :py:func:`~pvlib.iotools.parse_nsrdb_psm4`. (:issue:`2326`, :pull:`2378`)
 
 Documentation
 ~~~~~~~~~~~~~
@@ -44,5 +51,6 @@ Contributors
 ~~~~~~~~~~~~
 * Cliff Hansen (:ghuser:`cwhanse`)
 * Rajiv Daxini (:ghuser:`RDaxini`)
+* Will Hobbs (:ghuser:`williamhobbs`)
 * Kevin Anderson (:ghuser:`kandersolar`)
 * Will Holmgren (:ghuser:`wholmgren`)

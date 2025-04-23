@@ -1,0 +1,100 @@
+.. _whatsnew_01200:
+
+
+v0.12.0 (March 19, 2025)
+------------------------
+
+Breaking Changes
+~~~~~~~~~~~~~~~~
+* The :py:attr:`pvlib.location.Location.pytz` attribute is now read only. The
+  ``pytz`` attribute is now set internally to be consistent with the
+  :py:attr:`pvlib.location.Location.tz` attribute. (:issue:`2340`, :pull:`2341`)
+* Users must now provide :py:attr:`ModelChain.spectral_model`, or the ``'no_loss'`` spectral
+  model is assumed. :py:class:`~pvlib.modelchain.ModelChain` no longer attempts to infer
+  the spectral model from :py:class:`~pvlib.pvsystem.PVSystem` attributes. (:issue:`2017`, :pull:`2253`)
+* Remove deprecated :py:func:`!pvlib.pvsystem.sapm_spectral_loss`; use
+  :py:func:`~pvlib.spectrum.spectral_factor_sapm` instead. (:issue:`2243`, :pull:`2244`)
+* :py:func:`~pvlib.iotools.read_tmy3` now defaults to ``map_variables=True``.
+  Additionally, the deprecated ``recolumn`` parameter is now removed. (:issue:`2324`, :pull:`2408`)
+* Remove :py:func:`!pvlib.atmosphere.first_solar_spectral_correction`, deprecated in v0.10.0.
+  Use :py:func:`~pvlib.spectrum.spectral_factor_firstsolar` instead. (:issue:`2130`, :pull:`2131`)
+* Remove deprecated :py:func:`!pvlib.spectrum.get_am15g` function; use
+  :py:func:`~pvlib.spectrum.get_reference_spectra` instead.  (:pull:`2409`)
+* Change default method of :py:func:`~pvlib.location.Location.get_sun_rise_set_transit`
+  to ``'spa'`` instead of ``'pyephem'``. (:pull:`2410`)
+
+Bug fixes
+~~~~~~~~~
+* Add a check to :py:func:`~pvlib.snow.fully_covered_nrel` and
+  :py:func:`~pvlib.snow.coverage_nrel`. The check uses snow depth on the ground
+  to improve modeling for systems with shallow tilt angles. The check
+  adds a new, optional parameter ``snow_depth``. (:issue:`1171`, :pull:`2292`)
+* Fix a bug in :py:func:`pvlib.bifacial.infinite_sheds.get_irradiance_poa` which may have yielded non-zero
+  ground irradiance when the sun was below the horizon. (:issue:`2245`, :pull:`2359`)
+* Fix a bug where :py:func:`pvlib.transformer.simple_efficiency` could only be imported
+  using the ``from pvlib.transformer`` syntax. (:pull:`2388`)
+* :py:class:`~pvlib.modelchain.ModelChain` now requires only a minimal set of
+  parameters to run the SAPM electrical model. (:issue:`2369`, :pull:`2393`)
+* Correct keys for First Solar modules in :py:func:`~pvlib.spectrum.spectral_factor_pvspec`. (:issue:`2398`, :pull:`2400`)
+* Ensure proper tz and pytz types in :py:class:`~pvlib.location.Location`. To ensure that
+  the time zone in :py:class:`~pvlib.location.Location` remains internally consistent
+  if/when the time zone is updated, the ``tz`` attribute is now the single source
+  of time-zone truth, is the single time-zone setter interface, and its getter 
+  returns an IANA string. (:issue:`2340`, :pull:`2341`)
+* :py:func:`~pvlib.iotools.get_pvgis_tmy` with ``outputformat='csv'`` now
+  works with the updated data format returned by PVGIS. (:issue:`2344`, :pull:`2395`)
+
+Enhancements
+~~~~~~~~~~~~
+* :py:func:`~pvlib.irradiance.gti_dirint` now raises an informative message
+  when input data don't include values with AOI<90. (:issue:`1342`, :pull:`2347`)
+* Reduce space requirements by excluding tests and test files from wheel.
+  Zipped wheel is now 66% of the previous size, and installed size is 50% of
+  the previous size. (:issue:`2271`, :pull:`2277`)
+
+Documentation
+~~~~~~~~~~~~~
+* Fix Procedural and Object Oriented simulation examples having slightly different
+  results in :ref:`introtutorial`. (:issue:`2366`, :pull:`2367`)
+* Restructure the user guide with subsections. (:issue:`2302`, :pull:`2310`)
+* Add references for :py:func:`pvlib.snow.loss_townsend`. (:issue:`2383`, :pull:`2384`)
+* Add :term:`ghi_clear` to the :ref:`nomenclature` page. (:issue:`2272`, :pull:`2397`)
+* Add output variable naming clarifaction to :py:func:`pvlib.pvsystem.calcparams_desoto`
+  and :py:func:`pvlib.pvsystem.calcparams_pvsyst`. (:issue:`716`, :pull:`2405`)
+
+Testing
+~~~~~~~
+* Move tests folder to ``/tests`` and data exclusively used for testing to ``/tests/data``.
+  (:issue:`2271`, :pull:`2277`)
+* Add Python 3.13 to test suite. (:issue:`2201`, :pull:`2258`)
+* Add tests for all input types for the :py:attr:`pvlib.location.Location.tz` attribute.
+  (:issue:`2340`, :pull:`2341`)
+* Add tests for time-conversion functions in :py:mod:`pvlib.tools`. (:issue:`2340`, :pull:`2341`)
+
+Maintenance
+~~~~~~~~~~~
+* Fix ReadTheDocs builds by upgrading ``readthedocs.yml`` configuration
+  (:issue:`2357`, :pull:`2358`)
+* asv 0.4.2 upgraded to asv 0.6.4 to fix CI failure due to pinned older conda.
+  (:pull:`2352`)
+
+Contributors
+~~~~~~~~~~~~
+* Rajiv Daxini (:ghuser:`RDaxini`)
+* Cliff Hansen (:ghuser:`cwhanse`)
+* Jason Lun Leung (:ghuser:`jason-rpkt`)
+* Manoj K S (:ghuser:`manojks1999`)
+* Kurt Rhee (:ghuser:`kurt-rhee`)
+* Ayush jariyal (:ghuser:`ayushjariyal`)
+* Kevin Anderson (:ghuser:`kandersolar`)
+* Echedey Luis (:ghuser:`echedey-ls`)
+* Mark Campanelli (:ghuser:`markcampanelli`)
+* Max Jackson (:ghuser:`MaxJackson`)
+* Anton Driesse (:ghuser:`adriesse`)
+* Adam R. Jensen (:ghuser:`AdamRJensen`)
+* Ioannis Sifnaios (:ghuser:`IoannisSifnaios`)
+* Will Holmgren (:ghuser:`wholmgren`)
+* Sophie Pelland (:ghuser:`solphie-pelland`)
+* Will Hobbs (:ghuser:`williamhobbs`)
+* Karel De Brabandere (:ghuser:`kdebrab`)
+* Kenneth J. Sauer (:ghuser:`kjsauer`)

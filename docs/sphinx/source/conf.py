@@ -66,7 +66,7 @@ mathjax3_config = {'chtml': {'displayAlign': 'left',
 intersphinx_mapping = {
     'python': ('https://docs.python.org/3/', None),
     'numpy': ('https://numpy.org/doc/stable/', None),
-    'scipy': ('https://docs.scipy.org/doc/scipy/reference/', None),
+    'scipy': ('https://docs.scipy.org/doc/scipy/', None),
     'pandas': ('https://pandas.pydata.org/pandas-docs/stable', None),
     'matplotlib': ('https://matplotlib.org/stable', None),
 }
@@ -282,6 +282,8 @@ def setup(app):
     app.add_css_file("reference_format.css")
     # Add a warning banner at the top of the page if viewing the "latest" docs
     app.add_js_file("version-alert.js")
+    # Match the color theme of tooltips to PyData Sphinx Theme light/dark mode
+    app.add_css_file("tooltipster_color_theming.css")
 
 # -- Options for LaTeX output ---------------------------------------------
 

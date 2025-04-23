@@ -1,0 +1,62 @@
+.. _whatsnew_01201:
+
+
+v0.12.1 (XXXX, 2025)
+------------------------
+
+Breaking Changes
+~~~~~~~~~~~~~~~~
+
+
+Bug fixes
+~~~~~~~~~
+
+
+Enhancements
+~~~~~~~~~~~~
+* :py:mod:`pvlib.ivtools.sdm` is now a subpackage. (:issue:`2252`, :pull:`2256`)
+* Add a function for estimating PVsyst SDM parameters from IEC 61853-1 matrix
+  data (:py:func:`~pvlib.ivtools.sdm.fit_pvsyst_iec61853_sandia_2025`). (:issue:`2185`, :pull:`2429`)
+* The parameters for the Ix and Ixx points are now optional when using
+  :py:func:`pvlib.pvsystem.sapm` directly and through
+  :py:class:`~pvlib.pvsystem.PVSystem` and :py:class:`~pvlib.modelchain.ModelChain`.
+  (:issue:`2402`, :pull:`2433`)
+* Add optional arguments ``temperature_ref`` and ``irradiance_ref`` to
+  :py:func:`~pvlib.pvsystem.sapm`(:issue:`2432`, :pull:`2434`)
+* Add NREL NSRDB PSM v4 API client to :py:mod:`pvlib.iotools`. See
+  :py:func:`~pvlib.iotools.get_nsrdb_psm4_aggregated`,
+  :py:func:`~pvlib.iotools.get_nsrdb_psm4_tmy`,
+  :py:func:`~pvlib.iotools.get_nsrdb_psm4_conus`,
+  :py:func:`~pvlib.iotools.get_nsrdb_psm4_full_disc`,
+  :py:func:`~pvlib.iotools.read_nsrdb_psm4`, and
+  :py:func:`~pvlib.iotools.parse_nsrdb_psm4`. (:issue:`2326`, :pull:`2378`)
+
+Documentation
+~~~~~~~~~~~~~
+* Add a supporting reference to :py:func:`pvlib.atmosphere.get_relative_airmass` (:issue:`2390`, :pull:`2424`)
+* Documented how `np.nan` values are handled by :py:func:`~pvlib.spectrum.average_photon_energy`
+  (:issue:`2423`, :pull:`2426`)
+* Update references in :py:func`~pvlib.irradiance.get_extra_radiation`
+  (:issue:`2333`, :pull:`2347`)
+
+Requirements
+~~~~~~~~~~~~
+* ``wheel`` is no longer a build dependency. (:pull:`2439`)
+
+Testing
+~~~~~~~
+
+
+Maintenance
+~~~~~~~~~~~
+* Update ``pyproject.toml`` to replace deprecated license table and
+  classifiers. (:issue:`2440`, :pull:`2441`)
+
+
+Contributors
+~~~~~~~~~~~~
+* Cliff Hansen (:ghuser:`cwhanse`)
+* Rajiv Daxini (:ghuser:`RDaxini`)
+* Will Hobbs (:ghuser:`williamhobbs`)
+* Kevin Anderson (:ghuser:`kandersolar`)
+* Will Holmgren (:ghuser:`wholmgren`)

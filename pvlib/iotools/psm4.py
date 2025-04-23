@@ -722,7 +722,11 @@ def read_nsrdb_psm4(filename, map_variables=True):
 
     See Also
     --------
-    pvlib.iotools.get_psm4, pvlib.iotools.read_psm3
+    pvlib.iotools.get_nsrdb_psm4_aggregated
+    pvlib.iotools.get_nsrdb_psm4_tmy
+    pvlib.iotools.get_nsrdb_psm4_conus
+    pvlib.iotools.get_nsrdb_psm4_full_disc
+    pvlib.iotools.read_psm3
 
     References
     ----------

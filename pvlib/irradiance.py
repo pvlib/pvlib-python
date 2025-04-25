@@ -661,7 +661,7 @@ def klucher(surface_tilt, surface_azimuth, dhi, ghi, solar_zenith,
 
     solar_zenith : numeric
         Apparent (refraction-corrected) zenith angles.
-        ``solar_zenith`` must be >=0° and <=180. See :term:`solar_zenith`.  [°]
+        ``solar_zenith`` must be >=0° and <=180°. See :term:`solar_zenith`. [°]
 
     solar_azimuth : numeric
         Sun azimuth angles. ``solar_azimuth`` must be >=0° and <=360. See
@@ -2212,7 +2212,7 @@ def dirindex(ghi, ghi_clear, dni_clear, zenith, times, pressure=101325.,
             Renamed from ``dni_clearsky`` to ``dni_clear``.
 
     zenith : array-like
-        True (not refraction-corrected) zenith angles, must be >=0 and <=180.
+        True (not refraction-corrected) zenith angles, must be >=0° and <=180°.
         If ``zenith`` is a vector, it must be of the same size as all other
         vector inputs. See :term`solar_zenith`. [°]
 
@@ -3073,7 +3073,7 @@ def campbell_norman(zenith, transmittance, pressure=101325.0,
     Parameters
     ----------
     zenith: pd.Series
-        True (not refraction-corrected) zenith angles, must be >=0 and <=180.
+        True (not refraction-corrected) zenith angles, must be >=0° and <=180°.
         If ``zenith`` is a vector, it must be of the same size as all other
         vector inputs. [°]
 
@@ -3133,7 +3133,7 @@ def _liujordan(zenith, transmittance, airmass, dni_extra=1367.0):
     zenith: pd.Series
         True (not refraction-corrected) zenith angles in decimal
         degrees. If Z is a vector it must be of the same size as all
-        other vector inputs. Z must be >=0 and <=180.
+        other vector inputs. ``zenith`` must be >=0° and <=180°.
 
     transmittance: float
         Atmospheric transmittance between 0 and 1.
@@ -3706,7 +3706,7 @@ def dni(ghi, dhi, zenith, dni_clear=None, clearsky_tolerance=1.1,
         Diffuse horizontal irradiance. See :term:`dhi`. [Wm⁻²]
 
     zenith : Series
-        True (not refraction-corrected) zenith angles, must be >=0 and <=180.
+        True (not refraction-corrected) zenith angles, must be >=0° and <=180°.
         See :term:`solar_zenith`.
 
     dni_clear : Series, optional
@@ -3781,14 +3781,14 @@ def complete_irradiance(solar_zenith,
     ----------
     solar_zenith : series
         Solar zenith angle, with datetime index.
-        Angles must be >=0 and <=180. Must have the same datetime index
+        Angles must be >=0° and <=180°. Must have the same datetime index
         as ``ghi``, ``dhi``, and ``dni`` series, when available.
-        See :term:`solar_zenith`.
+        See :term:`solar_zenith`. [°]
 
     ghi : Series, optional
         Pandas series of dni data [Wm⁻²], with datetime index. Must have the
         same datetime index as dni, dhi, and zenith series, when available.
-        See :term:`ghi`.
+        See :term:`ghi`. [Wm⁻²]
 
     dhi : Series, optional
         Diffuse horizontal irradiance, with datetime index. Must have the
@@ -3798,12 +3798,12 @@ def complete_irradiance(solar_zenith,
     dni : Series, optional
         Pandas series of dni data [Wm⁻²], with datetime index. Must have the
         same datetime index as ghi, dhi, and zenith series, when available.
-        See :term:`dni`.
+        See :term:`dni`. [Wm⁻²]
 
     dni_clear : Series, optional
         Pandas series of clearsky dni data [Wm⁻²]. Must have the same datetime
         index as ghi, dhi, dni, and zenith series, when available. See
-        :py:func:`dni` for details.
+        :py:func:`dni` for details. [Wm⁻²]
 
     solar_azimuth : numeric
         Solar azimuth angle. See :term:`solar_azimuth`. [°]

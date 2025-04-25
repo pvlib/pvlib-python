@@ -908,7 +908,7 @@ def reindl(surface_tilt, surface_azimuth, dhi, dni, ghi, dni_extra,
         Solar apparent (refraction-corrected) zenith angles.
         See :term:`solar_zenith`. [°]
 
-    solar_azimuth : numeric, optional
+    solar_azimuth : numeric
         Solar azimuth angles. See :term:`solar_azimuth`. [°]
 
     Returns
@@ -1339,7 +1339,7 @@ def perez_driesse(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
         Solar azimuth angle, must be >=0° and <=360°.
         See :term:`solar_azimuth`. [°]
 
-    airmass : numeric
+    airmass : numeric, optional
         Relative (not pressure-corrected) airmass values. If AM is a
         DataFrame it must be of the same size as all other DataFrame
         inputs. AM must be >=0 (careful using the 1/sec(z) model of AM
@@ -1944,7 +1944,7 @@ def dirint(ghi, solar_zenith, times, pressure=101325., use_delta_kt_prime=True,
     ghi : array-like
         Global horizontal irradiance. See :term:`ghi`. [Wm⁻²]
 
-    solar_zenith : numeric
+    solar_zenith : array-like
         True (not refraction-corrected) solar zenith angles. See
         :term:`solar_zenith`. [°]
 
@@ -2972,14 +2972,13 @@ def boland(ghi, solar_zenith, datetime_or_doy, a_coeff=8.645, b_coeff=0.613,
     ghi: numeric
         Global horizontal irradiance. See :term:`ghi`. [Wm⁻²]
 
-    zenith: numeric
+    solar_zenith: numeric
         True (not refraction-corrected) zenith angles. See
         :term:`solar_zenith`. [°]
 
-    datetime_or_doy : int, float, array or pd.DatetimeIndex, optional
-        Day of year or array of days of year e.g.
-        pd.DatetimeIndex.dayofyear, or pd.DatetimeIndex.
-        Either datetime_or_doy or dni_extra must be provided.
+    datetime_or_doy : numeric or pd.DatetimeIndex.
+    Day of year or array of days of year e.g. pd.DatetimeIndex.dayofyear,
+    or pd.DatetimeIndex.
 
     a_coeff : float, default 8.645
         Logistic curve fit coefficient.
@@ -3804,19 +3803,6 @@ def complete_irradiance(solar_zenith,
         Pandas series of clearsky dni data [Wm⁻²]. Must have the same datetime
         index as ghi, dhi, dni, and zenith series, when available. See
         :py:func:`dni` for details. [Wm⁻²]
-
-    solar_azimuth : numeric
-        Solar azimuth angle. See :term:`solar_azimuth`. [°]
-
-    poa_global : numeric
-        Plane-of-array global irradiance, aka global tilted irradiance.
-        See :term:`poa_global`. [Wm⁻²]
-
-    dni_extra : numeric, optional
-        Extraterrestrial direct normal irradiance. See :term:`dni_extra`.
-        [Wm⁻²]
-
-
 
     Returns
     -------

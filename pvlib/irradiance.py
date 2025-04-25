@@ -897,6 +897,7 @@ def reindl(surface_tilt, surface_azimuth, dhi, dni, ghi, dni_extra,
 
     dni : numeric
         Direct normal irradiance, see :term:`dni`. [Wm⁻²]
+
     ghi : numeric
         Global horizontal irradiance, see :term:`ghi`. [Wm⁻²]
 
@@ -904,8 +905,7 @@ def reindl(surface_tilt, surface_azimuth, dhi, dni, ghi, dni_extra,
         Extraterrestrial normal irradiance, see :term:`dni_extra`. [Wm⁻²]
 
     solar_zenith : numeric
-        Solar apparent (refraction-corrected) zenith angles. Must supply
-        ``solar_zenith`` and ``solar_azimuth``, or supply ``projection_ratio``.
+        Solar apparent (refraction-corrected) zenith angles.
         See :term:`solar_zenith`. [°]
 
     solar_azimuth : numeric, optional

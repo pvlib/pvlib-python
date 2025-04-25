@@ -897,6 +897,8 @@ def reindl(surface_tilt, surface_azimuth, dhi, dni, ghi, dni_extra,
 
     dni : numeric
         Direct normal irradiance, see :term:`dni`. [Wm⁻²]
+    ghi : numeric
+        Global horizontal irradiance, see :term:`ghi`. [Wm⁻²]
 
     dni_extra : numeric
         Extraterrestrial normal irradiance, see :term:`dni_extra`. [Wm⁻²]

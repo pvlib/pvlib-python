@@ -745,10 +745,10 @@ def read_nsrdb_psm4(filename, map_variables=True):
         # Since the header has so many columns, excel saves blank cols in the
         # data below the header lines.
         columns = [col for col in columns if col != '']
-        dtypes = dict.fromkeys(columns, float)  # all floats except datevec
-        dtypes.update(Year=int, Month=int, Day=int, Hour=int, Minute=int)
-        dtypes['Cloud Type'] = int
-        dtypes['Fill Flag'] = int
+        dtypes = dict.fromkeys(columns, float)
+        dtypes.update({'Year': int, 'Month': int, 'Day': int, 'Hour': int,
+                       'Minute': int, 'Cloud Type': int, 'Fill Flag': int})
+
         data = pd.read_csv(
             fbuf, header=None, names=columns, usecols=columns, dtype=dtypes,
             delimiter=',', lineterminator='\n')  # skip carriage returns \r

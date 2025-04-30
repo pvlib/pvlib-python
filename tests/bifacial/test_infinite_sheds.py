@@ -45,7 +45,7 @@ def test__poa_ground_shadows():
     ghi, dhi, albedo, f_gnd_beam, vf_gnd_sky = (300., 100, 0.3, 0.5, 0.2)
     result = infinite_sheds._poa_ground_shadows(ghi, dhi, albedo, f_gnd_beam,
                                                 vf_gnd_sky)
-    
+
     expected = 0.3 * (200 * 0.5 + 100 * 0.2)
     assert np.isclose(result, expected)
     # vector inputs

@@ -30,6 +30,8 @@ Enhancements
   :py:func:`~pvlib.iotools.get_nsrdb_psm4_full_disc`,
   :py:func:`~pvlib.iotools.read_nsrdb_psm4`, and
   :py:func:`~pvlib.iotools.parse_nsrdb_psm4`. (:issue:`2326`, :pull:`2378`)
+* :py:mod:`pvlib.bifacial.infinite_sheds` no longer emits "invalid value" warnings
+  when supplying irradiance arrays with nighttime zero values. (:issue:`2450`, :pull:`2451`)
 
 Documentation
 ~~~~~~~~~~~~~

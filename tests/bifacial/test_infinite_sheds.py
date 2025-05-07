@@ -42,19 +42,20 @@ def test_system():
 
 
 def test__poa_ground_shadows():
-    poa_ground, f_gnd_beam, df, vf_gnd_sky = (300., 0.5, 0.5, 0.2)
-    result = infinite_sheds._poa_ground_shadows(
-        poa_ground, f_gnd_beam, df, vf_gnd_sky)
-    expected = 300. * (0.5 * 0.5 + 0.5 * 0.2)
+    ghi, dhi, albedo, f_gnd_beam, vf_gnd_sky = (300., 100, 0.3, 0.5, 0.2)
+    result = infinite_sheds._poa_ground_shadows(ghi, dhi, albedo, f_gnd_beam,
+                                                vf_gnd_sky)
+
+    expected = 0.3 * (200 * 0.5 + 100 * 0.2)
     assert np.isclose(result, expected)
     # vector inputs
-    poa_ground = np.array([300., 300.])
-    f_gnd_beam = np.array([0.5, 0.5])
-    df = np.array([0.5, 0.])
-    vf_gnd_sky = np.array([0.2, 0.2])
-    result = infinite_sheds._poa_ground_shadows(
-        poa_ground, f_gnd_beam, df, vf_gnd_sky)
-    expected_vec = np.array([expected, 300. * 0.5])
+    ghi = np.array([ghi, ghi])
+    dhi = np.array([dhi, 0])
+    f_gnd_beam = np.array([f_gnd_beam, f_gnd_beam])
+    vf_gnd_sky = np.array([vf_gnd_sky, vf_gnd_sky])
+    result = infinite_sheds._poa_ground_shadows(ghi, dhi, albedo, f_gnd_beam,
+                                                vf_gnd_sky)
+    expected_vec = np.array([expected, 300. * 0.5 * 0.3])
     assert np.allclose(result, expected_vec)
 
 

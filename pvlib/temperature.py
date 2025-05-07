@@ -384,7 +384,7 @@ def pvsyst_cell(poa_global, temp_air, wind_speed=1.0, u_c=29.0, u_v=0.0,
     output is cell temperature :math:`T_{C}`. Model parameters depend both on
     the module construction and its mounting. Parameters are provided in
     [1]_ for open (freestanding), close (insulated), and intermediate
-    (semi_integrate) mounting configurations, and are coded for convenience in
+    (semi_integrated) mounting configurations, and are coded for convenience in
     :data:`~pvlib.temperature.TEMPERATURE_MODEL_PARAMETERS`. The heat loss
     factors provided represent the combined effect of convection, radiation and
     conduction, and their values are experimentally determined.

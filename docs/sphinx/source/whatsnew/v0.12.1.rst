@@ -30,6 +30,8 @@ Enhancements
   :py:func:`~pvlib.iotools.get_nsrdb_psm4_full_disc`,
   :py:func:`~pvlib.iotools.read_nsrdb_psm4`, and
   :py:func:`~pvlib.iotools.parse_nsrdb_psm4`. (:issue:`2326`, :pull:`2378`)
+* Add ``'semi_integrated'`` parameters for the PVsyst temperature model.
+  (:issue:`2330`, :pull:`2415`)
 
 Documentation
 ~~~~~~~~~~~~~
@@ -62,3 +64,4 @@ Contributors
 * Will Hobbs (:ghuser:`williamhobbs`)
 * Kevin Anderson (:ghuser:`kandersolar`)
 * Will Holmgren (:ghuser:`wholmgren`)
+* Muhammad Rebaal (:ghuser:`Muhammad-Rebaal`)

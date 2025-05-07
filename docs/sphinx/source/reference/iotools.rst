@@ -31,7 +31,6 @@ of sources and file formats relevant to solar energy modeling.
    iotools.get_nsrdb_psm4_conus
    iotools.get_nsrdb_psm4_full_disc
    iotools.read_nsrdb_psm4
-   iotools.parse_nsrdb_psm4
    iotools.get_psm3
    iotools.read_psm3
    iotools.parse_psm3

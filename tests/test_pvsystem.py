@@ -702,6 +702,13 @@ def test_Array__infer_temperature_model_params():
     expected = temperature.TEMPERATURE_MODEL_PARAMETERS[
         'pvsyst']['insulated']
     assert expected == array._infer_temperature_model_params()
+    array = pvsystem.Array(mount=FixedMount(0, 180,
+                                            racking_model='semi_integrated'),
+                           module_parameters={},
+                           module_type=None)
+    expected = temperature.TEMPERATURE_MODEL_PARAMETERS[
+        'pvsyst']['semi_integrated']
+    assert expected == array._infer_temperature_model_params()
 
 
 def test_Array__infer_cell_type():
@@ -2504,21 +2511,3 @@ def test_Array_temperature_missing_parameters(model, keys):
         array.temperature_model_parameters = params
         with pytest.raises(KeyError, match=match):
             array.get_cell_temperature(irrads, temps, winds, model)
-
-def test_pvsyst_semi_integrated_params():
-    """Test that semi_integrated racking model correctly gets PVsyst parameters."""
-    # Create a mount with semi_integrated racking model
-    mount = pvsystem.FixedMount(surface_tilt=30, surface_azimuth=180,
-                               racking_model='semi_integrated')
-    
-    # Create an array with this mount
-    array = pvsystem.Array(mount=mount, module_type='glass_glass')
-    
-    # Get the inferred temperature model parameters
-    params = array._infer_temperature_model_params()
-    
-    # Check that the correct parameters were returned
-    assert 'u_c' in params
-    assert 'u_v' in params
-    assert params['u_c'] == 20.0
-    assert params['u_v'] == 0.0

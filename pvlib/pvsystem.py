@@ -1008,13 +1008,13 @@ class Array:
             return temperature._temperature_model_params('sapm', param_set)
         elif 'freestanding' in param_set:
             return temperature._temperature_model_params('pvsyst',
-                                                    'freestanding')
+                                                         'freestanding')
         elif 'insulated' in param_set:  # after SAPM to avoid confusing keys
             return temperature._temperature_model_params('pvsyst',
-                                                    'insulated')
-        elif 'semi_integrated' in param_set:  # Add this condition
+                                                         'insulated')
+        elif 'semi_integrated' in param_set:
             return temperature._temperature_model_params('pvsyst',
-                                                    'semi_integrated')
+                                                         'semi_integrated')
         else:
             return {}
 
@@ -1398,10 +1398,13 @@ class FixedMount(AbstractMount):
         West=270. [degrees]
 
     racking_model : str, optional
-        Valid strings are 'open_rack', 'close_mount', 'insulated_back',
-        'freestanding', 'insulated', and 'semi_integrated'.
+        Valid strings are ``'open_rack'``, ``'close_mount'``,
+        ``'insulated_back'``, ``'freestanding'``, ``'insulated'`` and
+        ``'semi_integrated'``.
         Used to identify a parameter set for the SAPM or PVsyst cell
         temperature model.
+        See :py:func:`~pvlib.temperature.sapm_module` and
+        :py:func:`~pvlib.temperature.pvsyst_cell` for definitions.
 
     module_height : float, optional
        The height above ground of the center of the module [m]. Used for

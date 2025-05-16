@@ -25,7 +25,7 @@ There are a total of 5 files needed to compile the C code, described below:
 * `cspa_py.pxd`: a cython header file which essentially tells cython which
   parts of the main header file to pay attention to
 * `spa_py.pyx`: the cython code used to define both functions in the python
-  namespace. NOTE: It is possible to provide user access to other paramters of
+  namespace. NOTE: It is possible to provide user access to other parameters of
   the SPA algorithm through modifying this file 
 * `setup.py`: a distutils file which performs the compiling of the cython code
 

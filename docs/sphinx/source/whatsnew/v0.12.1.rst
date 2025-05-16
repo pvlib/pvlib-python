@@ -66,3 +66,4 @@ Contributors
 * Kevin Anderson (:ghuser:`kandersolar`)
 * Will Holmgren (:ghuser:`wholmgren`)
 * Muhammad Rebaal (:ghuser:`Muhammad-Rebaal`)
+* omahs (:ghuser:`omahs`)

@@ -371,7 +371,7 @@ DC quantities to the output of the full PVSystem.
     mc.results.dc
 
 We’ve established that the ``ModelChain.pvwatts_dc`` and
-``ModelChain.sapm`` have the same API: they take the same arugments
+``ModelChain.sapm`` have the same API: they take the same arguments
 (``self``) and they both set the ``dc`` attribute.\* Because the methods
 have the same API, we can call them in the same way. ModelChain includes
 a large number of methods that perform the same API-unification roles
@@ -489,7 +489,7 @@ Temperature data are passed in the ``weather`` DataFrame and can include:
   method is used to calculate cell temperature. If ``ModelChain.temperature_model``
   is set to any other model, ``'module_temperature'`` is ignored.
 * ambient air temperature (``'temp_air'``). In this case ``ModelChain.temperature_model``
-  is used to calculate cell temeprature.
+  is used to calculate cell temperature.
 
 Cell temperature models also can use irradiance as input. All cell
 temperature models expect POA irradiance (``'poa_global'``) as  input. When

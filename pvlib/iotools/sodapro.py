@@ -202,7 +202,7 @@ def get_cams(latitude, longitude, start, end, email, identifier='mcclear',
         'username': email,
         'verbose': verbose}
 
-    # Manual formatting of the input parameters seperating each by a semicolon
+    # Manual formatting of the input parameters separating each by a semicolon
     data_inputs = ";".join([f"{key}={value}" for key, value in
                             data_inputs_dict.items()])
 
@@ -214,7 +214,7 @@ def get_cams(latitude, longitude, start, end, email, identifier='mcclear',
               }
 
     # The DataInputs parameter of the URL has to be manually formatted and
-    # added to the base URL as it contains sub-parameters seperated by
+    # added to the base URL as it contains sub-parameters separated by
     # semi-colons, which gets incorrectly formatted by the requests function
     # if passed using the params argument.
     res = requests.get(base_url + '?DataInputs=' + data_inputs, params=params,

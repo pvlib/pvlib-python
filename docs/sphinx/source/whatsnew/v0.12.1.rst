@@ -70,3 +70,4 @@ Contributors
 * Muhammad Rebaal (:ghuser:`Muhammad-Rebaal`)
 * omahs (:ghuser:`omahs`)
 * Adam R. Jensen (:ghuser:`AdamRJensen`)
+* Marion Schroedter-Homscheidt (:ghuser:`mschroedter`)

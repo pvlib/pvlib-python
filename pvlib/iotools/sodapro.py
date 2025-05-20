@@ -62,6 +62,12 @@ def get_cams(latitude, longitude, start, end, email, identifier='mcclear',
     66° in latitude and -66° to 180° in longitude for CAMS Radiation. See [3]_
     for a map of the geographical coverage.
 
+    For studies involving large geospatial areas, CAMS offers a gridded dataset
+    [4]_, which is a post-processed compilation of many pre-calculated CAMS
+    time series on a pre-defined grid over land and coastal areas. Note, that
+    this dataset may therefore not yet include the most recent data coverage
+    and may not be based on the most recent version.
+
     Parameters
     ----------
     latitude: float
@@ -155,13 +161,15 @@ def get_cams(latitude, longitude, start, end, email, identifier='mcclear',
 
     References
     ----------
-    .. [1] `CAMS solar radiation documentation
-       <https://atmosphere.copernicus.eu/solar-radiation>`_
+    .. [1] `CAMS solar radiation time-series documentation. Climate Data Store.
+       <https://ads.atmosphere.copernicus.eu/datasets/cams-solar-radiation-timeseries>`_
     .. [2] `CAMS Radiation Automatic Access (SoDa)
        <https://www.soda-pro.com/help/cams-services/cams-radiation-service/automatic-access>`_
     .. [3] A. R. Jensen et al., pvlib iotools — Open-source Python functions
        for seamless access to solar irradiance data. Solar Energy. 2023. Vol
        266, pp. 112092. :doi:`10.1016/j.solener.2023.112092`
+    .. [4] `CAMS gridded solar radiation documentation.
+       <https://ads.atmosphere.copernicus.eu/datasets/cams-gridded-solar-radiation>`_
     """
     try:
         time_step_str = TIME_STEPS_MAP[time_step]
@@ -268,8 +276,8 @@ def parse_cams(fbuf, integrated=False, label=None, map_variables=True):
 
     References
     ----------
-    .. [1] `CAMS solar radiation documentation
-       <https://atmosphere.copernicus.eu/solar-radiation>`_
+    .. [1] `CAMS solar radiation time-series documentation. Climate Data Store.
+       <https://ads.atmosphere.copernicus.eu/datasets/cams-solar-radiation-timeseries>`_
     """
     metadata = {}
     # Initial lines starting with # contain metadata
@@ -370,8 +378,8 @@ def read_cams(filename, integrated=False, label=None, map_variables=True):
 
     References
     ----------
-    .. [1] `CAMS solar radiation documentation
-       <https://atmosphere.copernicus.eu/solar-radiation>`_
+    .. [1] `CAMS solar radiation time-series documentation. Climate Data Store.
+       <https://ads.atmosphere.copernicus.eu/datasets/cams-solar-radiation-timeseries>`_
     """
     with open(str(filename), 'r') as fbuf:
         content = parse_cams(fbuf, integrated, label, map_variables)

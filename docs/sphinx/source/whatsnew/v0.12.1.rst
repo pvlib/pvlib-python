@@ -42,7 +42,7 @@ Documentation
 * Clarify which SAPM coefficients are required by the ``module`` parameter in
   :py:func:`~pvlib.pvsystem.sapm` (:issue:`2392`, :pull:`2435`)
 * Update references in :py:func:`~pvlib.irradiance.get_extra_radiation`
-  (:issue:`2333`, :pull:`2347`)
+  (:issue:`2333`, :pull:`2437`)
 * Update references in :py:func:`~pvlib.iotools.get_cams` and :py:func:`~pvlib.iotools.read_cams`
   (:issue:`2427`, :pull:`2457`)
 
@@ -69,3 +69,4 @@ Contributors
 * Will Holmgren (:ghuser:`wholmgren`)
 * Muhammad Rebaal (:ghuser:`Muhammad-Rebaal`)
 * omahs (:ghuser:`omahs`)
+* Adam R. Jensen (:ghuser:`AdamRJensen`)

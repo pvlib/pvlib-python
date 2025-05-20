@@ -62,12 +62,6 @@ def get_cams(latitude, longitude, start, end, email, identifier='mcclear',
     66° in latitude and -66° to 180° in longitude for CAMS Radiation. See [3]_
     for a map of the geographical coverage.
 
-    For studies involving large geospatial areas, CAMS offers a gridded dataset
-    [4]_, which is a post-processed compilation of many pre-calculated CAMS
-    time series on a pre-defined grid over land and coastal areas. Note, that
-    this dataset may therefore not yet include the most recent data coverage
-    and may not be based on the most recent version.
-
     Parameters
     ----------
     latitude: float
@@ -148,6 +142,12 @@ def get_cams(latitude, longitude, start, end, email, identifier='mcclear',
     Variables corresponding to standard pvlib variables are renamed,
     e.g. `sza` becomes `solar_zenith`. See variable :const:`VARIABLE_MAP` for
     the complete mapping.
+
+    For studies involving large geospatial areas, CAMS offers a pre-calculated
+    gridded dataset [4]_ over land and coastal areas. Note, that this dataset
+    may therefore not yet include the most recent data coverage and may not be
+    based on the most recent version. This dataset is not available through
+    pvlib.
 
     See Also
     --------

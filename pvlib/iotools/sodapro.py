@@ -242,7 +242,7 @@ def read_cams(filename, integrated=False, label=None, map_variables=True):
     """
     Read a file or file-like buffer with data in the format of a CAMS
     Radiation or McClear file.
-    
+
     The CAMS solar radiation services are described in [1]_.
 
     Parameters
@@ -283,7 +283,7 @@ def read_cams(filename, integrated=False, label=None, map_variables=True):
         while True:
             line = fbuf.readline().rstrip('\n')
             if line.startswith('# Observation period'):
-                # The last line of the metadata section contains the column names
+                # The last line of the metadata section has the column names
                 names = line.lstrip('# ').split(';')
                 break  # End of metadata section has been reached
             elif ': ' in line:

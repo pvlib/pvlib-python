@@ -68,7 +68,7 @@ albedo = 0.25  # [unitless]
 temp_air = 18  # [degrees C]
 
 # %%
-# Now, we are ready to calculate the front and read-side irradiance using
+# Now, we are ready to calculate the front and rear-side irradiance using
 # the pvlib infinite sheds model.
 
 dni_extra = pvlib.irradiance.get_extra_radiation(times)

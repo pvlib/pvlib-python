@@ -10,7 +10,7 @@ Irradiance at crop level between rows
 # for an agriPV system using pvlib's infinite sheds model.
 # For an overview of agrivPV concepts and performance, the reader
 # is referred to :doi:`10.69766/XAEU5008`.
-
+#
 # The first steps is to define the plant location and calculate solar position
 # and clearsky irradiance for a single day as an example.
 #
@@ -23,6 +23,7 @@ Irradiance at crop level between rows
 #    *Source: Adam R. Jensen*
 
 import pvlib
+from pvlib.tools import cosd
 import pandas as pd
 import matplotlib.pyplot as plt
 
@@ -55,7 +56,7 @@ tracking_orientations = pvlib.tracking.singleaxis(
     max_angle=max_angle,
     backtrack=True,
     gcr=gcr,
-    )
+)
 
 # %%
 # For agrivPV systems, the local albedo is dependent on crop growth and thus
@@ -125,8 +126,6 @@ plt.show()
 # ground and second we calculate the fraction of the ground that is unshaded
 # (i.e., receives DNI).
 
-from pvlib.tools import cosd
-
 vf_ground_sky = pvlib.bifacial.utils.vf_ground_sky_2d_integ(
     surface_tilt=tracking_orientations['surface_tilt'],
     gcr=gcr,
@@ -142,9 +141,9 @@ unshaded_ground_fraction = pvlib.bifacial.utils._unshaded_ground_fraction(
     gcr=gcr,
 )
 
-crop_avg_irradiance = (
-    unshaded_ground_fraction * clearsky['dni'] * cosd(solpos['apparent_zenith'])
-    + vf_ground_sky * clearsky['dhi'])
+crop_avg_irradiance = (unshaded_ground_fraction * clearsky['dni']
+                       * cosd(solpos['apparent_zenith'])
+                       + vf_ground_sky * clearsky['dhi'])
 
 fig, ax = plt.subplots()
 clearsky['ghi'].plot(ax=ax, label='Horizontal irradiance above panels')

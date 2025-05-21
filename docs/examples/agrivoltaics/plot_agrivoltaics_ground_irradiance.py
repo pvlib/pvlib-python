@@ -6,8 +6,9 @@ Irradiance at crop level between rows
 """
 
 # %%
-# This example demonstrates how to calculate irradiance at crop level
-# for an agriPV system using pvlib's infinite sheds model.
+# This example demonstrates how to calculate power output for a bifacial
+# agriPV plant as well as calculating the irradiance at crop level
+# using pvlib's infinite sheds model.
 # For an overview of agrivPV concepts and performance, the reader
 # is referred to :doi:`10.69766/XAEU5008`.
 #

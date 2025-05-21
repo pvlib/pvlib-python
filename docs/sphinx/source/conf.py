@@ -412,6 +412,41 @@ warnings.filterwarnings("ignore", category=UserWarning,
 # https://gist.github.com/flying-sheep/b65875c0ce965fbdd1d9e5d0b9851ef1
 
 
+# select correct base URL depending on the build system context
+def get_base_url():
+    """
+    Get the base URL for the source code to generate links to GitHub source.
+    If the build is on ReadTheDocs and it's a stable version, use the
+    versioned link. If it's a latest version, use the main link.
+
+    For other builds (e.g. pull requests), use the main link.
+    Local builds will also use the main link.
+
+    Resulting base URL should end with a trailing slash.
+
+    See https://docs.readthedocs.com/platform/stable/reference/environment-variables.html
+    """  # noqa: E501
+    repo_url = os.environ.get(
+        "READTHEDOCS_GIT_CLONE_URL",
+        default="https://github.com/pvlib/pvlib-python",
+    )
+    READTHEDOCS_ENV = os.environ.get("READTHEDOCS", None) == "True"
+    READTHEDOCS_VERSION = os.environ.get("READTHEDOCS_VERSION", None)
+    READTHEDOCS_GIT_IDENTIFIER = os.environ.get(
+        "READTHEDOCS_GIT_IDENTIFIER", None
+    )
+    if READTHEDOCS_ENV:  # Building docs on ReadTheDocs
+        if READTHEDOCS_VERSION == "latest":  # latest version, commited to main
+            repo_url += "/blob/main/"
+        elif READTHEDOCS_VERSION == "stable":  # stable version, has a tag
+            repo_url += f"/blob/{READTHEDOCS_GIT_IDENTIFIER}/"
+        else:  # pull request, user and branch are unknown so use main
+            repo_url += "/blob/main/"
+    else:  # Local build
+        repo_url += "/blob/main/"  # can't tell where to point to
+    return repo_url
+
+
 def get_obj_module(qualname):
     """
     Get a module/class/attribute and its original module by qualname.
@@ -456,6 +491,9 @@ def get_linenos(obj):
         return start, start + len(lines) - 1
 
 
+URL_BASE = get_base_url()  # Source code URL for Edit on GitHub links
+
+
 def make_github_url(file_name):
     """
     Generate the appropriate GH link for a given docs page.  This function
@@ -465,9 +503,6 @@ def make_github_url(file_name):
     sphinx theme has a built-in `file_name` variable that looks like
     "/docs/sphinx/source/api.rst" or "generated/pvlib.atmosphere.alt2pres.rst"
     """
-
-    URL_BASE = "https://github.com/pvlib/pvlib-python/blob/main/"
-
     # is it a gallery page?
     if any(d in file_name for d in sphinx_gallery_conf['gallery_dirs']):
         example_folder = file_name.split("/")[-2]

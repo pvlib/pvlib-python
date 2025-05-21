@@ -11,8 +11,8 @@ Irradiance at crop level between rows
 # For an overview of agrivPV concepts and performance, the reader
 # is referred to :doi:`10.69766/XAEU5008`.
 #
-# The first steps are to define the plant location and to calculate solar position
-# and clearsky irradiance for a single day as an example.
+# The first steps are to define the plant location and to calculate solar
+# position and clearsky irradiance for a single day as an example.
 #
 # .. figure:: ../../_images/agrivoltaics_system.jpg
 #    :align: center
@@ -62,9 +62,9 @@ tracking_orientations = pvlib.tracking.singleaxis(
 # For agrivPV systems, the local albedo is dependent on crop growth and thus
 # changes throughout the seasons. In this example, we only simulate one
 # day and thus use a constant value. Similarly, we will assume a constant
-# air temperature to avoid getting external data. Both albedo and air temperature
-# could be defined as Series with the same index as used for the solar position
-# calculations.
+# air temperature to avoid getting external data. Both albedo and air
+# temperature could be defined as Series with the same index as used for the
+# solar position calculations.
 
 albedo = 0.25  # [unitless]
 temp_air = 18  # [degrees C]

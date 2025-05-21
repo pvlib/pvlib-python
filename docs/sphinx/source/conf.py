@@ -501,7 +501,7 @@ def make_github_url(file_name):
 
     The target URL is built differently based on the type of page.  The pydata
     sphinx theme has a built-in `file_name` variable that looks like
-    "/docs/sphinx/source/api.rst" or "generated/pvlib.atmosphere.alt2pres.rst"
+    "docs/sphinx/source/api.rst" or "generated/pvlib.atmosphere.alt2pres.rst"
     """
     # is it a gallery page?
     if any(d in file_name for d in sphinx_gallery_conf['gallery_dirs']):

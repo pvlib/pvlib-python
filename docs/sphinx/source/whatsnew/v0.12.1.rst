@@ -43,6 +43,8 @@ Documentation
   :py:func:`~pvlib.pvsystem.sapm` (:issue:`2392`, :pull:`2435`)
 * Update references in :py:func`~pvlib.irradiance.get_extra_radiation`
   (:issue:`2333`, :pull:`2347`)
+* Add gallery example on calculating irradiance at crop level for agriPV systems.
+  (:pull:`2459`)
 
 Requirements
 ~~~~~~~~~~~~

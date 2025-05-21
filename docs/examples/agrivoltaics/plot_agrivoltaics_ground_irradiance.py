@@ -11,7 +11,7 @@ Irradiance at crop level between rows
 # For an overview of agrivPV concepts and performance, the reader
 # is referred to :doi:`10.69766/XAEU5008`.
 #
-# The first step is to define the plant location and calculate solar position
+# The first steps are to define the plant location and to calculate solar position
 # and clearsky irradiance for a single day as an example.
 #
 # .. figure:: ../../_images/agrivoltaics_system.jpg
@@ -23,7 +23,7 @@ Irradiance at crop level between rows
 #    *Source: Adam R. Jensen*
 
 import pvlib
-from pvlib.tools import cosd
+from pvlib.tools import cosd  # we'll want this later
 import pandas as pd
 import matplotlib.pyplot as plt
 
@@ -41,7 +41,7 @@ clearsky = location.get_clearsky(times, model='ineichen')
 height = 3  # [m] height of torque above ground
 pitch = 12  # [m] row spacing
 row_width = 2 * 2  # [m] two modules in portrait, each 2 m long
-gcr = row_width / pitch  # [unitless]
+gcr = row_width / pitch  # ground coverage ratio [unitless]
 axis_azimuth = 0  # [degrees] north-south tracking axis
 max_angle = 50  # [degrees] maximum rotation angle
 
@@ -62,7 +62,9 @@ tracking_orientations = pvlib.tracking.singleaxis(
 # For agrivPV systems, the local albedo is dependent on crop growth and thus
 # changes throughout the seasons. In this example, we only simulate one
 # day and thus use a constant value. Similarly, we will assume a constant
-# air temperature to avoid getting external data.
+# air temperature to avoid getting external data. Both albedo and air temperature
+# could be defined as Series with the same index as used for the solar position
+# calculations.
 
 albedo = 0.25  # [unitless]
 temp_air = 18  # [degrees C]
@@ -91,7 +93,7 @@ irradiance = pvlib.bifacial.infinite_sheds.get_irradiance(
 )
 
 # %%
-# Once the in-plane irradiance is known, we can estimate the power output.
+# Once the in-plane irradiance is known, we can estimate the PV array power.
 # For simplicity, we use the PVWatts model:
 
 N_tables = 108
@@ -119,8 +121,8 @@ plt.show()
 # %%
 # In addition to the power output of the PV array, we are also interested
 # in how much irradiance reaches the crops under the array. In this case
-# we calculate the average irradiance using the infinite sheds utility
-# functions.
+# we calculate the average irradiance on the ground between two rows, using
+# the infinite sheds utility functions.
 #
 # This consists of two parts. First we determine the diffuse irradiance on
 # ground and second we calculate the fraction of the ground that is unshaded

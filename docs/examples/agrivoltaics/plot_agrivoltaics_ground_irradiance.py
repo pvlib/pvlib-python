@@ -1,6 +1,6 @@
 """
-AgriPV with infinite sheds
-==========================
+Agrivoltaic system modeling
+===========================
 
 Irradiance at crop level between rows
 """
@@ -24,8 +24,8 @@ Irradiance at crop level between rows
 #    *Source: Adam R. Jensen*
 
 import pvlib
-from pvlib.tools import cosd  # we'll want this later
 import pandas as pd
+from pvlib.tools import cosd
 import matplotlib.pyplot as plt
 
 location = pvlib.location.Location(latitude=55, longitude=10)
@@ -90,17 +90,16 @@ irradiance = pvlib.bifacial.infinite_sheds.get_irradiance(
     albedo=albedo,
     model='haydavies',
     dni_extra=dni_extra,
-    bifaciality=0.8,
+    bifaciality=0.8,  # [unitless] rear-side power relative to front-side
 )
 
 # %%
 # Once the in-plane irradiance is known, we can estimate the PV array power.
 # For simplicity, we use the PVWatts model:
 
-N_tables = 108
-modules_per_table = 14
+N_modules = 1512  # [unitless] Number of modules
 pdc0_per_module = 380  # [W] STC rating
-pdc0 = pdc0_per_module * modules_per_table * N_tables
+pdc0 = pdc0_per_module * N_modules
 
 gamma_pdc = -0.004  # [1/degrees C]
 

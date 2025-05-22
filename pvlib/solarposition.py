@@ -134,7 +134,7 @@ def spa_c(time, latitude, longitude, pressure=101325., altitude=0.,
 
     The source files for this code are located in './spa_c_files/', along with
     a README file which describes how the C code is wrapped in Python.
-    Due to license restrictions, the C code must be downloaded seperately
+    Due to license restrictions, the C code must be downloaded separately
     and used in accordance with it's license.
 
     This function is slower and no more accurate than :py:func:`spa_python`.

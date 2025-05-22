@@ -68,3 +68,4 @@ Contributors
 * Will Holmgren (:ghuser:`wholmgren`)
 * Muhammad Rebaal (:ghuser:`Muhammad-Rebaal`)
 * Echedey Luis (:ghuser:`echedey-ls`)
+* omahs (:ghuser:`omahs`)

@@ -413,7 +413,7 @@ warnings.filterwarnings("ignore", category=UserWarning,
 
 
 # select correct base URL depending on the build system context
-def get_base_url():
+def get_source_files_base_url():
     """
     Get the base URL for the source code to generate links to GitHub source.
     If the build is on ReadTheDocs and it's a stable version, use the
@@ -491,7 +491,7 @@ def get_linenos(obj):
         return start, start + len(lines) - 1
 
 
-URL_BASE = get_base_url()  # Source code URL for Edit on GitHub links
+URL_BASE = get_source_files_base_url()  # Edit on GitHub source code links
 
 
 def make_github_url(file_name):

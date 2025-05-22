@@ -17,7 +17,6 @@ from pvlib import spectrum
 from pvlib.location import Location
 from pvlib.pvsystem import FixedMount
 from pvlib import temperature
-from pvlib._deprecation import pvlibDeprecationWarning
 from pvlib.tools import cosd
 from pvlib.singlediode import VOLTAGE_BUILTIN
 
@@ -196,6 +195,15 @@ def test_sapm(sapm_module_params):
     # just make sure it works with Series input
     pvsystem.sapm(effective_irradiance, temp_cell,
                   pd.Series(sapm_module_params))
+
+    # ensure C4-C7 are optional
+    optional_keys = ['IXO', 'IXXO', 'C4', 'C5', 'C6', 'C7']
+    params_no_c4c7 = {
+        k: v for k, v in sapm_module_params.items() if k not in optional_keys
+    }
+    out = pvsystem.sapm(effective_irradiance, temp_cell, params_no_c4c7)
+    assert 'i_x' not in out.keys()
+    assert 'i_xx' not in out.keys()
 
 
 def test_PVSystem_sapm(sapm_module_params, mocker):
@@ -701,6 +709,13 @@ def test_Array__infer_temperature_model_params():
                            module_type=None)
     expected = temperature.TEMPERATURE_MODEL_PARAMETERS[
         'pvsyst']['insulated']
+    assert expected == array._infer_temperature_model_params()
+    array = pvsystem.Array(mount=FixedMount(0, 180,
+                                            racking_model='semi_integrated'),
+                           module_parameters={},
+                           module_type=None)
+    expected = temperature.TEMPERATURE_MODEL_PARAMETERS[
+        'pvsyst']['semi_integrated']
     assert expected == array._infer_temperature_model_params()
 
 

@@ -723,7 +723,7 @@ def get_pvgis_horizon(latitude, longitude, url=URL, **kwargs):
     Returns
     -------
     data : pd.Series
-        Pandas Series of the retrived horizon elevation angles. Index is the
+        Pandas Series of the retrieved horizon elevation angles. Index is the
         corresponding horizon azimuth angles.
     metadata : dict
         Metadata returned by PVGIS.

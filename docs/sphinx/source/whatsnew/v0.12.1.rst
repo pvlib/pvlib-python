@@ -6,7 +6,8 @@ v0.12.1 (XXXX, 2025)
 
 Breaking Changes
 ~~~~~~~~~~~~~~~~
-
+* Remove ``outputformat='basic'`` option in :py:func:`~pvlib.iotools.get_pvgis_tmy`.
+  (:pull:`2416`)
 
 Bug fixes
 ~~~~~~~~~

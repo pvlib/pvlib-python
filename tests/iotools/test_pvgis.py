@@ -537,7 +537,7 @@ def test_get_pvgis_tmy_error():
 
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
-def test_get_pvgis_tmy_basic(expected, meta_expected):
+def test_get_pvgis_tmy_basic():
     # Test that a specific error message is raised when outputformat='basic'
     err_msg = ("outputformat='basic' is no longer supported by pvlib, "
                "please use outputformat='csv' instead.")

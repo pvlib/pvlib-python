@@ -27,10 +27,10 @@ import pvlib.tools as tools
 # a dict of required parameter names for each DC power model
 _DC_MODEL_PARAMS = {
     'sapm': {
-        'C0', 'C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'C7',
+        # i_x and i_xx params (IXO, IXXO, C4-C7) not required
+        'C0', 'C1', 'C2', 'C3',
         'Isco', 'Impo', 'Voco', 'Vmpo', 'Aisc', 'Aimp', 'Bvoco',
-        'Mbvoc', 'Bvmpo', 'Mbvmp', 'N', 'Cells_in_Series',
-        'IXO', 'IXXO'},
+        'Mbvoc', 'Bvmpo', 'Mbvmp', 'N', 'Cells_in_Series'},
     'desoto': {
         'alpha_sc', 'a_ref', 'I_L_ref', 'I_o_ref',
         'R_sh_ref', 'R_s'},
@@ -1010,6 +1010,9 @@ class Array:
         elif 'insulated' in param_set:  # after SAPM to avoid confusing keys
             return temperature._temperature_model_params('pvsyst',
                                                          'insulated')
+        elif 'semi_integrated' in param_set:
+            return temperature._temperature_model_params('pvsyst',
+                                                         'semi_integrated')
         else:
             return {}
 
@@ -1394,10 +1397,11 @@ class FixedMount(AbstractMount):
 
     racking_model : str, optional
         Valid strings are ``'open_rack'``, ``'close_mount'``,
-        ``'insulated_back'``, ``'freestanding'`` and ``'insulated'``.
+        ``'insulated_back'``, ``'freestanding'``, ``'insulated'``, and
+        ``'semi_integrated'``.
         Used to identify a parameter set for the SAPM or PVsyst cell
         temperature model.
-        See :py:func:`~pvlib.temperature.sapm_module`  and
+        See :py:func:`~pvlib.temperature.sapm_module` and
         :py:func:`~pvlib.temperature.pvsyst_cell` for definitions.
 
     module_height : float, optional
@@ -1475,7 +1479,8 @@ class SingleAxisTrackerMount(AbstractMount):
 
     racking_model : str, optional
         Valid strings are ``'open_rack'``, ``'close_mount'``,
-        ``'insulated_back'``, ``'freestanding'`` and ``'insulated'``.
+        ``'insulated_back'``, ``'freestanding'``, ``'insulated'``, and
+        ``'semi_integrated'``.
         Used to identify a parameter set for the SAPM or PVsyst cell
         temperature model. ``'open_rack'`` or ``'freestanding'`` should
         be used for systems with single-axis trackers.
@@ -2229,18 +2234,33 @@ def sapm(effective_irradiance, temp_cell, module, *, temperature_ref=25,
         * v_mp : Voltage at maximum-power point (V)
         * p_mp : Power at maximum-power point (W)
         * i_x : Current at module V = 0.5Voc, defines 4th point on I-V
-          curve for modeling curve shape
+          curve for modeling curve shape.  Omitted if ``IXO``, ``C4``, and
+          ``C5`` parameters are not supplied.
         * i_xx : Current at module V = 0.5(Voc+Vmp), defines 5th point on
-          I-V curve for modeling curve shape
+          I-V curve for modeling curve shape.  Omitted if ``IXXO``, ``C6``,
+          and ``C7`` parameters are not supplied.
 
     Notes
     -----
-    The SAPM parameters which are required in ``module`` are
-    listed in the following table.
-
     The Sandia module database contains parameter values for a limited set
     of modules. The CEC module database does not contain these parameters.
-    Both databases can be accessed using :py:func:`retrieve_sam`.
+    Both databases can be accessed using :py:func:`retrieve_sam`. The full list
+    of SAPM parameters is presented in the table below. Those that are required
+    in the ``module`` parameter to run this model are as follows:
+
+    * ``C0``, ``C1``, ``C2``, ``C3``
+    * ``Isco``
+    * ``Impo``
+    * ``Voco``
+    * ``Vmpo``
+    * ``Aisc``
+    * ``Aimp``
+    * ``Bvoco``
+    * ``Mbvoc``
+    * ``Bvmpo``
+    * ``Mbvmp``
+    * ``N``
+    * ``Cells_in_series``
 
     ================   ========================================================
     Key                Description
@@ -2335,13 +2355,15 @@ def sapm(effective_irradiance, temp_cell, module, *, temperature_ref=25,
 
     out['p_mp'] = out['i_mp'] * out['v_mp']
 
-    out['i_x'] = (
-        module['IXO'] * (module['C4']*Ee + module['C5']*(Ee**2)) *
-        (1 + module['Aisc']*(temp_cell - temperature_ref)))
+    if 'IXO' in module and 'C4' in module and 'C5' in module:
+        out['i_x'] = (
+            module['IXO'] * (module['C4']*Ee + module['C5']*(Ee**2)) *
+            (1 + module['Aisc']*(temp_cell - temperature_ref)))
 
-    out['i_xx'] = (
-        module['IXXO'] * (module['C6']*Ee + module['C7']*(Ee**2)) *
-        (1 + module['Aimp']*(temp_cell - temperature_ref)))
+    if 'IXXO' in module and 'C6' in module and 'C7' in module:
+        out['i_xx'] = (
+            module['IXXO'] * (module['C6']*Ee + module['C7']*(Ee**2)) *
+            (1 + module['Aimp']*(temp_cell - temperature_ref)))
 
     if isinstance(out['i_sc'], pd.Series):
         out = pd.DataFrame(out)

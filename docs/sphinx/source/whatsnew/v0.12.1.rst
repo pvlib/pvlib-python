@@ -8,32 +8,53 @@ Breaking Changes
 ~~~~~~~~~~~~~~~~
 
 
+Deprecations
+~~~~~~~~~~~~
+* The following ``parse_`` functions in :py:mod:`pvlib.iotools` are deprecated,
+  with the corresponding ``read_`` functions taking their place: (:issue:`2444`, :pull:`2458`)
+
+  - :py:func:`~pvlib.iotools.parse_psm3`
+  - :py:func:`~pvlib.iotools.parse_cams`
+
+
 Bug fixes
 ~~~~~~~~~
-
+* :py:func:`pvlib.iotools.get_pvgis_tmy` now returns the correct dtypes when
+  when ``outputformat='epw'``. (:issue:`2399`, :pull:`2417`)
 
 Enhancements
 ~~~~~~~~~~~~
 * :py:mod:`pvlib.ivtools.sdm` is now a subpackage. (:issue:`2252`, :pull:`2256`)
 * Add a function for estimating PVsyst SDM parameters from IEC 61853-1 matrix
   data (:py:func:`~pvlib.ivtools.sdm.fit_pvsyst_iec61853_sandia_2025`). (:issue:`2185`, :pull:`2429`)
+* The parameters for the Ix and Ixx points are now optional when using
+  :py:func:`pvlib.pvsystem.sapm` directly and through
+  :py:class:`~pvlib.pvsystem.PVSystem` and :py:class:`~pvlib.modelchain.ModelChain`.
+  (:issue:`2402`, :pull:`2433`)
 * Add optional arguments ``temperature_ref`` and ``irradiance_ref`` to
   :py:func:`~pvlib.pvsystem.sapm`(:issue:`2432`, :pull:`2434`)
 * Add NREL NSRDB PSM v4 API client to :py:mod:`pvlib.iotools`. See
   :py:func:`~pvlib.iotools.get_nsrdb_psm4_aggregated`,
   :py:func:`~pvlib.iotools.get_nsrdb_psm4_tmy`,
   :py:func:`~pvlib.iotools.get_nsrdb_psm4_conus`,
-  :py:func:`~pvlib.iotools.get_nsrdb_psm4_full_disc`,
-  :py:func:`~pvlib.iotools.read_nsrdb_psm4`, and
-  :py:func:`~pvlib.iotools.parse_nsrdb_psm4`. (:issue:`2326`, :pull:`2378`)
+  :py:func:`~pvlib.iotools.get_nsrdb_psm4_full_disc`, and
+  :py:func:`~pvlib.iotools.read_nsrdb_psm4`. (:issue:`2326`, :pull:`2378`, :pull:`2445`)
+* :py:mod:`pvlib.bifacial.infinite_sheds` no longer emits "invalid value" warnings
+  when supplying irradiance arrays with nighttime zero values. (:issue:`2450`, :pull:`2451`)
+* Add ``'semi_integrated'`` parameters for the PVsyst temperature model.
+  (:issue:`2330`, :pull:`2415`)
 
 Documentation
 ~~~~~~~~~~~~~
 * Add a supporting reference to :py:func:`pvlib.atmosphere.get_relative_airmass` (:issue:`2390`, :pull:`2424`)
-* Documented how `np.nan` values are handled by :py:func:`~pvlib.spectrum.average_photon_energy`
+* Document how ``np.nan`` values are handled by :py:func:`~pvlib.spectrum.average_photon_energy`
   (:issue:`2423`, :pull:`2426`)
-* Update references in :py:func`~pvlib.irradiance.get_extra_radiation`
-  (:issue:`2333`, :pull:`2347`)
+* Clarify which SAPM coefficients are required by the ``module`` parameter in
+  :py:func:`~pvlib.pvsystem.sapm` (:issue:`2392`, :pull:`2435`)
+* Update references in :py:func:`~pvlib.irradiance.get_extra_radiation`
+  (:issue:`2333`, :pull:`2437`)
+* Update references in :py:func:`~pvlib.iotools.get_cams` and :py:func:`~pvlib.iotools.read_cams`
+  (:issue:`2427`, :pull:`2457`)
 
 Requirements
 ~~~~~~~~~~~~
@@ -56,3 +77,7 @@ Contributors
 * Will Hobbs (:ghuser:`williamhobbs`)
 * Kevin Anderson (:ghuser:`kandersolar`)
 * Will Holmgren (:ghuser:`wholmgren`)
+* Muhammad Rebaal (:ghuser:`Muhammad-Rebaal`)
+* omahs (:ghuser:`omahs`)
+* Adam R. Jensen (:ghuser:`AdamRJensen`)
+* Marion Schroedter-Homscheidt (:ghuser:`mschroedter`)

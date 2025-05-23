@@ -410,6 +410,9 @@ def _coerce_and_roll_tmy(tmy_data, tz, year):
         np.roll(tmy_data, tz, axis=0),
         columns=tmy_data.columns,
         index=new_index)
+    # GH 2399
+    new_tmy_data = \
+        new_tmy_data.astype(dtype=dict(zip(tmy_data.columns, tmy_data.dtypes)))
     return new_tmy_data
 
 
@@ -720,7 +723,7 @@ def get_pvgis_horizon(latitude, longitude, url=URL, **kwargs):
     Returns
     -------
     data : pd.Series
-        Pandas Series of the retrived horizon elevation angles. Index is the
+        Pandas Series of the retrieved horizon elevation angles. Index is the
         corresponding horizon azimuth angles.
     metadata : dict
         Metadata returned by PVGIS.

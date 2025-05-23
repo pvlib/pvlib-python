@@ -35,7 +35,7 @@ them.
    source of weather information. However, the coverage depends on
    a weather station having been set up in advance for the location and
    times of interest. Some ground station networks like the BSRN and SURFRAD
-   make their measurement data publicly available. An global overview of ground
+   make their measurement data publicly available. A global overview of ground
    stations is available at https://SolarStations.org.
    
    Data from public ground station measurement networks are useful if you
@@ -50,7 +50,7 @@ them.
    weather station. They have high spatial and temporal resolution
    corresponding to the source satellite imagery, and are generally
    optimised to estimate solar irradiance for PV applications. Free sources
-   such as PVGIS, NSRDB, and CAMS are available, and commerical sources such
+   such as PVGIS, NSRDB, and CAMS are available, and commercial sources such
    as SolarAnywhere, Solcast, and Solargis provide paid options though often
    have free trials.
    

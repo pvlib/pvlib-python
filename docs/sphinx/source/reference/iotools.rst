@@ -17,8 +17,8 @@ of sources and file formats relevant to solar energy modeling.  See also
     :local:
 
 
-Gridded resource data
----------------------
+Gridded solar resource data
+---------------------------
 
 Modeled irradiance and meteorological data, available for large regions of
 the world.
@@ -31,7 +31,7 @@ These APIs are free to access, although some require registration.
 PVGIS
 *****
 
-Multiple gridded irradiance and weather datasets with global coverage.
+Multiple gridded irradiance datasets and weather data with global coverage.
 
 .. autosummary::
    :toctree: generated/
@@ -111,16 +111,17 @@ Solargis
    iotools.get_solargis
 
 
-Ground station data
--------------------
+Ground station solar data
+-------------------------
 
-Measurements from various networks of irradiance and meteorological
-ground stations.
+Measurements from various networks of ground stations
+focusing on solar irradiance.
 
 BSRN
 ^^^^
 
-A global network dedicated to high-quality monitoring of solar radiation.
+A global network dedicated to high-quality monitoring of solar and
+long-wave radiation.
 
 .. autosummary::
    :toctree: generated/
@@ -168,7 +169,8 @@ A solar radiation network in the USA, run by NREL.
 SRML
 ^^^^
 
-A solar radiation network in the northwest USA, run by the University of Oregon.
+A solar radiation network in the northwestern USA, run by
+the University of Oregon.
 
 .. autosummary::
    :toctree: generated/
@@ -180,7 +182,7 @@ A solar radiation network in the northwest USA, run by the University of Oregon.
 Weather data
 ------------
 
-Meteorological datasets from a variety of modeled and measured datasets.
+Meteorological data from a variety of modeled and measured datasets.
 
 ACIS
 ^^^^
@@ -202,7 +204,7 @@ CRN
 ^^^
 
 A network of ground stations from NOAA.  Irradiance measurements are of
-relatively lower quality.
+lower quality.
 
 .. autosummary::
    :toctree: generated/
@@ -213,7 +215,7 @@ relatively lower quality.
 Generic data file readers
 -------------------------
 
-Functions for reading local irradiance/weather data files.
+Functions for reading irradiance/weather data files.
 
 .. autosummary::
    :toctree: generated/

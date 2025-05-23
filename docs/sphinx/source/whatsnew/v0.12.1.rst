@@ -10,7 +10,8 @@ Breaking Changes
 
 Bug fixes
 ~~~~~~~~~
-
+* :py:func:`pvlib.iotools.get_pvgis_tmy` now returns the correct dtypes when
+  when ``outputformat='epw'``. (:issue:`2399`, :pull:`2417`)
 
 Enhancements
 ~~~~~~~~~~~~

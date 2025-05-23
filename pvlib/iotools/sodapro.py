@@ -143,9 +143,9 @@ def get_cams(latitude, longitude, start, end, email, identifier='mcclear',
     e.g. `sza` becomes `solar_zenith`. See variable :const:`VARIABLE_MAP` for
     the complete mapping.
 
-    For studies involving large geospatial areas, CAMS offers a pre-calculated
-    gridded dataset [4]_ over land and coastal areas. Note, that this dataset
-    may therefore not yet include the most recent data coverage and may not be
+    For large geospatial areas, CAMS offers a pre-calculated
+    gridded dataset [4]_over land and coastal areas. This dataset
+    may not include the most recent data coverage and may not be
     based on the most recent version. This dataset is not available through
     pvlib.
 

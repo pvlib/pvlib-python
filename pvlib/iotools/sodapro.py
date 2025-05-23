@@ -353,5 +353,6 @@ def read_cams(filename, integrated=False, label=None, map_variables=True):
 
     return data, metadata
 
+
 parse_cams = deprecated(since="0.12.1", name="parse_cams",
                         alternative="read_cams")(read_cams)

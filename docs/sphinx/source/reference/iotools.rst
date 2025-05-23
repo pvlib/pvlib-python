@@ -20,8 +20,13 @@ of sources and file formats relevant to solar energy modeling.  See also
 Gridded resource data
 ---------------------
 
+Modeled irradiance and meteorological data, available for large regions of
+the world.
+
 Public datasets
 ^^^^^^^^^^^^^^^
+
+These APIs are free to access, although some require registration.
 
 PVGIS
 *****
@@ -74,6 +79,8 @@ Satellite-derived irradiance and weather data for the Americas.
 Commercial datasets
 ^^^^^^^^^^^^^^^^^^^
 
+Accessing these APIs typically requires payment.
+
 SolarAnywhere
 *************
 
@@ -107,6 +114,9 @@ Solargis
 
 Ground station data
 -------------------
+
+Measurements from various networks of irradiance and meteorological
+ground stations.
 
 BSRN
 ^^^^
@@ -171,6 +181,8 @@ A solar radiation network in the northwest USA, run by the University of Oregon.
 Weather data
 ------------
 
+Meteorological datasets from a variety of modeled and measured datasets.
+
 ACIS
 ^^^^
 
@@ -201,6 +213,8 @@ relatively lower quality.
 
 Generic data file readers
 -------------------------
+
+Functions for reading local irradiance/weather data files.
 
 .. autosummary::
    :toctree: generated/

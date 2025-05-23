@@ -9,17 +9,24 @@ IO Tools
 ========
 
 Functions for retrieving, reading, and writing data from a variety
-of sources and file formats relevant to solar energy modeling.
+of sources and file formats relevant to solar energy modeling.  See also
+:ref:`weatherdata`.
 
 .. contents:: Currently supported APIs
     :depth: 3
     :local:
 
+
+Gridded resource data
+---------------------
+
 Public datasets
----------------
+^^^^^^^^^^^^^^^
 
 PVGIS
-^^^^^
+*****
+
+Multiple gridded irradiance and weather datasets with global coverage.
 
 .. autosummary::
    :toctree: generated/
@@ -32,7 +39,10 @@ PVGIS
 
 
 CAMS
-^^^^
+****
+
+Satellite-derived irradiance data for Europe, Africa, and Asia, and
+clear-sky irradiance globally.
 
 .. autosummary::
    :toctree: generated/
@@ -43,7 +53,9 @@ CAMS
 
 
 NSRDB
-^^^^^
+*****
+
+Satellite-derived irradiance and weather data for the Americas.
 
 .. autosummary::
    :toctree: generated/
@@ -59,8 +71,47 @@ NSRDB
    iotools.parse_psm3
 
 
+Commercial datasets
+^^^^^^^^^^^^^^^^^^^
+
+SolarAnywhere
+*************
+
+.. autosummary::
+   :toctree: generated/
+
+   iotools.get_solaranywhere
+   iotools.read_solaranywhere
+
+
+Solcast
+*******
+
+.. autosummary::
+   :toctree: generated/
+
+   iotools.get_solcast_tmy
+   iotools.get_solcast_historic
+   iotools.get_solcast_forecast
+   iotools.get_solcast_live
+
+
+Solargis
+********
+
+.. autosummary::
+   :toctree: generated/
+
+   iotools.get_solargis
+
+
+Ground station data
+-------------------
+
 BSRN
 ^^^^
+
+A global network dedicated to high-quality monitoring of solar radiation.
 
 .. autosummary::
    :toctree: generated/
@@ -73,6 +124,8 @@ BSRN
 SOLRAD
 ^^^^^^
 
+A solar radiation network in the USA, run by NOAA.
+
 .. autosummary::
    :toctree: generated/
 
@@ -83,6 +136,8 @@ SOLRAD
 SURFRAD
 ^^^^^^^
 
+A solar radiation network in the USA, run by NOAA.
+
 .. autosummary::
    :toctree: generated/
 
@@ -91,6 +146,8 @@ SURFRAD
 
 MIDC
 ^^^^
+
+A solar radiation network in the USA, run by NREL.
 
 .. autosummary::
    :toctree: generated/
@@ -102,6 +159,8 @@ MIDC
 SRML
 ^^^^
 
+A solar radiation network in the northwest USA, run by the University of Oregon.
+
 .. autosummary::
    :toctree: generated/
 
@@ -109,8 +168,14 @@ SRML
    iotools.get_srml
 
 
+Weather data
+------------
+
 ACIS
 ^^^^
+
+A combination of many meteorological datasets providing temperature,
+precipitation, wind speed, and other weather measurements.
 
 .. autosummary::
    :toctree: generated/
@@ -125,46 +190,13 @@ ACIS
 CRN
 ^^^
 
+A network of ground stations from NOAA.  Irradiance measurements are of
+relatively lower quality.
+
 .. autosummary::
    :toctree: generated/
 
    iotools.read_crn
-
-
-
-Commercial datasets
--------------------
-
-
-SolarAnywhere
-^^^^^^^^^^^^^
-
-.. autosummary::
-   :toctree: generated/
-
-   iotools.get_solaranywhere
-   iotools.read_solaranywhere
-
-
-Solcast
-^^^^^^^
-
-.. autosummary::
-   :toctree: generated/
-
-   iotools.get_solcast_tmy
-   iotools.get_solcast_historic
-   iotools.get_solcast_forecast
-   iotools.get_solcast_live
-
-
-Solargis
-^^^^^^^^
-
-.. autosummary::
-   :toctree: generated/
-
-   iotools.get_solargis
 
 
 Generic data file readers

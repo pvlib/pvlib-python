@@ -11,6 +11,10 @@ IO Tools
 Functions for retrieving, reading, and writing data from a variety
 of sources and file formats relevant to solar energy modeling.
 
+.. contents:: Currently supported APIs
+    :depth: 3
+    :local:
+
 Public datasets
 ---------------
 

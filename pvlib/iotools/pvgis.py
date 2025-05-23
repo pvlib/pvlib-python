@@ -523,8 +523,8 @@ def get_pvgis_tmy(latitude, longitude, outputformat='json', usehorizon=True,
             months_selected, inputs = None, None
     # raise exception if pvgis format isn't in ['csv', 'json', 'epw']
     elif outputformat == 'basic':
-        err_msg = ("outputformat='basic' is no longer supported, please use "
-                   "outputformat='csv' instead.")
+        err_msg = ("outputformat='basic' is no longer supported by pvlib, "
+                   "please use outputformat='csv' instead.")
         raise ValueError(err_msg)
 
     if map_variables:

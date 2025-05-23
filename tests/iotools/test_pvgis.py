@@ -273,16 +273,16 @@ url_bad_outputformat = 'https://re.jrc.ec.europa.eu/api/seriescalc?lat=45&lon=8&
 
 def test_get_pvgis_hourly_bad_outputformat(requests_mock):
     # Test if a ValueError is raised if an unsupported outputformat is used
-    # E.g. 'basic' is a valid PVGIS format, but is not supported by pvlib
+    # error is raised by the PVGIS service, hence it is a HTTPError
     requests_mock.get(url_bad_outputformat)
-    with pytest.raises(ValueError):
-        get_pvgis_hourly(latitude=45, longitude=8, outputformat='basic')
+    with pytest.raises(requests.HTTPError):
+        get_pvgis_hourly(latitude=45, longitude=8, outputformat='error')
 
 
 def test_get_pvgis_tmy_basic_outputformat():
     # Test if a ValueError is raised if an unsupported outputformat is used
     # E.g. 'basic' is a valid PVGIS format, but is not supported by pvlib
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="outputformat='basic' is no longer"):
         get_pvgis_tmy(latitude=45, longitude=8, outputformat='basic')
 
 
@@ -628,3 +628,8 @@ def test_read_pvgis_tmy_exception():
     with pytest.raises(ValueError, match=err_msg):
         read_pvgis_tmy('filename', pvgis_format=bad_outputformat,
                        map_variables=False)
+
+
+def test_read_pvgis_tmy_unknown_outputformat():
+    with pytest.raises(ValueError, match="pvgis format 'txt' was unknown"):
+        read_pvgis_tmy("hello.txt")

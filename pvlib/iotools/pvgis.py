@@ -383,11 +383,6 @@ def read_pvgis_hourly(filename, pvgis_format=None, map_variables=True):
                     fbuf, map_variables=map_variables)
         return pvgis_data
 
-    elif outputformat == 'basic':
-        err_msg = "outputformat='basic' is no longer supported, please use "\
-            "outputformat='csv' instead."
-        raise ValueError(err_msg)
-
     else:
         # raise exception if pvgis format isn't in ['csv', 'json']
         err_msg = (
@@ -527,10 +522,9 @@ def get_pvgis_tmy(latitude, longitude, outputformat='json', usehorizon=True,
             data, meta = parse_epw(src)
             months_selected, inputs = None, None
     # raise exception if pvgis format isn't in ['csv', 'json', 'epw']
-    else:
-        err_msg = (
-            "pvgis format '{:s}' was unknown, must be either 'json', 'csv', or"
-            " 'epw'.").format(outputformat)
+    elif outputformat == 'basic':
+        err_msg = ("outputformat='basic' is no longer supported, please use "
+                   "outputformat='csv' instead.")
         raise ValueError(err_msg)
 
     if map_variables:

@@ -109,7 +109,7 @@ def get_bsrn(station, start, end, username, password,
     UserWarning
         If one or more requested files are missing a UserWarning is returned
         with a list of the filenames missing. If no files match the specified
-        station and timeframe a seperate UserWarning is given.
+        station and timeframe a separate UserWarning is given.
 
     Notes
     -----

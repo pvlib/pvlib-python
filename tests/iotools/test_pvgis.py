@@ -273,17 +273,10 @@ url_bad_outputformat = 'https://re.jrc.ec.europa.eu/api/seriescalc?lat=45&lon=8&
 
 def test_get_pvgis_hourly_bad_outputformat(requests_mock):
     # Test if a ValueError is raised if an unsupported outputformat is used
-    # error is raised by the PVGIS service, hence it is a HTTPError
-    requests_mock.get(url_bad_outputformat)
-    with pytest.raises(requests.HTTPError):
-        get_pvgis_hourly(latitude=45, longitude=8, outputformat='error')
-
-
-def test_get_pvgis_tmy_basic_outputformat():
-    # Test if a ValueError is raised if an unsupported outputformat is used
     # E.g. 'basic' is a valid PVGIS format, but is not supported by pvlib
-    with pytest.raises(ValueError, match="outputformat='basic' is no longer"):
-        get_pvgis_tmy(latitude=45, longitude=8, outputformat='basic')
+    requests_mock.get(url_bad_outputformat)
+    with pytest.raises(ValueError):
+        get_pvgis_hourly(latitude=45, longitude=8, outputformat='basic')
 
 
 url_additional_inputs = 'https://re.jrc.ec.europa.eu/api/seriescalc?lat=55.6814&lon=12.5758&outputformat=csv&angle=0&aspect=0&pvcalculation=1&pvtechchoice=crystSi&mountingplace=free&trackingtype=0&components=1&usehorizon=1&optimalangles=1&optimalinclination=0&loss=2&userhorizon=10%2C15%2C20%2C10&peakpower=5'  # noqa: E501
@@ -540,6 +533,16 @@ def test_get_pvgis_tmy_error():
         get_pvgis_tmy(45, 8, outputformat='bad')
     with pytest.raises(requests.HTTPError, match='404 Client Error'):
         get_pvgis_tmy(45, 8, url='https://re.jrc.ec.europa.eu/')
+
+
+@pytest.mark.remote_data
+@pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
+def test_get_pvgis_tmy_basic(expected, meta_expected):
+    # Test that a specific error message is raised when outputformat='basic'
+    err_msg = ("outputformat='basic' is no longer supported by pvlib, "
+               "please use outputformat='csv' instead.")
+    with pytest.raises(ValueError, match=err_msg):
+        get_pvgis_tmy(45, 8, outputformat='basic')
 
 
 @pytest.mark.remote_data

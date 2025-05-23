@@ -144,7 +144,7 @@ def get_cams(latitude, longitude, start, end, email, identifier='mcclear',
     the complete mapping.
 
     For large geospatial areas, CAMS offers a pre-calculated
-    gridded dataset [4]_over land and coastal areas. This dataset
+    gridded dataset [4]_ over land and coastal areas. This dataset
     may not include the most recent data coverage and may not be
     based on the most recent CAMS version. This dataset is not available
     through pvlib.

@@ -264,7 +264,8 @@ def _parse_pvgis_hourly_csv(src, map_variables):
     # Elevation (m): 1389.0\r\n
     metadata['inputs']['elevation'] = float(src.readline().split(':')[1])
     # 'Radiation database: \tPVGIS-SARAH\r\n'
-    metadata['inputs']['radiation_database'] = src.readline().split(':')[1].strip()
+    metadata['inputs']['radiation_database'] = \
+        src.readline().split(':')[1].strip()
     # Parse through the remaining metadata section (the number of lines for
     # this section depends on the requested parameters)
     while True:
@@ -300,7 +301,8 @@ def _parse_pvgis_hourly_csv(src, map_variables):
     metadata['descriptions'] = {}
     for line in src.readlines():
         if ':' in line:
-            metadata['descriptions'][line.split(':')[0]] = line.split(':')[1].strip()
+            metadata['descriptions'][line.split(':')[0]] = \
+                line.split(':')[1].strip()
     return data, metadata
 
 

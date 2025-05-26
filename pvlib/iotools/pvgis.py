@@ -297,10 +297,10 @@ def _parse_pvgis_hourly_csv(src, map_variables):
     # integer. It is necessary to convert to float, before converting to int
     data = data.astype(float).astype(dtype={'Int': 'int'})
     # Generate metadata dictionary containing description of parameters
-    metadata['inputs']['descriptions'] = {}
+    metadata['descriptions'] = {}
     for line in src.readlines():
         if ':' in line:
-            metadata['inputs']['descriptions'][line.split(':')[0]] = line.split(':')[1].strip()
+            metadata['descriptions'][line.split(':')[0]] = line.split(':')[1].strip()
     return data, metadata
 
 

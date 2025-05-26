@@ -130,8 +130,6 @@ def get_pvgis_hourly(latitude, longitude, start=None, end=None,
     -------
     data : pandas.DataFrame
         Time-series of hourly data, see Notes for fields
-    inputs : dict
-        Dictionary of the request input parameters
     metadata : dict
         Dictionary containing metadata
 
@@ -189,7 +187,7 @@ def get_pvgis_hourly(latitude, longitude, start=None, end=None,
     Examples
     --------
     >>> # Retrieve two years of irradiance data from PVGIS:
-    >>> data, meta, inputs = pvlib.iotools.get_pvgis_hourly(  # doctest: +SKIP
+    >>> data, meta = pvlib.iotools.get_pvgis_hourly(  # doctest: +SKIP
     >>>    latitude=45, longitude=8, start=2015, end=2016)  # doctest: +SKIP
 
     References
@@ -241,28 +239,32 @@ def get_pvgis_hourly(latitude, longitude, start=None, end=None,
 
 
 def _parse_pvgis_hourly_json(src, map_variables):
-    inputs = src['inputs']
-    metadata = src['meta']
+    metadata = src['meta'].copy()
+    # Ovrride the "inputs" in metadata
+    metadata['inputs'] = src['inputs']
+    # Re-add the inputs in metadata one-layer down
+    metadata['inputs']['descriptions'] = src['meta']['inputs']
     data = pd.DataFrame(src['outputs']['hourly'])
     data.index = pd.to_datetime(data['time'], format='%Y%m%d:%H%M', utc=True)
     data = data.drop('time', axis=1)
     data = data.astype(dtype={'Int': 'int'})  # The 'Int' column to be integer
     if map_variables:
         data = data.rename(columns=VARIABLE_MAP)
-    return data, inputs, metadata
+    return data, metadata
 
 
 def _parse_pvgis_hourly_csv(src, map_variables):
     # The first 4 rows are latitude, longitude, elevation, radiation database
-    inputs = {}
+    metadata = {'inputs': {}}
+    # 'location' metadata
     # 'Latitude (decimal degrees): 45.000\r\n'
-    inputs['latitude'] = float(src.readline().split(':')[1])
+    metadata['inputs']['latitude'] = float(src.readline().split(':')[1])
     # 'Longitude (decimal degrees): 8.000\r\n'
-    inputs['longitude'] = float(src.readline().split(':')[1])
+    metadata['inputs']['longitude'] = float(src.readline().split(':')[1])
     # Elevation (m): 1389.0\r\n
-    inputs['elevation'] = float(src.readline().split(':')[1])
+    metadata['inputs']['elevation'] = float(src.readline().split(':')[1])
     # 'Radiation database: \tPVGIS-SARAH\r\n'
-    inputs['radiation_database'] = src.readline().split(':')[1].strip()
+    metadata['inputs']['radiation_database'] = src.readline().split(':')[1].strip()
     # Parse through the remaining metadata section (the number of lines for
     # this section depends on the requested parameters)
     while True:
@@ -273,7 +275,7 @@ def _parse_pvgis_hourly_csv(src, map_variables):
             break
         # Only retrieve metadata from non-empty lines
         elif line.strip() != '':
-            inputs[line.split(':')[0]] = line.split(':')[1].strip()
+            metadata['inputs'][line.split(':')[0]] = line.split(':')[1].strip()
         elif line == '':  # If end of file is reached
             raise ValueError('No data section was detected. File has probably '
                              'been modified since being downloaded from PVGIS')
@@ -295,11 +297,11 @@ def _parse_pvgis_hourly_csv(src, map_variables):
     # integer. It is necessary to convert to float, before converting to int
     data = data.astype(float).astype(dtype={'Int': 'int'})
     # Generate metadata dictionary containing description of parameters
-    metadata = {}
+    metadata['inputs']['descriptions'] = {}
     for line in src.readlines():
         if ':' in line:
-            metadata[line.split(':')[0]] = line.split(':')[1].strip()
-    return data, inputs, metadata
+            metadata['inputs']['descriptions'][line.split(':')[0]] = line.split(':')[1].strip()
+    return data, metadata
 
 
 def read_pvgis_hourly(filename, pvgis_format=None, map_variables=True):

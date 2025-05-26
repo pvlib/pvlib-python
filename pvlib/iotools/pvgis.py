@@ -594,7 +594,7 @@ def _parse_pvgis_tmy_csv(src):
 
 def read_pvgis_tmy(filename, pvgis_format=None, map_variables=True):
     """
-    Read a file downloaded from PVGIS.
+    Read a TMY file downloaded from PVGIS.
 
     Parameters
     ----------

@@ -325,8 +325,6 @@ def read_pvgis_hourly(filename, pvgis_format=None, map_variables=True):
     -------
     data : pandas.DataFrame
         the time series data
-    inputs : dict
-        the inputs
     metadata : dict
         metadata
 

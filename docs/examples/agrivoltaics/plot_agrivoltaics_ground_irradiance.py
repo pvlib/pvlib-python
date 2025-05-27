@@ -12,6 +12,9 @@ Irradiance at crop level between rows
 # For an overview of agrivPV concepts and performance, the reader
 # is referred to :doi:`10.69766/XAEU5008`.
 #
+# This gallery example is based on an actual AgriPV plant, namely European Energy's
+# `Flakkebjerg AgriPV site <https://europeanenergy.com/2023/12/20/using-the-same-land-twice-at-european-energys-flakkebjerg-solar-park/>`_.
+#
 # The first steps are to define the plant location and to calculate solar
 # position and clearsky irradiance for a single day as an example.
 #
@@ -39,12 +42,12 @@ clearsky = location.get_clearsky(times, model='ineichen')
 # %%
 # Next, we need to define the plant layout:
 
-height = 3  # [m] height of torque above ground
+height = 2.6  # [m] height of torque above ground
 pitch = 12  # [m] row spacing
-row_width = 2 * 2  # [m] two modules in portrait, each 2 m long
+row_width = 2 * 2.384  # [m] two modules in portrait, each 2 m long
 gcr = row_width / pitch  # ground coverage ratio [unitless]
 axis_azimuth = 0  # [degrees] north-south tracking axis
-max_angle = 50  # [degrees] maximum rotation angle
+max_angle = 55  # [degrees] maximum rotation angle
 
 # %%
 # Before running the infinite sheds model, we need to know the orientation
@@ -67,7 +70,7 @@ tracking_orientations = pvlib.tracking.singleaxis(
 # temperature could be defined as Series with the same index as used for the
 # solar position calculations.
 
-albedo = 0.25  # [unitless]
+albedo = 0.20  # [unitless]
 temp_air = 18  # [degrees C]
 
 # %%
@@ -90,7 +93,7 @@ irradiance = pvlib.bifacial.infinite_sheds.get_irradiance(
     albedo=albedo,
     model='haydavies',
     dni_extra=dni_extra,
-    bifaciality=0.8,  # [unitless] rear-side power relative to front-side
+    bifaciality=0.7,  # [unitless] rear-side power relative to front-side
 )
 
 # %%
@@ -98,7 +101,7 @@ irradiance = pvlib.bifacial.infinite_sheds.get_irradiance(
 # For simplicity, we use the PVWatts model:
 
 N_modules = 1512  # [unitless] Number of modules
-pdc0_per_module = 380  # [W] STC rating
+pdc0_per_module = 660  # [W] STC rating
 pdc0 = pdc0_per_module * N_modules
 
 gamma_pdc = -0.004  # [1/degrees C]

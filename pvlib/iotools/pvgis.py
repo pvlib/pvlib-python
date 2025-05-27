@@ -57,6 +57,12 @@ def get_pvgis_hourly(latitude, longitude, start=None, end=None,
 
     PVGIS data is freely available at [1]_.
 
+        .. versionchanged:: 0.13.0
+           The function now returns two items ``(data,meta)``. Previous
+           versions of this function returned three elements
+           ``(data,inputs,meta)``. The ``inputs`` dictionary is now included in
+           ``meta``, which has changed structure to accommodate it.
+
     Parameters
     ----------
     latitude: float
@@ -308,6 +314,12 @@ def _parse_pvgis_hourly_csv(src, map_variables):
 
 def read_pvgis_hourly(filename, pvgis_format=None, map_variables=True):
     """Read a PVGIS hourly file.
+
+        .. versionchanged:: 0.13.0
+           The function now returns two items ``(data,meta)``. Previous
+           versions of this function returned three elements
+           ``(data,inputs,meta)``. The ``inputs`` dictionary is now included in
+           ``meta``, which has changed structure to accommodate it.
 
     Parameters
     ----------

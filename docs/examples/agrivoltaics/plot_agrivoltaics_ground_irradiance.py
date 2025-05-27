@@ -13,8 +13,9 @@ Irradiance at crop level between rows
 # is referred to :doi:`10.69766/XAEU5008`.
 #
 # This gallery example is based on an actual AgriPV plant, namely
-# European Energy's `Flakkebjerg AgriPV site <https://europeanenergy.com/2023/12/20/using-the-same-land-twice-at-european-energys-flakkebjerg-solar-park/>`_.  # noqa: E501
-# sphinx_gallery_thumbnail_path = '../../_images/agrivoltaics_system.jpg'
+# European Energy's `Flakkebjerg AgriPV site
+# <https://europeanenergy.com/2023/12/20/using-the-same-land-twice-at-european-\
+# energys-flakkebjerg-solar-park/>`_.
 #
 # The first steps are to define the plant location and to calculate solar
 # position and clearsky irradiance for a single day as an example.
@@ -31,6 +32,8 @@ import pvlib
 import pandas as pd
 from pvlib.tools import cosd
 import matplotlib.pyplot as plt
+
+# sphinx_gallery_thumbnail_path = '../../_images/agrivoltaics_system.jpg'
 
 location = pvlib.location.Location(latitude=55, longitude=10)
 

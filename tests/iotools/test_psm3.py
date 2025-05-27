@@ -16,6 +16,8 @@ import pytest
 from requests import HTTPError
 from io import StringIO
 
+from pvlib._deprecation import pvlibDeprecationWarning
+
 
 TMY_TEST_DATA = TESTS_DATA_DIR / 'test_psm3_tmy-2017.csv'
 YEAR_TEST_DATA = TESTS_DATA_DIR / 'test_psm3_2017.csv'
@@ -130,7 +132,7 @@ def test_get_psm3_tmy_errors(
 
 @pytest.fixture
 def io_input(request):
-    """file-like object for parse_psm3"""
+    """file-like object for read_psm3"""
     with MANUAL_TEST_DATA.open() as f:
         data = f.read()
     obj = StringIO(data)
@@ -139,7 +141,8 @@ def io_input(request):
 
 def test_parse_psm3(io_input):
     """test parse_psm3"""
-    data, metadata = psm3.parse_psm3(io_input, map_variables=False)
+    with pytest.warns(pvlibDeprecationWarning, match='Use read_psm3 instead'):
+        data, metadata = psm3.parse_psm3(io_input, map_variables=False)
     expected = pd.read_csv(YEAR_TEST_DATA)
     assert_psm3_equal(data, metadata, expected)
 
@@ -147,6 +150,12 @@ def test_parse_psm3(io_input):
 def test_read_psm3():
     """test read_psm3"""
     data, metadata = psm3.read_psm3(MANUAL_TEST_DATA, map_variables=False)
+    expected = pd.read_csv(YEAR_TEST_DATA)
+    assert_psm3_equal(data, metadata, expected)
+
+
+def test_read_psm3_buffer(io_input):
+    data, metadata = psm3.read_psm3(io_input, map_variables=False)
     expected = pd.read_csv(YEAR_TEST_DATA)
     assert_psm3_equal(data, metadata, expected)
 

@@ -11,6 +11,8 @@ from pvlib.iotools import sodapro
 from tests.conftest import TESTS_DATA_DIR, assert_frame_equal
 
 
+from pvlib._deprecation import pvlibDeprecationWarning
+
 testfile_mcclear_verbose = TESTS_DATA_DIR / 'cams_mcclear_1min_verbose.csv'
 testfile_mcclear_monthly = TESTS_DATA_DIR / 'cams_mcclear_monthly.csv'
 testfile_radiation_verbose = TESTS_DATA_DIR / 'cams_radiation_1min_verbose.csv'
@@ -144,7 +146,6 @@ values_radiation_monthly = np.array([
      0.9897]])
 
 
-# @pytest.fixture
 def generate_expected_dataframe(values, columns, index, dtypes):
     """Create dataframe from arrays of values, columns and index, in order to
     use this dataframe to compare to.
@@ -185,6 +186,12 @@ def test_read_cams_integrated_unmapped_label():
     assert_frame_equal(out, expected, check_less_precise=True)
 
 
+def test_parse_cams_deprecated():
+    with pytest.warns(pvlibDeprecationWarning, match='Use read_cams instead'):
+        with open(testfile_radiation_verbose, mode="r") as fbuf:
+            _ = sodapro.parse_cams(fbuf)
+
+
 def test_read_cams_metadata():
     _, metadata = sodapro.read_cams(testfile_mcclear_monthly, integrated=False)
     assert metadata['Time reference'] == 'Universal time (UT)'
@@ -203,7 +210,7 @@ def test_read_cams_metadata():
      values_radiation_monthly, dtypes_radiation, 'cams_radiation')])
 def test_get_cams(requests_mock, testfile, index, columns, values, dtypes,
                   identifier):
-    """Test that get_cams generates the correct URI request and that parse_cams
+    """Test that get_cams generates the correct URI request and that read_cams
     is being called correctly"""
     # Open local test file containing McClear mothly data
     with open(testfile, 'r') as test_file:
@@ -246,7 +253,7 @@ def test_get_cams(requests_mock, testfile, index, columns, values, dtypes,
 
 def test_get_cams_bad_request(requests_mock):
     """Test that a the correct errors/warnings ares raised for invalid
-    requests inputs. Also tests if the specified server url gets used"""
+    requests inputs. Also tests if the specified url gets used"""
 
     # Subset of an xml file returned for errornous requests
     mock_response_bad_text = """<?xml version="1.0" encoding="utf-8"?>
@@ -274,7 +281,7 @@ def test_get_cams_bad_request(requests_mock):
             time_ref='TST',
             verbose=False,
             time_step='1h',
-            server='pro.soda-is.com')
+            url='pro.soda-is.com')
     # Test if value error is raised if incorrect identifier is specified
     with pytest.raises(ValueError, match='Identifier must be either'):
         _ = sodapro.get_cams(
@@ -284,7 +291,7 @@ def test_get_cams_bad_request(requests_mock):
             longitude=12.5251,
             email='test@test.com',
             identifier='test',  # incorrect identifier
-            server='pro.soda-is.com')
+            url='pro.soda-is.com')
     # Test if value error is raised if incorrect time step is specified
     with pytest.raises(ValueError, match='Time step not recognized'):
         _ = sodapro.get_cams(
@@ -295,4 +302,4 @@ def test_get_cams_bad_request(requests_mock):
             email='test@test.com',
             identifier='mcclear',
             time_step='test',  # incorrect time step
-            server='pro.soda-is.com')
+            url='pro.soda-is.com')

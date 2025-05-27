@@ -7,8 +7,8 @@ import io
 import requests
 import pandas as pd
 from json import JSONDecodeError
-import warnings
-from pvlib._deprecation import pvlibDeprecationWarning
+from pvlib._deprecation import deprecated
+from pvlib import tools
 
 NSRDB_API_BASE = "https://developer.nrel.gov"
 PSM_URL = NSRDB_API_BASE + "/api/nsrdb/v2/solar/psm3-2-2-download.csv"
@@ -127,7 +127,7 @@ def get_psm3(latitude, longitude, api_key, email, names='tmy', interval=60,
         timeseries data from NREL PSM3
     metadata : dict
         metadata from NREL PSM3 about the record, see
-        :func:`pvlib.iotools.parse_psm3` for fields
+        :func:`pvlib.iotools.read_psm3` for fields
 
     Raises
     ------
@@ -152,7 +152,7 @@ def get_psm3(latitude, longitude, api_key, email, names='tmy', interval=60,
 
     See Also
     --------
-    pvlib.iotools.read_psm3, pvlib.iotools.parse_psm3
+    pvlib.iotools.read_psm3
 
     References
     ----------
@@ -216,12 +216,12 @@ def get_psm3(latitude, longitude, api_key, email, names='tmy', interval=60,
     # the CSV is in the response content as a UTF-8 bytestring
     # to use pandas we need to create a file buffer from the response
     fbuf = io.StringIO(response.content.decode('utf-8'))
-    return parse_psm3(fbuf, map_variables)
+    return read_psm3(fbuf, map_variables)
 
 
-def parse_psm3(fbuf, map_variables=True):
+def read_psm3(filename, map_variables=True):
     """
-    Parse an NSRDB PSM3 weather file (formatted as SAM CSV). The NSRDB
+    Read an NSRDB PSM3 weather file (formatted as SAM CSV). The NSRDB
     is described in [1]_ and the SAM CSV format is described in [2]_.
 
     .. versionchanged:: 0.9.0
@@ -231,8 +231,8 @@ def parse_psm3(fbuf, map_variables=True):
 
     Parameters
     ----------
-    fbuf: file-like object
-        File-like object containing data to read.
+    filename: str, path-like, or buffer
+        Filename or in-memory buffer of a file containing data to read.
     map_variables: bool, default True
         When true, renames columns of the Dataframe to pvlib variable names
         where applicable. See variable :const:`VARIABLE_MAP`.
@@ -302,12 +302,15 @@ def parse_psm3(fbuf, map_variables=True):
     Examples
     --------
     >>> # Read a local PSM3 file:
+    >>> df, metadata = iotools.read_psm3("data.csv")  # doctest: +SKIP
+
+    >>> # Read a file object or an in-memory buffer:
     >>> with open(filename, 'r') as f:  # doctest: +SKIP
-    ...     df, metadata = iotools.parse_psm3(f)  # doctest: +SKIP
+    ...     df, metadata = iotools.read_psm3(f)  # doctest: +SKIP
 
     See Also
     --------
-    pvlib.iotools.read_psm3, pvlib.iotools.get_psm3
+    pvlib.iotools.get_psm3
 
     References
     ----------
@@ -316,11 +319,25 @@ def parse_psm3(fbuf, map_variables=True):
     .. [2] `Standard Time Series Data File Format
        <https://web.archive.org/web/20170207203107/https://sam.nrel.gov/sites/default/files/content/documents/pdf/wfcsv.pdf>`_
     """
-    # The first 2 lines of the response are headers with metadata
-    metadata_fields = fbuf.readline().split(',')
-    metadata_fields[-1] = metadata_fields[-1].strip()  # strip trailing newline
-    metadata_values = fbuf.readline().split(',')
-    metadata_values[-1] = metadata_values[-1].strip()  # strip trailing newline
+    with tools._file_context_manager(filename) as fbuf:
+        # The first 2 lines of the response are headers with metadata
+        metadata_fields = fbuf.readline().split(',')
+        metadata_values = fbuf.readline().split(',')
+        # get the column names so we can set the dtypes
+        columns = fbuf.readline().split(',')
+        columns[-1] = columns[-1].strip()  # strip trailing newline
+        # Since the header has so many columns, excel saves blank cols in the
+        # data below the header lines.
+        columns = [col for col in columns if col != '']
+        dtypes = dict.fromkeys(columns, float)  # all floats except datevec
+        dtypes.update({'Year': int, 'Month': int, 'Day': int, 'Hour': int,
+                       'Minute': int, 'Cloud Type': int, 'Fill Flag': int})
+        data = pd.read_csv(
+            fbuf, header=None, names=columns, usecols=columns, dtype=dtypes,
+            delimiter=',', lineterminator='\n')  # skip carriage returns \r
+
+    metadata_fields[-1] = metadata_fields[-1].strip()  # trailing newline
+    metadata_values[-1] = metadata_values[-1].strip()  # trailing newline
     metadata = dict(zip(metadata_fields, metadata_values))
     # the response is all strings, so set some metadata types to numbers
     metadata['Local Time Zone'] = int(metadata['Local Time Zone'])
@@ -328,22 +345,9 @@ def parse_psm3(fbuf, map_variables=True):
     metadata['Latitude'] = float(metadata['Latitude'])
     metadata['Longitude'] = float(metadata['Longitude'])
     metadata['Elevation'] = int(metadata['Elevation'])
-    # get the column names so we can set the dtypes
-    columns = fbuf.readline().split(',')
-    columns[-1] = columns[-1].strip()  # strip trailing newline
-    # Since the header has so many columns, excel saves blank cols in the
-    # data below the header lines.
-    columns = [col for col in columns if col != '']
-    dtypes = dict.fromkeys(columns, float)  # all floats except datevec
-    dtypes.update(Year=int, Month=int, Day=int, Hour=int, Minute=int)
-    dtypes['Cloud Type'] = int
-    dtypes['Fill Flag'] = int
-    data = pd.read_csv(
-        fbuf, header=None, names=columns, usecols=columns, dtype=dtypes,
-        delimiter=',', lineterminator='\n')  # skip carriage returns \r
+
     # the response 1st 5 columns are a date vector, convert to datetime
-    dtidx = pd.to_datetime(
-        data[['Year', 'Month', 'Day', 'Hour', 'Minute']])
+    dtidx = pd.to_datetime(data[['Year', 'Month', 'Day', 'Hour', 'Minute']])
     # in USA all timezones are integers
     tz = 'Etc/GMT%+d' % -metadata['Time Zone']
     data.index = pd.DatetimeIndex(dtidx).tz_localize(tz)
@@ -357,43 +361,5 @@ def parse_psm3(fbuf, map_variables=True):
     return data, metadata
 
 
-def read_psm3(filename, map_variables=True):
-    """
-    Read an NSRDB PSM3 weather file (formatted as SAM CSV). The NSRDB
-    is described in [1]_ and the SAM CSV format is described in [2]_.
-
-    .. versionchanged:: 0.9.0
-       The function now returns a tuple where the first element is a dataframe
-       and the second element is a dictionary containing metadata. Previous
-       versions of this function had the return values switched.
-
-    Parameters
-    ----------
-    filename: str
-        Filename of a file containing data to read.
-    map_variables: bool, default True
-        When true, renames columns of the Dataframe to pvlib variable names
-        where applicable. See variable :const:`VARIABLE_MAP`.
-
-    Returns
-    -------
-    data : pandas.DataFrame
-        timeseries data from NREL PSM3
-    metadata : dict
-        metadata from NREL PSM3 about the record, see
-        :func:`pvlib.iotools.parse_psm3` for fields
-
-    See Also
-    --------
-    pvlib.iotools.parse_psm3, pvlib.iotools.get_psm3
-
-    References
-    ----------
-    .. [1] `NREL National Solar Radiation Database (NSRDB)
-       <https://nsrdb.nrel.gov/>`_
-    .. [2] `Standard Time Series Data File Format
-       <https://web.archive.org/web/20170207203107/https://sam.nrel.gov/sites/default/files/content/documents/pdf/wfcsv.pdf>`_
-    """
-    with open(str(filename), 'r') as fbuf:
-        content = parse_psm3(fbuf, map_variables)
-    return content
+parse_psm3 = deprecated(since="0.12.1", name="parse_psm3",
+                        alternative="read_psm3")(read_psm3)

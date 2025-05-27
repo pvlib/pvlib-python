@@ -6,9 +6,7 @@ v0.12.1 (XXXX, 2025)
 
 Breaking Changes
 ~~~~~~~~~~~~~~~~
-* The ``server`` parameter in :py:func:`~pvlib.iotools.get_cams` has been renamed
-  to ``url`` to be consistent with the other iotoools.
-  :pull:`2463`
+
 
 Deprecations
 ~~~~~~~~~~~~
@@ -17,6 +15,10 @@ Deprecations
 
   - :py:func:`~pvlib.iotools.parse_psm3`
   - :py:func:`~pvlib.iotools.parse_cams`
+
+* The ``server`` parameter in :py:func:`~pvlib.iotools.get_cams` has been renamed
+  to ``url`` to be consistent with the other iotools.
+  :pull:`2463`
 
 
 Bug fixes

@@ -33,7 +33,7 @@ import pandas as pd
 from pvlib.tools import cosd
 import matplotlib.pyplot as plt
 
-# sphinx_gallery_thumbnail_path = '../../_images/agrivoltaics_system.jpg'
+# sphinx_gallery_thumbnail_path = '_images/agrivoltaics_system.jpg'
 
 location = pvlib.location.Location(latitude=55, longitude=10)
 

@@ -79,6 +79,7 @@ Commercial datasets
 ^^^^^^^^^^^^^^^^^^^
 
 Accessing these APIs typically requires payment.
+Datasets provide near-global coverage.
 
 SolarAnywhere
 *************

@@ -7,9 +7,10 @@ v0.12.1 (XXXX, 2025)
 Breaking Changes
 ~~~~~~~~~~~~~~~~
 * The functions :py:func:`~pvlib.iotools.read_pvgis_hourly` and
-  :py:func:`~pvlib.iotools.get_pvgis_hourly` now returns  ``(data,meta)``
-  instead of ``(data,inputs,meta)`` following the iotools convention.
-  (:pull:`2462`)
+  :py:func:`~pvlib.iotools.get_pvgis_hourly` now return ``(data,meta)``
+  following the iotools convention instead of ``(data,inputs,meta)``.
+  The ``inputs`` dictionary is now included in ``meta``, which
+  has changed structure to accommodate it. (:pull:`2462`)
 
 Deprecations
 ~~~~~~~~~~~~

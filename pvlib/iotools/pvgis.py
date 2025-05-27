@@ -240,7 +240,7 @@ def get_pvgis_hourly(latitude, longitude, start=None, end=None,
 
 def _parse_pvgis_hourly_json(src, map_variables):
     metadata = src['meta'].copy()
-    # Ovrride the "inputs" in metadata
+    # Override the "inputs" in metadata
     metadata['inputs'] = src['inputs']
     # Re-add the inputs in metadata one-layer down
     metadata['inputs']['descriptions'] = src['meta']['inputs']

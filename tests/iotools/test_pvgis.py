@@ -132,6 +132,7 @@ metadata_pv_json = {
                     'WS10m': {'description': '10-m total wind speed', 'units': 'm/s'},  # noqa: E501
                     'Int': {'description': '1 means solar radiation values are reconstructed'}}}}}  # noqa: E501
 
+# Reformat the metadata as implemented in #2462
 descriptions_csv = metadata_radiation_csv.copy()
 metadata_radiation_csv = {}
 metadata_radiation_csv['descriptions'] = descriptions_csv

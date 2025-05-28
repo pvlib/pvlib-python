@@ -1,4 +1,8 @@
 from datetime import datetime
+from io import StringIO
+import os
+from pathlib import Path
+import tempfile
 from zoneinfo import ZoneInfo
 
 import numpy as np
@@ -252,3 +256,29 @@ def test_djd_to_datetime():
 
     expected = datetime(1974, 6, 22, 23, 30, 15, tzinfo=ZoneInfo("UTC"))
     assert tools.djd_to_datetime(djd) == expected
+
+
+def test__file_context_manager():
+    with tempfile.TemporaryDirectory() as td:
+        # make a test file
+        filename = os.path.join(td, 'test.txt')
+        with open(filename, 'w') as fh:
+            fh.write('test content')
+
+        # test with filename as string:
+        with tools._file_context_manager(filename) as obj:
+            assert obj.read() == "test content"
+
+        # test with filename as Path:
+        with tools._file_context_manager(Path(filename)) as obj:
+            assert obj.read() == "test content"
+
+        # test with file object:
+        with open(filename, "r") as f:
+            with tools._file_context_manager(f) as obj:
+                assert obj.read() == "test content"
+
+    # test with buffer:
+    buffer = StringIO("test content")
+    with tools._file_context_manager(buffer) as obj:
+        assert obj.read() == "test content"

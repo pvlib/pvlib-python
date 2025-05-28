@@ -240,7 +240,7 @@ operates in a similar manner.
 
 
 The `PVSystem` method :py:meth:`~pvlib.pvsystem.PVSystem.get_aoi`
-operates on all `Array` instances in the `PVSystem`, whereas the the
+operates on all `Array` instances in the `PVSystem`, whereas the
 `Array` method operates only on its `Array` instance.
 
 .. ipython:: python

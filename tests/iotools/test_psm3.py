@@ -8,14 +8,16 @@ from tests.conftest import (
     RERUNS,
     RERUNS_DELAY,
     assert_index_equal,
+    nrel_api_key,
 )
 import numpy as np
 import pandas as pd
 import pytest
-import os
 from requests import HTTPError
 from io import StringIO
-import warnings
+
+from pvlib._deprecation import pvlibDeprecationWarning
+
 
 TMY_TEST_DATA = TESTS_DATA_DIR / 'test_psm3_tmy-2017.csv'
 YEAR_TEST_DATA = TESTS_DATA_DIR / 'test_psm3_2017.csv'
@@ -29,26 +31,6 @@ METADATA_FIELDS = [
     'Temperature Units', 'Pressure Units', 'Wind Direction Units',
     'Wind Speed Units', 'Surface Albedo Units', 'Version']
 PVLIB_EMAIL = 'pvlib-admin@googlegroups.com'
-
-
-@pytest.fixture(scope="module")
-def nrel_api_key():
-    """Supplies pvlib-python's NREL Developer Network API key.
-
-    Azure Pipelines CI utilizes a secret variable set to NREL_API_KEY
-    to mitigate failures associated with using the default key of
-    "DEMO_KEY". A user is capable of using their own key this way if
-    desired however the default key should suffice for testing purposes.
-    """
-    try:
-        demo_key = os.environ["NREL_API_KEY"]
-    except KeyError:
-        warnings.warn(
-            "WARNING: NREL API KEY environment variable not set! "
-            "Using DEMO_KEY instead. Unexpected failures may occur."
-        )
-        demo_key = 'DEMO_KEY'
-    return demo_key
 
 
 def assert_psm3_equal(data, metadata, expected):
@@ -150,7 +132,7 @@ def test_get_psm3_tmy_errors(
 
 @pytest.fixture
 def io_input(request):
-    """file-like object for parse_psm3"""
+    """file-like object for read_psm3"""
     with MANUAL_TEST_DATA.open() as f:
         data = f.read()
     obj = StringIO(data)
@@ -159,7 +141,8 @@ def io_input(request):
 
 def test_parse_psm3(io_input):
     """test parse_psm3"""
-    data, metadata = psm3.parse_psm3(io_input, map_variables=False)
+    with pytest.warns(pvlibDeprecationWarning, match='Use read_psm3 instead'):
+        data, metadata = psm3.parse_psm3(io_input, map_variables=False)
     expected = pd.read_csv(YEAR_TEST_DATA)
     assert_psm3_equal(data, metadata, expected)
 
@@ -167,6 +150,12 @@ def test_parse_psm3(io_input):
 def test_read_psm3():
     """test read_psm3"""
     data, metadata = psm3.read_psm3(MANUAL_TEST_DATA, map_variables=False)
+    expected = pd.read_csv(YEAR_TEST_DATA)
+    assert_psm3_equal(data, metadata, expected)
+
+
+def test_read_psm3_buffer(io_input):
+    data, metadata = psm3.read_psm3(io_input, map_variables=False)
     expected = pd.read_csv(YEAR_TEST_DATA)
     assert_psm3_equal(data, metadata, expected)
 

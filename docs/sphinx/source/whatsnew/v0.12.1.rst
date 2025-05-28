@@ -19,7 +19,9 @@ Deprecations
 * The ``server`` parameter in :py:func:`~pvlib.iotools.get_cams` has been renamed
   to ``url`` to be consistent with the other iotools.
   :pull:`2463`
-
+* Rename parameter name ``g_poa_effective`` to ``effective_irradiance`` in
+  :py:func:`~pvlib.pvsystem.PVSystem.pvwatts_dc` and :py:func:`~pvlib.pvsystem.pvwatts_dc`.
+  (:issue:`1253`, :pull:`2235`)
 
 Bug fixes
 ~~~~~~~~~

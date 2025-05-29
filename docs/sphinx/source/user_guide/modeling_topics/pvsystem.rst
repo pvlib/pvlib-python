@@ -75,7 +75,7 @@ data irradiance and temperature.
 
 .. ipython:: python
 
-    pdc = system.pvwatts_dc(g_poa_effective=1000, temp_cell=30)
+    pdc = system.pvwatts_dc(effective_irradiance=1000, temp_cell=30)
     print(pdc)
 
 Methods attached to a PVSystem object wrap the corresponding functions in
@@ -84,8 +84,8 @@ using data stored in the PVSystem attributes. Compare the
 :py:meth:`~pvlib.pvsystem.PVSystem.pvwatts_dc` method signature to the
 :py:func:`~pvlib.pvsystem.pvwatts_dc` function signature:
 
-    * :py:meth:`PVSystem.pvwatts_dc(g_poa_effective, temp_cell) <pvlib.pvsystem.PVSystem.pvwatts_dc>`
-    * :py:func:`pvwatts_dc(g_poa_effective, temp_cell, pdc0, gamma_pdc, temp_ref=25.) <pvlib.pvsystem.pvwatts_dc>`
+    * :py:meth:`PVSystem.pvwatts_dc(effective_irradiance, temp_cell) <pvlib.pvsystem.PVSystem.pvwatts_dc>`
+    * :py:func:`pvwatts_dc(effective_irradiance, temp_cell, pdc0, gamma_pdc, temp_ref=25.) <pvlib.pvsystem.pvwatts_dc>`
 
 How does this work? The :py:meth:`~pvlib.pvsystem.PVSystem.pvwatts_dc`
 method looks in `PVSystem.module_parameters` for the `pdc0`, and

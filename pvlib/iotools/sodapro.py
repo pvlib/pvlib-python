@@ -9,7 +9,7 @@ import io
 import warnings
 from pvlib import tools
 
-from pvlib._deprecation import deprecated
+from pvlib._deprecation import deprecated, renamed_kwarg_warning
 
 URL = 'api.soda-solardata.com'
 
@@ -45,10 +45,15 @@ SUMMATION_PERIOD_TO_TIME_STEP = {'0 year 0 month 0 day 0 h 1 min 0 s': '1min',
                                  '0 year 1 month 0 day 0 h 0 min 0 s': '1M'}
 
 
+@renamed_kwarg_warning(
+    since='0.13.0',
+    old_param_name='server',
+    new_param_name='url',
+    removal="0.14.0")
 def get_cams(latitude, longitude, start, end, email, identifier='mcclear',
              altitude=None, time_step='1h', time_ref='UT', verbose=False,
              integrated=False, label=None, map_variables=True,
-             server=URL, timeout=30):
+             url=URL, timeout=30):
     """Retrieve irradiance and clear-sky time series from CAMS.
 
     Time-series of radiation and/or clear-sky global, beam, and
@@ -98,7 +103,7 @@ def get_cams(latitude, longitude, start, end, email, identifier='mcclear',
     map_variables: bool, default: True
         When true, renames columns of the DataFrame to pvlib variable names
         where applicable. See variable :const:`VARIABLE_MAP`.
-    server: str, default: :const:`pvlib.iotools.sodapro.URL`
+    url: str, default: :const:`pvlib.iotools.sodapro.URL`
         Base url of the SoDa Pro CAMS Radiation API.
     timeout : int, default: 30
         Time in seconds to wait for server response before timeout
@@ -199,7 +204,7 @@ def get_cams(latitude, longitude, start, end, email, identifier='mcclear',
     email = email.replace('@', '%2540')  # Format email address
     identifier = 'get_{}'.format(identifier.lower())  # Format identifier str
 
-    base_url = f"https://{server}/service/wps"
+    base_url = f"https://{url}/service/wps"
 
     data_inputs_dict = {
         'latitude': latitude,

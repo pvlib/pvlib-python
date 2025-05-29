@@ -253,7 +253,7 @@ def test_get_cams(requests_mock, testfile, index, columns, values, dtypes,
 
 def test_get_cams_bad_request(requests_mock):
     """Test that a the correct errors/warnings ares raised for invalid
-    requests inputs. Also tests if the specified server url gets used"""
+    requests inputs. Also tests if the specified url gets used"""
 
     # Subset of an xml file returned for errornous requests
     mock_response_bad_text = """<?xml version="1.0" encoding="utf-8"?>
@@ -281,7 +281,7 @@ def test_get_cams_bad_request(requests_mock):
             time_ref='TST',
             verbose=False,
             time_step='1h',
-            server='pro.soda-is.com')
+            url='pro.soda-is.com')
     # Test if value error is raised if incorrect identifier is specified
     with pytest.raises(ValueError, match='Identifier must be either'):
         _ = sodapro.get_cams(
@@ -291,7 +291,7 @@ def test_get_cams_bad_request(requests_mock):
             longitude=12.5251,
             email='test@test.com',
             identifier='test',  # incorrect identifier
-            server='pro.soda-is.com')
+            url='pro.soda-is.com')
     # Test if value error is raised if incorrect time step is specified
     with pytest.raises(ValueError, match='Time step not recognized'):
         _ = sodapro.get_cams(
@@ -302,4 +302,4 @@ def test_get_cams_bad_request(requests_mock):
             email='test@test.com',
             identifier='mcclear',
             time_step='test',  # incorrect time step
-            server='pro.soda-is.com')
+            url='pro.soda-is.com')

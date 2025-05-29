@@ -438,21 +438,6 @@ def test_get_pvgis_tmy_kwargs(userhorizon_expected):
 
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
-def test_get_pvgis_tmy_basic(expected, meta_expected):
-    pvgis_data = get_pvgis_tmy(45, 8, outputformat='basic',
-                               map_variables=False)
-    _compare_pvgis_tmy_basic(expected, meta_expected, pvgis_data)
-
-
-def _compare_pvgis_tmy_basic(expected, meta_expected, pvgis_data):
-    data, _, _, _ = pvgis_data
-    # check each column of output separately
-    for outvar in meta_expected['outputs']['tmy_hourly']['variables'].keys():
-        assert np.allclose(data[outvar], expected[outvar])
-
-
-@pytest.mark.remote_data
-@pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_get_pvgis_tmy_coerce_year():
     """test utc_offset and coerce_year work as expected"""
     base_case, _, _, _ = get_pvgis_tmy(45, 8)  # Turin
@@ -561,6 +546,16 @@ def test_get_pvgis_tmy_error():
 
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
+def test_get_pvgis_tmy_basic():
+    # Test that a specific error message is raised when outputformat='basic'
+    err_msg = ("outputformat='basic' is no longer supported by pvlib, "
+               "please use outputformat='csv' instead.")
+    with pytest.raises(ValueError, match=err_msg):
+        get_pvgis_tmy(45, 8, outputformat='basic')
+
+
+@pytest.mark.remote_data
+@pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_get_pvgis_map_variables(pvgis_tmy_mapped_columns):
     actual, _, _, _ = get_pvgis_tmy(45, 8, map_variables=True)
     assert all(c in pvgis_tmy_mapped_columns for c in actual.columns)
@@ -639,26 +634,14 @@ def test_read_pvgis_tmy_csv(expected, month_year_expected, inputs_expected,
                                meta_expected, csv_meta, pvgis_data)
 
 
-def test_read_pvgis_tmy_basic(expected, meta_expected):
-    fn = TESTS_DATA_DIR / 'tmy_45.000_8.000_2005_2023.txt'
-    # XXX: can't infer outputformat from file extensions for basic
-    with pytest.raises(ValueError, match="pvgis format 'txt' was unknown"):
-        read_pvgis_tmy(fn, map_variables=False)
-    # explicit pvgis outputformat
-    pvgis_data = read_pvgis_tmy(fn, pvgis_format='basic', map_variables=False)
-    _compare_pvgis_tmy_basic(expected, meta_expected, pvgis_data)
-    with fn.open('rb') as fbuf:
-        pvgis_data = read_pvgis_tmy(fbuf, pvgis_format='basic',
-                                    map_variables=False)
-        _compare_pvgis_tmy_basic(expected, meta_expected, pvgis_data)
-        # file buffer raises TypeError if passed to pathlib.Path()
-        with pytest.raises(TypeError):
-            read_pvgis_tmy(fbuf, map_variables=False)
-
-
 def test_read_pvgis_tmy_exception():
     bad_outputformat = 'bad'
     err_msg = f"pvgis format '{bad_outputformat:s}' was unknown"
     with pytest.raises(ValueError, match=err_msg):
         read_pvgis_tmy('filename', pvgis_format=bad_outputformat,
                        map_variables=False)
+
+
+def test_read_pvgis_tmy_unknown_outputformat():
+    with pytest.raises(ValueError, match="pvgis format 'txt' was unknown"):
+        read_pvgis_tmy("hello.txt")

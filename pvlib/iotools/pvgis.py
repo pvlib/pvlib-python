@@ -538,7 +538,6 @@ def get_pvgis_tmy(latitude, longitude, outputformat='json', usehorizon=True,
         with io.StringIO(res.content.decode('utf-8')) as src:
             data, meta = parse_epw(src)
             months_selected, inputs = None, None
-    # raise exception if pvgis format isn't in ['csv', 'json', 'epw']
     elif outputformat == 'basic':
         err_msg = ("outputformat='basic' is no longer supported by pvlib, "
                    "please use outputformat='csv' instead.")

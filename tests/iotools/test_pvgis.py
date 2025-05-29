@@ -132,6 +132,16 @@ metadata_pv_json = {
                     'WS10m': {'description': '10-m total wind speed', 'units': 'm/s'},  # noqa: E501
                     'Int': {'description': '1 means solar radiation values are reconstructed'}}}}}  # noqa: E501
 
+# Reformat the metadata as implemented in #2462
+descriptions_csv = metadata_radiation_csv.copy()
+metadata_radiation_csv = {}
+metadata_radiation_csv['descriptions'] = descriptions_csv
+metadata_radiation_csv['inputs'] = inputs_radiation_csv
+
+descriptions_json = metadata_pv_json['inputs']
+metadata_pv_json['inputs'] = inputs_pv_json
+metadata_pv_json['inputs']['descriptions'] = descriptions_json
+
 
 def generate_expected_dataframe(values, columns, index):
     """Create dataframe from arrays of values, columns and index, in order to
@@ -175,25 +185,24 @@ def expected_pv_json_mapped():
 # Test read_pvgis_hourly function using two different files with different
 # input arguments (to test variable mapping and pvgis_format)
 # pytest request.getfixturevalue is used to simplify the input arguments
-@pytest.mark.parametrize('testfile,expected_name,metadata_exp,inputs_exp,map_variables,pvgis_format', [  # noqa: E501
+@pytest.mark.parametrize('testfile,expected_name,metadata_exp,map_variables,pvgis_format', [  # noqa: E501
     (testfile_radiation_csv, 'expected_radiation_csv', metadata_radiation_csv,
-     inputs_radiation_csv, False, None),
+     False, None),
     (testfile_radiation_csv, 'expected_radiation_csv_mapped',
-     metadata_radiation_csv, inputs_radiation_csv, True, 'csv'),
-    (testfile_pv_json, 'expected_pv_json', metadata_pv_json, inputs_pv_json,
+     metadata_radiation_csv, True, 'csv'),
+    (testfile_pv_json, 'expected_pv_json', metadata_pv_json,
      False, None),
     (testfile_pv_json, 'expected_pv_json_mapped', metadata_pv_json,
-     inputs_pv_json, True, 'json')])
+     True, 'json')])
 def test_read_pvgis_hourly(testfile, expected_name, metadata_exp,
-                           inputs_exp, map_variables, pvgis_format, request):
+                           map_variables, pvgis_format, request):
     # Get expected dataframe from fixture
     expected = request.getfixturevalue(expected_name)
     # Read data from file
-    out, inputs, metadata = read_pvgis_hourly(
+    out, metadata = read_pvgis_hourly(
         testfile, map_variables=map_variables, pvgis_format=pvgis_format)
     # Assert whether dataframe, metadata, and inputs are as expected
     assert_frame_equal(out, expected)
-    assert inputs == inputs_exp
     assert metadata == metadata_exp
 
 
@@ -248,7 +257,7 @@ def test_get_pvgis_hourly(requests_mock, testfile, expected_name, args,
     # inputs are passing on correctly
     requests_mock.get(url_test, text=mock_response)
     # Make API call - an error is raised if requested URI does not match
-    out, inputs, metadata = get_pvgis_hourly(
+    out, metadata = get_pvgis_hourly(
         latitude=45, longitude=8, map_variables=map_variables, **args)
     # Get expected dataframe from fixture
     expected = request.getfixturevalue(expected_name)

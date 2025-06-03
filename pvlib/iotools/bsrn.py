@@ -8,7 +8,6 @@ import ftplib
 import warnings
 import io
 import os
-from functools import partial
 
 from pvlib.tools import _file_context_manager
 from pvlib._deprecation import deprecated

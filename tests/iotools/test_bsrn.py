@@ -17,6 +17,7 @@ from tests.conftest import (
 
 from pvlib._deprecation import pvlibDeprecationWarning
 
+
 @pytest.fixture(scope="module")
 def bsrn_credentials():
     """Supplies the BSRN FTP credentials for testing purposes.

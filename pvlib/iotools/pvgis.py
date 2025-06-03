@@ -21,7 +21,7 @@ import requests
 import numpy as np
 import pandas as pd
 import pytz
-from pvlib.iotools import read_epw, parse_epw
+from pvlib.iotools import read_epw
 
 URL = 'https://re.jrc.ec.europa.eu/api/'
 
@@ -536,7 +536,7 @@ def get_pvgis_tmy(latitude, longitude, outputformat='json', usehorizon=True,
             data, months_selected, inputs, meta = _parse_pvgis_tmy_csv(src)
     elif outputformat == 'epw':
         with io.StringIO(res.content.decode('utf-8')) as src:
-            data, meta = parse_epw(src)
+            data, meta = read_epw(src)
             months_selected, inputs = None, None
     elif outputformat == 'basic':
         err_msg = ("outputformat='basic' is no longer supported by pvlib, "
@@ -661,10 +661,7 @@ def read_pvgis_tmy(filename, pvgis_format=None, map_variables=True):
 
     # EPW: use the EPW parser from the pvlib.iotools epw.py module
     if outputformat == 'epw':
-        try:
-            data, meta = parse_epw(filename)
-        except AttributeError:  # str/path has no .read() attribute
-            data, meta = read_epw(filename)
+        data, meta = read_epw(filename)
         months_selected, inputs = None, None
 
     # NOTE: json and csv output formats have parsers defined as private

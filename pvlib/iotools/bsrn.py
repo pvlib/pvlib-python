@@ -459,10 +459,10 @@ def read_bsrn(filename, logical_records=('0100',)):
        <https://bsrn.awi.de/data/conditions-of-data-release/>`_
     """  # noqa: E501
     if str(filename).endswith('.gz'):  # check if file is a gzipped (.gz) file
-        open_func = partial(gzip.open, mode='rt')
+        open_func, mode = gzip.open, 'rt'
     else:
-        open_func = _file_context_manager(filename, mode='r')
-    with open_func(filename) as f:
+        open_func, mode = _file_context_manager, 'r'
+    with open_func(filename, mode) as f:
         content = _parse_bsrn(f, logical_records)
     return content
 

@@ -233,7 +233,6 @@ def read_epw(filename, coerce_year=None):
         with _file_context_manager(filename, 'r') as csvdata:
             data, meta = _parse_epw(csvdata, coerce_year)
 
-
     return data, meta
 
 

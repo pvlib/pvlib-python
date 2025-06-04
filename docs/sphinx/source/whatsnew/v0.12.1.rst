@@ -14,7 +14,7 @@ Breaking Changes
 * The functions :py:func:`~pvlib.iotools.read_pvgis_tmy` and
   :py:func:`~pvlib.iotools.get_pvgis_tmy` now return ``(data,meta)``
   following the iotools convention instead of ``(data,months_selected,inputs,meta)``.
-  (:pull:`XXXX`)
+  (:pull:`2470`)
 * Remove ``outputformat='basic'`` option in :py:func:`~pvlib.iotools.get_pvgis_tmy`.
   (:pull:`2416`)
 

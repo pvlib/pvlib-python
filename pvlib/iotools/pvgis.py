@@ -443,9 +443,9 @@ def get_pvgis_tmy(latitude, longitude, outputformat='json', usehorizon=True,
         .. versionchanged:: 0.13.0
            The function now returns two items ``(data,meta)``. Previous
            versions of this function returned three elements
-           ``(data,months_selected,inputs,meta)``. The ``inputs`` dictionary and
-           ``months_selected`` are  now included in ``meta``, which has changed
-           structure to accommodate it.
+           ``(data,months_selected,inputs,meta)``. The ``inputs`` dictionary
+           and ``months_selected`` are  now included in ``meta``, which has
+           changed structure to accommodate it.
 
     Parameters
     ----------
@@ -607,7 +607,9 @@ def _parse_pvgis_tmy_csv(src):
     data = pd.DataFrame(data, dtype=float)
     data.index = dtidx
     # finally there's some meta data
+    meta['descriptions'] = {}
     for line in src.readlines():
+        line = line.decode('utf-8').strip()
         if ':' in line:
             meta['descriptions'][line.split(':')[0]] = \
                 line.split(':')[1].strip()
@@ -621,9 +623,9 @@ def read_pvgis_tmy(filename, pvgis_format=None, map_variables=True):
         .. versionchanged:: 0.13.0
            The function now returns two items ``(data,meta)``. Previous
            versions of this function returned three elements
-           ``(data,months_selected,inputs,meta)``. The ``inputs`` dictionary and
-           ``months_selected`` are  now included in ``meta``, which has changed
-           structure to accommodate it.
+           ``(data,months_selected,inputs,meta)``. The ``inputs`` dictionary
+           and ``months_selected`` are  now included in ``meta``, which has
+           changed structure to accommodate it.
 
     Parameters
     ----------

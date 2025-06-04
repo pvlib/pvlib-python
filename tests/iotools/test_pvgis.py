@@ -371,9 +371,7 @@ def meta_expected():
 
 @pytest.fixture
 def csv_meta(meta_expected):
-    return [
-        f"{k}: {v['description']} ({v['units']})" for k, v
-        in meta_expected['outputs']['tmy_hourly']['variables'].items()]
+    return meta_expected['outputs']['tmy_hourly']['variables']
 
 
 @pytest.fixture
@@ -393,7 +391,15 @@ def test_get_pvgis_tmy(expected, month_year_expected, inputs_expected,
 
 def _compare_pvgis_tmy_json(expected, month_year_expected, inputs_expected,
                             meta_expected, pvgis_data):
-    data, months_selected, inputs, meta = pvgis_data
+    data, meta = pvgis_data
+
+    # Re-create original outputs (prior to #2470)
+    months_selected = meta['months_selected']
+    inputs = meta['inputs'].copy()
+    del inputs['descriptions']
+    meta['inputs'] = meta['inputs']['descriptions']
+    del meta['months_selected']
+
     # check each column of output separately
     for outvar in meta_expected['outputs']['tmy_hourly']['variables'].keys():
         assert np.allclose(data[outvar], expected[outvar])
@@ -419,10 +425,9 @@ def _compare_pvgis_tmy_json(expected, month_year_expected, inputs_expected,
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_get_pvgis_tmy_kwargs(userhorizon_expected):
-    _, _, inputs, _ = get_pvgis_tmy(45, 8, usehorizon=False,
-                                    map_variables=False)
-    assert inputs['meteo_data']['use_horizon'] is False
-    data, _, _, _ = get_pvgis_tmy(
+    _, meta = get_pvgis_tmy(45, 8, usehorizon=False, map_variables=False)
+    assert meta['inputs']['meteo_data']['use_horizon'] is False
+    data, _ = get_pvgis_tmy(
         45, 8, userhorizon=[0, 10, 20, 30, 40, 15, 25, 5], map_variables=False)
     assert np.allclose(
         data['G(h)'], userhorizon_expected['G(h)'].values)
@@ -430,10 +435,10 @@ def test_get_pvgis_tmy_kwargs(userhorizon_expected):
         data['Gb(n)'], userhorizon_expected['Gb(n)'].values)
     assert np.allclose(
         data['Gd(h)'], userhorizon_expected['Gd(h)'].values)
-    _, _, inputs, _ = get_pvgis_tmy(45, 8, startyear=2005, map_variables=False)
-    assert inputs['meteo_data']['year_min'] == 2005
-    _, _, inputs, _ = get_pvgis_tmy(45, 8, endyear=2016, map_variables=False)
-    assert inputs['meteo_data']['year_max'] == 2016
+    _, meta = get_pvgis_tmy(45, 8, startyear=2005, map_variables=False)
+    assert meta['inputs']['meteo_data']['year_min'] == 2005
+    _, meta = get_pvgis_tmy(45, 8, endyear=2016, map_variables=False)
+    assert meta['inputs']['meteo_data']['year_max'] == 2016
 
 
 @pytest.mark.remote_data
@@ -450,8 +455,8 @@ def test_get_pvgis_tmy_coerce_year():
     cet_name = 'Etc/GMT-1'
     # check indices of rolled data after converting timezone
     pvgis_data, _ = get_pvgis_tmy(45, 8, roll_utc_offset=cet_tz)
-    jan1_midnight = pd.Timestamp('1990-01-01 00:00:00', tz=cet_name)
-    dec31_midnight = pd.Timestamp('1990-12-31 23:00:00', tz=cet_name)
+    jan1_midnight = pd.Timestamp('1990-01-01 00', tz=cet_name)
+    dec31_midnight = pd.Timestamp('1990-12-31 23', tz=cet_name)
     assert pvgis_data.index[0] == jan1_midnight
     assert pvgis_data.index[-1] == dec31_midnight
     assert pvgis_data.index.name == f'time({cet_name})'
@@ -463,8 +468,8 @@ def test_get_pvgis_tmy_coerce_year():
     test_yr = 2021
     pvgis_data, _ = get_pvgis_tmy(
         45, 8, roll_utc_offset=cet_tz, coerce_year=test_yr)
-    jan1_midnight = pd.Timestamp(f'{test_yr}-01-01 00:00:00', tz=cet_name)
-    dec31_midnight = pd.Timestamp(f'{test_yr}-12-31 23:00:00', tz=cet_name)
+    jan1_midnight = pd.Timestamp(f'{test_yr}-01-01 00', tz=cet_name)
+    dec31_midnight = pd.Timestamp(f'{test_yr}-12-31 23', tz=cet_name)
     assert pvgis_data.index[0] == jan1_midnight
     assert pvgis_data.index[-1] == dec31_midnight
     assert pvgis_data.index.name == f'time({cet_name})'
@@ -473,8 +478,8 @@ def test_get_pvgis_tmy_coerce_year():
         assert all(test_case == expected)
     # repeat tests with year coerced but utc offset none or zero
     pvgis_data, _ = get_pvgis_tmy(45, 8, coerce_year=test_yr)
-    jan1_midnight = pd.Timestamp(f'{test_yr}-01-01 00:00:00', tz='UTC')
-    dec31_midnight = pd.Timestamp(f'{test_yr}-12-31 23:00:00', tz='UTC')
+    jan1_midnight = pd.Timestamp(f'{test_yr}-01-01 00', tz='UTC')
+    dec31_midnight = pd.Timestamp(f'{test_yr}-12-31 23', tz='UTC')
     assert pvgis_data.index[0] == jan1_midnight
     assert pvgis_data.index[-1] == dec31_midnight
     assert pvgis_data.index.name == 'time(UTC)'
@@ -494,7 +499,13 @@ def test_get_pvgis_tmy_csv(expected, month_year_expected, inputs_expected,
 
 def _compare_pvgis_tmy_csv(expected, month_year_expected, inputs_expected,
                            meta_expected, csv_meta, pvgis_data):
-    data, months_selected, inputs, meta = pvgis_data
+    data, meta = pvgis_data
+
+    # Re-create original outputs (prior to #2470)
+    months_selected = meta['months_selected']
+    inputs = meta['inputs'].copy()
+    meta = meta['descriptions']
+
     # check each column of output separately
     for outvar in meta_expected['outputs']['tmy_hourly']['variables'].keys():
         assert np.allclose(data[outvar], expected[outvar])
@@ -526,7 +537,7 @@ def test_get_pvgis_tmy_epw(expected, epw_meta):
 
 
 def _compare_pvgis_tmy_epw(expected, epw_meta, pvgis_data):
-    data, _, _, meta = pvgis_data
+    data, meta = pvgis_data
     assert np.allclose(data.ghi, expected['G(h)'])
     assert np.allclose(data.dni, expected['Gb(n)'])
     assert np.allclose(data.dhi, expected['Gd(h)'])

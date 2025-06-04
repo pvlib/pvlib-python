@@ -73,7 +73,7 @@ Documentation
 * Update references in :py:func:`~pvlib.iotools.get_cams` and :py:func:`~pvlib.iotools.read_cams`
   (:issue:`2427`, :pull:`2457`)
 * Fix ``Edit on GitHub`` links in stable documentation so they point to the tagged repository version matching the build environment (e.g., v0.12.0). (:issue:`2456`, :pull:`2460`)
-
+* Fix a minor issue with calculation of solar position in the OEDI 9068 gallery page. (:pull:`2468`)
 
 Requirements
 ~~~~~~~~~~~~

@@ -440,7 +440,7 @@ def test_get_pvgis_tmy_kwargs(userhorizon_expected):
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_get_pvgis_tmy_coerce_year():
     """test utc_offset and coerce_year work as expected"""
-    base_case, _, _, _ = get_pvgis_tmy(45, 8)  # Turin
+    base_case, _ = get_pvgis_tmy(45, 8)  # Turin
     assert str(base_case.index.tz) == 'UTC'
     assert base_case.index.name == 'time(UTC)'
     noon_test_data = [
@@ -449,7 +449,7 @@ def test_get_pvgis_tmy_coerce_year():
     cet_tz = 1  # Turin time is CET
     cet_name = 'Etc/GMT-1'
     # check indices of rolled data after converting timezone
-    pvgis_data, _, _, _ = get_pvgis_tmy(45, 8, roll_utc_offset=cet_tz)
+    pvgis_data, _ = get_pvgis_tmy(45, 8, roll_utc_offset=cet_tz)
     jan1_midnight = pd.Timestamp('1990-01-01 00:00:00', tz=cet_name)
     dec31_midnight = pd.Timestamp('1990-12-31 23:00:00', tz=cet_name)
     assert pvgis_data.index[0] == jan1_midnight
@@ -461,7 +461,7 @@ def test_get_pvgis_tmy_coerce_year():
         assert all(test_case == expected)
     # repeat tests with year coerced
     test_yr = 2021
-    pvgis_data, _, _, _ = get_pvgis_tmy(
+    pvgis_data, _ = get_pvgis_tmy(
         45, 8, roll_utc_offset=cet_tz, coerce_year=test_yr)
     jan1_midnight = pd.Timestamp(f'{test_yr}-01-01 00:00:00', tz=cet_name)
     dec31_midnight = pd.Timestamp(f'{test_yr}-12-31 23:00:00', tz=cet_name)
@@ -472,7 +472,7 @@ def test_get_pvgis_tmy_coerce_year():
         expected = pvgis_data[pvgis_data.index.month == m+1].iloc[12+cet_tz]
         assert all(test_case == expected)
     # repeat tests with year coerced but utc offset none or zero
-    pvgis_data, _, _, _ = get_pvgis_tmy(45, 8, coerce_year=test_yr)
+    pvgis_data, _ = get_pvgis_tmy(45, 8, coerce_year=test_yr)
     jan1_midnight = pd.Timestamp(f'{test_yr}-01-01 00:00:00', tz='UTC')
     dec31_midnight = pd.Timestamp(f'{test_yr}-12-31 23:00:00', tz='UTC')
     assert pvgis_data.index[0] == jan1_midnight
@@ -556,8 +556,8 @@ def test_get_pvgis_tmy_basic():
 
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
-def test_get_pvgis_map_variables(pvgis_tmy_mapped_columns):
-    actual, _, _, _ = get_pvgis_tmy(45, 8, map_variables=True)
+def test_get_pvgis_tmy_map_variables(pvgis_tmy_mapped_columns):
+    actual, _ = get_pvgis_tmy(45, 8, map_variables=True)
     assert all(c in pvgis_tmy_mapped_columns for c in actual.columns)
 
 
@@ -580,7 +580,7 @@ def test_read_pvgis_horizon_invalid_coords():
 
 def test_read_pvgis_tmy_map_variables(pvgis_tmy_mapped_columns):
     fn = TESTS_DATA_DIR / 'tmy_45.000_8.000_2005_2023.json'
-    actual, _, _, _ = read_pvgis_tmy(fn, map_variables=True)
+    actual, _ = read_pvgis_tmy(fn, map_variables=True)
     assert all(c in pvgis_tmy_mapped_columns for c in actual.columns)
 
 

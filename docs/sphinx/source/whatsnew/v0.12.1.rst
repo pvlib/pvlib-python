@@ -11,6 +11,10 @@ Breaking Changes
   following the iotools convention instead of ``(data,inputs,meta)``.
   The ``inputs`` dictionary is now included in ``meta``, which
   has changed structure to accommodate it. (:pull:`2462`)
+* The functions :py:func:`~pvlib.iotools.read_pvgis_tmy` and
+  :py:func:`~pvlib.iotools.get_pvgis_tmy` now return ``(data,meta)``
+  following the iotools convention instead of ``(data,months_selected,inputs,meta)``.
+  (:pull:`XXXX`)
 * Remove ``outputformat='basic'`` option in :py:func:`~pvlib.iotools.get_pvgis_tmy`.
   (:pull:`2416`)
 

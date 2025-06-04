@@ -17,8 +17,10 @@ Breaking Changes
 Deprecations
 ~~~~~~~~~~~~
 * The following ``parse_`` functions in :py:mod:`pvlib.iotools` are deprecated,
-  with the corresponding ``read_`` functions taking their place: (:issue:`2444`, :pull:`2458`, :pull:`2466`)
+  with the corresponding ``read_`` functions taking their place: (:issue:`2444`, :pull:`2458`,
+  :pull:`2467`, :pull:`2466`)
 
+  - :py:func:`~pvlib.iotools.parse_epw`
   - :py:func:`~pvlib.iotools.parse_psm3`
   - :py:func:`~pvlib.iotools.parse_cams`
   - :py:func:`~pvlib.iotools.parse_bsrn`

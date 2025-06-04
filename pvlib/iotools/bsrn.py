@@ -9,6 +9,9 @@ import warnings
 import io
 import os
 
+from pvlib.tools import _file_context_manager
+from pvlib._deprecation import deprecated
+
 BSRN_FTP_URL = "ftp.bsrn.awi.de"
 
 BSRN_LR0100_COL_SPECS = [(0, 3), (4, 9), (10, 16), (16, 22), (22, 27),
@@ -136,7 +139,7 @@ def get_bsrn(station, start, end, username, password,
 
     See Also
     --------
-    pvlib.iotools.read_bsrn, pvlib.iotools.parse_bsrn
+    pvlib.iotools.read_bsrn
 
     References
     ----------
@@ -191,7 +194,7 @@ def get_bsrn(station, start, end, username, password,
                 bio.seek(0)  # reset buffer to start of file
                 gzip_file = io.TextIOWrapper(gzip.GzipFile(fileobj=bio),
                                              encoding='latin1')
-                dfi, metadata = parse_bsrn(gzip_file, logical_records)
+                dfi, metadata = _parse_bsrn(gzip_file, logical_records)
                 dfs.append(dfi)
             # FTP client raises an error if the file does not exist on server
             except ftplib.error_perm as e:
@@ -217,7 +220,7 @@ def get_bsrn(station, start, end, username, password,
     return data, metadata
 
 
-def parse_bsrn(fbuf, logical_records=('0100',)):
+def _parse_bsrn(fbuf, logical_records=('0100',)):
     """
     Parse a file-like buffer of a BSRN station-to-archive file.
 
@@ -382,7 +385,7 @@ def read_bsrn(filename, logical_records=('0100',)):
     Parameters
     ----------
     filename: str or path-like
-        Name or path of a BSRN station-to-archive data file
+        Name, path, or in-memory buffer of a BSRN station-to-archive data file
     logical_records: list or tuple, default: ('0100',)
         List of the logical records (LR) to parse. Options include: '0100',
         '0300', and '0500'.
@@ -439,7 +442,7 @@ def read_bsrn(filename, logical_records=('0100',)):
 
     See Also
     --------
-    pvlib.iotools.parse_bsrn, pvlib.iotools.get_bsrn
+    pvlib.iotools.get_bsrn
 
     References
     ----------
@@ -457,7 +460,11 @@ def read_bsrn(filename, logical_records=('0100',)):
     if str(filename).endswith('.gz'):  # check if file is a gzipped (.gz) file
         open_func, mode = gzip.open, 'rt'
     else:
-        open_func, mode = open, 'r'
+        open_func, mode = _file_context_manager, 'r'
     with open_func(filename, mode) as f:
-        content = parse_bsrn(f, logical_records)
+        content = _parse_bsrn(f, logical_records)
     return content
+
+
+parse_bsrn = deprecated(since="0.13.0", name="parse_bsrn",
+                        alternative="read_bsrn")(read_bsrn)

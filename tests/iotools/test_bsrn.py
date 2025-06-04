@@ -6,7 +6,7 @@ import pandas as pd
 import pytest
 import os
 import tempfile
-from pvlib.iotools import read_bsrn, get_bsrn
+from pvlib.iotools import read_bsrn, get_bsrn, parse_bsrn
 from tests.conftest import (
     TESTS_DATA_DIR,
     RERUNS,
@@ -14,6 +14,8 @@ from tests.conftest import (
     assert_index_equal,
     requires_bsrn_credentials,
 )
+
+from pvlib._deprecation import pvlibDeprecationWarning
 
 
 @pytest.fixture(scope="module")
@@ -33,12 +35,29 @@ def expected_index():
                          tz='UTC')
 
 
+def test_parse_bsrn_deprecated():
+    with pytest.warns(pvlibDeprecationWarning, match='Use read_bsrn instead'):
+        with open(TESTS_DATA_DIR / 'bsrn-lr0100-pay0616.dat') as fbuf:
+            data, metadata = parse_bsrn(fbuf)
+
+
 @pytest.mark.parametrize('testfile', [
     ('bsrn-pay0616.dat.gz'),
     ('bsrn-lr0100-pay0616.dat'),
 ])
 def test_read_bsrn(testfile, expected_index):
     data, metadata = read_bsrn(TESTS_DATA_DIR / testfile)
+    assert_index_equal(expected_index, data.index)
+    assert 'ghi' in data.columns
+    assert 'dni_std' in data.columns
+    assert 'dhi_min' in data.columns
+    assert 'lwd_max' in data.columns
+    assert 'relative_humidity' in data.columns
+
+
+def test_read_bsrn_buffer(expected_index):
+    with open(TESTS_DATA_DIR / 'bsrn-lr0100-pay0616.dat') as fbuf:
+        data, metadata = read_bsrn(fbuf)
     assert_index_equal(expected_index, data.index)
     assert 'ghi' in data.columns
     assert 'dni_std' in data.columns

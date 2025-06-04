@@ -116,7 +116,7 @@ temp_cell = pvlib.temperature.faiman(
 )
 
 power_dc = pvlib.pvsystem.pvwatts_dc(
-    g_poa_effective=irradiance['poa_global'],
+    effective_irradiance=irradiance['poa_global'],
     temp_cell=temp_cell,
     pdc0=pdc0,
     gamma_pdc=gamma_pdc)

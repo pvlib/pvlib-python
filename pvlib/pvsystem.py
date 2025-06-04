@@ -16,7 +16,7 @@ import pandas as pd
 from dataclasses import dataclass
 from abc import ABC, abstractmethod
 from typing import Optional, Union
-
+from pvlib._deprecation import renamed_kwarg_warning
 import pvlib  # used to avoid albedo name collision in the Array class
 from pvlib import (atmosphere, iam, inverter, irradiance,
                    singlediode as _singlediode, spectrum, temperature)
@@ -843,8 +843,10 @@ class PVSystem:
             for array, data in zip(self.arrays, data)
         )
 
+    @renamed_kwarg_warning(
+        "0.13.0", "g_poa_effective", "effective_irradiance")
     @_unwrap_single_value
-    def pvwatts_dc(self, g_poa_effective, temp_cell):
+    def pvwatts_dc(self, effective_irradiance, temp_cell):
         """
         Calculates DC power according to the PVWatts model using
         :py:func:`pvlib.pvsystem.pvwatts_dc`, `self.module_parameters['pdc0']`,
@@ -852,15 +854,15 @@ class PVSystem:
 
         See :py:func:`pvlib.pvsystem.pvwatts_dc` for details.
         """
-        g_poa_effective = self._validate_per_array(g_poa_effective)
+        effective_irradiance = self._validate_per_array(effective_irradiance)
         temp_cell = self._validate_per_array(temp_cell)
         return tuple(
-            pvwatts_dc(g_poa_effective, temp_cell,
+            pvwatts_dc(effective_irradiance, temp_cell,
                        array.module_parameters['pdc0'],
                        array.module_parameters['gamma_pdc'],
                        **_build_kwargs(['temp_ref'], array.module_parameters))
-            for array, g_poa_effective, temp_cell
-            in zip(self.arrays, g_poa_effective, temp_cell)
+            for array, effective_irradiance, temp_cell
+            in zip(self.arrays, effective_irradiance, temp_cell)
         )
 
     def pvwatts_losses(self):
@@ -2856,7 +2858,9 @@ def scale_voltage_current_power(data, voltage=1, current=1):
     return df_sorted
 
 
-def pvwatts_dc(g_poa_effective, temp_cell, pdc0, gamma_pdc, temp_ref=25.):
+@renamed_kwarg_warning(
+    "0.13.0", "g_poa_effective", "effective_irradiance")
+def pvwatts_dc(effective_irradiance, temp_cell, pdc0, gamma_pdc, temp_ref=25.):
     r"""
     Implements NREL's PVWatts DC power model. The PVWatts DC model [1]_ is:
 
@@ -2872,7 +2876,7 @@ def pvwatts_dc(g_poa_effective, temp_cell, pdc0, gamma_pdc, temp_ref=25.):
 
     Parameters
     ----------
-    g_poa_effective: numeric
+    effective_irradiance: numeric
         Irradiance transmitted to the PV cells. To be
         fully consistent with PVWatts, the user must have already
         applied angle of incidence losses, but not soiling, spectral,
@@ -2900,7 +2904,7 @@ def pvwatts_dc(g_poa_effective, temp_cell, pdc0, gamma_pdc, temp_ref=25.):
            (2014).
     """  # noqa: E501
 
-    pdc = (g_poa_effective * 0.001 * pdc0 *
+    pdc = (effective_irradiance * 0.001 * pdc0 *
            (1 + gamma_pdc * (temp_cell - temp_ref)))
 
     return pdc

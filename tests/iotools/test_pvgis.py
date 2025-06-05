@@ -487,6 +487,9 @@ def test_get_pvgis_tmy_coerce_year():
     for m, test_case in enumerate(noon_test_data):
         expected = pvgis_data[pvgis_data.index.month == m+1].iloc[12]
         assert all(test_case == expected)
+    # Test that get_pvgis_tmy defaults to coerce_year=1990
+    pvgis_data, _ = get_pvgis_tmy(45, 8)
+    assert all(pvgis_data.index.year == 1990)
 
 
 @pytest.mark.remote_data

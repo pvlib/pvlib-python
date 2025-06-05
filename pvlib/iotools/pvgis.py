@@ -478,10 +478,10 @@ def get_pvgis_tmy(latitude, longitude, outputformat='json', usehorizon=True,
         dataframe by ``roll_utc_offset`` so it starts at midnight on January
         1st. Ignored if ``None``, otherwise will force year to ``coerce_year``.
     coerce_year: int, optional
-        Use to force indices to desired year. Defaults to 1990. Specify ``None``
-        to return the actual indicies used for the TMY. If ``coerce_year`` is
-        ``None``, but ``roll_utc_offset`` is specified, then ``coerce`` year
-        will be set to the default.
+        Use to force indices to desired year. Defaults to 1990. Specify
+        ``None`` to return the actual indicies used for the TMY. If
+        ``coerce_year`` is ``None``, but ``roll_utc_offset`` is specified,
+        then ``coerce`` year will be set to the default.
 
     Returns
     -------

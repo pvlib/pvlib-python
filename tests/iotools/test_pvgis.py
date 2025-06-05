@@ -384,7 +384,7 @@ def pvgis_tmy_mapped_columns():
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_get_pvgis_tmy(expected, month_year_expected, inputs_expected,
                        meta_expected):
-    pvgis_data = get_pvgis_tmy(45, 8, map_variables=False)
+    pvgis_data = get_pvgis_tmy(45, 8, map_variables=False, coerce_year=None)
     _compare_pvgis_tmy_json(expected, month_year_expected, inputs_expected,
                             meta_expected, pvgis_data)
 
@@ -428,7 +428,8 @@ def test_get_pvgis_tmy_kwargs(userhorizon_expected):
     _, meta = get_pvgis_tmy(45, 8, usehorizon=False, map_variables=False)
     assert meta['inputs']['meteo_data']['use_horizon'] is False
     data, _ = get_pvgis_tmy(
-        45, 8, userhorizon=[0, 10, 20, 30, 40, 15, 25, 5], map_variables=False)
+        45, 8, userhorizon=[0, 10, 20, 30, 40, 15, 25, 5], map_variables=False,
+        coerce_year=None)
     assert np.allclose(
         data['G(h)'], userhorizon_expected['G(h)'].values)
     assert np.allclose(
@@ -491,10 +492,11 @@ def test_get_pvgis_tmy_coerce_year():
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_get_pvgis_tmy_csv(expected, month_year_expected, inputs_expected,
-                           meta_expected, csv_meta):
+                           meta_expected, csv_meta, coerce_year=None):
     pvgis_data = get_pvgis_tmy(45, 8, outputformat='csv', map_variables=False)
     _compare_pvgis_tmy_csv(expected, month_year_expected, inputs_expected,
-                           meta_expected, csv_meta, pvgis_data)
+                           meta_expected, csv_meta, pvgis_data,
+                           coerce_year=None)
 
 
 def _compare_pvgis_tmy_csv(expected, month_year_expected, inputs_expected,
@@ -532,7 +534,8 @@ def _compare_pvgis_tmy_csv(expected, month_year_expected, inputs_expected,
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_get_pvgis_tmy_epw(expected, epw_meta):
-    pvgis_data = get_pvgis_tmy(45, 8, outputformat='epw', map_variables=False)
+    pvgis_data = get_pvgis_tmy(45, 8, outputformat='epw', map_variables=False,
+                               coerce_year=None)
     _compare_pvgis_tmy_epw(expected, epw_meta, pvgis_data)
 
 

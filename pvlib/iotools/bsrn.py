@@ -162,8 +162,7 @@ def get_bsrn(station, start, end, username, password,
     end = pd.to_datetime(end)
 
     # Generate list files to download based on start/end (SSSMMYY.dat.gz)
-    filenames = pd.date_range(
-        start, end.replace(day=1) + pd.DateOffset(months=1), freq='1M')\
+    filenames = pd.date_range(start, end, freq='1MS')\
         .strftime(f"{station}%m%y.dat.gz").tolist()
 
     # Create FTP connection

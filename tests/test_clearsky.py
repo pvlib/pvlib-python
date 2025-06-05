@@ -234,8 +234,8 @@ def test_lookup_linke_turbidity_months():
 
 
 def test_lookup_linke_turbidity_months_leapyear():
-    times = pd.date_range(start='2016-04-01', end='2016-07-01',
-                          freq='1M', tz='America/Phoenix')
+    times = pd.date_range(start='2014-05-01', end='2014-07-01',
+                          freq='1ME', tz='America/Phoenix')
     expected = pd.Series(
         np.array([2.89918032787, 2.97540983607, 3.19672131148]), index=times
     )

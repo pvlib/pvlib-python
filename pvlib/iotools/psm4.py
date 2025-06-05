@@ -72,7 +72,7 @@ REQUEST_VARIABLE_MAP = {
 
 
 def get_nsrdb_psm4_aggregated(latitude, longitude, api_key, email,
-                              year='2023', time_step=60,
+                              year, time_step=60,
                               parameters=PARAMETERS, leap_day=True,
                               full_name=PVLIB_PYTHON,
                               affiliation=PVLIB_PYTHON,
@@ -96,7 +96,7 @@ def get_nsrdb_psm4_aggregated(latitude, longitude, api_key, email,
     email : str
         NREL API uses this to automatically communicate messages back
         to the user only if necessary
-    year : str, default '2023'
+    year : int or str
         PSM4 API parameter specifing year (e.g. ``2023``) to download. The
         allowed values update periodically, so consult the NSRDB reference
         below for the current set of options. Called ``names`` in NSRDB API.
@@ -314,9 +314,6 @@ def get_nsrdb_psm4_tmy(latitude, longitude, api_key, email, year='tmy',
     latitude = ('%8.4f' % latitude).strip()
     # TODO: make format_WKT(object_type, *args) in tools.py
 
-    # convert to string to accomodate integer years being passed in
-    year = str(year)
-
     # convert pvlib names in parameters to PSM4 convention
     parameters = [REQUEST_VARIABLE_MAP.get(a, a) for a in parameters]
 
@@ -354,7 +351,7 @@ def get_nsrdb_psm4_tmy(latitude, longitude, api_key, email, year='tmy',
     return read_nsrdb_psm4(fbuf, map_variables)
 
 
-def get_nsrdb_psm4_conus(latitude, longitude, api_key, email, year='2023',
+def get_nsrdb_psm4_conus(latitude, longitude, api_key, email, year,
                          time_step=60, parameters=PARAMETERS, leap_day=True,
                          full_name=PVLIB_PYTHON, affiliation=PVLIB_PYTHON,
                          utc=False, map_variables=True, url=None, timeout=30):
@@ -376,7 +373,7 @@ def get_nsrdb_psm4_conus(latitude, longitude, api_key, email, year='2023',
     email : str
         NREL API uses this to automatically communicate messages back
         to the user only if necessary
-    year : str, default '2023'
+    year : int or str
         PSM4 API parameter specifing year (e.g. ``2023``) to download. The
         allowed values update periodically, so consult the NSRDB reference
         below for the current set of options. Called ``names`` in NSRDB API.
@@ -494,7 +491,7 @@ def get_nsrdb_psm4_conus(latitude, longitude, api_key, email, year='2023',
 
 
 def get_nsrdb_psm4_full_disc(latitude, longitude, api_key, email,
-                             year='2023', time_step=60,
+                             year, time_step=60,
                              parameters=PARAMETERS, leap_day=True,
                              full_name=PVLIB_PYTHON,
                              affiliation=PVLIB_PYTHON, utc=False,
@@ -517,7 +514,7 @@ def get_nsrdb_psm4_full_disc(latitude, longitude, api_key, email,
     email : str
         NREL API uses this to automatically communicate messages back
         to the user only if necessary
-    year : str, default '2023'
+    year : int or str
         PSM4 API parameter specifing year (e.g. ``2023``) to download. The
         allowed values update periodically, so consult the NSRDB reference
         below for the current set of options. Called ``names`` in NSRDB API.

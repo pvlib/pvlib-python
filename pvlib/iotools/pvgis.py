@@ -442,7 +442,7 @@ def get_pvgis_tmy(latitude, longitude, outputformat='json', usehorizon=True,
 
         .. versionchanged:: 0.13.0
            The function now returns two items ``(data,meta)``. Previous
-           versions of this function returned three elements
+           versions of this function returned four elements
            ``(data,months_selected,inputs,meta)``. The ``inputs`` dictionary
            and ``months_selected`` are  now included in ``meta``, which has
            changed structure to accommodate it.
@@ -622,7 +622,7 @@ def read_pvgis_tmy(filename, pvgis_format=None, map_variables=True):
 
         .. versionchanged:: 0.13.0
            The function now returns two items ``(data,meta)``. Previous
-           versions of this function returned three elements
+           versions of this function returned four elements
            ``(data,months_selected,inputs,meta)``. The ``inputs`` dictionary
            and ``months_selected`` are  now included in ``meta``, which has
            changed structure to accommodate it.

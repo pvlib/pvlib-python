@@ -76,7 +76,7 @@ them.
 Usage
 -----
 
-With some exceptions, the :py:mod:`pvlib.iotools` functions
+The :py:mod:`pvlib.iotools` functions
 provide a uniform interface for accessing data across many formats.
 Specifically, :py:mod:`pvlib.iotools` functions usually return two objects:
 a :py:class:`pandas.DataFrame` of the actual dataset, plus a metadata
@@ -89,8 +89,7 @@ Typical usage looks something like this:
 
 .. code-block:: python
 
-    # get_pvgis_tmy returns two additional values besides df and metadata
-    df, _, _, metadata = pvlib.iotools.get_pvgis_tmy(latitude, longitude, map_variables=True)
+    df, metadata = pvlib.iotools.get_pvgis_tmy(latitude, longitude, map_variables=True)
 
 This code will fetch a Typical Meteorological Year (TMY) dataset from PVGIS,
 returning a :py:class:`pandas.DataFrame` containing the hourly weather data

@@ -173,9 +173,6 @@ def get_nsrdb_psm4_aggregated(latitude, longitude, api_key, email,
     latitude = ('%8.4f' % latitude).strip()
     # TODO: make format_WKT(object_type, *args) in tools.py
 
-    # convert to string to accomodate integer years being passed in
-    year = str(year)
-
     # convert pvlib names in parameters to PSM4 convention
     parameters = [REQUEST_VARIABLE_MAP.get(a, a) for a in parameters]
 
@@ -450,9 +447,6 @@ def get_nsrdb_psm4_conus(latitude, longitude, api_key, email, year,
     latitude = ('%8.4f' % latitude).strip()
     # TODO: make format_WKT(object_type, *args) in tools.py
 
-    # convert to string to accomodate integer years being passed in
-    year = str(year)
-
     # convert pvlib names in parameters to PSM4 convention
     parameters = [REQUEST_VARIABLE_MAP.get(a, a) for a in parameters]
 
@@ -591,9 +585,6 @@ def get_nsrdb_psm4_full_disc(latitude, longitude, api_key, email,
     longitude = ('%9.4f' % longitude).strip()
     latitude = ('%8.4f' % latitude).strip()
     # TODO: make format_WKT(object_type, *args) in tools.py
-
-    # convert to string to accomodate integer years being passed in
-    year = str(year)
 
     # convert pvlib names in parameters to PSM4 convention
     parameters = [REQUEST_VARIABLE_MAP.get(a, a) for a in parameters]

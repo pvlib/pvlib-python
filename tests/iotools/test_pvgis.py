@@ -493,10 +493,10 @@ def test_get_pvgis_tmy_coerce_year():
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_get_pvgis_tmy_csv(expected, month_year_expected, inputs_expected,
                            meta_expected, csv_meta, coerce_year=None):
-    pvgis_data = get_pvgis_tmy(45, 8, outputformat='csv', map_variables=False)
+    pvgis_data = get_pvgis_tmy(45, 8, outputformat='csv', map_variables=False,
+                               coerce_year=None)
     _compare_pvgis_tmy_csv(expected, month_year_expected, inputs_expected,
-                           meta_expected, csv_meta, pvgis_data,
-                           coerce_year=None)
+                           meta_expected, csv_meta, pvgis_data)
 
 
 def _compare_pvgis_tmy_csv(expected, month_year_expected, inputs_expected,

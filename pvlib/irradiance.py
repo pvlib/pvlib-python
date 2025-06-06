@@ -1627,7 +1627,7 @@ def ghi_from_poa_driesse_2023(surface_tilt, surface_azimuth,
     since='0.11.2',
     old_param_name='clearsky_ghi',
     new_param_name='ghi_clear',
-    removal="0.13.0")
+    removal="0.14.0")
 def clearsky_index(ghi, ghi_clear, max_clearsky_index=2.0):
     """
     Calculate the clearsky index.
@@ -2172,12 +2172,12 @@ def _dirint_bins(times, kt_prime, zenith, w, delta_kt_prime):
     since='0.11.2',
     old_param_name='ghi_clearsky',
     new_param_name='ghi_clear',
-    removal="0.13.0")
+    removal="0.14.0")
 @renamed_kwarg_warning(
     since='0.11.2',
     old_param_name='dni_clearsky',
     new_param_name='dni_clear',
-    removal="0.13.0")
+    removal="0.14.0")
 def dirindex(ghi, ghi_clear, dni_clear, zenith, times, pressure=101325.,
              use_delta_kt_prime=True, temp_dew=None, min_cos_zenith=0.065,
              max_zenith=87):
@@ -3662,7 +3662,7 @@ def _get_dirint_coeffs():
     since='0.11.2',
     old_param_name='clearsky_dni',
     new_param_name='dni_clear',
-    removal="0.13.0")
+    removal="0.14.0")
 def dni(ghi, dhi, zenith, dni_clear=None, clearsky_tolerance=1.1,
         zenith_threshold_for_zero_dni=88.0,
         zenith_threshold_for_clearsky_limit=80.0):

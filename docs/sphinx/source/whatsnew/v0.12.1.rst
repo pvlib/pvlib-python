@@ -15,6 +15,9 @@ Breaking Changes
   :py:func:`~pvlib.iotools.get_pvgis_tmy` now return ``(data,meta)``
   following the iotools convention instead of ``(data,months_selected,inputs,meta)``.
   (:pull:`2470`)
+* :py:func:`~pvlib.iotools.get_pvgis_tmy` now defaults to ``coerce_year=1990``,
+  whereas the default behavior previously was to use the years of the selected
+  months for the TMY index. (:pull:`2474`)
 * Remove ``outputformat='basic'`` option in :py:func:`~pvlib.iotools.get_pvgis_tmy`.
   (:pull:`2416`)
 

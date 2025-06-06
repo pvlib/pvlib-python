@@ -1,7 +1,7 @@
 .. _whatsnew_01300:
 
 
-v0.13.0 (June 6, 2025)
+v0.13.0 (June 7, 2025)
 ----------------------
 
 Breaking Changes

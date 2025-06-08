@@ -361,5 +361,5 @@ def read_psm3(filename, map_variables=True):
     return data, metadata
 
 
-parse_psm3 = deprecated(since="0.12.1", name="parse_psm3",
+parse_psm3 = deprecated(since="0.13.0", name="parse_psm3",
                         alternative="read_psm3")(read_psm3)

@@ -89,8 +89,8 @@ solar_apparent_zenith, solar_azimuth = (
 )  # unpack for better readability
 
 tracking_result = pvlib.tracking.singleaxis(
-    apparent_zenith=solar_apparent_zenith,
-    apparent_azimuth=solar_azimuth,
+    solar_zenith=solar_apparent_zenith,
+    solar_azimuth=solar_azimuth,
     axis_tilt=axis_tilt,
     axis_azimuth=axis_azimuth,
     max_angle=(-90 + cross_axis_tilt, 90 + cross_axis_tilt),  # (min, max)

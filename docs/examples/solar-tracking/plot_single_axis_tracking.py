@@ -32,8 +32,8 @@ times = pd.date_range('2019-01-01', '2019-01-02', freq='5min',
 solpos = solarposition.get_solarposition(times, lat, lon)
 
 truetracking_angles = tracking.singleaxis(
-    apparent_zenith=solpos['apparent_zenith'],
-    apparent_azimuth=solpos['azimuth'],
+    solar_zenith=solpos['apparent_zenith'],
+    solar_azimuth=solpos['azimuth'],
     axis_tilt=0,
     axis_azimuth=180,
     max_angle=90,
@@ -60,8 +60,8 @@ fig, ax = plt.subplots()
 
 for gcr in [0.2, 0.4, 0.6]:
     backtracking_angles = tracking.singleaxis(
-        apparent_zenith=solpos['apparent_zenith'],
-        apparent_azimuth=solpos['azimuth'],
+        solar_zenith=solpos['apparent_zenith'],
+        solar_azimuth=solpos['azimuth'],
         axis_tilt=0,
         axis_azimuth=180,
         max_angle=90,

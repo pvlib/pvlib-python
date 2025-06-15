@@ -22,16 +22,23 @@ There is a convention on consistent variable names throughout the library:
     
     aoi
         Angle of incidence. Angle between the surface normal vector and the
-        vector pointing towards the sun’s center
+        vector pointing towards the sun's center. Must be >=0 and <=180 degrees.
+        When the sun is behind the surface, the value is >90 degrees.
     
     aoi_projection
-        cos(aoi)
+        cos(aoi). When the sun is behind the surface, the value is negative.
+        For many uses, negative values must be set to zero.
 
     ape
         Average photon energy
 
     apparent_zenith
-        Refraction-corrected solar zenith angle in degrees
+        Refraction-corrected solar zenith angle in degrees. Must be >=0 and <=180.
+        This angle accounts for atmospheric refraction effects.
+
+    apparent_elevation
+        Refraction-corrected solar elevation angle in degrees. Must be >=-90 and <=90.
+        This is the complement of apparent_zenith (90 - apparent_zenith).
 
     bhi
         Beam/direct horizontal irradiance
@@ -87,10 +94,10 @@ There is a convention on consistent variable names throughout the library:
         Sandia Array Performance Model IV curve parameters
 
     latitude
-        Latitude
+        Latitude in decimal degrees. Positive north of equator, negative to south.
 
     longitude
-        Longitude
+        Longitude in decimal degrees. Positive east of prime meridian, negative to west.
 
     pac, ac
         AC power
@@ -141,10 +148,14 @@ There is a convention on consistent variable names throughout the library:
         Diode saturation current
 
     solar_azimuth
-        Azimuth angle of the sun in degrees East of North
+        Azimuth angle of the sun in degrees East of North. Must be >=0 and <=360.
+        The convention is defined as degrees east of north (e.g. North = 0°,
+        East = 90°, South = 180°, West = 270°).
 
     solar_zenith
-        Zenith angle of the sun in degrees
+        Zenith angle of the sun in degrees. Must be >=0 and <=180.
+        This is the angle between the sun's rays and the vertical direction.
+        This is the complement of :term:`solar_elevation` (90 - elevation).
 
     spectra
     spectra_components
@@ -154,11 +165,14 @@ There is a convention on consistent variable names throughout the library:
         is composed of direct and diffuse components.
     
     surface_azimuth
-        Azimuth angle of the surface
+        Azimuth angle of the surface in degrees East of North. Must be >=0 and <=360.
+        The convention is defined as degrees east (clockwise) of north. This is pvlib's
+        convention; other tools may use different conventions. For example, North = 0°,
+        East = 90°, South = 180°, West = 270°.
 
     surface_tilt
-        Panel tilt from horizontal [°]. For example, a surface facing up = 0°,
-        surface facing horizon = 90°.
+        Panel tilt from horizontal [°]. Must be >=0 and <=180.
+        For example, a surface facing up = 0°, surface facing horizon = 90°.
 
     temp_air
         Temperature of the air

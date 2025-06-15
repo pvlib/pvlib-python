@@ -9,24 +9,20 @@ from pvlib import shading
 def singleaxis(apparent_zenith, apparent_azimuth,
                axis_tilt=0, axis_azimuth=0, max_angle=90,
                backtrack=True, gcr=2.0/7.0, cross_axis_tilt=0):
+    # Improve pvlib.tracking.singleaxis docstring #2314 added by rached
     """
     Determine the rotation angle of a single-axis tracker when given particular
     solar zenith and azimuth angles.
 
-    See [1]_ and [2]_ for details about the equations. Backtracking may be
-    specified, in which case a ground coverage ratio is required.
+    This function calculates the optimal rotation angle for a single-axis tracker based on the sun's position. It supports backtracking to avoid row-to-row shading and accounts for the tracker's axis tilt and azimuth.
 
-    Rotation angle is determined in a right-handed coordinate system. The
-    tracker ``axis_azimuth`` defines the positive y-axis, the positive x-axis
-    is 90 degrees clockwise from the y-axis and parallel to the Earth's
-    surface, and the positive z-axis is normal to both x and y-axes and
-    oriented skyward. Rotation angle ``tracker_theta`` is a right-handed
-    rotation around the y-axis in the x, y, z coordinate system and indicates
-    tracker position relative to horizontal. For example, if tracker
-    ``axis_azimuth`` is 180 (oriented south) and ``axis_tilt`` is zero, then a
-    ``tracker_theta`` of zero is horizontal, a ``tracker_theta`` of 30 degrees
-    is a rotation of 30 degrees towards the west, and a ``tracker_theta`` of
-    -90 degrees is a rotation to the vertical plane facing east.
+    The rotation angle is determined in a right-handed coordinate system:
+    - The tracker's axis_azimuth defines the positive y-axis.
+    - The positive x-axis is 90 degrees clockwise from the y-axis and parallel to the Earth's surface.
+    - The positive z-axis is normal to both x and y-axes and oriented skyward.
+    - The rotation angle (tracker_theta) is a right-handed rotation around the y-axis, indicating the tracker's position relative to horizontal.
+
+    For example, if the tracker's axis_azimuth is 180 (oriented south) and axis_tilt is zero, a tracker_theta of zero is horizontal, 30 degrees is a rotation towards the west, and -90 degrees is a rotation to the vertical plane facing east.
 
     Parameters
     ----------
@@ -37,67 +33,33 @@ def singleaxis(apparent_zenith, apparent_azimuth,
         Solar apparent azimuth angles in decimal degrees.
 
     axis_tilt : float, default 0
-        The tilt of the axis of rotation (i.e, the y-axis defined by
-        ``axis_azimuth``) with respect to horizontal.
-        ``axis_tilt`` must be >= 0 and <= 90. [degrees]
+        The tilt of the axis of rotation (i.e., the y-axis defined by axis_azimuth) with respect to horizontal.
+        axis_tilt must be >= 0 and <= 90. [degrees]
 
     axis_azimuth : float, default 0
-        A value denoting the compass direction along which the axis of
-        rotation lies. Measured in decimal degrees east of north.
+        A value denoting the compass direction along which the axis of rotation lies. Measured in decimal degrees east of north.
 
     max_angle : float or tuple, default 90
-        A value denoting the maximum rotation angle, in decimal degrees,
-        of the one-axis tracker from its horizontal position (horizontal
-        if axis_tilt = 0). If a float is provided, it represents the maximum
-        rotation angle, and the minimum rotation angle is assumed to be the
-        opposite of the maximum angle. If a tuple of (min_angle, max_angle) is
-        provided, it represents both the minimum and maximum rotation angles.
+        A value denoting the maximum rotation angle, in decimal degrees, of the one-axis tracker from its horizontal position (horizontal if axis_tilt = 0). If a float is provided, it represents the maximum rotation angle, and the minimum rotation angle is assumed to be the opposite of the maximum angle. If a tuple of (min_angle, max_angle) is provided, it represents both the minimum and maximum rotation angles.
 
-        A rotation to ``max_angle`` is a counter-clockwise rotation about the
-        y-axis of the tracker coordinate system. For example, for a tracker
-        with ``axis_azimuth`` oriented to the south, a rotation to
-        ``max_angle`` is towards the west, and a rotation toward ``-max_angle``
-        is in the opposite direction, toward the east. Hence, a ``max_angle``
-        of 180 degrees (equivalent to max_angle = (-180, 180)) allows the
-        tracker to achieve its full rotation capability.
+        A rotation to max_angle is a counter-clockwise rotation about the y-axis of the tracker coordinate system. For example, for a tracker with axis_azimuth oriented to the south, a rotation to max_angle is towards the west, and a rotation toward -max_angle is in the opposite direction, toward the east. Hence, a max_angle of 180 degrees (equivalent to max_angle = (-180, 180)) allows the tracker to achieve its full rotation capability.
 
     backtrack : bool, default True
-        Controls whether the tracker has the capability to "backtrack"
-        to avoid row-to-row shading. False denotes no backtrack
-        capability. True denotes backtrack capability.
+        Controls whether the tracker has the capability to "backtrack" to avoid row-to-row shading. False denotes no backtrack capability. True denotes backtrack capability.
 
     gcr : float, default 2.0/7.0
-        A value denoting the ground coverage ratio of a tracker system that
-        utilizes backtracking; i.e. the ratio between the PV array surface area
-        to the total ground area. A tracker system with modules 2 meters wide,
-        centered on the tracking axis, with 6 meters between the tracking axes
-        has a ``gcr`` of 2/6=0.333. If ``gcr`` is not provided, a ``gcr`` of
-        2/7 is default. ``gcr`` must be <=1.
+        A value denoting the ground coverage ratio of a tracker system that utilizes backtracking; i.e., the ratio between the PV array surface area to the total ground area. A tracker system with modules 2 meters wide, centered on the tracking axis, with 6 meters between the tracking axes has a gcr of 2/6=0.333. If gcr is not provided, a gcr of 2/7 is default. gcr must be <=1.
 
     cross_axis_tilt : float, default 0.0
-        The angle, relative to horizontal, of the line formed by the
-        intersection between the slope containing the tracker axes and a plane
-        perpendicular to the tracker axes. The cross-axis tilt should be
-        specified using a right-handed convention. For example, trackers with
-        axis azimuth of 180 degrees (heading south) will have a negative
-        cross-axis tilt if the tracker axes plane slopes down to the east and
-        positive cross-axis tilt if the tracker axes plane slopes down to the
-        west. Use :func:`~pvlib.tracking.calc_cross_axis_tilt` to calculate
-        ``cross_axis_tilt``. [degrees]
+        The angle, relative to horizontal, of the line formed by the intersection between the slope containing the tracker axes and a plane perpendicular to the tracker axes. The cross-axis tilt should be specified using a right-handed convention. For example, trackers with axis azimuth of 180 degrees (heading south) will have a negative cross-axis tilt if the tracker axes plane slopes down to the east and positive cross-axis tilt if the tracker axes plane slopes down to the west. Use :func:`~pvlib.tracking.calc_cross_axis_tilt` to calculate cross_axis_tilt. [degrees]
 
     Returns
     -------
     dict or DataFrame with the following columns:
-        * `tracker_theta`: The rotation angle of the tracker is a right-handed
-          rotation defined by `axis_azimuth`.
-          tracker_theta = 0 is horizontal. [degrees]
-        * `aoi`: The angle-of-incidence of direct irradiance onto the
-          rotated panel surface. [degrees]
-        * `surface_tilt`: The angle between the panel surface and the earth
-          surface, accounting for panel rotation. [degrees]
-        * `surface_azimuth`: The azimuth of the rotated panel, determined by
-          projecting the vector normal to the panel's surface to the earth's
-          surface. [degrees]
+        * `tracker_theta`: The rotation angle of the tracker is a right-handed rotation defined by axis_azimuth. tracker_theta = 0 is horizontal. [degrees]
+        * `aoi`: The angle-of-incidence of direct irradiance onto the rotated panel surface. [degrees]
+        * `surface_tilt`: The angle between the panel surface and the earth surface, accounting for panel rotation. [degrees]
+        * `surface_azimuth`: The azimuth of the rotated panel, determined by projecting the vector normal to the panel's surface to the earth's surface. [degrees]
 
     See also
     --------
@@ -107,11 +69,8 @@ def singleaxis(apparent_zenith, apparent_azimuth,
 
     References
     ----------
-    .. [1] Anderson, K., and Mikofski, M., "Slope-Aware Backtracking for
-       Single-Axis Trackers", Technical Report NREL/TP-5K00-76626, July 2020.
-       https://www.nrel.gov/docs/fy20osti/76626.pdf
-    .. [2] Lorenzo, E., Narvarte, L., and Muñoz, J. (2011). Tracking and
-       back-tracking 19(6), 747–753. :doi:`10.1002/pip.1085`
+    .. [1] Anderson, K., and Mikofski, M., "Slope-Aware Backtracking for Single-Axis Trackers", Technical Report NREL/TP-5K00-76626, July 2020. https://www.nrel.gov/docs/fy20osti/76626.pdf
+    .. [2] Lorenzo, E., Narvarte, L., and Muñoz, J. (2011). Tracking and back-tracking 19(6), 747–753. :doi:`10.1002/pip.1085`
     """
 
     # MATLAB to Python conversion by

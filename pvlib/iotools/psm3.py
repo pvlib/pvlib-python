@@ -65,6 +65,7 @@ def get_psm3(latitude, longitude, api_key, email, names='tmy', interval=60,
              attributes=ATTRIBUTES, leap_day=True, full_name=PVLIB_PYTHON,
              affiliation=PVLIB_PYTHON, map_variables=True, url=None,
              timeout=30):
+    # Fix outdated NSRDB PSM3 documentation link #2315 added by rached
     """
     Retrieve NSRDB PSM3 timeseries weather data from the PSM3 API. The NSRDB
     is described in [1]_ and the PSM3 API is described in [2]_, [3]_, and [4]_.

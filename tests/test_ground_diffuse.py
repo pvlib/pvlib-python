@@ -1,6 +1,7 @@
 import pvlib
 import pandas as pd
 import numpy as np
+import pytest
 
 def test_ground_diffuse_integration():
     """Test that get_ground_diffuse works correctly with poa_components."""
@@ -43,8 +44,7 @@ def test_ground_diffuse_integration():
     assert result['poa_ground_diffuse'] == ground_diffuse, "Ground diffuse should match input"
     assert result['poa_global'] > 0, "Total POA should be positive"
     assert result['poa_global'] == result['poa_direct'] + result['poa_diffuse'], "Total should equal sum of components"
-    assert result['poa_diffuse'] == result['poa_sky_diffuse'] + result[
-        'poa_ground_diffuse'], "Diffuse should equal sum of sky and ground"
+    assert result['poa_diffuse'] == result['poa_sky_diffuse'] + result['poa_ground_diffuse'], "Diffuse should equal sum of sky and ground"
 
 if __name__ == "__main__":
     test_ground_diffuse_integration()

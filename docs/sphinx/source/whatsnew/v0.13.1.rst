@@ -42,4 +42,4 @@ Maintenance
 
 Contributors
 ~~~~~~~~~~~~
-
+* Elijah Passmore (:ghuser:`eljpsm`)

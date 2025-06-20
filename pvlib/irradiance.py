@@ -481,7 +481,7 @@ def poa_components(aoi, dni, poa_sky_diffuse, poa_ground_diffuse):
 
     poa_ground_diffuse : numeric
         Ground reflected irradiance (Wm⁻²) in the plane of the modules,
-        as calculated by an albedo model (eg. :func:`grounddiffuse`)
+        as calculated by an albedo model (eg. :py:func:`pvlib.irradiance.git_ground_diffuse`)
 
     Returns
     -------
@@ -2987,7 +2987,7 @@ def boland(ghi, solar_zenith, datetime_or_doy, a_coeff=8.645, b_coeff=0.613,
     References
     ----------
     .. [1] J. Boland, B. Ridley (2008) Models of Diffuse Solar Fraction. In:
-       Badescu V. (eds) Modeling Solar Radiation at the Earth’s Surface.
+       Badescu V. (eds) Modeling Solar Radiation at the Earth's Surface.
        Springer, Berlin, Heidelberg. :doi:`10.1007/978-3-540-77455-6_8`
     .. [2] John Boland, Lynne Scott, and Mark Luther, Modelling the diffuse
        fraction of global solar radiation on a horizontal surface,

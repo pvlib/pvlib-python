@@ -38,6 +38,7 @@ Requirements
 
 Maintenance
 ~~~~~~~~~~~
+* Fix FAQ URL in ``README.md``. (:pull:`2488`)
 
 
 Contributors

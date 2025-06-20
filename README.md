@@ -68,7 +68,7 @@ Documentation
 =============
 
 Full documentation can be found at [readthedocs](http://pvlib-python.readthedocs.io/en/stable/),
-including an [FAQ](https://pvlib-python.readthedocs.io/en/stable/user_guide/extras/faq.html#faq) page.
+including an [FAQ](https://pvlib-python.readthedocs.io/en/stable/user_guide/extras/faq.html) page.
 
 Installation
 ============

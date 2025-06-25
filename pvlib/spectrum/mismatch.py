@@ -754,9 +754,9 @@ def spectral_factor_polo(precipitable_water, airmass_absolute, aod500, aoi,
 
     References
     ----------
-    [1]. Polo, J., Sanz-saiz, C., Development of spectral mismatch models
-    for BIPV applications in building façades Abbreviations : Renew. Energy 245
-    ,122820, 2025.:doi:`10.1016/j.renene.2025.122820`
+    [1] J. Polo and C. Sanz-Saiz, 'Development of spectral mismatch models
+    for BIPV applications in building façades', Renewable Energy, vol. 245,
+    p. 122820, Jun. 2025,:doi:`10.1016/j.renene.2025.122820`
     """
     if module_type is None and coefficients is None:
         raise ValueError('Must provide either `module_type` or `coefficients`')

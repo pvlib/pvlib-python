@@ -780,7 +780,7 @@ def spectral_factor_polo(precipitable_water, airmass_absolute, aod500, aoi,
         'cdte': (0.0021, -0.01, 1.01),
         'monosi': (0, -0.003, 1.0),
     }
-     if module_type is not None:
+    if module_type is not None:
         coeff = _coefficients[module_type]
         c_albedo = c[module_type]
     else:

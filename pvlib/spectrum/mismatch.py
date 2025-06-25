@@ -755,8 +755,8 @@ def spectral_factor_polo(precipitable_water, airmass_absolute, aod500, aoi,
     References
     ----------
     [1]. Polo, J., Sanz-saiz, C., Development of spectral mismatch models
-    for BIPV applications in building façades Abbreviations : Renew. Energy 245, 122820, 2025.
-    :doi:`10.1016/j.renene.2025.122820`
+    for BIPV applications in building façades Abbreviations : Renew. Energy 245
+    ,122820, 2025.:doi:`10.1016/j.renene.2025.122820`
     
     """
     if module_type is None and coefficients is None:
@@ -765,12 +765,12 @@ def spectral_factor_polo(precipitable_water, airmass_absolute, aod500, aoi,
         raise ValueError('Only one of `module_type` and `coefficients` should '
                          'be provided')
     
-    am_aoi=pvlib.atmosphere.get_relative_airmass(aoi)
-    pressure=pvlib.atmosphere.alt2pres(altitude)
-    am90=pvlib.atmosphere.get_absolute_airmass(am_aoi,pressure)
-    Ram=am90/airmass_absolute
+    am_aoi = pvlib.atmosphere.get_relative_airmass(aoi)
+    pressure = pvlib.atmosphere.alt2pres(altitude)
+    am90 = pvlib.atmosphere.get_absolute_airmass(am_aoi,pressure)
+    Ram = am90/airmass_absolute
     
-    _coefficients={}
+    _coefficients = {}
     _coefficients = {
         'cdte': (-0.0009, 46.80, 49.20, -0.87, 0.00041, 0.053),
         'monosi': (0.0027, 10.34, 9.48, 0.307, 0.00077, 0.006),

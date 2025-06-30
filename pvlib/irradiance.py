@@ -754,7 +754,7 @@ def haydavies(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
         Panel azimuth from north. See :term:`surface_azimuth`. [°]
 
     dhi : numeric
-        Diffuse horizontal irradiance. [Wm⁻²] See :term:`dhi`.
+        Diffuse horizontal irradiance, see :term:`dhi`. [Wm⁻²]
 
     dni : numeric
         Direct normal irradiance, see :term:`dni`. [Wm⁻²]
@@ -893,7 +893,7 @@ def reindl(surface_tilt, surface_azimuth, dhi, dni, ghi, dni_extra,
         Panel azimuth from north. See :term:`surface_azimuth`. [°]
 
     dhi : numeric
-        Diffuse horizontal irradiance. [Wm⁻²] See :term:`dhi`.
+        Diffuse horizontal irradiance, see :term:`dhi`. [Wm⁻²]
 
     dni : numeric
         Direct normal irradiance, see :term:`dni`. [Wm⁻²]
@@ -3706,7 +3706,7 @@ def dni(ghi, dhi, zenith, dni_clear=None, clearsky_tolerance=1.1,
 
     zenith : Series
         True (not refraction-corrected) zenith angles, must be >=0° and <=180°.
-        See :term:`solar_zenith`.
+        See :term:`solar_zenith`. [°]
 
     dni_clear : Series, optional
         Clearsky direct normal irradiance. See :term:`dni_clear`. [Wm⁻²]

@@ -21,21 +21,27 @@ Spectral mismatch models
 The spectral mismatch factor is the ratio of a PV device's response under a
 given spectrum to its response under a reference spectrum, typically the
 AM1.5G spectrum. It represents the relative difference in the performance of
-a PV device under a spectrum different from the reference spectrum, and can be used to correct the measured power output of a PV system for spectral effects.
+a PV device under a spectrum different from the reference spectrum, and can be
+used to correct the measured power output of a PV system for spectral effects.
 
 pvlib-python contains several models to estimate the spectral mismatch factor
-using atmospheric variables such as air mass, or system and meteorological
-data such as spectral response and spectral irradiance. Two separate examples
-demonstrating the application of four pvlib-python spectral mismatch models
-are also available: :ref:`sphx_glr_gallery_spectrum_spectral_factor.py` and
-Reference [1]_, the latter of which also contains downloadable spectral
-response and spectral irradiance data.
+using atmospheric variables such as air mass, or calculate it exactly using
+system and meteorological data such as spectral response and spectral
+irradiance. Examples demonstrating the application of several spectral
+mismatch models using pvlib-python are also available:
+:ref:`sphx_glr_gallery_spectrum_spectral_factor.py` and Reference [1]_, the
+latter of which also contains downloadable spectral response and spectral
+irradiance data.
 
-On this page, a comparison of all models available in pvlib-python is
-presented. An extended review of a wider range of models available in the published literature may be found in Reference [2]_.
+On this page, a comparison of spectral mismatch estimation models available in
+pvlib-python is presented. An extended review of a wider range of models
+available in the published literature may be found in Reference [2]_.
 
-The table below summarizes the models currently available in pvlib, their required inputs, cell technologies for which model coefficients have been published, and references. Note that while most models are validated for
-specific cell technologies, the Sandia Array Performance Model (SAPM) is validated for a range of commercial modules.
+The table below summarizes the models currently available in pvlib, their
+required inputs, cell technologies for which model coefficients have been
+published, and references. Note that while most models are validated for
+specific cell technologies, the Sandia Array Performance Model (SAPM) is
+validated for a range of commercial modules.
 
 
 +-----------------------------------------------------+-----------------------------+---------+---------+------+------+------+------------+-----------+

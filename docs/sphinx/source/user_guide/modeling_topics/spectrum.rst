@@ -32,9 +32,8 @@ models available in the published literature may be found in Reference [2]_.
 The table below summarises the models currently available in pvlib, the inputs
 required, cell technologies for which model coefficients have been published, 
 and references. Note that while most models are validated for specific cell
-technologies, the Sandia Array Performance Model (SAPM) and spectral mismatch
-calculation are not specific to cell type; the former is validated for a range
-of commerical module products.
+technologies, the Sandia Array Performance Model (SAPM) is validated for a
+range of commercial modules.
 
 
 +-----------------------------------------------------+-----------------------------+---------+---------+------+------+------+------------+-----------+

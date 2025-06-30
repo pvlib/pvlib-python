@@ -80,7 +80,7 @@ The model operates in the following steps:
    determines the fraction of ground-reflected irradiance that reaches the row
    surface.
 4. Find the fraction of the row surface that is shaded from direct irradiance.
-   Only sky and ground-reflected irradiance reach the the shaded fraction of
+   Only sky and ground-reflected irradiance reach the shaded fraction of
    the row surface.
 5. For the front and rear surfaces, apply the incidence angle modifier to
    the direct irradiance and sum the diffuse sky, diffuse ground, and direct

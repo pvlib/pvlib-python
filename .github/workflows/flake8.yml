@@ -7,10 +7,10 @@ jobs:
     steps:
       - name: Checkout source
         uses: actions/checkout@v4
-      - name: Install Python 3.11
+      - name: Install Python 3.12
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: '3.12'
       - name: Install Flake8 5.0.4 linter
         run: pip install flake8==5.0.4  # use this version for --diff option
       - name: Setup Flake8 output matcher for PR annotations

@@ -710,6 +710,13 @@ def test_Array__infer_temperature_model_params():
     expected = temperature.TEMPERATURE_MODEL_PARAMETERS[
         'pvsyst']['insulated']
     assert expected == array._infer_temperature_model_params()
+    array = pvsystem.Array(mount=FixedMount(0, 180,
+                                            racking_model='semi_integrated'),
+                           module_parameters={},
+                           module_type=None)
+    expected = temperature.TEMPERATURE_MODEL_PARAMETERS[
+        'pvsyst']['semi_integrated']
+    assert expected == array._infer_temperature_model_params()
 
 
 def test_Array__infer_cell_type():

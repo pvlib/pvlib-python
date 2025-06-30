@@ -150,22 +150,22 @@ def test_get_nsrdb_psm4_aggregated_errors(
 
 @pytest.fixture
 def io_input(request):
-    """file-like object for parse_nsrdb_psm4"""
+    """file-like object for read_nsrdb_psm4"""
     with MANUAL_TEST_DATA.open() as f:
         data = f.read()
     obj = StringIO(data)
     return obj
 
 
-def test_parse_nsrdb_psm4(io_input):
-    """test parse_nsrdb_psm4"""
-    data, metadata = psm4.parse_nsrdb_psm4(io_input, map_variables=False)
+def test_read_nsrdb_psm4_buffer(io_input):
+    """test read_nsrdb_psm4 with a file-like object as input"""
+    data, metadata = psm4.read_nsrdb_psm4(io_input, map_variables=False)
     expected = pd.read_csv(YEAR_TEST_DATA)
     assert_psm4_equal(data, metadata, expected)
 
 
-def test_read_nsrdb_psm4():
-    """test read_nsrdb_psm4"""
+def test_read_nsrdb_psm4_path():
+    """test read_nsrdb_psm4 with a file path as input"""
     data, metadata = psm4.read_nsrdb_psm4(MANUAL_TEST_DATA,
                                           map_variables=False)
     expected = pd.read_csv(YEAR_TEST_DATA)

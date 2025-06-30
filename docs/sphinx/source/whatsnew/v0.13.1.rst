@@ -1,0 +1,46 @@
+.. _whatsnew_0_13_1:
+
+
+v0.13.1 (Anticipated September, 2025)
+-------------------------------------
+
+Breaking Changes
+~~~~~~~~~~~~~~~~
+
+
+Deprecations
+~~~~~~~~~~~~
+
+
+Bug fixes
+~~~~~~~~~
+
+
+Enhancements
+~~~~~~~~~~~~
+
+
+Documentation
+~~~~~~~~~~~~~
+
+
+Testing
+~~~~~~~
+
+
+Benchmarking
+~~~~~~~~~~~~
+
+
+Requirements
+~~~~~~~~~~~~
+
+
+Maintenance
+~~~~~~~~~~~
+* Fix FAQ URL in ``README.md``. (:pull:`2488`)
+
+
+Contributors
+~~~~~~~~~~~~
+* Elijah Passmore (:ghuser:`eljpsm`)

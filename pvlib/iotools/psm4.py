@@ -11,6 +11,7 @@ from urllib.parse import urljoin
 import requests
 import pandas as pd
 from json import JSONDecodeError
+from pvlib import tools
 
 NSRDB_API_BASE = "https://developer.nrel.gov/api/nsrdb/v2/solar/"
 PSM4_AGG_ENDPOINT = "nsrdb-GOES-aggregated-v4-0-0-download.csv"
@@ -71,7 +72,7 @@ REQUEST_VARIABLE_MAP = {
 
 
 def get_nsrdb_psm4_aggregated(latitude, longitude, api_key, email,
-                              year='2023', time_step=60,
+                              year, time_step=60,
                               parameters=PARAMETERS, leap_day=True,
                               full_name=PVLIB_PYTHON,
                               affiliation=PVLIB_PYTHON,
@@ -82,7 +83,7 @@ def get_nsrdb_psm4_aggregated(latitude, longitude, api_key, email,
     Aggregated v4 API.
 
     The NSRDB is described in [1]_ and the PSM4 NSRDB GOES Aggregated v4 API is
-    described in [2]_,.
+    described in [2]_.
 
     Parameters
     ----------
@@ -95,7 +96,7 @@ def get_nsrdb_psm4_aggregated(latitude, longitude, api_key, email,
     email : str
         NREL API uses this to automatically communicate messages back
         to the user only if necessary
-    year : str, default '2023'
+    year : int or str
         PSM4 API parameter specifing year (e.g. ``2023``) to download. The
         allowed values update periodically, so consult the NSRDB reference
         below for the current set of options. Called ``names`` in NSRDB API.
@@ -132,7 +133,7 @@ def get_nsrdb_psm4_aggregated(latitude, longitude, api_key, email,
         timeseries data from NREL PSM4
     metadata : dict
         metadata from NREL PSM4 about the record, see
-        :func:`pvlib.iotools.parse_nsrdb_psm4` for fields
+        :func:`pvlib.iotools.read_nsrdb_psm4` for fields
 
     Raises
     ------
@@ -151,19 +152,15 @@ def get_nsrdb_psm4_aggregated(latitude, longitude, api_key, email,
         result in rejected requests.
 
     .. warning:: PSM4 is limited to data found in the NSRDB, please consult
-        the references below for locations with available data. Additionally,
-        querying data with < 30-minute resolution uses a different API endpoint
-        with fewer available fields (see [4]_).
+        the references below for locations with available data.
 
     See Also
     --------
     pvlib.iotools.get_nsrdb_psm4_tmy, pvlib.iotools.get_nsrdb_psm4_conus,
-    pvlib.iotools.get_nsrdb_psm4_full_disc, pvlib.iotools.read_nsrdb_psm4,
-    pvlib.iotools.parse_nsrdb_psm4
+    pvlib.iotools.get_nsrdb_psm4_full_disc, pvlib.iotools.read_nsrdb_psm4
 
     References
     ----------
-
     .. [1] `NREL National Solar Radiation Database (NSRDB)
        <https://nsrdb.nrel.gov/>`_
     .. [2] `NSRDB GOES Aggregated V4.0.0
@@ -175,9 +172,6 @@ def get_nsrdb_psm4_aggregated(latitude, longitude, api_key, email,
     longitude = ('%9.4f' % longitude).strip()
     latitude = ('%8.4f' % latitude).strip()
     # TODO: make format_WKT(object_type, *args) in tools.py
-
-    # convert to string to accomodate integer years being passed in
-    year = str(year)
 
     # convert pvlib names in parameters to PSM4 convention
     parameters = [REQUEST_VARIABLE_MAP.get(a, a) for a in parameters]
@@ -213,7 +207,7 @@ def get_nsrdb_psm4_aggregated(latitude, longitude, api_key, email,
     # the CSV is in the response content as a UTF-8 bytestring
     # to use pandas we need to create a file buffer from the response
     fbuf = io.StringIO(response.content.decode('utf-8'))
-    return parse_nsrdb_psm4(fbuf, map_variables)
+    return read_nsrdb_psm4(fbuf, map_variables)
 
 
 def get_nsrdb_psm4_tmy(latitude, longitude, api_key, email, year='tmy',
@@ -225,7 +219,7 @@ def get_nsrdb_psm4_tmy(latitude, longitude, api_key, email, year='tmy',
     TMY v4 API.
 
     The NSRDB is described in [1]_ and the PSM4 NSRDB GOES TMY v4 API is
-    described in [2]_,.
+    described in [2]_.
 
     Parameters
     ----------
@@ -276,7 +270,7 @@ def get_nsrdb_psm4_tmy(latitude, longitude, api_key, email, year='tmy',
         timeseries data from NREL PSM4
     metadata : dict
         metadata from NREL PSM4 about the record, see
-        :func:`pvlib.iotools.parse_nsrdb_psm4` for fields
+        :func:`pvlib.iotools.read_nsrdb_psm4` for fields
 
     Raises
     ------
@@ -295,19 +289,16 @@ def get_nsrdb_psm4_tmy(latitude, longitude, api_key, email, year='tmy',
         result in rejected requests.
 
     .. warning:: PSM4 is limited to data found in the NSRDB, please consult
-        the references below for locations with available data. Additionally,
-        querying data with < 30-minute resolution uses a different API endpoint
-        with fewer available fields (see [4]_).
+        the references below for locations with available data.
 
     See Also
     --------
     pvlib.iotools.get_nsrdb_psm4_aggregated,
     pvlib.iotools.get_nsrdb_psm4_conus, pvlib.iotools.get_nsrdb_psm4_full_disc,
-    pvlib.iotools.read_nsrdb_psm4,pvlib.iotools.parse_nsrdb_psm4
+    pvlib.iotools.read_nsrdb_psm4
 
     References
     ----------
-
     .. [1] `NREL National Solar Radiation Database (NSRDB)
        <https://nsrdb.nrel.gov/>`_
     .. [2] `NSRDB GOES Tmy V4.0.0
@@ -319,9 +310,6 @@ def get_nsrdb_psm4_tmy(latitude, longitude, api_key, email, year='tmy',
     longitude = ('%9.4f' % longitude).strip()
     latitude = ('%8.4f' % latitude).strip()
     # TODO: make format_WKT(object_type, *args) in tools.py
-
-    # convert to string to accomodate integer years being passed in
-    year = str(year)
 
     # convert pvlib names in parameters to PSM4 convention
     parameters = [REQUEST_VARIABLE_MAP.get(a, a) for a in parameters]
@@ -357,10 +345,10 @@ def get_nsrdb_psm4_tmy(latitude, longitude, api_key, email, year='tmy',
     # the CSV is in the response content as a UTF-8 bytestring
     # to use pandas we need to create a file buffer from the response
     fbuf = io.StringIO(response.content.decode('utf-8'))
-    return parse_nsrdb_psm4(fbuf, map_variables)
+    return read_nsrdb_psm4(fbuf, map_variables)
 
 
-def get_nsrdb_psm4_conus(latitude, longitude, api_key, email, year='2023',
+def get_nsrdb_psm4_conus(latitude, longitude, api_key, email, year,
                          time_step=60, parameters=PARAMETERS, leap_day=True,
                          full_name=PVLIB_PYTHON, affiliation=PVLIB_PYTHON,
                          utc=False, map_variables=True, url=None, timeout=30):
@@ -369,7 +357,7 @@ def get_nsrdb_psm4_conus(latitude, longitude, api_key, email, year='2023',
     v4 API.
 
     The NSRDB is described in [1]_ and the PSM4 NSRDB GOES CONUS v4 API is
-    described in [2]_,.
+    described in [2]_.
 
     Parameters
     ----------
@@ -382,7 +370,7 @@ def get_nsrdb_psm4_conus(latitude, longitude, api_key, email, year='2023',
     email : str
         NREL API uses this to automatically communicate messages back
         to the user only if necessary
-    year : str, default '2023'
+    year : int or str
         PSM4 API parameter specifing year (e.g. ``2023``) to download. The
         allowed values update periodically, so consult the NSRDB reference
         below for the current set of options. Called ``names`` in NSRDB API.
@@ -418,7 +406,7 @@ def get_nsrdb_psm4_conus(latitude, longitude, api_key, email, year='2023',
         timeseries data from NREL PSM4
     metadata : dict
         metadata from NREL PSM4 about the record, see
-        :func:`pvlib.iotools.parse_nsrdb_psm4` for fields
+        :func:`pvlib.iotools.read_nsrdb_psm4` for fields
 
     Raises
     ------
@@ -437,19 +425,16 @@ def get_nsrdb_psm4_conus(latitude, longitude, api_key, email, year='2023',
         result in rejected requests.
 
     .. warning:: PSM4 is limited to data found in the NSRDB, please consult
-        the references below for locations with available data. Additionally,
-        querying data with < 30-minute resolution uses a different API endpoint
-        with fewer available fields (see [4]_).
+        the references below for locations with available data.
 
     See Also
     --------
     pvlib.iotools.get_nsrdb_psm4_aggregated,
     pvlib.iotools.get_nsrdb_psm4_tmy, pvlib.iotools.get_nsrdb_psm4_full_disc,
-    pvlib.iotools.read_nsrdb_psm4, pvlib.iotools.parse_nsrdb_psm4
+    pvlib.iotools.read_nsrdb_psm4
 
     References
     ----------
-
     .. [1] `NREL National Solar Radiation Database (NSRDB)
        <https://nsrdb.nrel.gov/>`_
     .. [2] `NSRDB GOES Conus V4.0.0
@@ -461,9 +446,6 @@ def get_nsrdb_psm4_conus(latitude, longitude, api_key, email, year='2023',
     longitude = ('%9.4f' % longitude).strip()
     latitude = ('%8.4f' % latitude).strip()
     # TODO: make format_WKT(object_type, *args) in tools.py
-
-    # convert to string to accomodate integer years being passed in
-    year = str(year)
 
     # convert pvlib names in parameters to PSM4 convention
     parameters = [REQUEST_VARIABLE_MAP.get(a, a) for a in parameters]
@@ -499,11 +481,11 @@ def get_nsrdb_psm4_conus(latitude, longitude, api_key, email, year='2023',
     # the CSV is in the response content as a UTF-8 bytestring
     # to use pandas we need to create a file buffer from the response
     fbuf = io.StringIO(response.content.decode('utf-8'))
-    return parse_nsrdb_psm4(fbuf, map_variables)
+    return read_nsrdb_psm4(fbuf, map_variables)
 
 
 def get_nsrdb_psm4_full_disc(latitude, longitude, api_key, email,
-                             year='2023', time_step=60,
+                             year, time_step=60,
                              parameters=PARAMETERS, leap_day=True,
                              full_name=PVLIB_PYTHON,
                              affiliation=PVLIB_PYTHON, utc=False,
@@ -513,7 +495,7 @@ def get_nsrdb_psm4_full_disc(latitude, longitude, api_key, email,
     Disc v4 API.
 
     The NSRDB is described in [1]_ and the PSM4 NSRDB GOES Full Disc v4 API is
-    described in [2]_,.
+    described in [2]_.
 
     Parameters
     ----------
@@ -526,7 +508,7 @@ def get_nsrdb_psm4_full_disc(latitude, longitude, api_key, email,
     email : str
         NREL API uses this to automatically communicate messages back
         to the user only if necessary
-    year : str, default '2023'
+    year : int or str
         PSM4 API parameter specifing year (e.g. ``2023``) to download. The
         allowed values update periodically, so consult the NSRDB reference
         below for the current set of options. Called ``names`` in NSRDB API.
@@ -563,7 +545,7 @@ def get_nsrdb_psm4_full_disc(latitude, longitude, api_key, email,
         timeseries data from NREL PSM4
     metadata : dict
         metadata from NREL PSM4 about the record, see
-        :func:`pvlib.iotools.parse_nsrdb_psm4` for fields
+        :func:`pvlib.iotools.read_nsrdb_psm4` for fields
 
     Raises
     ------
@@ -582,19 +564,16 @@ def get_nsrdb_psm4_full_disc(latitude, longitude, api_key, email,
         result in rejected requests.
 
     .. warning:: PSM4 is limited to data found in the NSRDB, please consult
-        the references below for locations with available data. Additionally,
-        querying data with < 30-minute resolution uses a different API endpoint
-        with fewer available fields (see [4]_).
+        the references below for locations with available data.
 
     See Also
     --------
     pvlib.iotools.get_nsrdb_psm4_aggregated,
     pvlib.iotools.get_nsrdb_psm4_tmy, pvlib.iotools.get_nsrdb_psm4_conus,
-    pvlib.iotools.read_nsrdb_psm4, pvlib.iotools.parse_nsrdb_psm4
+    pvlib.iotools.read_nsrdb_psm4
 
     References
     ----------
-
     .. [1] `NREL National Solar Radiation Database (NSRDB)
        <https://nsrdb.nrel.gov/>`_
     .. [2] `NSRDB GOES Full Disc V4.0.0
@@ -606,9 +585,6 @@ def get_nsrdb_psm4_full_disc(latitude, longitude, api_key, email,
     longitude = ('%9.4f' % longitude).strip()
     latitude = ('%8.4f' % latitude).strip()
     # TODO: make format_WKT(object_type, *args) in tools.py
-
-    # convert to string to accomodate integer years being passed in
-    year = str(year)
 
     # convert pvlib names in parameters to PSM4 convention
     parameters = [REQUEST_VARIABLE_MAP.get(a, a) for a in parameters]
@@ -644,19 +620,19 @@ def get_nsrdb_psm4_full_disc(latitude, longitude, api_key, email,
     # the CSV is in the response content as a UTF-8 bytestring
     # to use pandas we need to create a file buffer from the response
     fbuf = io.StringIO(response.content.decode('utf-8'))
-    return parse_nsrdb_psm4(fbuf, map_variables)
+    return read_nsrdb_psm4(fbuf, map_variables)
 
 
-def parse_nsrdb_psm4(fbuf, map_variables=True):
+def read_nsrdb_psm4(filename, map_variables=True):
     """
-    Parse an NSRDB PSM4 weather file (formatted as SAM CSV).
+    Read an NSRDB PSM4 weather file (formatted as SAM CSV).
 
     The NSRDB is described in [1]_ and the SAM CSV format is described in [2]_.
 
     Parameters
     ----------
-    fbuf: file-like object
-        File-like object containing data to read.
+    filename: str, path-like, or buffer
+        Filename or in-memory buffer of a file containing data to read.
     map_variables: bool, default True
         When true, renames columns of the Dataframe to pvlib variable names
         where applicable. See variable :const:`VARIABLE_MAP`.
@@ -726,12 +702,19 @@ def parse_nsrdb_psm4(fbuf, map_variables=True):
     Examples
     --------
     >>> # Read a local PSM4 file:
+    >>> df, metadata = iotools.read_nsrdb_psm4("data.csv")  # doctest: +SKIP
+
+    >>> # Read a file object or an in-memory buffer:
     >>> with open(filename, 'r') as f:  # doctest: +SKIP
-    ...     df, metadata = iotools.parse_nsrdb_psm4(f)  # doctest: +SKIP
+    ...     df, metadata = iotools.read_nsrdb_psm4(f)  # doctest: +SKIP
 
     See Also
     --------
-    pvlib.iotools.read_nsrdb_psm4, pvlib.iotools.get_psm4
+    pvlib.iotools.get_nsrdb_psm4_aggregated
+    pvlib.iotools.get_nsrdb_psm4_tmy
+    pvlib.iotools.get_nsrdb_psm4_conus
+    pvlib.iotools.get_nsrdb_psm4_full_disc
+    pvlib.iotools.read_psm3
 
     References
     ----------
@@ -740,11 +723,26 @@ def parse_nsrdb_psm4(fbuf, map_variables=True):
     .. [2] `Standard Time Series Data File Format
        <https://web.archive.org/web/20170207203107/https://sam.nrel.gov/sites/default/files/content/documents/pdf/wfcsv.pdf>`_
     """
-    # The first 2 lines of the response are headers with metadata
-    metadata_fields = fbuf.readline().split(',')
-    metadata_fields[-1] = metadata_fields[-1].strip()  # strip trailing newline
-    metadata_values = fbuf.readline().split(',')
-    metadata_values[-1] = metadata_values[-1].strip()  # strip trailing newline
+    with tools._file_context_manager(filename) as fbuf:
+        # The first 2 lines of the response are headers with metadata
+        metadata_fields = fbuf.readline().split(',')
+        metadata_values = fbuf.readline().split(',')
+        # get the column names so we can set the dtypes
+        columns = fbuf.readline().split(',')
+        columns[-1] = columns[-1].strip()  # strip trailing newline
+        # Since the header has so many columns, excel saves blank cols in the
+        # data below the header lines.
+        columns = [col for col in columns if col != '']
+        dtypes = dict.fromkeys(columns, float)
+        dtypes.update({'Year': int, 'Month': int, 'Day': int, 'Hour': int,
+                       'Minute': int, 'Cloud Type': int, 'Fill Flag': int})
+
+        data = pd.read_csv(
+            fbuf, header=None, names=columns, usecols=columns, dtype=dtypes,
+            delimiter=',', lineterminator='\n')  # skip carriage returns \r
+
+    metadata_fields[-1] = metadata_fields[-1].strip()  # trailing newline
+    metadata_values[-1] = metadata_values[-1].strip()  # trailing newline
     metadata = dict(zip(metadata_fields, metadata_values))
     # the response is all strings, so set some metadata types to numbers
     metadata['Local Time Zone'] = int(metadata['Local Time Zone'])
@@ -752,22 +750,9 @@ def parse_nsrdb_psm4(fbuf, map_variables=True):
     metadata['Latitude'] = float(metadata['Latitude'])
     metadata['Longitude'] = float(metadata['Longitude'])
     metadata['Elevation'] = int(metadata['Elevation'])
-    # get the column names so we can set the dtypes
-    columns = fbuf.readline().split(',')
-    columns[-1] = columns[-1].strip()  # strip trailing newline
-    # Since the header has so many columns, excel saves blank cols in the
-    # data below the header lines.
-    columns = [col for col in columns if col != '']
-    dtypes = dict.fromkeys(columns, float)  # all floats except datevec
-    dtypes.update(Year=int, Month=int, Day=int, Hour=int, Minute=int)
-    dtypes['Cloud Type'] = int
-    dtypes['Fill Flag'] = int
-    data = pd.read_csv(
-        fbuf, header=None, names=columns, usecols=columns, dtype=dtypes,
-        delimiter=',', lineterminator='\n')  # skip carriage returns \r
+
     # the response 1st 5 columns are a date vector, convert to datetime
-    dtidx = pd.to_datetime(
-        data[['Year', 'Month', 'Day', 'Hour', 'Minute']])
+    dtidx = pd.to_datetime(data[['Year', 'Month', 'Day', 'Hour', 'Minute']])
     # in USA all timezones are integers
     tz = 'Etc/GMT%+d' % -metadata['Time Zone']
     data.index = pd.DatetimeIndex(dtidx).tz_localize(tz)
@@ -779,41 +764,3 @@ def parse_nsrdb_psm4(fbuf, map_variables=True):
         metadata['altitude'] = metadata.pop('Elevation')
 
     return data, metadata
-
-
-def read_nsrdb_psm4(filename, map_variables=True):
-    """
-    Read an NSRDB PSM4 weather file (formatted as SAM CSV).
-
-    The NSRDB is described in [1]_ and the SAM CSV format is described in [2]_.
-
-    Parameters
-    ----------
-    filename: str or path-like
-        Filename of a file containing data to read.
-    map_variables: bool, default True
-        When true, renames columns of the Dataframe to pvlib variable names
-        where applicable. See variable :const:`VARIABLE_MAP`.
-
-    Returns
-    -------
-    data : pandas.DataFrame
-        timeseries data from NREL PSM4
-    metadata : dict
-        metadata from NREL PSM4 about the record, see
-        :func:`pvlib.iotools.parse_nsrdb_psm4` for fields
-
-    See Also
-    --------
-    pvlib.iotools.parse_nsrdb_psm4, pvlib.iotools.get_psm4
-
-    References
-    ----------
-    .. [1] `NREL National Solar Radiation Database (NSRDB)
-       <https://nsrdb.nrel.gov/>`_
-    .. [2] `Standard Time Series Data File Format
-       <https://web.archive.org/web/20170207203107/https://sam.nrel.gov/sites/default/files/content/documents/pdf/wfcsv.pdf>`_
-    """
-    with open(str(filename), 'r') as fbuf:
-        content = parse_nsrdb_psm4(fbuf, map_variables)
-    return content

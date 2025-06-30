@@ -335,7 +335,7 @@ def _check_converge(prevparams, result, vmp, imp, i):
     ----------
     prevparams: Convergence Parameters from the previous Iteration (used to
                 determine Percent Change in values between iterations)
-    result: performacne paramters of the (predicted) single diode fitting,
+    result: performacne parameters of the (predicted) single diode fitting,
             which includes Voc, Vmp, Imp, Pmp and Isc
     vmp: measured values for each IV curve
     imp: measured values for each IV curve

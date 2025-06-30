@@ -22,6 +22,10 @@ Enhancements
 
 Documentation
 ~~~~~~~~~~~~~
+* Update :py:mod:`pvlib.irradiance` module documentation to include links to 
+  parameter definitions from the nomenclature page, ensure consistent
+  parameter description structure, add units to all parameters where required,
+  and other miscellaneous edits. (:issue:`2205`, :issue:`2248`, :pull:`2311`)
 
 
 Testing
@@ -44,3 +48,4 @@ Maintenance
 Contributors
 ~~~~~~~~~~~~
 * Elijah Passmore (:ghuser:`eljpsm`)
+* Ryan Daxini (:ghuser:`rdaxini`)

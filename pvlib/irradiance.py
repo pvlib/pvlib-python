@@ -1812,7 +1812,7 @@ def disc(ghi, solar_zenith, datetime_or_doy, pressure=101325,
 
     min_cos_zenith : numeric, default 0.065
         Minimum value of cos(zenith) to allow when calculating global
-        clearness index ``kt``. Equivalent to zenith = 86.273°.
+        clearness index :math:`k_t`. Equivalent to zenith = 86.273°.
 
     max_zenith : numeric, default 87
         Maximum value of zenith to allow in DNI calculation. DNI will be

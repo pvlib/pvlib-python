@@ -161,7 +161,7 @@ class ModelChainResult:
 
     # per DC array information
     total_irrad: Optional[PerArray[pd.DataFrame]] = field(default=None)
-    """ DataFrame (or tuple of DataFrame, one for each array containing
+    """ DataFrame (or tuple of DataFrame, one for each array) containing
     columns ``'poa_global'``, ``'poa_direct'``, ``'poa_diffuse'``,
     ``poa_sky_diffuse'``, and ``'poa_ground_diffuse'`` (Wm⁻²); see
     :py:func:`~pvlib.irradiance.get_total_irradiance` for details.

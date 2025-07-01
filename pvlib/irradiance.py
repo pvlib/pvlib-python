@@ -1565,8 +1565,8 @@ def ghi_from_poa_driesse_2023(surface_tilt, surface_azimuth,
         true value. Must be positive. [Wm⁻²]
 
     full_output : boolean, default False
-        If full_output is False, only ghi is returned, otherwise the return
-        value is (ghi, converged, niter). (see Returns section for details).
+        If full_output is False, only ``ghi`` is returned, otherwise the return
+        value is (``ghi``, ``converged``, ``niter``). (see Returns section for details).
 
     Returns
     -------
@@ -1645,7 +1645,7 @@ def clearsky_index(ghi, ghi_clear, max_clearsky_index=2.0):
 
     max_clearsky_index : numeric, default 2.0
         Maximum value of the clearsky index. The default, 2.0, allows
-        for over-irradiance events typically seen in sub-hourly data
+        for over-irradiance events typically seen in sub-hourly data.
 
     Returns
     -------
@@ -1741,8 +1741,8 @@ def clearness_index_zenith_independent(clearness_index, airmass,
 
     max_clearness_index : numeric, default 2.0
         Maximum value of the clearness index. The default, 2.0, allows
-        for over-irradiance events typically seen in sub-hourly data
-        NREL's SRRL Fortran code used 0.82 for hourly data
+        for over-irradiance events typically seen in sub-hourly data.
+        NREL's SRRL Fortran code used 0.82 for hourly data.
 
     Returns
     -------

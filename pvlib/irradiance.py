@@ -1698,7 +1698,6 @@ def clearness_index(ghi, solar_zenith, extra_radiation, min_cos_zenith=0.065,
     max_clearness_index : numeric, default 2.0
         Maximum value of the clearness index. The default, 2.0, allows
         for over-irradiance events typically seen in sub-hourly data.
-        NREL's SRRL Fortran code used 0.82 for hourly data.
 
     Returns
     -------

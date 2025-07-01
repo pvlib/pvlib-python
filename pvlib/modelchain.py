@@ -31,7 +31,7 @@ POA_KEYS = ('poa_global', 'poa_direct', 'poa_diffuse')
 # 'cell_temperature' overrides ModelChain.temperature_model and sets
 # ModelChain.cell_temperature to the data. If 'module_temperature' is provided,
 # overrides ModelChain.temperature_model with
-# pvlib.temperature.sapm_celL_from_module
+# pvlib.temperature.sapm_cell_from_module
 TEMPERATURE_KEYS = ('module_temperature', 'cell_temperature')
 
 DATA_KEYS = WEATHER_KEYS + POA_KEYS + TEMPERATURE_KEYS
@@ -46,7 +46,7 @@ DATA_KEYS = WEATHER_KEYS + POA_KEYS + TEMPERATURE_KEYS
 # for Flat-Plate Photovoltaic Arrays. SAND85-0330. Albuquerque, NM:
 # Sandia National Laboratories. Accessed September 3, 2013:
 # http://prod.sandia.gov/techlib/access-control.cgi/1985/850330.pdf
-# pvlib python does not implement that model, so use the SAPM instead.
+# pvlib-python does not implement that model, so it uses the SAPM instead.
 PVWATTS_CONFIG = dict(
     dc_model='pvwatts', ac_model='pvwatts', losses_model='pvwatts',
     transposition_model='perez', aoi_model='physical',
@@ -84,7 +84,7 @@ def get_orientation(strategy, **kwargs):
         surface_tilt = 0
     else:
         raise ValueError('invalid orientation strategy. strategy must '
-                         'be one of south_at_latitude, flat,')
+                         'be one of south_at_latitude_tilt, flat,')
 
     return surface_tilt, surface_azimuth
 
@@ -190,12 +190,12 @@ class ModelChainResult:
 
     cell_temperature: Optional[PerArray[pd.Series]] = field(default=None)
     """Series (or tuple of Series, one for each array) containing cell
-    temperature (C).
+    temperature (°C).
     """
 
     effective_irradiance: Optional[PerArray[pd.Series]] = field(default=None)
     """Series (or tuple of Series, one for each array) containing effective
-    irradiance (W/m2) which is total plane-of-array irradiance adjusted for
+    irradiance (Wm⁻²) which is total plane-of-array irradiance adjusted for
     reflections and spectral content.
     """
 
@@ -215,12 +215,12 @@ class ModelChainResult:
 
     dc_ohmic_losses: Optional[PerArray[pd.Series]] = field(default=None)
     """Series (or tuple of Series, one for each array) containing DC ohmic
-    loss (W) calculated by ``ModelChain.dc_ohmic_model``.
+    losses (W) calculated by ``ModelChain.dc_ohmic_model``.
     """
 
     # copies of input data, for user convenience
     weather: Optional[PerArray[pd.DataFrame]] = None
-    """DataFrame (or tuple of DataFrame, one for each array) contains a
+    """DataFrame (or tuple of DataFrame, one for each array) containing a
     copy of the input weather data.
     """
 

@@ -3782,8 +3782,8 @@ def complete_irradiance(solar_zenith,
 
     ghi : Series, optional
         Pandas series of dni data [Wm⁻²], with datetime index. Must have the
-        same datetime index as ``dni``, ``dhi``, and ``zenith``, when available.
-        See :term:`ghi`. [Wm⁻²]
+        same datetime index as ``dni``, ``dhi``, and ``zenith``, when
+        available. See :term:`ghi`. [Wm⁻²]
 
     dhi : Series, optional
         Diffuse horizontal irradiance, with datetime index. Must have the
@@ -3792,8 +3792,8 @@ def complete_irradiance(solar_zenith,
 
     dni : Series, optional
         Pandas series of dni data [Wm⁻²], with datetime index. Must have the
-        same datetime index as ``ghi``, ``dhi``, and ``zenith``, when available.
-        See :term:`dni`. [Wm⁻²]
+        same datetime index as ``ghi``, ``dhi``, and ``zenith``, when
+        available. See :term:`dni`. [Wm⁻²]
 
     dni_clear : Series, optional
         Pandas series of clearsky dni data [Wm⁻²]. Must have the same datetime

@@ -4,9 +4,18 @@ import pandas as pd
 from pvlib.tools import cosd, sind, tand, acosd, asind
 from pvlib import irradiance
 from pvlib import shading
+from pvlib._deprecation import renamed_kwarg_warning
 
 
-def singleaxis(apparent_zenith, apparent_azimuth,
+@renamed_kwarg_warning(
+    since='0.13.1',
+    old_param_name='apparent_zenith',
+    new_param_name='solar_zenith')
+@renamed_kwarg_warning(
+    since='0.13.1',
+    old_param_name='apparent_azimuth',
+    new_param_name='solar_azimuth')
+def singleaxis(solar_zenith, solar_azimuth,
                axis_tilt=0, axis_azimuth=0, max_angle=90,
                backtrack=True, gcr=2.0/7.0, cross_axis_tilt=0):
     """
@@ -30,10 +39,10 @@ def singleaxis(apparent_zenith, apparent_azimuth,
 
     Parameters
     ----------
-    apparent_zenith : float, 1d array, or Series
+    solar_zenith : float, 1d array, or Series
         Solar apparent zenith angles in decimal degrees.
 
-    apparent_azimuth : float, 1d array, or Series
+    solar_azimuth : float, 1d array, or Series
         Solar apparent azimuth angles in decimal degrees.
 
     axis_tilt : float, default 0
@@ -117,16 +126,16 @@ def singleaxis(apparent_zenith, apparent_azimuth,
     # MATLAB to Python conversion by
     # Will Holmgren (@wholmgren), U. Arizona. March, 2015.
 
-    if isinstance(apparent_zenith, pd.Series):
-        index = apparent_zenith.index
+    if isinstance(solar_zenith, pd.Series):
+        index = solar_zenith.index
     else:
         index = None
 
     # convert scalars to arrays
-    apparent_azimuth = np.atleast_1d(apparent_azimuth)
-    apparent_zenith = np.atleast_1d(apparent_zenith)
+    solar_azimuth = np.atleast_1d(solar_azimuth)
+    solar_zenith = np.atleast_1d(solar_zenith)
 
-    if apparent_azimuth.ndim > 1 or apparent_zenith.ndim > 1:
+    if solar_azimuth.ndim > 1 or solar_zenith.ndim > 1:
         raise ValueError('Input dimensions must not exceed 1')
 
     # The ideal tracking angle, omega_ideal, is the rotation to place the sun
@@ -141,12 +150,12 @@ def singleaxis(apparent_zenith, apparent_azimuth,
     omega_ideal = shading.projected_solar_zenith_angle(
         axis_tilt=axis_tilt,
         axis_azimuth=axis_azimuth,
-        solar_zenith=apparent_zenith,
-        solar_azimuth=apparent_azimuth,
+        solar_zenith=solar_zenith,
+        solar_azimuth=solar_azimuth,
     )
 
     # filter for sun above panel horizon
-    zen_gt_90 = apparent_zenith > 90
+    zen_gt_90 = solar_zenith > 90
     omega_ideal[zen_gt_90] = np.nan
 
     # Account for backtracking
@@ -191,7 +200,7 @@ def singleaxis(apparent_zenith, apparent_azimuth,
     surface_tilt = surface['surface_tilt']
     surface_azimuth = surface['surface_azimuth']
     aoi = irradiance.aoi(surface_tilt, surface_azimuth,
-                         apparent_zenith, apparent_azimuth)
+                         solar_zenith, solar_azimuth)
 
     # Bundle DataFrame for return values and filter for sun below horizon.
     out = {'tracker_theta': tracker_theta, 'aoi': aoi,

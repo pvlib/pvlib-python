@@ -48,4 +48,4 @@ Maintenance
 Contributors
 ~~~~~~~~~~~~
 * Elijah Passmore (:ghuser:`eljpsm`)
-* Ryan Daxini (:ghuser:`rdaxini`)
+* Rajiv Daxini (:ghuser:`rdaxini`)

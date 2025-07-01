@@ -1566,7 +1566,8 @@ def ghi_from_poa_driesse_2023(surface_tilt, surface_azimuth,
 
     full_output : boolean, default False
         If full_output is False, only ``ghi`` is returned, otherwise the return
-        value is (``ghi``, ``converged``, ``niter``). (see Returns section for details).
+        value is (``ghi``, ``converged``, ``niter``).
+        (see Returns section for details).
 
     Returns
     -------

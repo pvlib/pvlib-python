@@ -1786,7 +1786,7 @@ def test_invalid_models(model, sapm_dc_snl_ac_system, location):
 
 
 def test_get_orientation_invalid_strategy():
-    with pytest.raises(ValueError, 
+    with pytest.raises(ValueError,
                        match='invalid orientation strategy. strategy must '
                              'be one of south_at_latitude_tilt, flat,'):
         modelchain.get_orientation('invalid_strategy')

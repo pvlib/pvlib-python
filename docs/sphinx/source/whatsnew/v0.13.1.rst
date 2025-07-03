@@ -10,6 +10,8 @@ Breaking Changes
 
 Deprecations
 ~~~~~~~~~~~~
+* Deprecate :py:func:`~pvlib.modelchain.get_orientation`. Removal scheduled for
+  0.14.0. (:pull:`2691`)
 
 
 Bug fixes
@@ -26,9 +28,7 @@ Documentation
 
 Testing
 ~~~~~~~
-* Update test for :py:func:`~pvlib.modelchain.get_orientation` to check
-  whether the correct error message is raised when an invalid strategy is
-  provided. (:issue:`2492`, :pull:`2691`)
+
 
 Benchmarking
 ~~~~~~~~~~~~
@@ -46,3 +46,4 @@ Maintenance
 Contributors
 ~~~~~~~~~~~~
 * Elijah Passmore (:ghuser:`eljpsm`)
+* Rajiv Daxini (:ghuser:`RDaxini`)

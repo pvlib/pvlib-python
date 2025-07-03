@@ -18,6 +18,8 @@ import pvlib.irradiance  # avoid name conflict with full import
 from pvlib.pvsystem import _DC_MODEL_PARAMS
 from pvlib.tools import _build_kwargs
 
+from pvlib._deprecation import deprecated
+
 # keys that are used to detect input data and assign data to appropriate
 # ModelChain attribute
 # for ModelChain.weather
@@ -59,6 +61,13 @@ SAPM_CONFIG = dict(
 )
 
 
+@deprecated(
+    since="0.13",
+    removal="0.14",
+    name="pvlib.modelchain.get_orientation",
+    alternative=None,
+    addendum=None,
+)
 def get_orientation(strategy, **kwargs):
     """
     Determine a PV system's surface tilt and surface azimuth

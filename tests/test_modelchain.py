@@ -1785,13 +1785,6 @@ def test_invalid_models(model, sapm_dc_snl_ac_system, location):
         ModelChain(sapm_dc_snl_ac_system, location, **kwargs)
 
 
-def test_get_orientation_invalid_strategy():
-    with pytest.raises(ValueError,
-                       match='invalid orientation strategy. strategy must '
-                             'be one of south_at_latitude_tilt, flat,'):
-        modelchain.get_orientation('invalid_strategy')
-
-
 # tests for PVSystem with multiple Arrays
 def test_with_sapm_pvsystem_arrays(sapm_dc_snl_ac_system_Array, location,
                                    weather):

@@ -115,12 +115,3 @@ on the information in the associated :py:class:`~pvsystem.PVSystem` object.
    modelchain.ModelChain.infer_temperature_model
    modelchain.ModelChain.infer_losses_model
 
-Functions
----------
-
-Functions for power modeling.
-
-.. autosummary::
-   :toctree: generated/
-
-   modelchain.get_orientation

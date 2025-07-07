@@ -11,7 +11,7 @@ Breaking Changes
 Deprecations
 ~~~~~~~~~~~~
 * Deprecate :py:func:`~pvlib.modelchain.get_orientation`. Removal scheduled for
-  0.14.0. (:pull:`2691`)
+  ``v0.14.0``. (:pull:`2691`)
 
 
 Bug fixes

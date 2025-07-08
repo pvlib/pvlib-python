@@ -162,12 +162,11 @@ def bishop88(diode_voltage, photocurrent, saturation_current,
     # calculate temporary values to simplify calculations
     v_star = diode_voltage / nNsVth  # non-dimensional diode voltage
     g_sh = 1.0 / resistance_shunt  # conductance
-    if breakdown_factor > 0:  # reverse bias is considered
-        brk_term = 1 - diode_voltage / breakdown_voltage
-        brk_pwr = np.power(brk_term, -breakdown_exp)
-        i_breakdown = breakdown_factor * diode_voltage * g_sh * brk_pwr
-    else:
-        i_breakdown = 0.
+
+    brk_term = 1 - diode_voltage / breakdown_voltage
+    brk_pwr = np.power(brk_term, -breakdown_exp)
+    i_breakdown = breakdown_factor * diode_voltage * g_sh * brk_pwr
+
     i = (photocurrent - saturation_current * np.expm1(v_star)  # noqa: W503
          - diode_voltage * g_sh - i_recomb - i_breakdown)   # noqa: W503
     v = diode_voltage - i * resistance_series
@@ -177,18 +176,14 @@ def bishop88(diode_voltage, photocurrent, saturation_current,
         grad_i_recomb = np.where(is_recomb, i_recomb / v_recomb, 0)
         grad_2i_recomb = np.where(is_recomb, 2 * grad_i_recomb / v_recomb, 0)
         g_diode = saturation_current * np.exp(v_star) / nNsVth  # conductance
-        if breakdown_factor > 0:  # reverse bias is considered
-            brk_pwr_1 = np.power(brk_term, -breakdown_exp - 1)
-            brk_pwr_2 = np.power(brk_term, -breakdown_exp - 2)
-            brk_fctr = breakdown_factor * g_sh
-            grad_i_brk = brk_fctr * (brk_pwr + diode_voltage *
-                                     -breakdown_exp * brk_pwr_1)
-            grad2i_brk = (brk_fctr * -breakdown_exp        # noqa: W503
-                          * (2 * brk_pwr_1 + diode_voltage   # noqa: W503
-                             * (-breakdown_exp - 1) * brk_pwr_2))  # noqa: W503
-        else:
-            grad_i_brk = 0.
-            grad2i_brk = 0.
+        brk_pwr_1 = np.power(brk_term, -breakdown_exp - 1)
+        brk_pwr_2 = np.power(brk_term, -breakdown_exp - 2)
+        brk_fctr = breakdown_factor * g_sh
+        grad_i_brk = brk_fctr * (brk_pwr + diode_voltage *
+                                 -breakdown_exp * brk_pwr_1)
+        grad2i_brk = (brk_fctr * -breakdown_exp        # noqa: W503
+                      * (2 * brk_pwr_1 + diode_voltage   # noqa: W503
+                         * (-breakdown_exp - 1) * brk_pwr_2))  # noqa: W503
         grad_i = -g_diode - g_sh - grad_i_recomb - grad_i_brk  # di/dvd
         grad_v = 1.0 - grad_i * resistance_series  # dv/dvd
         # dp/dv = d(iv)/dv = v * di/dv + i
@@ -247,12 +242,14 @@ def bishop88_i_from_v(voltage, photocurrent, saturation_current,
     breakdown_exp : float, default 3.28
         avalanche breakdown exponent :math:`m` [unitless]
     method : str, default 'newton'
-       Either ``'newton'`` or ``'brentq'``. ''method'' must be ``'newton'``
+       Either ``'newton'``, ``'brentq'``, or ``'chandrupatla'`` (requires
+       scipy 1.15 or greater). ''method'' must be ``'newton'``
        if ``breakdown_factor`` is not 0.
     method_kwargs : dict, optional
         Keyword arguments passed to root finder method. See
-        :py:func:`scipy:scipy.optimize.brentq` and
-        :py:func:`scipy:scipy.optimize.newton` parameters.
+        :py:func:`scipy:scipy.optimize.brentq`,
+        :py:func:`scipy:scipy.optimize.newton`, and
+        :py:func:`scipy:scipy.optimize.elementwise.find_root` for parameters.
         ``'full_output': True`` is allowed, and ``optimizer_output`` would be
         returned. See examples section.
 
@@ -333,6 +330,30 @@ def bishop88_i_from_v(voltage, photocurrent, saturation_current,
         vd = newton(func=lambda x, *a: fv(x, voltage, *a), x0=x0,
                     fprime=lambda x, *a: bishop88(x, *a, gradients=True)[4],
                     args=args, **method_kwargs)
+    elif method == 'chandrupatla':
+        try:
+            from scipy.optimize.elementwise import find_root
+        except ModuleNotFoundError as e:
+            # TODO remove this when our minimum scipy version is >=1.15
+            msg = (
+                "method='chandrupatla' requires scipy v1.15 or greater. "
+                "Select another method, or update your version of scipy. "
+                f"({str(e)})"
+            )
+            raise ImportError(msg)
+
+        voc_est = estimate_voc(photocurrent, saturation_current, nNsVth)
+        shape = _shape_of_max_size(voltage, voc_est)
+        vlo = np.zeros(shape)
+        vhi = np.full(shape, voc_est)
+        bounds = (vlo, vhi)
+        kwargs_trimmed = method_kwargs.copy()
+        kwargs_trimmed.pop("full_output", None)  # not valid for find_root
+
+        result = find_root(fv, bounds, args=(voltage, *args), **kwargs_trimmed)
+        vd = result.x
+        if method_kwargs.get('full_output'):
+            vd = (vd, result)  # mimic the other methods
     else:
         raise NotImplementedError("Method '%s' isn't implemented" % method)
 
@@ -388,7 +409,8 @@ def bishop88_v_from_i(current, photocurrent, saturation_current,
     breakdown_exp : float, default 3.28
         avalanche breakdown exponent :math:`m` [unitless]
     method : str, default 'newton'
-       Either ``'newton'`` or ``'brentq'``. ''method'' must be ``'newton'``
+       Either ``'newton'``, ``'brentq'``, or ``'chandrupatla'`` (requires
+       scipy 1.15 or greater). ''method'' must be ``'newton'``
        if ``breakdown_factor`` is not 0.
     method_kwargs : dict, optional
         Keyword arguments passed to root finder method. See
@@ -474,6 +496,29 @@ def bishop88_v_from_i(current, photocurrent, saturation_current,
         vd = newton(func=lambda x, *a: fi(x, current, *a), x0=x0,
                     fprime=lambda x, *a: bishop88(x, *a, gradients=True)[3],
                     args=args, **method_kwargs)
+    elif method == 'chandrupatla':
+        try:
+            from scipy.optimize.elementwise import find_root
+        except ModuleNotFoundError as e:
+            # TODO remove this when our minimum scipy version is >=1.15
+            msg = (
+                "method='chandrupatla' requires scipy v1.15 or greater. "
+                "Select another method, or update your version of scipy. "
+                f"({str(e)})"
+            )
+            raise ImportError(msg)
+
+        shape = _shape_of_max_size(current, voc_est)
+        vlo = np.zeros(shape)
+        vhi = np.full(shape, voc_est)
+        bounds = (vlo, vhi)
+        kwargs_trimmed = method_kwargs.copy()
+        kwargs_trimmed.pop("full_output", None)  # not valid for find_root
+
+        result = find_root(fi, bounds, args=(current, *args), **kwargs_trimmed)
+        vd = result.x
+        if method_kwargs.get('full_output'):
+            vd = (vd, result)  # mimic the other methods
     else:
         raise NotImplementedError("Method '%s' isn't implemented" % method)
 
@@ -526,7 +571,8 @@ def bishop88_mpp(photocurrent, saturation_current, resistance_series,
     breakdown_exp : numeric, default 3.28
         avalanche breakdown exponent :math:`m` [unitless]
     method : str, default 'newton'
-       Either ``'newton'`` or ``'brentq'``. ''method'' must be ``'newton'``
+       Either ``'newton'``, ``'brentq'``, or ``'chandrupatla'`` (requires
+       scipy 1.15 or greater). ''method'' must be ``'newton'``
        if ``breakdown_factor`` is not 0.
     method_kwargs : dict, optional
         Keyword arguments passed to root finder method. See
@@ -611,6 +657,31 @@ def bishop88_mpp(photocurrent, saturation_current, resistance_series,
         vd = newton(func=fmpp, x0=x0,
                     fprime=lambda x, *a: bishop88(x, *a, gradients=True)[7],
                     args=args, **method_kwargs)
+    elif method == 'chandrupatla':
+        try:
+            from scipy.optimize.elementwise import find_root
+        except ModuleNotFoundError as e:
+            # TODO remove this when our minimum scipy version is >=1.15
+            msg = (
+                "method='chandrupatla' requires scipy v1.15 or greater. "
+                "Select another method, or update your version of scipy. "
+                f"({str(e)})"
+            )
+            raise ImportError(msg)
+
+        vlo = np.zeros_like(photocurrent)
+        vhi = np.full_like(photocurrent, voc_est)
+        kwargs_trimmed = method_kwargs.copy()
+        kwargs_trimmed.pop("full_output", None)  # not valid for find_root
+ 
+        result = find_root(fmpp,
+                           (vlo, vhi),
+                           args=args,
+                           **kwargs_trimmed)
+        vd = result.x
+        if method_kwargs.get('full_output'):
+            vd = (vd, result)  # mimic the other methods
+
     else:
         raise NotImplementedError("Method '%s' isn't implemented" % method)
 

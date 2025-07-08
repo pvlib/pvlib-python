@@ -1371,7 +1371,8 @@ def fixture_i_from_v(request):
 
 
 @pytest.mark.parametrize(
-    'method, atol', [('lambertw', 1e-11), ('brentq', 1e-11), ('newton', 1e-11)]
+    'method, atol', [('lambertw', 1e-11), ('brentq', 1e-11), ('newton', 1e-11),
+                     ('chandrupatla', 1e-11)]
 )
 def test_i_from_v(fixture_i_from_v, method, atol):
     # Solution set loaded from fixture
@@ -1407,6 +1408,9 @@ def test_i_from_v_size():
         pvsystem.i_from_v([7.5] * 3, 7., 6e-7, [0.1] * 2, 20, 0.5,
                           method='brentq')
     with pytest.raises(ValueError):
+        pvsystem.i_from_v([7.5] * 3, 7., 6e-7, [0.1] * 2, 20, 0.5,
+                          method='chandrupatla')
+    with pytest.raises(ValueError):
         pvsystem.i_from_v([7.5] * 3, np.array([7., 7.]), 6e-7, 0.1, 20, 0.5,
                           method='newton')
 
@@ -1417,6 +1421,8 @@ def test_v_from_i_size():
     with pytest.raises(ValueError):
         pvsystem.v_from_i([3.] * 3, 7., 6e-7, [0.1] * 2, 20, 0.5,
                           method='brentq')
+        pvsystem.v_from_i([3.] * 3, 7., 6e-7, [0.1] * 2, 20, 0.5,
+                          method='chandrupatla')
     with pytest.raises(ValueError):
         pvsystem.v_from_i([3.] * 3, np.array([7., 7.]), 6e-7, [0.1], 20, 0.5,
                           method='newton')
@@ -1437,7 +1443,8 @@ def test_mpp_floats():
         assert np.isclose(v, expected[k])
 
 
-def test_mpp_recombination():
+@pytest.mark.parametrize('method', ['brentq', 'newton', 'chandrupatla'])
+def test_mpp_recombination(method):
     """test max_power_point"""
     pvsyst_fs_495 = get_pvsyst_fs_495()
     IL, I0, Rs, Rsh, nNsVth = pvsystem.calcparams_pvsyst(
@@ -1455,7 +1462,7 @@ def test_mpp_recombination():
         IL, I0, Rs, Rsh, nNsVth,
         d2mutau=pvsyst_fs_495['d2mutau'],
         NsVbi=VOLTAGE_BUILTIN*pvsyst_fs_495['cells_in_series'],
-        method='brentq')
+        method=method)
     expected_imp = pvsyst_fs_495['I_mp_ref']
     expected_vmp = pvsyst_fs_495['V_mp_ref']
     expected_pmp = expected_imp*expected_vmp
@@ -1465,44 +1472,33 @@ def test_mpp_recombination():
     assert isinstance(out, dict)
     for k, v in out.items():
         assert np.isclose(v, expected[k], 0.01)
-    out = pvsystem.max_power_point(
-        IL, I0, Rs, Rsh, nNsVth,
-        d2mutau=pvsyst_fs_495['d2mutau'],
-        NsVbi=VOLTAGE_BUILTIN*pvsyst_fs_495['cells_in_series'],
-        method='newton')
-    for k, v in out.items():
-        assert np.isclose(v, expected[k], 0.01)
 
 
-def test_mpp_array():
+@pytest.mark.parametrize('method', ['brentq', 'newton', 'chandrupatla'])
+def test_mpp_array(method):
     """test max_power_point"""
     IL, I0, Rs, Rsh, nNsVth = (np.array([7, 7]), 6e-7, .1, 20, .5)
-    out = pvsystem.max_power_point(IL, I0, Rs, Rsh, nNsVth, method='brentq')
+    out = pvsystem.max_power_point(IL, I0, Rs, Rsh, nNsVth, method=method)
     expected = {'i_mp': [6.1362673597376753] * 2,
                 'v_mp': [6.2243393757884284] * 2,
                 'p_mp': [38.194210547580511] * 2}
     assert isinstance(out, dict)
     for k, v in out.items():
         assert np.allclose(v, expected[k])
-    out = pvsystem.max_power_point(IL, I0, Rs, Rsh, nNsVth, method='newton')
-    for k, v in out.items():
-        assert np.allclose(v, expected[k])
 
 
-def test_mpp_series():
+@pytest.mark.parametrize('method', ['brentq', 'newton', 'chandrupatla'])
+def test_mpp_series(method):
     """test max_power_point"""
     idx = ['2008-02-17T11:30:00-0800', '2008-02-17T12:30:00-0800']
     IL, I0, Rs, Rsh, nNsVth = (np.array([7, 7]), 6e-7, .1, 20, .5)
     IL = pd.Series(IL, index=idx)
-    out = pvsystem.max_power_point(IL, I0, Rs, Rsh, nNsVth, method='brentq')
+    out = pvsystem.max_power_point(IL, I0, Rs, Rsh, nNsVth, method=method)
     expected = pd.DataFrame({'i_mp': [6.1362673597376753] * 2,
                              'v_mp': [6.2243393757884284] * 2,
                              'p_mp': [38.194210547580511] * 2},
                             index=idx)
     assert isinstance(out, pd.DataFrame)
-    for k, v in out.items():
-        assert np.allclose(v, expected[k])
-    out = pvsystem.max_power_point(IL, I0, Rs, Rsh, nNsVth, method='newton')
     for k, v in out.items():
         assert np.allclose(v, expected[k])
 

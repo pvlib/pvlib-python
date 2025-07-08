@@ -1421,6 +1421,7 @@ def test_v_from_i_size():
     with pytest.raises(ValueError):
         pvsystem.v_from_i([3.] * 3, 7., 6e-7, [0.1] * 2, 20, 0.5,
                           method='brentq')
+    with pytest.raises(ValueError):
         pvsystem.v_from_i([3.] * 3, 7., 6e-7, [0.1] * 2, 20, 0.5,
                           method='chandrupatla')
     with pytest.raises(ValueError):

@@ -18,7 +18,14 @@ Bug fixes
 
 Enhancements
 ~~~~~~~~~~~~
-
+* Added ``method='chandrupatla'`` to :py:func:`pvlib.pvsystem.singlediode`,
+  :py:func:`~pvlib.pvsystem.i_from_v`,
+  :py:func:`~pvlib.pvsystem.v_from_i`,
+  :py:func:`~pvlib.pvsystem.max_power_point`,
+  :py:func:`~pvlib.singlediode.bishop88`,
+  :py:func:`~pvlib.singlediode.bishop88_v_from_i`, and
+  :py:func:`~pvlib.singlediode.bishop88_i_from_v`. (:issue:`2497`, :pull:`2498`)
+  
 
 Documentation
 ~~~~~~~~~~~~~
@@ -44,3 +51,4 @@ Maintenance
 Contributors
 ~~~~~~~~~~~~
 * Elijah Passmore (:ghuser:`eljpsm`)
+* Kevin Anderson (:ghuser:`kandersolar`)

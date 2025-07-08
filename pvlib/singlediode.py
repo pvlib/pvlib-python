@@ -109,13 +109,13 @@ def bishop88(diode_voltage, photocurrent, saturation_current,
         (a-Si) modules that is the product of the PV module number of series
         cells :math:`N_{s}` and the builtin voltage :math:`V_{bi}` of the
         intrinsic layer. [V].
-    breakdown_factor : float, default 0
+    breakdown_factor : numeric, default 0
         fraction of ohmic current involved in avalanche breakdown :math:`a`.
         Default of 0 excludes the reverse bias term from the model. [unitless]
-    breakdown_voltage : float, default -5.5
+    breakdown_voltage : numeric, default -5.5
         reverse breakdown voltage of the photovoltaic junction :math:`V_{br}`
         [V]
-    breakdown_exp : float, default 3.28
+    breakdown_exp : numeric, default 3.28
         avalanche breakdown exponent :math:`m` [unitless]
     gradients : bool
         False returns only I, V, and P. True also returns gradients

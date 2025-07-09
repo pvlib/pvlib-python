@@ -37,7 +37,7 @@ def pvefficiency_adr(effective_irradiance, temp_cell,
         the reference conditions. [unitless]
 
     k_d : numeric, negative
-        “Dark irradiance” or diode coefficient which influences the voltage
+        "Dark irradiance" or diode coefficient which influences the voltage
         increase with irradiance. [unitless]
 
     tc_d : numeric
@@ -242,7 +242,45 @@ def _infer_k_huld(cell_type, pdc0):
     return k
 
 
-def huld(effective_irradiance, temp_mod, pdc0, k=None, cell_type=None):
+def _infer_k_huld_eu_jrc(cell_type, pdc0):
+    """
+    Get the EU JRC updated coefficients for the Huld model.
+    
+    Parameters
+    ----------
+    cell_type : str
+        Must be one of 'csi', 'cis', or 'cdte'
+    pdc0 : numeric
+        Power of the modules at reference conditions [W]
+        
+    Returns
+    -------
+    tuple
+        The six coefficients (k1-k6) for the Huld model, scaled by pdc0
+        
+    Notes
+    -----
+    These coefficients are from the EU JRC paper [1]_. The coefficients are
+    for the version of Huld's equation that has factored Pdc0 out of the
+    polynomial, so they are multiplied by pdc0 before being returned.
+    
+    References
+    ----------
+    .. [1] EU JRC paper, "Updated coefficients for the Huld model",
+           https://doi.org/10.1002/pip.3926
+    """
+    # Updated coefficients from EU JRC paper
+    huld_params = {'csi': (-0.017162, -0.040289, -0.004681, 0.000148,
+                           0.000169, 0.000005),
+                   'cis': (-0.005521, -0.038576, -0.003711, -0.000901,
+                           -0.001251, 0.000001),
+                   'cdte': (-0.046477, -0.072509, -0.002252, 0.000275,
+                            0.000158, -0.000006)}
+    k = tuple([x*pdc0 for x in huld_params[cell_type.lower()]])
+    return k
+
+
+def huld(effective_irradiance, temp_mod, pdc0, k=None, cell_type=None, use_eu_jrc=False):
     r"""
     Power (DC) using the Huld model.
 
@@ -274,6 +312,9 @@ def huld(effective_irradiance, temp_mod, pdc0, k=None, cell_type=None):
     cell_type : str, optional
         If provided, must be one of ``'cSi'``, ``'CIS'``, or ``'CdTe'``.
         Used to look up default values for ``k`` if ``k`` is not specified.
+    use_eu_jrc : bool, default False
+        If True, use the updated coefficients from the EU JRC paper [2]_.
+        Only used if ``k`` is not provided and ``cell_type`` is specified.
 
     Returns
     -------
@@ -332,10 +373,15 @@ def huld(effective_irradiance, temp_mod, pdc0, k=None, cell_type=None):
            E. Dunlop. A power-rating model for crystalline silicon PV modules.
            Solar Energy Materials and Solar Cells 95, (2011), pp. 3359-3369.
            :doi:`10.1016/j.solmat.2011.07.026`.
+    .. [2] EU JRC paper, "Updated coefficients for the Huld model",
+           https://doi.org/10.1002/pip.3926
     """
     if k is None:
         if cell_type is not None:
-            k = _infer_k_huld(cell_type, pdc0)
+            if use_eu_jrc:
+                k = _infer_k_huld_eu_jrc(cell_type, pdc0)
+            else:
+                k = _infer_k_huld(cell_type, pdc0)
         else:
             raise ValueError('Either k or cell_type must be specified')
 

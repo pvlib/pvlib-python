@@ -9,10 +9,6 @@ from pvlib._deprecation import renamed_kwarg_warning
 
 @renamed_kwarg_warning(
     since='0.13.1',
-    old_param_name='apparent_zenith',
-    new_param_name='solar_zenith')
-@renamed_kwarg_warning(
-    since='0.13.1',
     old_param_name='apparent_azimuth',
     new_param_name='solar_azimuth')
 def singleaxis(solar_zenith, solar_azimuth,
@@ -39,7 +35,7 @@ def singleaxis(solar_zenith, solar_azimuth,
 
     Parameters
     ----------
-    solar_zenith : float, 1d array, or Series
+    apparent_zenith : float, 1d array, or Series
         Solar apparent zenith angles in decimal degrees.
 
     solar_azimuth : float, 1d array, or Series
@@ -126,14 +122,14 @@ def singleaxis(solar_zenith, solar_azimuth,
     # MATLAB to Python conversion by
     # Will Holmgren (@wholmgren), U. Arizona. March, 2015.
 
-    if isinstance(solar_zenith, pd.Series):
-        index = solar_zenith.index
+    if isinstance(apparent_zenith, pd.Series):
+        index = apparent_zenith.index
     else:
         index = None
 
     # convert scalars to arrays
     solar_azimuth = np.atleast_1d(solar_azimuth)
-    solar_zenith = np.atleast_1d(solar_zenith)
+    apparent_zenith = np.atleast_1d(apparent_zenith)
 
     if solar_azimuth.ndim > 1 or solar_zenith.ndim > 1:
         raise ValueError('Input dimensions must not exceed 1')
@@ -150,12 +146,12 @@ def singleaxis(solar_zenith, solar_azimuth,
     omega_ideal = shading.projected_solar_zenith_angle(
         axis_tilt=axis_tilt,
         axis_azimuth=axis_azimuth,
-        solar_zenith=solar_zenith,
+        solar_zenith=apparent_zenith,
         solar_azimuth=solar_azimuth,
     )
 
     # filter for sun above panel horizon
-    zen_gt_90 = solar_zenith > 90
+    zen_gt_90 = apparent_zenith > 90
     omega_ideal[zen_gt_90] = np.nan
 
     # Account for backtracking
@@ -200,7 +196,7 @@ def singleaxis(solar_zenith, solar_azimuth,
     surface_tilt = surface['surface_tilt']
     surface_azimuth = surface['surface_azimuth']
     aoi = irradiance.aoi(surface_tilt, surface_azimuth,
-                         solar_zenith, solar_azimuth)
+                         apparent_zenith, solar_azimuth)
 
     # Bundle DataFrame for return values and filter for sun below horizon.
     out = {'tracker_theta': tracker_theta, 'aoi': aoi,

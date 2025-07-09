@@ -58,7 +58,7 @@ max_angle = 55  # [degrees] maximum rotation angle
 # of the trackers. For a single-axis tracker, this can be calculated as:
 
 tracking_orientations = pvlib.tracking.singleaxis(
-    solar_zenith=solpos['apparent_zenith'],
+    apparent_zenith=solpos['apparent_zenith'],
     solar_azimuth=solpos['azimuth'],
     axis_azimuth=axis_azimuth,
     max_angle=max_angle,

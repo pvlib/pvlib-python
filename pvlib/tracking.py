@@ -131,7 +131,7 @@ def singleaxis(apparent_zenith, solar_azimuth,
     solar_azimuth = np.atleast_1d(solar_azimuth)
     apparent_zenith = np.atleast_1d(apparent_zenith)
 
-    if solar_azimuth.ndim > 1 or solar_zenith.ndim > 1:
+    if solar_azimuth.ndim > 1 or apparent_zenith.ndim > 1:
         raise ValueError('Input dimensions must not exceed 1')
 
     # The ideal tracking angle, omega_ideal, is the rotation to place the sun

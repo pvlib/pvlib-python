@@ -242,8 +242,8 @@ def bishop88_i_from_v(voltage, photocurrent, saturation_current,
     breakdown_exp : float, default 3.28
         avalanche breakdown exponent :math:`m` [unitless]
     method : str, default 'newton'
-       Either ``'newton'``, ``'brentq'``, or ``'chandrupatla'``.
-       ''method'' must be ``'newton'`` if ``breakdown_factor`` is not 0.
+        Either ``'newton'``, ``'brentq'``, or ``'chandrupatla'``.
+        ''method'' must be ``'newton'`` if ``breakdown_factor`` is not 0.
 
         .. note::
            ``'chandrupatla'`` requires scipy 1.15 or greater.
@@ -251,9 +251,9 @@ def bishop88_i_from_v(voltage, photocurrent, saturation_current,
     method_kwargs : dict, optional
         Keyword arguments passed to the root finder. For options, see:
 
-          * ``method='brentq'``: :py:func:`scipy:scipy.optimize.brentq`
-          * ``method='newton'``: :py:func:`scipy:scipy.optimize.newton`
-          * ``method='chandrupatla'``: :py:func:`scipy:scipy.optimize.elementwise.find_root`
+        * ``method='brentq'``: :py:func:`scipy:scipy.optimize.brentq`
+        * ``method='newton'``: :py:func:`scipy:scipy.optimize.newton`
+        * ``method='chandrupatla'``: :py:func:`scipy:scipy.optimize.elementwise.find_root`
 
         ``'full_output': True`` is allowed, and ``optimizer_output`` would be
         returned. See examples section.
@@ -414,8 +414,8 @@ def bishop88_v_from_i(current, photocurrent, saturation_current,
     breakdown_exp : float, default 3.28
         avalanche breakdown exponent :math:`m` [unitless]
     method : str, default 'newton'
-       Either ``'newton'``, ``'brentq'``, or ``'chandrupatla'``.
-       ''method'' must be ``'newton'`` if ``breakdown_factor`` is not 0.
+        Either ``'newton'``, ``'brentq'``, or ``'chandrupatla'``.
+        ''method'' must be ``'newton'`` if ``breakdown_factor`` is not 0.
 
         .. note::
            ``'chandrupatla'`` requires scipy 1.15 or greater.
@@ -423,9 +423,9 @@ def bishop88_v_from_i(current, photocurrent, saturation_current,
     method_kwargs : dict, optional
         Keyword arguments passed to the root finder. For options, see:
 
-          * ``method='brentq'``: :py:func:`scipy:scipy.optimize.brentq`
-          * ``method='newton'``: :py:func:`scipy:scipy.optimize.newton`
-          * ``method='chandrupatla'``: :py:func:`scipy:scipy.optimize.elementwise.find_root`
+        * ``method='brentq'``: :py:func:`scipy:scipy.optimize.brentq`
+        * ``method='newton'``: :py:func:`scipy:scipy.optimize.newton`
+        * ``method='chandrupatla'``: :py:func:`scipy:scipy.optimize.elementwise.find_root`
 
         ``'full_output': True`` is allowed, and ``optimizer_output`` would be
         returned. See examples section.
@@ -582,8 +582,8 @@ def bishop88_mpp(photocurrent, saturation_current, resistance_series,
     breakdown_exp : numeric, default 3.28
         avalanche breakdown exponent :math:`m` [unitless]
     method : str, default 'newton'
-       Either ``'newton'``, ``'brentq'``, or ``'chandrupatla'``.
-       ''method'' must be ``'newton'`` if ``breakdown_factor`` is not 0.
+        Either ``'newton'``, ``'brentq'``, or ``'chandrupatla'``.
+        ''method'' must be ``'newton'`` if ``breakdown_factor`` is not 0.
 
         .. note::
            ``'chandrupatla'`` requires scipy 1.15 or greater.
@@ -591,9 +591,9 @@ def bishop88_mpp(photocurrent, saturation_current, resistance_series,
     method_kwargs : dict, optional
         Keyword arguments passed to the root finder. For options, see:
 
-          * ``method='brentq'``: :py:func:`scipy:scipy.optimize.brentq`
-          * ``method='newton'``: :py:func:`scipy:scipy.optimize.newton`
-          * ``method='chandrupatla'``: :py:func:`scipy:scipy.optimize.elementwise.find_root`
+        * ``method='brentq'``: :py:func:`scipy:scipy.optimize.brentq`
+        * ``method='newton'``: :py:func:`scipy:scipy.optimize.newton`
+        * ``method='chandrupatla'``: :py:func:`scipy:scipy.optimize.elementwise.find_root`
 
         ``'full_output': True`` is allowed, and ``optimizer_output`` would be
         returned. See examples section.

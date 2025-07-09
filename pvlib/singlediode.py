@@ -249,7 +249,7 @@ def bishop88_i_from_v(voltage, photocurrent, saturation_current,
         Keyword arguments passed to root finder method. See
         :py:func:`scipy:scipy.optimize.brentq`,
         :py:func:`scipy:scipy.optimize.newton`, and
-        :py:func:`scipy:scipy.optimize.elementwise.find_root` for parameters.
+        :py:func:`scipy:scipy.optimize.elementwise.find_root` (when ``method='chandrupatla'``) for parameters.
         ``'full_output': True`` is allowed, and ``optimizer_output`` would be
         returned. See examples section.
 
@@ -502,7 +502,7 @@ def bishop88_v_from_i(current, photocurrent, saturation_current,
         except ModuleNotFoundError as e:
             # TODO remove this when our minimum scipy version is >=1.15
             msg = (
-                "method='chandrupatla' requires scipy v1.15 or greater. "
+                "method='chandrupatla' requires scipy v1.15 or greater (available for Python3.10+). "
                 "Select another method, or update your version of scipy. "
                 f"({str(e)})"
             )

@@ -2499,7 +2499,10 @@ def singlediode(photocurrent, saturation_current, resistance_series,
     method : str, default 'lambertw'
         Determines the method used to calculate points on the IV curve. The
         options are ``'lambertw'``, ``'newton'``, ``'brentq'``, or
-        ``'chandrupatla'`` (requires scipy 1.15 or greater).
+        ``'chandrupatla'``.
+        
+        .. note::
+           ``'chandrupatla'`` requires scipy 1.15 or greater.
 
     Returns
     -------

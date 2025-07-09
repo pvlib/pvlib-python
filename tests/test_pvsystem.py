@@ -22,6 +22,8 @@ from pvlib.singlediode import VOLTAGE_BUILTIN
 
 from tests.test_singlediode import get_pvsyst_fs_495
 
+from .conftest import chandrupatla, chandrupatla_available
+
 
 @pytest.mark.parametrize('iam_model,model_params', [
     ('ashrae', {'b': 0.05}),
@@ -1371,8 +1373,11 @@ def fixture_i_from_v(request):
 
 
 @pytest.mark.parametrize(
-    'method, atol', [('lambertw', 1e-11), ('brentq', 1e-11), ('newton', 1e-11),
-                     ('chandrupatla', 1e-11)]
+    'method, atol', [
+        ('lambertw', 1e-11), ('brentq', 1e-11), ('newton', 1e-11),
+        pytest.param("chandrupatla", 1e-11,
+                     marks=pytest.mark.skipif(not chandrupatla_available)),
+    ]
 )
 def test_i_from_v(fixture_i_from_v, method, atol):
     # Solution set loaded from fixture
@@ -1401,50 +1406,42 @@ def test_PVSystem_i_from_v(mocker):
     m.assert_called_once_with(*args)
 
 
-def test_i_from_v_size():
+@pytest.mark.parametrize('method', ['lambertw', 'brentq', 'newton',
+                                    chandrupatla])
+def test_i_from_v_size(method):
+    if method == 'newton':
+        args = ([7.5] * 3, np.array([7., 7.]), 6e-7, 0.1, 20, 0.5)
+    else:
+        args = ([7.5] * 3, 7., 6e-7, [0.1] * 2, 20, 0.5)
     with pytest.raises(ValueError):
-        pvsystem.i_from_v([7.5] * 3, 7., 6e-7, [0.1] * 2, 20, 0.5)
-    with pytest.raises(ValueError):
-        pvsystem.i_from_v([7.5] * 3, 7., 6e-7, [0.1] * 2, 20, 0.5,
-                          method='brentq')
-    with pytest.raises(ValueError):
-        pvsystem.i_from_v([7.5] * 3, 7., 6e-7, [0.1] * 2, 20, 0.5,
-                          method='chandrupatla')
-    with pytest.raises(ValueError):
-        pvsystem.i_from_v([7.5] * 3, np.array([7., 7.]), 6e-7, 0.1, 20, 0.5,
-                          method='newton')
+        pvsystem.i_from_v(*args, method=method)
 
 
-def test_v_from_i_size():
+@pytest.mark.parametrize('method', ['lambertw', 'brentq', 'newton',
+                                    chandrupatla])
+def test_v_from_i_size(method):
+    if method == 'newton':
+        args = ([3.] * 3, np.array([7., 7.]), 6e-7, [0.1], 20, 0.5)
+    else:
+        args = ([3.] * 3, 7., 6e-7, [0.1] * 2, 20, 0.5)
     with pytest.raises(ValueError):
-        pvsystem.v_from_i([3.] * 3, 7., 6e-7, [0.1] * 2, 20, 0.5)
-    with pytest.raises(ValueError):
-        pvsystem.v_from_i([3.] * 3, 7., 6e-7, [0.1] * 2, 20, 0.5,
-                          method='brentq')
-    with pytest.raises(ValueError):
-        pvsystem.v_from_i([3.] * 3, 7., 6e-7, [0.1] * 2, 20, 0.5,
-                          method='chandrupatla')
-    with pytest.raises(ValueError):
-        pvsystem.v_from_i([3.] * 3, np.array([7., 7.]), 6e-7, [0.1], 20, 0.5,
-                          method='newton')
+        pvsystem.v_from_i(*args, method=method)
 
 
-def test_mpp_floats():
+@pytest.mark.parametrize('method', ['brentq', 'newton', chandrupatla])
+def test_mpp_floats(method):
     """test max_power_point"""
     IL, I0, Rs, Rsh, nNsVth = (7, 6e-7, .1, 20, .5)
-    out = pvsystem.max_power_point(IL, I0, Rs, Rsh, nNsVth, method='brentq')
+    out = pvsystem.max_power_point(IL, I0, Rs, Rsh, nNsVth, method=method)
     expected = {'i_mp': 6.1362673597376753,  # 6.1390251797935704, lambertw
                 'v_mp': 6.2243393757884284,  # 6.221535886625464, lambertw
                 'p_mp': 38.194210547580511}  # 38.194165464983037} lambertw
     assert isinstance(out, dict)
     for k, v in out.items():
         assert np.isclose(v, expected[k])
-    out = pvsystem.max_power_point(IL, I0, Rs, Rsh, nNsVth, method='newton')
-    for k, v in out.items():
-        assert np.isclose(v, expected[k])
 
 
-@pytest.mark.parametrize('method', ['brentq', 'newton', 'chandrupatla'])
+@pytest.mark.parametrize('method', ['brentq', 'newton', chandrupatla])
 def test_mpp_recombination(method):
     """test max_power_point"""
     pvsyst_fs_495 = get_pvsyst_fs_495()
@@ -1475,7 +1472,7 @@ def test_mpp_recombination(method):
         assert np.isclose(v, expected[k], 0.01)
 
 
-@pytest.mark.parametrize('method', ['brentq', 'newton', 'chandrupatla'])
+@pytest.mark.parametrize('method', ['brentq', 'newton', chandrupatla])
 def test_mpp_array(method):
     """test max_power_point"""
     IL, I0, Rs, Rsh, nNsVth = (np.array([7, 7]), 6e-7, .1, 20, .5)
@@ -1488,7 +1485,7 @@ def test_mpp_array(method):
         assert np.allclose(v, expected[k])
 
 
-@pytest.mark.parametrize('method', ['brentq', 'newton', 'chandrupatla'])
+@pytest.mark.parametrize('method', ['brentq', 'newton', chandrupatla])
 def test_mpp_series(method):
     """test max_power_point"""
     idx = ['2008-02-17T11:30:00-0800', '2008-02-17T12:30:00-0800']

@@ -4,6 +4,7 @@ import warnings
 
 import pandas as pd
 import os
+import sys
 from packaging.version import Version
 import pytest
 from functools import wraps
@@ -192,6 +193,17 @@ requires_pysam = pytest.mark.skipif(not has_pysam, reason="requires PySAM")
 has_pandas_2_0 = Version(pd.__version__) >= Version("2.0.0")
 requires_pandas_2_0 = pytest.mark.skipif(not has_pandas_2_0,
                                          reason="requires pandas>=2.0.0")
+
+
+# single-diode equation functions have method=='chandrupatla', which relies
+# on scipy.optimize.elementwise.find_root, which is only available in
+# scipy>=1.15.  That is only available for python 3.10 and above, so
+# we need to skip those tests on python 3.9.
+# TODO remove this when we drop support for python 3.9.
+chandrupatla_available = sys.version_info >= (3, 10)
+chandrupatla = pytest.param(
+    "chandrupatla", marks=pytest.mark.skipif(not chandrupatla_available)
+)
 
 
 @pytest.fixture()

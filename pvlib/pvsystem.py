@@ -2722,8 +2722,7 @@ def v_from_i(current, photocurrent, saturation_current, resistance_series,
 
     method : str
         Method to use: ``'lambertw'``, ``'newton'``, ``'brentq'``, or
-        ``'chandrupatla'``. *Note*: ``'brentq'`` is limited to 1st quadrant
-        only.
+        ``'chandrupatla'``. *Note*: ``'brentq'`` is limited to non-negative current.
 
         .. note::
            ``'chandrupatla'`` requires scipy 1.15 or greater.
@@ -2809,8 +2808,7 @@ def i_from_v(voltage, photocurrent, saturation_current, resistance_series,
 
     method : str
         Method to use: ``'lambertw'``, ``'newton'``, ``'brentq'``, or
-        ``'chandrupatla'``. *Note*: ``'brentq'`` is limited to 1st quadrant
-        only.
+        ``'chandrupatla'``. *Note*: ``'brentq'`` is limited to non-negative current.
 
         .. note::
            ``'chandrupatla'`` requires scipy 1.15 or greater.

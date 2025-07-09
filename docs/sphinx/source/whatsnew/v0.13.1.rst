@@ -18,8 +18,8 @@ Bug fixes
 
 Enhancements
 ~~~~~~~~~~~~
-* Added ``method='chandrupatla'`` (faster than ``brentq`` and slower than ``newton``,
-  but convergence is guaranteed) to
+* Add ``method='chandrupatla'`` (faster than ``brentq`` and slower than ``newton``,
+  but convergence is guaranteed) as an option for
   :py:func:`pvlib.pvsystem.singlediode`,
   :py:func:`~pvlib.pvsystem.i_from_v`,
   :py:func:`~pvlib.pvsystem.v_from_i`,

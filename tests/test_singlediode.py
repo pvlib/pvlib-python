@@ -511,7 +511,8 @@ def test_bishop88_kwargs_transfer(method, method_kwargs, mocker,
         'rtol': 1e-4,
         'maxiter': 20,
         '_inexistent_param': "0.01"
-    }, marks=pytest.mark.skipif(not chandrupatla_available)),
+    }, marks=pytest.mark.skipif(not chandrupatla_available,
+                                reason="needs scipy 1.15")),
 ])
 def test_bishop88_kwargs_fails(method, method_kwargs, bishop88_arguments):
     """test invalid method_kwargs passed onto the optimizer fail"""

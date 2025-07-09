@@ -1376,7 +1376,8 @@ def fixture_i_from_v(request):
     'method, atol', [
         ('lambertw', 1e-11), ('brentq', 1e-11), ('newton', 1e-11),
         pytest.param("chandrupatla", 1e-11,
-                     marks=pytest.mark.skipif(not chandrupatla_available)),
+                     marks=pytest.mark.skipif(not chandrupatla_available,
+                                              reason="needs scipy 1.15")),
     ]
 )
 def test_i_from_v(fixture_i_from_v, method, atol):

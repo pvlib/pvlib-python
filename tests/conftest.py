@@ -202,7 +202,8 @@ requires_pandas_2_0 = pytest.mark.skipif(not has_pandas_2_0,
 # TODO remove this when we drop support for python 3.9.
 chandrupatla_available = sys.version_info >= (3, 10)
 chandrupatla = pytest.param(
-    "chandrupatla", marks=pytest.mark.skipif(not chandrupatla_available)
+    "chandrupatla", marks=pytest.mark.skipif(not chandrupatla_available,
+                                             reason="needs scipy 1.15")
 )
 
 

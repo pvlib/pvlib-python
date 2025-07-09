@@ -11,7 +11,7 @@ from pvlib._deprecation import renamed_kwarg_warning
     since='0.13.1',
     old_param_name='apparent_azimuth',
     new_param_name='solar_azimuth')
-def singleaxis(solar_zenith, solar_azimuth,
+def singleaxis(apparent_zenith, solar_azimuth,
                axis_tilt=0, axis_azimuth=0, max_angle=90,
                backtrack=True, gcr=2.0/7.0, cross_axis_tilt=0):
     """

@@ -2634,8 +2634,11 @@ def max_power_point(photocurrent, saturation_current, resistance_series,
         cells ``Ns`` and the builtin voltage ``Vbi`` of the intrinsic layer.
         [V].
     method : str
-        either ``'newton'``, ``'brentq'``, or ``'chandrupatla'`` (requires
-        scipy 1.15 or greater)
+        either ``'newton'``, ``'brentq'``, or ``'chandrupatla'``.
+
+        .. note::
+           ``'chandrupatla'`` requires scipy 1.15 or greater.
+
 
     Returns
     -------
@@ -2719,8 +2722,12 @@ def v_from_i(current, photocurrent, saturation_current, resistance_series,
 
     method : str
         Method to use: ``'lambertw'``, ``'newton'``, ``'brentq'``, or
-        ``'chandrupatla'`` (requires scipy 1.15 or greater). *Note*:
-        ``'brentq'`` is limited to 1st quadrant only.
+        ``'chandrupatla'``. *Note*: ``'brentq'`` is limited to 1st quadrant
+        only.
+
+        .. note::
+           ``'chandrupatla'`` requires scipy 1.15 or greater.
+
 
     Returns
     -------
@@ -2802,8 +2809,12 @@ def i_from_v(voltage, photocurrent, saturation_current, resistance_series,
 
     method : str
         Method to use: ``'lambertw'``, ``'newton'``, ``'brentq'``, or
-        ``'chandrupatla'`` (requires scipy 1.15 or greater). *Note*:
-        ``'brentq'`` is limited to 1st quadrant only.
+        ``'chandrupatla'``. *Note*: ``'brentq'`` is limited to 1st quadrant
+        only.
+
+        .. note::
+           ``'chandrupatla'`` requires scipy 1.15 or greater.
+
 
     Returns
     -------

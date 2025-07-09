@@ -242,14 +242,19 @@ def bishop88_i_from_v(voltage, photocurrent, saturation_current,
     breakdown_exp : float, default 3.28
         avalanche breakdown exponent :math:`m` [unitless]
     method : str, default 'newton'
-       Either ``'newton'``, ``'brentq'``, or ``'chandrupatla'`` (requires
-       scipy 1.15 or greater). ''method'' must be ``'newton'``
-       if ``breakdown_factor`` is not 0.
+       Either ``'newton'``, ``'brentq'``, or ``'chandrupatla'``.
+       ''method'' must be ``'newton'`` if ``breakdown_factor`` is not 0.
+
+        .. note::
+           ``'chandrupatla'`` requires scipy 1.15 or greater.
+
     method_kwargs : dict, optional
-        Keyword arguments passed to root finder method. See
-        :py:func:`scipy:scipy.optimize.brentq`,
-        :py:func:`scipy:scipy.optimize.newton`, and
-        :py:func:`scipy:scipy.optimize.elementwise.find_root` (when ``method='chandrupatla'``) for parameters.
+        Keyword arguments passed to the root finder. For options, see:
+
+          * ``method='brentq'``: :py:func:`scipy:scipy.optimize.brentq`
+          * ``method='newton'``: :py:func:`scipy:scipy.optimize.newton`
+          * ``method='chandrupatla'``: :py:func:`scipy:scipy.optimize.elementwise.find_root`
+
         ``'full_output': True`` is allowed, and ``optimizer_output`` would be
         returned. See examples section.
 
@@ -288,7 +293,7 @@ def bishop88_i_from_v(voltage, photocurrent, saturation_current,
     .. [1] "Computer simulation of the effects of electrical mismatches in
        photovoltaic cell interconnection circuits" JW Bishop, Solar Cell (1988)
        :doi:`10.1016/0379-6787(88)90059-2`
-    """
+    """  # noqa: E501
     # collect args
     args = (photocurrent, saturation_current,
             resistance_series, resistance_shunt, nNsVth, d2mutau, NsVbi,
@@ -336,11 +341,11 @@ def bishop88_i_from_v(voltage, photocurrent, saturation_current,
         except ModuleNotFoundError as e:
             # TODO remove this when our minimum scipy version is >=1.15
             msg = (
-                "method='chandrupatla' requires scipy v1.15 or greater. "
-                "Select another method, or update your version of scipy. "
-                f"({str(e)})"
+                "method='chandrupatla' requires scipy v1.15 or greater "
+                "(available for Python 3.10+). "
+                "Select another method, or update your version of scipy."
             )
-            raise ImportError(msg)
+            raise ImportError(msg) from e
 
         voc_est = estimate_voc(photocurrent, saturation_current, nNsVth)
         shape = _shape_of_max_size(voltage, voc_est)
@@ -409,13 +414,19 @@ def bishop88_v_from_i(current, photocurrent, saturation_current,
     breakdown_exp : float, default 3.28
         avalanche breakdown exponent :math:`m` [unitless]
     method : str, default 'newton'
-       Either ``'newton'``, ``'brentq'``, or ``'chandrupatla'`` (requires
-       scipy 1.15 or greater). ''method'' must be ``'newton'``
-       if ``breakdown_factor`` is not 0.
+       Either ``'newton'``, ``'brentq'``, or ``'chandrupatla'``.
+       ''method'' must be ``'newton'`` if ``breakdown_factor`` is not 0.
+
+        .. note::
+           ``'chandrupatla'`` requires scipy 1.15 or greater.
+
     method_kwargs : dict, optional
-        Keyword arguments passed to root finder method. See
-        :py:func:`scipy:scipy.optimize.brentq` and
-        :py:func:`scipy:scipy.optimize.newton` parameters.
+        Keyword arguments passed to the root finder. For options, see:
+
+          * ``method='brentq'``: :py:func:`scipy:scipy.optimize.brentq`
+          * ``method='newton'``: :py:func:`scipy:scipy.optimize.newton`
+          * ``method='chandrupatla'``: :py:func:`scipy:scipy.optimize.elementwise.find_root`
+
         ``'full_output': True`` is allowed, and ``optimizer_output`` would be
         returned. See examples section.
 
@@ -454,7 +465,7 @@ def bishop88_v_from_i(current, photocurrent, saturation_current,
     .. [1] "Computer simulation of the effects of electrical mismatches in
        photovoltaic cell interconnection circuits" JW Bishop, Solar Cell (1988)
        :doi:`10.1016/0379-6787(88)90059-2`
-    """
+    """  # noqa: E501
     # collect args
     args = (photocurrent, saturation_current,
             resistance_series, resistance_shunt, nNsVth, d2mutau, NsVbi,
@@ -502,11 +513,11 @@ def bishop88_v_from_i(current, photocurrent, saturation_current,
         except ModuleNotFoundError as e:
             # TODO remove this when our minimum scipy version is >=1.15
             msg = (
-                "method='chandrupatla' requires scipy v1.15 or greater (available for Python3.10+). "
-                "Select another method, or update your version of scipy. "
-                f"({str(e)})"
+                "method='chandrupatla' requires scipy v1.15 or greater "
+                "(available for Python 3.10+). "
+                "Select another method, or update your version of scipy."
             )
-            raise ImportError(msg)
+            raise ImportError(msg) from e
 
         shape = _shape_of_max_size(current, voc_est)
         vlo = np.zeros(shape)
@@ -571,13 +582,19 @@ def bishop88_mpp(photocurrent, saturation_current, resistance_series,
     breakdown_exp : numeric, default 3.28
         avalanche breakdown exponent :math:`m` [unitless]
     method : str, default 'newton'
-       Either ``'newton'``, ``'brentq'``, or ``'chandrupatla'`` (requires
-       scipy 1.15 or greater). ''method'' must be ``'newton'``
-       if ``breakdown_factor`` is not 0.
+       Either ``'newton'``, ``'brentq'``, or ``'chandrupatla'``.
+       ''method'' must be ``'newton'`` if ``breakdown_factor`` is not 0.
+
+        .. note::
+           ``'chandrupatla'`` requires scipy 1.15 or greater.
+
     method_kwargs : dict, optional
-        Keyword arguments passed to root finder method. See
-        :py:func:`scipy:scipy.optimize.brentq` and
-        :py:func:`scipy:scipy.optimize.newton` parameters.
+        Keyword arguments passed to the root finder. For options, see:
+
+          * ``method='brentq'``: :py:func:`scipy:scipy.optimize.brentq`
+          * ``method='newton'``: :py:func:`scipy:scipy.optimize.newton`
+          * ``method='chandrupatla'``: :py:func:`scipy:scipy.optimize.elementwise.find_root`
+
         ``'full_output': True`` is allowed, and ``optimizer_output`` would be
         returned. See examples section.
 
@@ -617,7 +634,7 @@ def bishop88_mpp(photocurrent, saturation_current, resistance_series,
     .. [1] "Computer simulation of the effects of electrical mismatches in
        photovoltaic cell interconnection circuits" JW Bishop, Solar Cell (1988)
        :doi:`10.1016/0379-6787(88)90059-2`
-    """
+    """  # noqa: E501
     # collect args
     args = (photocurrent, saturation_current,
             resistance_series, resistance_shunt, nNsVth, d2mutau, NsVbi,
@@ -663,17 +680,17 @@ def bishop88_mpp(photocurrent, saturation_current, resistance_series,
         except ModuleNotFoundError as e:
             # TODO remove this when our minimum scipy version is >=1.15
             msg = (
-                "method='chandrupatla' requires scipy v1.15 or greater. "
-                "Select another method, or update your version of scipy. "
-                f"({str(e)})"
+                "method='chandrupatla' requires scipy v1.15 or greater "
+                "(available for Python 3.10+). "
+                "Select another method, or update your version of scipy."
             )
-            raise ImportError(msg)
+            raise ImportError(msg) from e
 
         vlo = np.zeros_like(photocurrent)
         vhi = np.full_like(photocurrent, voc_est)
         kwargs_trimmed = method_kwargs.copy()
         kwargs_trimmed.pop("full_output", None)  # not valid for find_root
- 
+
         result = find_root(fmpp,
                            (vlo, vhi),
                            args=args,

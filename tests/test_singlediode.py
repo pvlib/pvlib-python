@@ -463,10 +463,10 @@ def bishop88_arguments():
     }),
     # can't include chandrupatla since the function is not available to patch
     # TODO: add this once chandrupatla becomes non-optional functionality
-    #('chandrupatla', {
-    #    'tolerances ': {'xtol': 1e-8, 'rtol': 1e-8},
-    #    'maxiter': 30,
-    #}),
+    # ('chandrupatla', {
+    #     'tolerances ': {'xtol': 1e-8, 'rtol': 1e-8},
+    #     'maxiter': 30,
+    # }),
 ])
 def test_bishop88_kwargs_transfer(method, method_kwargs, mocker,
                                   bishop88_arguments):

@@ -12,11 +12,13 @@ import pytest
 from numpy.testing import assert_array_equal
 from .conftest import TESTS_DATA_DIR
 
+from .conftest import chandrupatla, chandrupatla_available
+
 POA = 888
 TCELL = 55
 
 
-@pytest.mark.parametrize('method', ['brentq', 'newton'])
+@pytest.mark.parametrize('method', ['brentq', 'newton', chandrupatla])
 def test_method_spr_e20_327(method, cec_module_spr_e20_327):
     """test pvsystem.singlediode with different methods on SPR-E20-327"""
     spr_e20_327 = cec_module_spr_e20_327
@@ -38,7 +40,7 @@ def test_method_spr_e20_327(method, cec_module_spr_e20_327):
     assert np.isclose(pvs['i_xx'], out['i_xx'])
 
 
-@pytest.mark.parametrize('method', ['brentq', 'newton'])
+@pytest.mark.parametrize('method', ['brentq', 'newton', chandrupatla])
 def test_newton_fs_495(method, cec_module_fs_495):
     """test pvsystem.singlediode with different methods on FS495"""
     fs_495 = cec_module_fs_495
@@ -146,7 +148,8 @@ def precise_iv_curves(request):
     return singlediode_params, pc
 
 
-@pytest.mark.parametrize('method', ['lambertw', 'brentq', 'newton'])
+@pytest.mark.parametrize('method', ['lambertw', 'brentq', 'newton',
+                                    chandrupatla])
 def test_singlediode_precision(method, precise_iv_curves):
     """
     Tests the accuracy of singlediode. ivcurve_pnts is not tested.
@@ -187,7 +190,8 @@ def test_singlediode_lambert_negative_voc(mocker):
     assert_array_equal(outs["v_oc"], [0, 0])
 
 
-@pytest.mark.parametrize('method', ['lambertw', 'brentq', 'newton'])
+@pytest.mark.parametrize('method', ['lambertw', 'brentq', 'newton',
+                                    chandrupatla])
 def test_v_from_i_i_from_v_precision(method, precise_iv_curves):
     """
     Tests the accuracy of pvsystem.v_from_i and pvsystem.i_from_v.
@@ -256,7 +260,7 @@ def get_pvsyst_fs_495():
         )
     ]
 )
-@pytest.mark.parametrize('method', ['newton', 'brentq'])
+@pytest.mark.parametrize('method', ['newton', 'brentq', chandrupatla])
 def test_pvsyst_recombination_loss(method, poa, temp_cell, expected, tol):
     """test PVSst recombination loss"""
     pvsyst_fs_495 = get_pvsyst_fs_495()
@@ -348,7 +352,7 @@ def test_pvsyst_recombination_loss(method, poa, temp_cell, expected, tol):
         )
     ]
 )
-@pytest.mark.parametrize('method', ['newton', 'brentq'])
+@pytest.mark.parametrize('method', ['newton', 'brentq', chandrupatla])
 def test_pvsyst_breakdown(method, brk_params, recomb_params, poa, temp_cell,
                           expected, tol):
     """test PVSyst recombination loss"""
@@ -456,7 +460,13 @@ def bishop88_arguments():
         'xtol': 1e-8,
         'rtol': 1e-8,
         'maxiter': 30,
-    })
+    }),
+    # can't include chandrupatla since the function is not available to patch
+    # TODO: add this once chandrupatla becomes non-optional functionality
+    # ('chandrupatla', {
+    #     'tolerances ': {'xtol': 1e-8, 'rtol': 1e-8},
+    #     'maxiter': 30,
+    # }),
 ])
 def test_bishop88_kwargs_transfer(method, method_kwargs, mocker,
                                   bishop88_arguments):
@@ -495,7 +505,14 @@ def test_bishop88_kwargs_transfer(method, method_kwargs, mocker,
         'rtol': 1e-4,
         'maxiter': 20,
         '_inexistent_param': "0.01"
-    })
+    }),
+    pytest.param('chandrupatla', {
+        'xtol': 1e-4,
+        'rtol': 1e-4,
+        'maxiter': 20,
+        '_inexistent_param': "0.01"
+    }, marks=pytest.mark.skipif(not chandrupatla_available,
+                                reason="needs scipy 1.15")),
 ])
 def test_bishop88_kwargs_fails(method, method_kwargs, bishop88_arguments):
     """test invalid method_kwargs passed onto the optimizer fail"""
@@ -513,7 +530,7 @@ def test_bishop88_kwargs_fails(method, method_kwargs, bishop88_arguments):
                   method_kwargs=method_kwargs)
 
 
-@pytest.mark.parametrize('method', ['newton', 'brentq'])
+@pytest.mark.parametrize('method', ['newton', 'brentq', chandrupatla])
 def test_bishop88_full_output_kwarg(method, bishop88_arguments):
     """test call to bishop88_.* with full_output=True return values are ok"""
     method_kwargs = {'full_output': True}
@@ -547,7 +564,7 @@ def test_bishop88_full_output_kwarg(method, bishop88_arguments):
     assert len(ret_val[1]) >= 2
 
 
-@pytest.mark.parametrize('method', ['newton', 'brentq'])
+@pytest.mark.parametrize('method', ['newton', 'brentq', chandrupatla])
 def test_bishop88_pdSeries_len_one(method, bishop88_arguments):
     for k, v in bishop88_arguments.items():
         bishop88_arguments[k] = pd.Series([v])
@@ -563,7 +580,7 @@ def _sde_check_solution(i, v, il, io, rs, rsh, a, d2mutau=0., NsVbi=np.inf):
     return il - io*np.expm1(vd/a) - vd/rsh - il*d2mutau/(NsVbi - vd) - i
 
 
-@pytest.mark.parametrize('method', ['newton', 'brentq'])
+@pytest.mark.parametrize('method', ['newton', 'brentq', chandrupatla])
 def test_bishop88_init_cond(method):
     # GH 2013
     p = {'alpha_sc': 0.0012256,

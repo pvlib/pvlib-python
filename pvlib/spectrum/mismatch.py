@@ -716,33 +716,33 @@ def spectral_factor_polo(precipitable_water, airmass_absolute, aod500, aoi,
                          altitude, module_type=None, coefficients=None,
                          albedo=0.2):
     """
-    Estimation of spectral mismatch for BIPV application in vertical facades.
+    Estimate the spectral mismatch for BIPV application in vertical facades.
     Parameters
     ----------
     precipitable_water : numeric
         atmospheric precipitable water. [cm]
 
     airmass_absolute : numeric
-        absolute (pressure-adjusted) airmass. [unitless]
+        Absolute airmass. [unitless]
     aod500 : numeric
         atmospheric aerosol optical depth at 500 nm. [unitless]
     aoi : numeric
-        angle of incidence. [degrees]
+        Angle of incidence on the vertical surface. [degrees]
     altitude: numeric
         altitude over sea level. [m]
     module_type : str, optional
         One of the following PV technology strings from [1]_:
 
         * ``'cdte'`` - anonymous CdTe module.
-        * ``'monosi'`` - anonymous sc-si module.
+        * ``'monosi'`` - anonymous monocrystalline Si module.
         * ``'cigs'`` - anonymous copper indium gallium selenide module.
         * ``'asi'`` - anonymous amorphous silicon module.
     albedo
-        Ground albedo (default value if 0.2). [unitless]
+        Ground albedo (default value 0.2). [unitless]
 
     coefficients : array-like, optional
-        user-defined coefficients, if not using one of the default coefficient
-        set via the ``module_type`` parameter.
+        user-defined coefficients, if not using one of the coefficient
+        sets via the ``module_type`` parameter.
 
     Returns
     -------

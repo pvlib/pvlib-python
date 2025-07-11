@@ -60,7 +60,7 @@ fig, ax = plt.subplots()
 
 for gcr in [0.2, 0.4, 0.6]:
     backtracking_angles = tracking.singleaxis(
-        apparent=solpos['apparent_zenith'],
+        apparent_zenith=solpos['apparent_zenith'],
         solar_azimuth=solpos['azimuth'],
         axis_tilt=0,
         axis_azimuth=180,

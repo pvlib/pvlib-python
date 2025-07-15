@@ -39,3 +39,5 @@ from pvlib.iotools.solcast import get_solcast_live  # noqa: F401
 from pvlib.iotools.solcast import get_solcast_historic  # noqa: F401
 from pvlib.iotools.solcast import get_solcast_tmy  # noqa: F401
 from pvlib.iotools.solargis import get_solargis  # noqa: F401
+from pvlib.iotools.meteonorm import get_meteonorm  # noqa: F401
+from pvlib.iotools.meteonorm import get_meteonorm_tmy  # noqa: F401

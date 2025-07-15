@@ -1,0 +1,145 @@
+"""Function for reading and retrieving data from NASA POWER."""
+
+import pandas as pd
+import requests
+
+
+URL = 'https://power.larc.nasa.gov/api/temporal/hourly/point'
+
+VARIABLE_MAP = {
+    'ALLSKY_SFC_SW_DWN': 'ghi',
+    'ALLSKY_SFC_SW_DIFF': 'dhi',
+    'ALLSKY_SFC_SW_DNI': 'dni',
+    'CLRSKY_SFC_SW_DWN': 'ghi_clear',
+    'T2M': 'temp_air_2m',
+    'WS2M': 'wind_speed_2m',
+    'WS10M': 'wind_speed_10m',
+}
+
+
+def get_nasa_power(latitude, longitude, start_date, end_date,
+                   parameters, time_standard='utc', community='re',
+                   site_elevation=None, wind_elevation=None,
+                   wind_surface=None, map_variables=True):
+    """
+    Retrieve irradiance and weather data from NASA POWER.
+
+    A general description of NASA POWER is given in [1]_ and the API is
+    described in [2]_. A detailed list of the available parameters can be
+    found in [3]_.
+
+    Parameters
+    ----------
+    latitude: float
+        In decimal degrees, north is positive (ISO 19115).
+    longitude: float
+        In decimal degrees, east is positive (ISO 19115).
+    start_date: datetime like
+        First timestamp of the requested period. If a timezone is not
+        specified, UTC is assumed.
+    end_date: datetime like
+        Last timestamp of the requested period. If a timezone is not
+        specified, UTC is assumed.
+    parameters: str, list
+        List of parameters. Some common parameters are mentioned below; for the
+        full list see [3]_:
+            * ALLSKY_SFC_SW_DWN: Global Horizontal Irradiance (GHI) [Wm⁻²]
+            * ALLSKY_SFC_SW_DIFF: Diffuse Horizonatl Irradiance (DHI) [Wm⁻²]
+            * ALLSKY_SFC_SW_DNI: Direct Normal Irradiance (DNI) [Wm⁻²]
+            * CLRSKY_SFC_SW_DWN: Clear-sky GHI [Wm⁻²]
+            * T2M : Air temperature at 2 m [C]
+            * WS2M: Wind speed at 2 m [m/s]
+            * WS10M: Wind speed at 10 m [m/s]
+    community: str, default: 're'
+        Can be one of the following depending on which parameters are of
+        interest. Note that in many cases this choice might affect the units
+        of the parameter:
+            * 're': renewable energy
+            * 'sb': sustainable buildings
+            * 'ag': agroclimatology
+    time_standard: str, default:'utc'
+        Can be either:
+            * Universal Time Coordinated (utc): is the standard time measure
+            used by the world.
+            * Local Solar Time (lst): A 15 Degrees swath that represents solar
+            noon at the middle longitude of the swath.
+    site_elevation: float, optional
+        The custom site elevation in meters to produce the corrected
+        atmospheric pressure adjusted for elevation.
+    wind_elevation: float, optional
+        The custom wind elevation in meters to produce the wind speed adjusted
+        for elevation. Has to be between 10 and 300 m; see [4]_.
+    wind_surface: str, optional
+        The definable surface type to adjust the wind speed. For a list of the
+        surface types see [4]_.
+    map_variables: bool, default: True
+        When true, renames columns of the Dataframe to pvlib variable names
+        where applicable. The default is True. See variable
+        :const:`VARIABLE_MAP`.
+
+    Raises
+    ------
+    requests.HTTPError
+        Raises an error when an incorrect request is made.
+    ValueError
+        Raises an error if more than 15 parameters are requested in one call.
+
+    Returns
+    -------
+    data : pd.DataFrame
+        Time series data. The index corresponds to the start (left) of the
+        interval.
+
+    References
+    ----------
+    .. [1] `NASA Prediction Of Worldwide Energy Resources (POWER)
+       <https://power.larc.nasa.gov/>`_
+    .. [2] `NASA POWER API
+       <https://power.larc.nasa.gov/api/pages/>`_
+    .. [3] `NASA POWER API parameters
+       <https://power.larc.nasa.gov/parameters/>`_
+    .. [4] `NASA POWER corrected wind speed parameters
+       <https://power.larc.nasa.gov/docs/methodology/meteorology/wind/>_
+    """
+    if len(parameters) > 15:
+        raise ValueError("A maximum of 15 parameters can currently be "
+                         "requested in one submission.")
+
+    start = pd.Timestamp(start_date)
+    end = pd.Timestamp(end_date)
+    start = start.tz_localize('UTC') if start.tzinfo is None else start
+    end = end.tz_localize('UTC') if end.tzinfo is None else end
+
+    params = {
+        'latitude': latitude,
+        'longitude': longitude,
+        'start': start.strftime('%Y%m%d'),
+        'end': end.strftime('%Y%m%d'),
+        'community': community,
+        'parameters': ','.join(parameters),  # make parameters in a string
+        'format': 'json',
+        'user': None,
+        'header': True,
+        'time-standard': time_standard,
+        'site-elevation': site_elevation,
+        'wind-elevation': wind_elevation,
+        'wind-surface': wind_surface,
+    }
+
+    response = requests.get(URL, params=params)
+    if not response.ok:
+        # response.raise_for_status() does not give a useful error message
+        raise requests.HTTPError(response.json())
+
+    # Parse the data to dataframe
+    data = response.json()
+    hourly_data = data['properties']['parameter']
+    df = pd.DataFrame(hourly_data)
+    df.index = pd.to_datetime(df.index, format='%Y%m%d%H')
+    df = df.sort_index()
+
+    # Rename according to pvlib convention
+    if map_variables:
+        df = df.rename(columns=VARIABLE_MAP)
+
+    return df

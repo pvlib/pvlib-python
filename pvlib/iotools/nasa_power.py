@@ -57,12 +57,11 @@ def get_nasa_power(latitude, longitude, start_date, end_date,
             * 're': renewable energy
             * 'sb': sustainable buildings
             * 'ag': agroclimatology
-    time_standard: str, default:'utc'
-        Can be either:
-            * Universal Time Coordinated (utc): is the standard time measure
-            used by the world.
+    time_standard: str, default: 'utc'
+        Can be either 'utc' or 'lst':
+            * Universal Time Coordinated (utc)
             * Local Solar Time (lst): A 15 Degrees swath that represents solar
-            noon at the middle longitude of the swath.
+              noon at the middle longitude of the swath
     site_elevation: float, optional
         The custom site elevation in meters to produce the corrected
         atmospheric pressure adjusted for elevation.
@@ -72,7 +71,7 @@ def get_nasa_power(latitude, longitude, start_date, end_date,
     wind_surface: str, optional
         The definable surface type to adjust the wind speed. For a list of the
         surface types see [4]_.
-    map_variables: bool, default: True
+    map_variables: bool, optional, default: True
         When true, renames columns of the Dataframe to pvlib variable names
         where applicable. The default is True. See variable
         :const:`VARIABLE_MAP`.
@@ -99,7 +98,7 @@ def get_nasa_power(latitude, longitude, start_date, end_date,
     .. [3] `NASA POWER API parameters
        <https://power.larc.nasa.gov/parameters/>`_
     .. [4] `NASA POWER corrected wind speed parameters
-       <https://power.larc.nasa.gov/docs/methodology/meteorology/wind/>_
+       <https://power.larc.nasa.gov/docs/methodology/meteorology/wind/>`_
     """
     if len(parameters) > 15:
         raise ValueError("A maximum of 15 parameters can currently be "

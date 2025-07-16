@@ -1785,6 +1785,11 @@ def test_invalid_models(model, sapm_dc_snl_ac_system, location):
         ModelChain(sapm_dc_snl_ac_system, location, **kwargs)
 
 
+def test_bad_get_orientation():
+    with pytest.raises(ValueError):
+        modelchain.get_orientation('bad value')
+
+
 # tests for PVSystem with multiple Arrays
 def test_with_sapm_pvsystem_arrays(sapm_dc_snl_ac_system_Array, location,
                                    weather):

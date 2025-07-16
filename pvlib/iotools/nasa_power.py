@@ -17,10 +17,9 @@ VARIABLE_MAP = {
 }
 
 
-def get_nasa_power(latitude, longitude, start_date, end_date,
-                   parameters, time_standard='utc', community='re',
-                   site_elevation=None, wind_elevation=None,
-                   wind_surface=None, map_variables=True):
+def get_nasa_power(latitude, longitude, start, end, parameters,
+                   time_standard='utc', community='re', elevation=None,
+                   wind_height=None, wind_surface=None, map_variables=True):
     """
     Retrieve irradiance and weather data from NASA POWER.
 
@@ -34,40 +33,46 @@ def get_nasa_power(latitude, longitude, start_date, end_date,
         In decimal degrees, north is positive (ISO 19115).
     longitude: float
         In decimal degrees, east is positive (ISO 19115).
-    start_date: datetime like
+    start: datetime like
         First timestamp of the requested period. If a timezone is not
         specified, UTC is assumed.
-    end_date: datetime like
+    end: datetime like
         Last timestamp of the requested period. If a timezone is not
         specified, UTC is assumed.
     parameters: str, list
         List of parameters. Some common parameters are mentioned below; for the
         full list see [3]_:
-            * ALLSKY_SFC_SW_DWN: Global Horizontal Irradiance (GHI) [Wm⁻²]
-            * ALLSKY_SFC_SW_DIFF: Diffuse Horizonatl Irradiance (DHI) [Wm⁻²]
-            * ALLSKY_SFC_SW_DNI: Direct Normal Irradiance (DNI) [Wm⁻²]
-            * CLRSKY_SFC_SW_DWN: Clear-sky GHI [Wm⁻²]
-            * T2M : Air temperature at 2 m [C]
-            * WS2M: Wind speed at 2 m [m/s]
-            * WS10M: Wind speed at 10 m [m/s]
-    community: str, default: 're'
+
+        * ``ALLSKY_SFC_SW_DWN``: Global Horizontal Irradiance (GHI) [Wm⁻²]
+        * ``ALLSKY_SFC_SW_DIFF``: Diffuse Horizontal Irradiance (DHI) [Wm⁻²]
+        * ``ALLSKY_SFC_SW_DNI``: Direct Normal Irradiance (DNI) [Wm⁻²]
+        * ``CLRSKY_SFC_SW_DWN``: Clear-sky GHI [Wm⁻²]
+        * ``T2M``: Air temperature at 2 m [C]
+        * ``WS2M``: Wind speed at 2 m [m/s]
+        * ``WS10M``: Wind speed at 10 m [m/s]
+
+    community: str, default: ``'re'``
         Can be one of the following depending on which parameters are of
         interest. Note that in many cases this choice might affect the units
         of the parameter:
-            * 're': renewable energy
-            * 'sb': sustainable buildings
-            * 'ag': agroclimatology
-    time_standard: str, default: 'utc'
-        Can be either 'utc' or 'lst':
-            * Universal Time Coordinated (utc)
-            * Local Solar Time (lst): A 15 Degrees swath that represents solar
-              noon at the middle longitude of the swath
-    site_elevation: float, optional
+
+        * ``'re'``: renewable energy
+        * ``'sb'``: sustainable buildings
+        * ``'ag'``: agroclimatology
+
+    time_standard: str, default: ``'utc'``
+        Can be either ``'utc'`` or ``'lst'``:
+
+        * Universal Time Coordinated (utc)
+        * Local Solar Time (lst): A 15 Degrees swath that represents solar
+          noon at the middle longitude of the swath
+
+    elevation: float, optional
         The custom site elevation in meters to produce the corrected
         atmospheric pressure adjusted for elevation.
-    wind_elevation: float, optional
-        The custom wind elevation in meters to produce the wind speed adjusted
-        for elevation. Has to be between 10 and 300 m; see [4]_.
+    wind_height: float, optional
+        The custom wind height in meters to produce the wind speed adjusted
+        for height. Has to be between 10 and 300 m; see [4]_.
     wind_surface: str, optional
         The definable surface type to adjust the wind speed. For a list of the
         surface types see [4]_.
@@ -80,8 +85,6 @@ def get_nasa_power(latitude, longitude, start_date, end_date,
     ------
     requests.HTTPError
         Raises an error when an incorrect request is made.
-    ValueError
-        Raises an error if more than 15 parameters are requested in one call.
 
     Returns
     -------
@@ -100,12 +103,8 @@ def get_nasa_power(latitude, longitude, start_date, end_date,
     .. [4] `NASA POWER corrected wind speed parameters
        <https://power.larc.nasa.gov/docs/methodology/meteorology/wind/>`_
     """
-    if len(parameters) > 15:
-        raise ValueError("A maximum of 15 parameters can currently be "
-                         "requested in one submission.")
-
-    start = pd.Timestamp(start_date)
-    end = pd.Timestamp(end_date)
+    start = pd.Timestamp(start)
+    end = pd.Timestamp(end)
     start = start.tz_localize('UTC') if start.tzinfo is None else start
     end = end.tz_localize('UTC') if end.tzinfo is None else end
 
@@ -120,8 +119,8 @@ def get_nasa_power(latitude, longitude, start_date, end_date,
         'user': None,
         'header': True,
         'time-standard': time_standard,
-        'site-elevation': site_elevation,
-        'wind-elevation': wind_elevation,
+        'site-elevation': elevation,
+        'wind-elevation': wind_height,
         'wind-surface': wind_surface,
     }
 
@@ -134,11 +133,14 @@ def get_nasa_power(latitude, longitude, start_date, end_date,
     data = response.json()
     hourly_data = data['properties']['parameter']
     df = pd.DataFrame(hourly_data)
-    df.index = pd.to_datetime(df.index, format='%Y%m%d%H')
-    df = df.sort_index()
+    df.index = pd.to_datetime(df.index, format='%Y%m%d%H').tz_localize('UTC')
+
+    # Make metadata dictionary
+    meta = {key: data[key] for key in ['geometry', 'header', 'messages',
+                                       'parameters', 'times', 'type']}
 
     # Rename according to pvlib convention
     if map_variables:
         df = df.rename(columns=VARIABLE_MAP)
 
-    return df
+    return df, meta

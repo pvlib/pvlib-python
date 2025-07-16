@@ -136,8 +136,12 @@ def get_nasa_power(latitude, longitude, start, end, parameters,
     df.index = pd.to_datetime(df.index, format='%Y%m%d%H').tz_localize('UTC')
 
     # Make metadata dictionary
-    meta = {key: data[key] for key in ['geometry', 'header', 'messages',
-                                       'parameters', 'times', 'type']}
+    meta = {key: data[key] for key in ['header', 'messages', 'parameters',
+                                       'times', 'type']}
+
+    meta['longitude'] = data['geometry']['coordinates'][0]
+    meta['latitude'] = data['geometry']['coordinates'][1]
+    meta['altitude'] = data['geometry']['coordinates'][2]
 
     # Rename according to pvlib convention
     if map_variables:

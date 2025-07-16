@@ -34,11 +34,9 @@ def get_nasa_power(latitude, longitude, start, end, parameters,
     longitude: float
         In decimal degrees, east is positive (ISO 19115).
     start: datetime like
-        First timestamp of the requested period. If a timezone is not
-        specified, UTC is assumed.
+        First timestamp of the requested period.
     end: datetime like
-        Last timestamp of the requested period. If a timezone is not
-        specified, UTC is assumed.
+        Last timestamp of the requested period.
     parameters: str, list
         List of parameters. Some common parameters are mentioned below; for the
         full list see [3]_:
@@ -60,11 +58,11 @@ def get_nasa_power(latitude, longitude, start, end, parameters,
         * ``'sb'``: sustainable buildings
         * ``'ag'``: agroclimatology
 
-    time_standard: str, default: ``'utc'``
-        Can be either ``'utc'`` or ``'lst'``:
+    time_standard: str, optional
+        Must be one of the below options. The default is ``'utc'``.
 
-        * Universal Time Coordinated (utc)
-        * Local Solar Time (lst): A 15 Degrees swath that represents solar
+        * ``'utc'`` universal time coordinated
+        * ``'lst'``: local solar time.  15 degree swath that represents solar
           noon at the middle longitude of the swath
 
     elevation: float, optional
@@ -76,10 +74,10 @@ def get_nasa_power(latitude, longitude, start, end, parameters,
     wind_surface: str, optional
         The definable surface type to adjust the wind speed. For a list of the
         surface types see [4]_.
-    map_variables: bool, optional, default: True
+    map_variables: bool, optional
         When true, renames columns of the Dataframe to pvlib variable names
-        where applicable. The default is True. See variable
-        :const:`VARIABLE_MAP`.
+        where applicable. See variable :const:`VARIABLE_MAP`.
+        The default is True.
 
     Raises
     ------
@@ -105,8 +103,6 @@ def get_nasa_power(latitude, longitude, start, end, parameters,
     """
     start = pd.Timestamp(start)
     end = pd.Timestamp(end)
-    start = start.tz_localize('UTC') if start.tzinfo is None else start
-    end = end.tz_localize('UTC') if end.tzinfo is None else end
 
     params = {
         'latitude': latitude,

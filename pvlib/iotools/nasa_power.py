@@ -58,13 +58,6 @@ def get_nasa_power(latitude, longitude, start, end, parameters,
         * ``'sb'``: sustainable buildings
         * ``'ag'``: agroclimatology
 
-    time_standard: str, optional
-        Must be one of the below options. The default is ``'utc'``.
-
-        * ``'utc'`` universal time coordinated
-        * ``'lst'``: local solar time.  15 degree swath that represents solar
-          noon at the middle longitude of the swath
-
     elevation: float, optional
         The custom site elevation in meters to produce the corrected
         atmospheric pressure adjusted for elevation.
@@ -73,7 +66,8 @@ def get_nasa_power(latitude, longitude, start, end, parameters,
         for height. Has to be between 10 and 300 m; see [4]_.
     wind_surface: str, optional
         The definable surface type to adjust the wind speed. For a list of the
-        surface types see [4]_.
+        surface types see [4]_. If you provide a wind surface alias please
+        include a site elevation with the request.
     map_variables: bool, optional
         When true, renames columns of the Dataframe to pvlib variable names
         where applicable. See variable :const:`VARIABLE_MAP`.
@@ -89,6 +83,8 @@ def get_nasa_power(latitude, longitude, start, end, parameters,
     data : pd.DataFrame
         Time series data. The index corresponds to the start (left) of the
         interval.
+    meta : dict
+        Metadata. 
 
     References
     ----------
@@ -114,7 +110,7 @@ def get_nasa_power(latitude, longitude, start, end, parameters,
         'format': 'json',
         'user': None,
         'header': True,
-        'time-standard': time_standard,
+        'time-standard': 'utc',
         'site-elevation': elevation,
         'wind-elevation': wind_height,
         'wind-surface': wind_surface,

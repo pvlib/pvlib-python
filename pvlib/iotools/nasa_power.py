@@ -83,7 +83,7 @@ def get_nasa_power(latitude, longitude, start, end, parameters,
         Time series data. The index corresponds to the start (left) of the
         interval.
     meta : dict
-        Metadata. 
+        Metadata.
 
     References
     ----------

@@ -19,7 +19,7 @@ Bug fixes
 
 Enhancements
 ~~~~~~~~~~~~
-
+* Added function :py:func:`pvlib.iotools.get_nasa_power` to retrieve data from NASA POWER. (:pull:`2500`)
 
 Documentation
 ~~~~~~~~~~~~~
@@ -45,3 +45,5 @@ Maintenance
 Contributors
 ~~~~~~~~~~~~
 * Elijah Passmore (:ghuser:`eljpsm`)
+* Ioannis Sifnaios (:ghuser:`IoannisSifnaios`)
+

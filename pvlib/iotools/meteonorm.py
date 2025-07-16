@@ -1,4 +1,4 @@
-"""Functions for reading and retrieving data from Meteonorm."""
+"""Functions for retrieving data from Meteonorm."""
 
 import pandas as pd
 import requests
@@ -38,7 +38,7 @@ def get_meteonorm(latitude, longitude, start, end, api_key, endpoint,
     The Meteonorm data options are described in [1]_ and the API is described
     in [2]_. A detailed list of API options can be found in [3]_.
 
-    This function supports both historical and forecast data, but not TMY.
+    This function supports historical and forecast data, but not TMY.
 
     Parameters
     ----------
@@ -57,35 +57,35 @@ def get_meteonorm(latitude, longitude, start, end, api_key, endpoint,
     endpoint : str
         API endpoint, see [3]_. Must be one of:
 
-            * '/observation/training' - historical data with a 7-day delay
-            * '/observation/realtime' - near-real time (past 7-days)
-            * '/forecast/basic' - forcasts with hourly resolution
-            * '/forecast/precision' - forecsat with 15-min resolution
+        * ``'/observation/training'`` - historical data with a 7-day delay
+        * ``'/observation/realtime'`` - near-real time (past 7-days)
+        * ``'/forecast/basic'`` - forcast with hourly resolution
+        * ``'/forecast/precision'`` - forecast with 15-min resolution
 
     parameters : list, optional
         List of parameters to request or 'all' to get all parameters. The
-        default is "all".
-    surface_tilt: float, default: 0
-        Tilt angle from horizontal plane.
-    surface_azimuth: float, default: 180
+        default is 'all'.
+    surface_tilt: float, optional
+        Tilt angle from horizontal plane. The default is 0.
+    surface_azimuth: float, optional
         Orientation (azimuth angle) of the (fixed) plane. Clockwise from north
-        (north=0, east=90, south=180, west=270).
+        (north=0, east=90, south=180, west=270). The default is 180.
     time_step : {'1min', '15min', '1h'}, optional
-        Frequency of the time series. The default is '15min'. The parameter is
-        ignored if forcasting data is requested.
+        Frequency of the time series. The parameter is ignored when requesting
+        forcasting data. The default is '15min'.
     horizon : optional
-        Specification of the horizon line. Can be either a flat, 'auto', or
+        Specification of the horizon line. Can be either a 'flat', 'auto', or
         a list of 360 horizon elevation angles. The default is 'auto'.
     interval_index: bool, optional
         Whether the index of the returned data object is of the type
         pd.DatetimeIndex or pd.IntervalIndex. This is an experimental feature
         which may be removed without warning. The default is False.
-    map_variables: bool, default: True
+    map_variables: bool, optional
         When true, renames columns of the Dataframe to pvlib variable names
         where applicable. The default is True. See variable
         :const:`VARIABLE_MAP`.
     url: str, optional
-        Base url of the Meteonorm API. The ``endpoint`` parameter is
+        Base URL of the Meteonorm API. The ``endpoint`` parameter is
         appended to the url. The default is
         :const:`pvlib.iotools.meteonorm.URL`.
 
@@ -98,7 +98,7 @@ def get_meteonorm(latitude, longitude, start, end, api_key, endpoint,
     -------
     data : pd.DataFrame
         Time series data. The index corresponds to the start (left) of the
-        interval.
+        interval unless ``interval_index`` is set to False.
     meta : dict
         Metadata.
 
@@ -125,14 +125,11 @@ def get_meteonorm(latitude, longitude, start, end, api_key, endpoint,
         'lon': longitude,
         'start': start.strftime('%Y-%m-%dT%H:%M:%SZ'),
         'end': end.strftime('%Y-%m-%dT%H:%M:%SZ'),
+        'parameters': parameters,
         'surface_tilt': surface_tilt,
         'surface_azimuth': surface_azimuth,
         'horizon': horizon,
-        'parameters': parameters,
     }
-
-    if 'forecast' not in endpoint.lower():
-        params['frequency'] = time_step_map.get(time_step, time_step)
 
     # convert list to string with values separated by commas
     if not isinstance(params['parameters'], (str, type(None))):
@@ -141,41 +138,27 @@ def get_meteonorm(latitude, longitude, start, end, api_key, endpoint,
         parameters = [parameter_dict.get(p, p) for p in parameters]
         params['parameters'] = ','.join(parameters)
 
+    if horizon not in ['auto', 'flat']:
+        params['horizon'] = ','.join(horizon)
+
+    if 'forecast' not in endpoint.lower():
+        params['frequency'] = time_step_map.get(time_step, time_step)
+
     headers = {"Authorization": f"Bearer {api_key}"}
 
     response = requests.get(
         urljoin(url, endpoint), headers=headers, params=params)
-
+    print(response)
     if not response.ok:
         # response.raise_for_status() does not give a useful error message
         raise requests.HTTPError(response.json())
 
-    data_json = response.json()['values']
-    # identify empty columns
-    empty_columns = [k for k, v in data_json.items() if v is None]
-    # remove empty columns
-    _ = [data_json.pop(k) for k in empty_columns]
-
-    data = pd.DataFrame(data_json)
-
-    # xxx: experimental feature - see parameter description
-    if interval_index:
-        data.index = pd.IntervalIndex.from_arrays(
-            left=pd.to_datetime(response.json()['start_times']),
-            right=pd.to_datetime(response.json()['end_times']),
-            closed='both',
-        )
-    else:
-        data.index = pd.to_datetime(response.json()['start_times'])
-
-    meta = response.json()['meta']
-
-    if map_variables:
-        data = data.rename(columns=VARIABLE_MAP)
-        meta['latitude'] = meta.pop('lat')
-        meta['longitude'] = meta.pop('lon')
+    data, meta = _parse_meteonorm(response, interval_index, map_variables)
 
     return data, meta
+
+
+TMY_ENDPOINT = 'climate/tmy'
 
 
 def get_meteonorm_tmy(latitude, longitude, api_key,
@@ -187,14 +170,10 @@ def get_meteonorm_tmy(latitude, longitude, api_key,
                       future_year=None, interval_index=False,
                       map_variables=True, url=URL):
     """
-    Retrieve irradiance and weather data from Meteonorm.
+    Retrieve TMY irradiance and weather data from Meteonorm.
 
     The Meteonorm data options are described in [1]_ and the API is described
     in [2]_. A detailed list of API options can be found in [3]_.
-
-    This function supports the endpoints 'realtime' for data for the past 7
-    days, 'training' for historical data with a delay of 7 days. The function
-    does not support TMY climate data.
 
     Parameters
     ----------
@@ -207,11 +186,11 @@ def get_meteonorm_tmy(latitude, longitude, api_key,
     parameters: list, optional
         List of parameters to request or 'all' to get all parameters. The
         default is 'all'.
-    surface_tilt: float, default: 0
-        Tilt angle from horizontal plane.
-    surface_azimuth : float, default: 180
+    surface_tilt: float, optional
+        Tilt angle from horizontal plane. The default is 0.
+    surface_azimuth : float, optional
         Orientation (azimuth angle) of the (fixed) plane. Clockwise from north
-        (north=0, east=90, south=180, west=270).
+        (north=0, east=90, south=180, west=270). The default is 180.
     time_step: {'1min', '1h'}, optional
         Frequency of the time series. The default is '1h'.
     horizon: optional
@@ -244,13 +223,13 @@ def get_meteonorm_tmy(latitude, longitude, api_key,
         Whether the index of the returned data object is of the type
         pd.DatetimeIndex or pd.IntervalIndex. This is an experimental feature
         which may be removed without warning. The default is False.
-    map_variables: bool, default: True
+    map_variables: bool, optional
         When true, renames columns of the Dataframe to pvlib variable names
-        where applicable. The default is True. See variable
-        :const:`VARIABLE_MAP`.
+        where applicable. See variable :const:`VARIABLE_MAP`. The default is
+        True.
     url: str, optional.
-        Base url of the Meteonorm API. 'climate/tmy'` is
-        appended to the url. The default is:
+        Base URL of the Meteonorm API. 'climate/tmy'` is
+        appended to the URL. The default is:
         :const:`pvlib.iotools.meteonorm.URL`.
 
     Raises
@@ -262,7 +241,7 @@ def get_meteonorm_tmy(latitude, longitude, api_key,
     -------
     data : pd.DataFrame
         Time series data. The index corresponds to the start (left) of the
-        interval.
+        interval unless ``interval_index`` is set to False.
     meta : dict
         Metadata.
 
@@ -293,6 +272,16 @@ def get_meteonorm_tmy(latitude, longitude, api_key,
         'data_version': data_version,
     }
 
+    # convert list to string with values separated by commas
+    if not isinstance(params['parameters'], (str, type(None))):
+        # allow the use of pvlib parameter names
+        parameter_dict = {v: k for k, v in VARIABLE_MAP.items()}
+        parameters = [parameter_dict.get(p, p) for p in parameters]
+        params['parameters'] = ','.join(parameters)
+
+    if horizon not in ['auto', 'flat']:
+        params['horizon'] = ','.join(horizon)
+
     if turbidity != 'auto':
         params['turbidity'] = ','.join(turbidity)
 
@@ -305,24 +294,21 @@ def get_meteonorm_tmy(latitude, longitude, api_key,
     if future_year is not None:
         params['future_year'] = future_year
 
-    # convert list to string with values separated by commas
-    if not isinstance(params['parameters'], (str, type(None))):
-        # allow the use of pvlib parameter names
-        parameter_dict = {v: k for k, v in VARIABLE_MAP.items()}
-        parameters = [parameter_dict.get(p, p) for p in parameters]
-        params['parameters'] = ','.join(parameters)
-
     headers = {"Authorization": f"Bearer {api_key}"}
 
-    endpoint = 'climate/tmy'
-
     response = requests.get(
-        urljoin(url, endpoint), headers=headers, params=params)
+        urljoin(url, TMY_ENDPOINT), headers=headers, params=params)
 
     if not response.ok:
         # response.raise_for_status() does not give a useful error message
         raise requests.HTTPError(response.json())
 
+    data, meta = _parse_meteonorm(response, interval_index, map_variables)
+
+    return data, meta
+
+
+def _parse_meteonorm(response, interval_index, map_variables):
     data_json = response.json()['values']
     # identify empty columns
     empty_columns = [k for k, v in data_json.items() if v is None]

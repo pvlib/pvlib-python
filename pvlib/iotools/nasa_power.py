@@ -1,8 +1,7 @@
-"""Function for reading and retrieving data from NASA POWER."""
+"""Functions for reading and retrieving data from NASA POWER."""
 
 import pandas as pd
 import requests
-
 
 URL = 'https://power.larc.nasa.gov/api/temporal/hourly/point'
 
@@ -18,7 +17,7 @@ VARIABLE_MAP = {
 
 
 def get_nasa_power(latitude, longitude, start, end, parameters,
-                   time_standard='utc', community='re', elevation=None,
+                   community='re', elevation=None,
                    wind_height=None, wind_surface=None, map_variables=True):
     """
     Retrieve irradiance and weather data from NASA POWER.

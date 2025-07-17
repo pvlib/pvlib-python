@@ -25,19 +25,15 @@ def test_get_nasa_power(data_index, ghi_series):
                                               longitude=7.64,
                                               start=data_index[0],
                                               end=data_index[-1],
-                                              parameters=['ALLSKY_SFC_SW_DWN'],
                                               map_variables=False)
     # Check that metadata is correct
     assert meta['latitude'] == 44.76
     assert meta['longitude'] == 7.64
     assert meta['altitude'] == 705.88
-    assert meta['header']['start'] == '20250202'
-    assert meta['header']['end'] == '20250202'
-    assert meta['header']['time_standard'] == 'UTC'
-    assert meta['header']['title'] == 'NASA/POWER Source Native Resolution Hourly Data'  # noqa: E501
-    assert meta['header']['sources'][0] == 'SYN1DEG'
-    # Check that columns are parsed correctly
-    assert 'ALLSKY_SFC_SW_DWN' in data.columns
+    assert meta['start'] == '20250202'
+    assert meta['end'] == '20250202'
+    assert meta['time_standard'] == 'UTC'
+    assert meta['title'] == 'NASA/POWER Source Native Resolution Hourly Data'
     # Assert that the index is parsed correctly
     pd.testing.assert_index_equal(data.index, data_index)
     # Test one column
@@ -45,21 +41,26 @@ def test_get_nasa_power(data_index, ghi_series):
                                    check_freq=False, check_names=False)
 
 
+def test_get_nasa_power_pvlib_params_naming(data_index, ghi_series):
+    data, meta = pvlib.iotools.get_nasa_power(latitude=44.76,
+                                              longitude=7.64,
+                                              start=data_index[0],
+                                              end=data_index[-1],
+                                              parameters=['ghi'])
+    # Assert that the index is parsed correctly
+    pd.testing.assert_index_equal(data.index, data_index)
+    # Test one column
+    pd.testing.assert_series_equal(data['ghi'], ghi_series,
+                                   check_freq=False)
+
+
 def test_get_nasa_power_map_variables(data_index):
     # Check that variables are mapped by default to pvlib names
     data, meta = pvlib.iotools.get_nasa_power(latitude=44.76,
                                               longitude=7.64,
                                               start=data_index[0],
-                                              end=data_index[-1],
-                                              parameters=['ALLSKY_SFC_SW_DWN',
-                                                          'ALLSKY_SFC_SW_DIFF',
-                                                          'ALLSKY_SFC_SW_DNI',
-                                                          'CLRSKY_SFC_SW_DWN',
-                                                          'T2M', 'WS2M',
-                                                          'WS10M'
-                                                          ])
-    mapped_column_names = ['ghi', 'dni', 'dhi', 'temp_air_2m', 'wind_speed_2m',
-                           'wind_speed_10m', 'ghi_clear']
+                                              end=data_index[-1])
+    mapped_column_names = ['ghi', 'dni', 'dhi', 'temp_air', 'wind_speed']
     for c in mapped_column_names:
         assert c in data.columns
     assert meta['latitude'] == 44.76

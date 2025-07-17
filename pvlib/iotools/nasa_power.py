@@ -2,8 +2,14 @@
 
 import pandas as pd
 import requests
+import numpy as np
 
 URL = 'https://power.larc.nasa.gov/api/temporal/hourly/point'
+
+DEFAULT_PARAMETERS = [
+    'ALLSKY_SFC_SW_DNI', 'ALLSKY_SFC_SW_DIFF', 'ALLSKY_SFC_SW_DWN',
+    'T2M', 'WS10M'
+    ]
 
 VARIABLE_MAP = {
     'ALLSKY_SFC_SW_DWN': 'ghi',
@@ -12,13 +18,14 @@ VARIABLE_MAP = {
     'CLRSKY_SFC_SW_DWN': 'ghi_clear',
     'T2M': 'temp_air',
     'WS2M': 'wind_speed_2m',
-    'WS10M': 'wind_speed_10m',
+    'WS10M': 'wind_speed',
 }
 
 
-def get_nasa_power(latitude, longitude, start, end, parameters,
-                   community='re', elevation=None,
-                   wind_height=None, wind_surface=None, map_variables=True):
+def get_nasa_power(latitude, longitude, start, end,
+                   parameters=DEFAULT_PARAMETERS, community='re', url=URL,
+                   elevation=None, wind_height=None, wind_surface=None,
+                   map_variables=True):
     """
     Retrieve irradiance and weather data from NASA POWER.
 
@@ -37,15 +44,14 @@ def get_nasa_power(latitude, longitude, start, end, parameters,
     end: datetime like
         Last timestamp of the requested period.
     parameters: str, list
-        List of parameters. Some common parameters are mentioned below; for the
-        full list see [3]_:
+        List of parameters. The default parameters are mentioned below; for the
+        full list see [3]_. Note that the pvlib naming conventions can also be
+        used.
 
         * ``ALLSKY_SFC_SW_DWN``: Global Horizontal Irradiance (GHI) [Wm⁻²]
         * ``ALLSKY_SFC_SW_DIFF``: Diffuse Horizontal Irradiance (DHI) [Wm⁻²]
         * ``ALLSKY_SFC_SW_DNI``: Direct Normal Irradiance (DNI) [Wm⁻²]
-        * ``CLRSKY_SFC_SW_DWN``: Clear-sky GHI [Wm⁻²]
         * ``T2M``: Air temperature at 2 m [C]
-        * ``WS2M``: Wind speed at 2 m [m/s]
         * ``WS10M``: Wind speed at 10 m [m/s]
 
     community: str, default: ``'re'``
@@ -119,7 +125,7 @@ def get_nasa_power(latitude, longitude, start, end, parameters,
         'wind-surface': wind_surface,
     }
 
-    response = requests.get(URL, params=params)
+    response = requests.get(url, params=params)
     if not response.ok:
         # response.raise_for_status() does not give a useful error message
         raise requests.HTTPError(response.json())
@@ -129,6 +135,7 @@ def get_nasa_power(latitude, longitude, start, end, parameters,
     hourly_data = data['properties']['parameter']
     df = pd.DataFrame(hourly_data)
     df.index = pd.to_datetime(df.index, format='%Y%m%d%H').tz_localize('UTC')
+    df = df.replace(-999, np.nan)
 
     # Create metadata dictionary
     meta = data['header']

@@ -9,7 +9,7 @@ URL = 'https://power.larc.nasa.gov/api/temporal/hourly/point'
 DEFAULT_PARAMETERS = [
     'ALLSKY_SFC_SW_DNI', 'ALLSKY_SFC_SW_DIFF', 'ALLSKY_SFC_SW_DWN',
     'T2M', 'WS10M'
-    ]
+]
 
 VARIABLE_MAP = {
     'ALLSKY_SFC_SW_DWN': 'ghi',

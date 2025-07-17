@@ -54,10 +54,10 @@ def get_nasa_power(latitude, longitude, start, end,
         * ``T2M``: Air temperature at 2 m [C]
         * ``WS10M``: Wind speed at 10 m [m/s]
 
-    community: str, default: ``'re'``
+    community: str
         Can be one of the following depending on which parameters are of
-        interest. Note that in many cases this choice might affect the units
-        of the parameter:
+        interest. The default is ``'re'``. Note that in many cases this choice
+        might affect the units of the parameter.
 
         * ``'re'``: renewable energy
         * ``'sb'``: sustainable buildings
@@ -76,7 +76,7 @@ def get_nasa_power(latitude, longitude, start, end,
     map_variables: bool, optional
         When true, renames columns of the Dataframe to pvlib variable names
         where applicable. See variable :const:`VARIABLE_MAP`.
-        The default is True.
+        The default is `True`.
 
     Raises
     ------

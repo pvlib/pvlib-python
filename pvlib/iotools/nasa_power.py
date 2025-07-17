@@ -10,7 +10,7 @@ VARIABLE_MAP = {
     'ALLSKY_SFC_SW_DIFF': 'dhi',
     'ALLSKY_SFC_SW_DNI': 'dni',
     'CLRSKY_SFC_SW_DWN': 'ghi_clear',
-    'T2M': 'temp_air_2m',
+    'T2M': 'temp_air',
     'WS2M': 'wind_speed_2m',
     'WS10M': 'wind_speed_10m',
 }
@@ -99,6 +99,10 @@ def get_nasa_power(latitude, longitude, start, end, parameters,
     start = pd.Timestamp(start)
     end = pd.Timestamp(end)
 
+    # allow the use of pvlib parameter names
+    parameter_dict = {v: k for k, v in VARIABLE_MAP.items()}
+    parameters = [parameter_dict.get(p, p) for p in parameters]
+
     params = {
         'latitude': latitude,
         'longitude': longitude,
@@ -126,9 +130,10 @@ def get_nasa_power(latitude, longitude, start, end, parameters,
     df = pd.DataFrame(hourly_data)
     df.index = pd.to_datetime(df.index, format='%Y%m%d%H').tz_localize('UTC')
 
-    # Make metadata dictionary
-    meta = {key: data[key] for key in ['header', 'messages', 'parameters',
-                                       'times', 'type']}
+    # Create metadata dictionary
+    meta = data['header']
+    meta['times'] = data['times']
+    meta['parameters'] = data['parameters']
 
     meta['longitude'] = data['geometry']['coordinates'][0]
     meta['latitude'] = data['geometry']['coordinates'][1]

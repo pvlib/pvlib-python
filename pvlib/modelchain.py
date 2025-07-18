@@ -62,8 +62,8 @@ SAPM_CONFIG = dict(
 
 
 @deprecated(
-    since="0.13",
-    removal="0.14",
+    since="0.13.1",
+    removal="the next version",
     name="pvlib.modelchain.get_orientation",
     alternative=None,
     addendum=None,

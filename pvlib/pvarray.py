@@ -245,25 +245,21 @@ def _infer_k_huld(cell_type, pdc0):
 def _infer_k_huld_eu_jrc(cell_type, pdc0):
     """
     Get the EU JRC updated coefficients for the Huld model.
-    
     Parameters
     ----------
     cell_type : str
         Must be one of 'csi', 'cis', or 'cdte'
     pdc0 : numeric
         Power of the modules at reference conditions [W]
-        
     Returns
     -------
     tuple
         The six coefficients (k1-k6) for the Huld model, scaled by pdc0
-        
     Notes
     -----
     These coefficients are from the EU JRC paper [1]_. The coefficients are
     for the version of Huld's equation that has factored Pdc0 out of the
     polynomial, so they are multiplied by pdc0 before being returned.
-    
     References
     ----------
     .. [1] EU JRC paper, "Updated coefficients for the Huld model",
@@ -280,7 +276,14 @@ def _infer_k_huld_eu_jrc(cell_type, pdc0):
     return k
 
 
-def huld(effective_irradiance, temp_mod, pdc0, k=None, cell_type=None, use_eu_jrc=False):
+def huld(
+    effective_irradiance,
+    temp_mod,
+    pdc0,
+    k=None,
+    cell_type=None,
+    use_eu_jrc=False
+):
     r"""
     Power (DC) using the Huld model.
 
@@ -392,8 +395,10 @@ def huld(effective_irradiance, temp_mod, pdc0, k=None, cell_type=None, use_eu_jr
         logGprime = np.log(gprime, out=np.zeros_like(gprime),
                            where=np.array(gprime > 0))
     # Eq. 1 in [1]
-    pdc = gprime * (pdc0 + k[0] * logGprime + k[1] * logGprime**2 +
-                    k[2] * tprime + k[3] * tprime * logGprime +
-                    k[4] * tprime * logGprime**2 +
-                    k[5] * tprime**2)
+    pdc = gprime * (
+        pdc0 + k[0] * logGprime + k[1] * logGprime**2 +
+        k[2] * tprime + k[3] * tprime * logGprime +
+        k[4] * tprime * logGprime**2 +
+        k[5] * tprime**2
+    )
     return pdc

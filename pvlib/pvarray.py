@@ -394,5 +394,6 @@ def huld(effective_irradiance, temp_mod, pdc0, k=None, cell_type=None, use_eu_jr
     # Eq. 1 in [1]
     pdc = gprime * (pdc0 + k[0] * logGprime + k[1] * logGprime**2 +
                     k[2] * tprime + k[3] * tprime * logGprime +
-                    k[4] * tprime * logGprime**2 + k[5] * tprime**2)
+                    k[4] * tprime * logGprime**2 +
+                    k[5] * tprime**2)
     return pdc

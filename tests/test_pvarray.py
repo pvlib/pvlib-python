@@ -80,11 +80,14 @@ def test_huld_eu_jrc():
     # Test that EU JRC coefficients give different results than original for all cell types
     for cell_type in ['cSi', 'CIS', 'CdTe']:
         res_orig = pvarray.huld(eff_irr, temp_mod, pdc0, cell_type=cell_type)
-        res_eu_jrc = pvarray.huld(eff_irr, temp_mod, pdc0, cell_type=cell_type, use_eu_jrc=True)
-        assert not np.isclose(res_orig, res_eu_jrc), f"Results should differ for {cell_type}: {res_orig} vs {res_eu_jrc}"
+        res_eu_jrc = pvarray.huld(
+            eff_irr, temp_mod, pdc0, cell_type=cell_type, use_eu_jrc=True)
+        assert not np.isclose(res_orig, res_eu_jrc), (
+            f"Results should differ for {cell_type}: {res_orig} vs {res_eu_jrc}")
     # Also check that all cell types are supported and error is raised for invalid type
     try:
-        pvarray.huld(eff_irr, temp_mod, pdc0, cell_type='invalid', use_eu_jrc=True)
+        pvarray.huld(
+            eff_irr, temp_mod, pdc0, cell_type='invalid', use_eu_jrc=True)
     except KeyError:
         pass
     else:

@@ -7,8 +7,7 @@ import numpy as np
 URL = 'https://power.larc.nasa.gov/api/temporal/hourly/point'
 
 DEFAULT_PARAMETERS = [
-    'ALLSKY_SFC_SW_DNI', 'ALLSKY_SFC_SW_DIFF', 'ALLSKY_SFC_SW_DWN',
-    'T2M', 'WS10M'
+    'dni', 'dhi', 'ghi', 'temp_air', 'wind_speed'
 ]
 
 VARIABLE_MAP = {
@@ -48,11 +47,11 @@ def get_nasa_power(latitude, longitude, start, end,
         full list see [3]_. Note that the pvlib naming conventions can also be
         used.
 
-        * ``ALLSKY_SFC_SW_DWN``: Global Horizontal Irradiance (GHI) [Wm⁻²]
-        * ``ALLSKY_SFC_SW_DIFF``: Diffuse Horizontal Irradiance (DHI) [Wm⁻²]
-        * ``ALLSKY_SFC_SW_DNI``: Direct Normal Irradiance (DNI) [Wm⁻²]
-        * ``T2M``: Air temperature at 2 m [C]
-        * ``WS10M``: Wind speed at 10 m [m/s]
+        * Global Horizontal Irradiance (GHI) [Wm⁻²]
+        * Diffuse Horizontal Irradiance (DHI) [Wm⁻²]
+        * Direct Normal Irradiance (DNI) [Wm⁻²]
+        * Air temperature at 2 m [C]
+        * Wind speed at 10 m [m/s]
 
     community: str, default 're'
         Can be one of the following depending on which parameters are of
@@ -134,7 +133,6 @@ def get_nasa_power(latitude, longitude, start, end,
     hourly_data = data['properties']['parameter']
     df = pd.DataFrame(hourly_data)
     df.index = pd.to_datetime(df.index, format='%Y%m%d%H').tz_localize('UTC')
-    df = df.replace(-999, np.nan)
 
     # Create metadata dictionary
     meta = data['header']
@@ -144,6 +142,9 @@ def get_nasa_power(latitude, longitude, start, end,
     meta['longitude'] = data['geometry']['coordinates'][0]
     meta['latitude'] = data['geometry']['coordinates'][1]
     meta['altitude'] = data['geometry']['coordinates'][2]
+
+    # Replace NaN values
+    df = df.replace(meta['fill_value'], np.nan)
 
     # Rename according to pvlib convention
     if map_variables:

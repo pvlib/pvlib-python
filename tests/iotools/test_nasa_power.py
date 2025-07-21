@@ -2,6 +2,7 @@ import pandas as pd
 import pytest
 import pvlib
 from requests.exceptions import HTTPError
+from tests.conftest import RERUNS, RERUNS_DELAY
 
 
 @pytest.fixture
@@ -27,6 +28,7 @@ def test_get_nasa_power(data_index, ghi_series):
                                               longitude=7.64,
                                               start=data_index[0],
                                               end=data_index[-1],
+                                              parameters=['ALLSKY_SFC_SW_DWN'],
                                               map_variables=False)
     # Check that metadata is correct
     assert meta['latitude'] == 44.76

@@ -54,9 +54,9 @@ def get_nasa_power(latitude, longitude, start, end,
         * ``T2M``: Air temperature at 2 m [C]
         * ``WS10M``: Wind speed at 10 m [m/s]
 
-    community: str
+    community: str, default 're'
         Can be one of the following depending on which parameters are of
-        interest. The default is ``'re'``. Note that in many cases this choice
+        interest. Note that in many cases this choice
         might affect the units of the parameter.
 
         * ``'re'``: renewable energy
@@ -73,10 +73,9 @@ def get_nasa_power(latitude, longitude, start, end,
         The definable surface type to adjust the wind speed. For a list of the
         surface types see [4]_. If you provide a wind surface alias please
         include a site elevation with the request.
-    map_variables: bool, optional
+    map_variables: bool, default True
         When true, renames columns of the Dataframe to pvlib variable names
         where applicable. See variable :const:`VARIABLE_MAP`.
-        The default is `True`.
 
     Raises
     ------

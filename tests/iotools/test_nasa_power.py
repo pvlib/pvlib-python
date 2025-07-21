@@ -20,6 +20,8 @@ def ghi_series(data_index):
     return pd.Series(data=ghi, index=data_index, name='ghi')
 
 
+@pytest.mark.remote_data
+@pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_get_nasa_power(data_index, ghi_series):
     data, meta = pvlib.iotools.get_nasa_power(latitude=44.76,
                                               longitude=7.64,

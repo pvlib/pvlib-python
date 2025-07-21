@@ -53,7 +53,8 @@ def test_huld():
     pdc0 = 100
     res = pvarray.huld(1000, 25, pdc0, cell_type='cSi')
     assert np.isclose(res, pdc0)
-    exp_sum = np.exp(1) * (np.sum(pvarray._infer_k_huld('cSi', pdc0)) + pdc0)
+    k = pvarray._infer_k_huld('cSi', pdc0, '2011')
+    exp_sum = np.exp(1) * (np.sum(k) + pdc0)
     res = pvarray.huld(1000*np.exp(1), 26, pdc0, cell_type='cSi')
     assert np.isclose(res, exp_sum)
     res = pvarray.huld(100, 30, pdc0, k=(1, 1, 1, 1, 1, 1))
@@ -78,18 +79,15 @@ def test_huld_params():
     eff_irr = 800  # W/m^2 (not 1000)
     temp_mod = 35  # deg C (not 25)
     # calculated by C. Hansen using Excel, 2025
-    expected = {
-        '2011': {
-            'csi': 79.964051,
-            'cis': 79.970860,
-            'cdte': 79.986428
-            },
-        '2025': {
-            'csi': 79.964214,
-            'cis': 79.970951,
-            'cdte': 79.986485
-            }
-        }
+    expected = {'2011': {'csi': 76.405089,
+                         'cis': 77.086016,
+                         'cdte': 78.642762
+                         },
+                '2025': {'csi': 76.421390,
+                         'cis': 77.095102,
+                         'cdte': 78.648450
+                         }
+                }
     # Test with 2011 coefficients for all cell types
     for yr in expected:
         for cell_type in expected[yr]:

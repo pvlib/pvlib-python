@@ -249,14 +249,14 @@ def _infer_k_huld(cell_type, pdc0, k_version):
     # equation that has factored Pdc0 out of the polynomial:
     #  P = G/1000 * Pdc0 * (1 + k1 log(Geff) + ...) so these parameters are
     # multiplied by pdc0
-    if k_version=='2011':
+    if k_version == '2011':
         huld_params = {'csi': (-0.017237, -0.040465, -0.004702, 0.000149,
                                0.000170, 0.000005),
                        'cis': (-0.005554, -0.038724, -0.003723, -0.000905,
                                -0.001256, 0.000001),
                        'cdte': (-0.046689, -0.072844, -0.002262, 0.000276,
                                 0.000159, -0.000006)}
-    elif k_version=='2025':
+    elif k_version == '2025':
         # Updated coefficients from EU JRC paper
         huld_params = {'csi': (-0.017162, -0.040289, -0.004681, 0.000148,
                                0.000169, 0.000005),

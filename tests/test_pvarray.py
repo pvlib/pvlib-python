@@ -99,7 +99,7 @@ def test_huld_params():
         pvarray.huld(
             eff_irr, temp_mod, pdc0, cell_type='invalid', k_version='2011'
         )
-    with pytest.raises(ValueError, match='Invalid k_version="2021"'):
+    with pytest.raises(ValueError, match='Invalid k_version=2021'):
         pvarray.huld(
             eff_irr, temp_mod, pdc0, cell_type='csi', k_version='2021'
         )

@@ -34,8 +34,8 @@ There is a convention on consistent variable names throughout the library:
     apparent_zenith
         Apparent (refraction-corrected) solar zenith angle. The solar
         zenith angle describes the position of the sun relative to the vertical and is
-        defined as the angle between the sun’s rays and a vector pointing straight up
-        from the observer. [°]
+        defined as the angle between a vector pointed straight up and a vector pointed
+        at the sun, from the observer. [°]
 
     apparent_elevation
         Refraction-corrected solar elevation angle. This is the complement of
@@ -155,9 +155,9 @@ There is a convention on consistent variable names throughout the library:
         North = 0°, East = 90°, South = 180°, West = 270°.
 
     solar_zenith
-        Zenith angle of the sun in degrees. This is the angle between the sun's rays and
-        the vertical direction. This is the complement of :term:`solar_elevation`
-        (90 - elevation). [°]
+        Zenith angle of the sun in degrees. This is the angle between is between a
+        vector pointed straight up and a vector pointed at the sun, from the observer.
+        This is the complement of :term:`solar_elevation` (90 - elevation). [°]
 
     spectra
     spectra_components

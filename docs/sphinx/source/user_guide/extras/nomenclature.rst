@@ -32,12 +32,11 @@ There is a convention on consistent variable names throughout the library:
         Average photon energy
 
     apparent_zenith
-        Refraction-corrected solar zenith angle in degrees.
-        This angle accounts for atmospheric refraction effects.
+        Refraction-corrected solar zenith angle. [°]
 
     apparent_elevation
-        Refraction-corrected solar elevation angle in degrees. Must be >=-90 and <=90.
-        This is the complement of apparent_zenith (90 - apparent_zenith).
+        Refraction-corrected solar elevation angle. This is the complement of
+        :term:`apparent_zenith` (90 - apparent_zenith). [°]
 
     bhi
         Beam/direct horizontal irradiance
@@ -154,7 +153,7 @@ There is a convention on consistent variable names throughout the library:
     solar_zenith
         Zenith angle of the sun in degrees. This is the angle between the sun's rays and
         the vertical direction. This is the complement of :term:`solar_elevation`
-        (90 - elevation).
+        (90 - elevation). [°]
 
     spectra
     spectra_components

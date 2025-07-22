@@ -147,7 +147,7 @@ There is a convention on consistent variable names throughout the library:
 
     solar_azimuth
         Azimuth angle of the sun in degrees East of North.
-        The pvlib-python convention is defined as degrees east of north, so that
+        The pvlib-python convention is defined as degrees east of north, so
         North = 0°, East = 90°, South = 180°, West = 270°.
 
     solar_zenith
@@ -164,7 +164,7 @@ There is a convention on consistent variable names throughout the library:
     
     surface_azimuth
         Azimuth angle of the surface in degrees East of North. The pvlib-python
-        convention is defined as degrees east (clockwise) of north, so that North = 0°,
+        convention is defined as degrees east (clockwise) of north, so North = 0°,
         East = 90°, South = 180°, West = 270°. Other tools may use different
         conventions. 
 

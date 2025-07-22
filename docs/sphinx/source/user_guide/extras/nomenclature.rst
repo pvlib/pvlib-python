@@ -22,8 +22,7 @@ There is a convention on consistent variable names throughout the library:
     
     aoi
         Angle of incidence. Angle between the surface normal vector and the
-        vector pointing towards the sun's center. Must be >=0 and <=180 degrees.
-        When the sun is behind the surface, the value is >90 degrees.
+        vector pointing towards the sun's center.
     
     aoi_projection
         cos(aoi). When the sun is behind the surface, the value is negative.

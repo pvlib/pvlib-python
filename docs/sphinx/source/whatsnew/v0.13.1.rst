@@ -19,7 +19,7 @@ Bug fixes
 
 Enhancements
 ~~~~~~~~~~~~
-
+* Add new parameters for the Huld PV array mode :py:func:`~pvlib.pvarray.huld` (:issue:`2461`, :pull:`2486`)
 
 Documentation
 ~~~~~~~~~~~~~
@@ -45,3 +45,6 @@ Maintenance
 Contributors
 ~~~~~~~~~~~~
 * Elijah Passmore (:ghuser:`eljpsm`)
+* Omar Bahamida (:ghuser:`OmarBahamida`)
+* Cliff Hansen (:ghuser:`cwhanse`)
+

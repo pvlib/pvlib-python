@@ -170,8 +170,8 @@ There is a convention on consistent variable names throughout the library:
         conventions. 
 
     surface_tilt
-        Panel tilt from horizontal [°]. Must be >=0 and <=180.
-        For example, a surface facing up = 0°, surface facing horizon = 90°.
+        Panel tilt from horizontal [°]. A surface facing up = 0°, surface facing
+        horizon = 90°.
 
     temp_air
         Temperature of the air

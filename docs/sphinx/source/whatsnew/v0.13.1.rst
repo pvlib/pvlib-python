@@ -10,7 +10,8 @@ Breaking Changes
 
 Deprecations
 ~~~~~~~~~~~~
-
+* Rename parameter name ``aparent_azimuth`` to ``solar_azimuth`` in :py:func:`~pvlib.tracking.singleaxis`.
+  (:issue:`2479`, :pull:`2480`)
 
 Bug fixes
 ~~~~~~~~~
@@ -38,8 +39,9 @@ Requirements
 
 Maintenance
 ~~~~~~~~~~~
+* Fix FAQ URL in ``README.md``. (:pull:`2488`)
 
 
 Contributors
 ~~~~~~~~~~~~
-
+* Elijah Passmore (:ghuser:`eljpsm`)

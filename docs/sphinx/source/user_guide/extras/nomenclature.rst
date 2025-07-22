@@ -148,8 +148,8 @@ There is a convention on consistent variable names throughout the library:
 
     solar_azimuth
         Azimuth angle of the sun in degrees East of North. Must be >=0 and <=360.
-        The convention is defined as degrees east of north (e.g. North = 0°,
-        East = 90°, South = 180°, West = 270°).
+        The pvlib-python convention is defined as degrees east of north. For example,
+        North = 0°, East = 90°, South = 180°, West = 270°.
 
     solar_zenith
         Zenith angle of the sun in degrees. Must be >=0 and <=180.
@@ -165,9 +165,9 @@ There is a convention on consistent variable names throughout the library:
     
     surface_azimuth
         Azimuth angle of the surface in degrees East of North. Must be >=0 and <=360.
-        The convention is defined as degrees east (clockwise) of north. This is pvlib's
-        convention; other tools may use different conventions. For example, North = 0°,
-        East = 90°, South = 180°, West = 270°.
+        The pvlib-python convention is defined as degrees east (clockwise) of north.
+        For example, North = 0°, East = 90°, South = 180°, West = 270°. Other tools may
+        use different conventions. 
 
     surface_tilt
         Panel tilt from horizontal [°]. Must be >=0 and <=180.

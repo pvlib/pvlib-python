@@ -964,4 +964,3 @@ def test_spa_python_numba_physical_dst(expected_solpos, golden):
                                               temperature=11, delta_t=67,
                                               atmos_refract=0.5667,
                                               how='numpy', numthreads=1)
-

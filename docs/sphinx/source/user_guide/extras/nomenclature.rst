@@ -32,7 +32,7 @@ There is a convention on consistent variable names throughout the library:
         Average photon energy
 
     apparent_zenith
-        Refraction-corrected solar zenith angle in degrees. Must be >=0 and <=180.
+        Refraction-corrected solar zenith angle in degrees.
         This angle accounts for atmospheric refraction effects.
 
     apparent_elevation
@@ -147,14 +147,14 @@ There is a convention on consistent variable names throughout the library:
         Diode saturation current
 
     solar_azimuth
-        Azimuth angle of the sun in degrees East of North. Must be >=0 and <=360.
+        Azimuth angle of the sun in degrees East of North.
         The pvlib-python convention is defined as degrees east of north, so that
         North = 0°, East = 90°, South = 180°, West = 270°.
 
     solar_zenith
-        Zenith angle of the sun in degrees. Must be >=0 and <=180.
-        This is the angle between the sun's rays and the vertical direction.
-        This is the complement of :term:`solar_elevation` (90 - elevation).
+        Zenith angle of the sun in degrees. This is the angle between the sun's rays and
+        the vertical direction. This is the complement of :term:`solar_elevation`
+        (90 - elevation).
 
     spectra
     spectra_components
@@ -164,10 +164,10 @@ There is a convention on consistent variable names throughout the library:
         is composed of direct and diffuse components.
     
     surface_azimuth
-        Azimuth angle of the surface in degrees East of North. Must be >=0 and <=360.
-        The pvlib-python convention is defined as degrees east (clockwise) of north, so
-        that North = 0°, East = 90°, South = 180°, West = 270°. Other tools may
-        use different conventions. 
+        Azimuth angle of the surface in degrees East of North. The pvlib-python
+        convention is defined as degrees east (clockwise) of north, so that North = 0°,
+        East = 90°, South = 180°, West = 270°. Other tools may use different
+        conventions. 
 
     surface_tilt
         Panel tilt from horizontal [°]. Must be >=0 and <=180.

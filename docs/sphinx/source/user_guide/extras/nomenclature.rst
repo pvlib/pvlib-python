@@ -32,7 +32,10 @@ There is a convention on consistent variable names throughout the library:
         Average photon energy
 
     apparent_zenith
-        Refraction-corrected solar zenith angle. [°]
+        Apparent (refraction-corrected) solar zenith angle. The solar
+        zenith angle describes the position of the sun relative to the vertical and is
+        defined as the angle between the sun’s rays and a vector pointing straight up
+        from the observer. [°]
 
     apparent_elevation
         Refraction-corrected solar elevation angle. This is the complement of
@@ -146,7 +149,8 @@ There is a convention on consistent variable names throughout the library:
         Diode saturation current
 
     solar_azimuth
-        Azimuth angle of the sun in degrees East of North.
+        Azimuth angle of the sun in degrees East of North. The solar azimuth angle
+        describes the sun’s position along the horizon relative to a reference point.
         The pvlib-python convention is defined as degrees east of north, so
         North = 0°, East = 90°, South = 180°, West = 270°.
 
@@ -163,14 +167,17 @@ There is a convention on consistent variable names throughout the library:
         is composed of direct and diffuse components.
     
     surface_azimuth
-        Azimuth angle of the surface in degrees East of North. The pvlib-python
-        convention is defined as degrees east (clockwise) of north, so North = 0°,
-        East = 90°, South = 180°, West = 270°. Other tools may use different
+        Azimuth angle of the surface in degrees East of North. This angle describes the
+        horizontal orientation of the PV panel relative to a reference direction. The
+        pvlib-python convention is defined as degrees east (clockwise) of north, so
+        North = 0°, East = 90°, South = 180°, West = 270°. Other tools may use different
         conventions. 
 
     surface_tilt
-        Panel tilt from horizontal [°]. A surface facing up = 0°, surface facing
-        horizon = 90°.
+        Panel tilt from horizontal [°]. The surface tilt angle describes
+        the inclination of the PV panel and is defined as degrees from the horizontal
+        such that a surface facing up would have a surface tilt of 0°, and one facing
+        the horizon would be 90°.  [°]
 
     temp_air
         Temperature of the air

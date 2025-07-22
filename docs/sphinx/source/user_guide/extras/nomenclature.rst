@@ -32,7 +32,7 @@ There is a convention on consistent variable names throughout the library:
         Average photon energy
 
     apparent_zenith
-        Apparent (refraction-corrected) solar zenith angle. The solar
+        Refraction-corrected solar zenith angle. The solar
         zenith angle describes the position of the sun relative to the vertical and is
         defined as the angle between a vector pointed straight up and a vector pointed
         at the sun, from the observer. [°]
@@ -150,8 +150,8 @@ There is a convention on consistent variable names throughout the library:
 
     solar_azimuth
         Azimuth angle of the sun in degrees East of North. The solar azimuth angle
-        describes the sun’s position along the horizon relative to a reference point.
-        The pvlib-python convention is defined as degrees east of north, so
+        describes the sun’s position along the horizon relative to the observer.
+        The pvlib-python convention is defined as degrees East of North, so
         North = 0°, East = 90°, South = 180°, West = 270°.
 
     solar_zenith
@@ -169,13 +169,12 @@ There is a convention on consistent variable names throughout the library:
     surface_azimuth
         Azimuth angle of the surface in degrees East of North. This angle describes the
         horizontal orientation of the PV panel relative to a reference direction. The
-        pvlib-python convention is defined as degrees east (clockwise) of north, so
-        North = 0°, East = 90°, South = 180°, West = 270°. Other tools may use different
-        conventions. 
+        pvlib-python convention is defined as degrees East (clockwise) of North, so
+        North = 0°, East = 90°, South = 180°, West = 270°.
 
     surface_tilt
-        Panel tilt from horizontal [°]. The surface tilt angle describes
-        the inclination of the PV panel and is defined as degrees from the horizontal
+        Tilt from horizontal [°]. The surface tilt angle 
+        is defined as degrees from the horizontal
         such that a surface facing up would have a surface tilt of 0°, and one facing
         the horizon would be 90°.  [°]
 

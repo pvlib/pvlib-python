@@ -272,7 +272,7 @@ def _infer_k_huld(cell_type, pdc0, k_version):
 
 
 def huld(effective_irradiance, temp_mod, pdc0, k=None, cell_type=None,
-         k_version=None):
+         k_version='2011'):
     r"""
     Power (DC) using the Huld model.
 
@@ -374,8 +374,6 @@ def huld(effective_irradiance, temp_mod, pdc0, k=None, cell_type=None,
     """
     if k is None:
         if cell_type is not None:
-            if k_version is None:
-                k_version = '2011'
             k = _infer_k_huld(cell_type, pdc0, k_version)
         else:
             raise ValueError('Either k or cell_type must be specified')

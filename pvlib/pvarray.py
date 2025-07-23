@@ -305,7 +305,7 @@ def huld(effective_irradiance, temp_mod, pdc0, k=None, cell_type=None,
         If provided, must be one of ``'cSi'``, ``'CIS'``, or ``'CdTe'``.
         Used to look up default values for ``k`` if ``k`` is not specified.
     k_version : str, default ``"2011"``
-        Either ``'2011'`` (default) or ``'2025'``. Used to select default values
+        Either ``'2011'`` (default) or ``'2025'``. Selects the default value
         for ``k`` if ``k`` is not specified. If ``'2011'``, values from [1]_
         are used; if ``'2025'`` values are from [2]_.
 

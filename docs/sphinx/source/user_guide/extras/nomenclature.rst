@@ -168,9 +168,9 @@ There is a convention on consistent variable names throughout the library:
     
     surface_azimuth
         Azimuth angle of the surface in degrees East of North. This angle describes the
-        horizontal orientation of the PV panel relative to a reference direction. The
-        pvlib-python convention is defined as degrees East (clockwise) of North, so
-        North = 0°, East = 90°, South = 180°, West = 270°.
+        horizontal projection of the normal vector from the surface. The pvlib-python
+        convention is defined as degrees East (clockwise) of North, so North = 0°,
+        East = 90°, South = 180°, West = 270°.
 
     surface_tilt
         Tilt from horizontal [°]. The surface tilt angle 

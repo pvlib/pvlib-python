@@ -305,10 +305,10 @@ def huld(effective_irradiance, temp_mod, pdc0, k=None, cell_type=None,
         If provided, must be one of ``'cSi'``, ``'CIS'``, or ``'CdTe'``.
         Used to look up default values for ``k`` if ``k`` is not specified.
     k_version : str, optional
-        Either `'2011'` (default) or `'2025'`. Used to select default values
-        for ``k`` if ``k`` is not specified. If `'2011'`, values from PVGIS
-        documentation and published in [2]_ as "current"; if `'2025'`
-        values are from [3]_ published as "updated".
+        Either ``'2011'`` (default) or ``'2025'``. Selects values
+        for ``k`` if ``k`` is not specified. If ``'2011'``, values are
+        from PVGIS documentation and are published in [2]_ as "current".
+        If ``'2025'`` values are from [2]_ published as "updated".
 
     Returns
     -------

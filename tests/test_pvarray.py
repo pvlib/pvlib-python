@@ -83,9 +83,9 @@ def test_huld_params():
                          'cis': 77.086016,
                          'cdte': 78.642762
                          },
-                '2025': {'csi': 76.421390,
-                         'cis': 77.095102,
-                         'cdte': 78.648450
+                '2025': {'csi': 77.649421,
+                         'cis': 77.723110,
+                         'cdte': 77.500399
                          }
                 }
     # Test with 2011 coefficients for all cell types

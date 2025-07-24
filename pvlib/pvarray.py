@@ -258,12 +258,12 @@ def _infer_k_huld(cell_type, pdc0, k_version):
                                 0.000159, -0.000006)}
     elif k_version == '2025':
         # Updated coefficients from EU JRC paper
-        huld_params = {'csi': (-0.017162, -0.040289, -0.004681, 0.000148,
-                               0.000169, 0.000005),
-                       'cis': (-0.005521, -0.038576, -0.003711, -0.000901,
-                               -0.001251, 0.000001),
-                       'cdte': (-0.046477, -0.072509, -0.002252, 0.000275,
-                                0.000158, -0.000006)}
+        huld_params = {'csi': (-0.0067560, -0.016444, -0.003015, -0.000045,
+                               -0.000043, 0.0),
+                       'cis': (-0.011001, -0.029734, -0.002887, 0.000217,
+                               -0.000163, 0.0),
+                       'cdte': (-0.020644, -0.035316, -0.003406, 0.000073,
+                                -0.000141, 0.000002)}
     else:
         raise ValueError(f'Invalid k_version={k_version}: must be either '
                          '"2011" or "2025" as a string')
@@ -306,8 +306,9 @@ def huld(effective_irradiance, temp_mod, pdc0, k=None, cell_type=None,
         Used to look up default values for ``k`` if ``k`` is not specified.
     k_version : str, optional
         Either `'2011'` (default) or `'2025'`. Used to select default values
-        for ``k`` if ``k`` is not specified. If `'2011'`, values from [1]_
-        are used; if `'2025'` values are from [2]_.
+        for ``k`` if ``k`` is not specified. If `'2011'`, values from PVGIS
+        documentation and published in [2]_ as "current"; if `'2025'`
+        values are from [3]_ published as "updated".
 
     Returns
     -------

@@ -157,7 +157,7 @@ There is a convention on consistent variable names throughout the library:
     solar_zenith
         Zenith angle of the sun in degrees. This is the angle between is between a
         vector pointed straight up and a vector pointed at the sun, from the observer.
-        This is the complement of :term:`solar_elevation` (90 - elevation). [°]
+        This is the complement of solar elevation (90 - elevation). [°]
 
     spectra
     spectra_components

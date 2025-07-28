@@ -722,7 +722,6 @@ def spectral_factor_polo(precipitable_water, airmass_absolute, aod500, aoi,
     ----------
     precipitable_water : numeric
         atmospheric precipitable water. [cm]
-
     airmass_absolute : numeric
         Absolute airmass. [unitless]
     aod500 : numeric

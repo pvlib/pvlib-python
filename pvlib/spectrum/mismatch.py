@@ -717,6 +717,7 @@ def spectral_factor_polo(precipitable_water, airmass_absolute, aod500, aoi,
                          albedo=0.2):
     """
     Estimate the spectral mismatch for BIPV application in vertical facades.
+
     Parameters
     ----------
     precipitable_water : numeric

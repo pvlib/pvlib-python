@@ -19,7 +19,8 @@ Bug fixes
 
 Enhancements
 ~~~~~~~~~~~~
-
+* :py:func:`pvlib.spectrum.spectral_factor_firstsolar` no longer emits warnings
+  when airmass and precipitable water values fall out of range. (:pull:`2512`)
 
 Documentation
 ~~~~~~~~~~~~~
@@ -45,3 +46,4 @@ Maintenance
 Contributors
 ~~~~~~~~~~~~
 * Elijah Passmore (:ghuser:`eljpsm`)
+* Kevin Anderson (:ghuser:`kandersolar`)

@@ -45,6 +45,8 @@ def test_get_nasa_power(data_index, ghi_series):
                                    check_freq=False, check_names=False)
 
 
+@pytest.mark.remote_data
+@pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_get_nasa_power_pvlib_params_naming(data_index, ghi_series):
     data, meta = pvlib.iotools.get_nasa_power(latitude=44.76,
                                               longitude=7.64,
@@ -58,6 +60,8 @@ def test_get_nasa_power_pvlib_params_naming(data_index, ghi_series):
                                    check_freq=False)
 
 
+@pytest.mark.remote_data
+@pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_get_nasa_power_map_variables(data_index):
     # Check that variables are mapped by default to pvlib names
     data, meta = pvlib.iotools.get_nasa_power(latitude=44.76,
@@ -72,6 +76,8 @@ def test_get_nasa_power_map_variables(data_index):
     assert meta['altitude'] == 705.88
 
 
+@pytest.mark.remote_data
+@pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_get_nasa_power_wrong_parameter_name(data_index):
     # Test if HTTPError is raised if a wrong parameter name is asked
     with pytest.raises(HTTPError, match=r"ALLSKY_SFC_SW_DLN"):
@@ -82,6 +88,8 @@ def test_get_nasa_power_wrong_parameter_name(data_index):
                                      parameters=['ALLSKY_SFC_SW_DLN'])
 
 
+@pytest.mark.remote_data
+@pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_get_nasa_power_duplicate_parameter_name(data_index):
     # Test if HTTPError is raised if a duplicate parameter is asked
     with pytest.raises(HTTPError, match=r"ALLSKY_SFC_SW_DWN"):

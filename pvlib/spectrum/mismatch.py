@@ -786,7 +786,6 @@ def spectral_factor_polo(precipitable_water, airmass_absolute, aod500, aoi,
     else:
         coeff = coefficients
         c_albedo = (0.0, 0.0, 1.0)  # 0.2 albedo assumed
-        albedo = 0.2
     smm = coeff[0] * Ram + coeff[1] / (coeff[2] + Ram**coeff[3]) \
         + coeff[4] / aod500 + coeff[5]*np.sqrt(precipitable_water)
     # Ground albedo correction

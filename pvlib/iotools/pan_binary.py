@@ -17,7 +17,7 @@ VERTICAL_BAR_MARKER = 0xA6
 
 
 # --- Supporting Functions ---
-def _read48_to_float(*, real48):
+def _read48_to_float(real48):
     """
     Convert a 6-byte Delphi Real48 encoded value to a standard Python float.
 
@@ -64,7 +64,7 @@ def _read48_to_float(*, real48):
     return mantissa * (2.0**exponent)
 
 
-def _find_marker_index(*, marker, start_index, byte_array):
+def _find_marker_index(marker, start_index, byte_array):
     """
     Find the index of the first occurrence of a hex marker after a start index.
 
@@ -91,7 +91,7 @@ def _find_marker_index(*, marker, start_index, byte_array):
     return found_index
 
 
-def _get_param_index(*, start_index, offset_num):
+def _get_param_index(start_index, offset_num):
     """
     Calculate the start index of a Real48 parameter.
 
@@ -110,7 +110,7 @@ def _get_param_index(*, start_index, offset_num):
     return start_index + 6 * offset_num
 
 
-def _extract_byte_parameters(*, byte_array, start_index, num_bytes):
+def _extract_byte_parameters(byte_array, start_index, num_bytes):
     """
     Extract bytes that form a single parameter from the original byte array.
 
@@ -144,7 +144,7 @@ def _extract_byte_parameters(*, byte_array, start_index, num_bytes):
 value_format = "{:.2f}"
 
 
-def _extract_iam_profile(*, start_index, byte_array):
+def _extract_iam_profile(start_index, byte_array):
     """
     Extract the IAM (Incidence Angle Modifier) profile.
 
@@ -186,7 +186,7 @@ def _extract_iam_profile(*, start_index, byte_array):
     return iam_profile
 
 
-def read_pan_binary(*, filename):
+def read_pan_binary(filename):
     """
     Retrieve Module data from a .pan binary file.
 

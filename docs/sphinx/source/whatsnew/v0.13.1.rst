@@ -19,7 +19,7 @@ Bug fixes
 
 Enhancements
 ~~~~~~~~~~~~
-* Add support for reading PAN binary files using :py:func:`~pvlib.iotools.pan_binary.read_pan_binary`.
+* Add support for reading PAN binary files (PVsyst v6.39 and earlier) using :py:func:`pvlib.iotools.read_pan_binary`.
   (:issue:`2504`)
 
 

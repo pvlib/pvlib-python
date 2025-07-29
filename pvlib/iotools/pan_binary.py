@@ -1,8 +1,11 @@
 """
-Older versions of PAN files created by PVsyst use a Borland Pascal Real48 format.
+Older versions of PAN files created by PVsyst use a Borland Pascal Real48
+format.
 
 This is based on:
-    https://github.com/CanadianSolar/CASSYS/blob/b5487bb4e9e77174c805d64e3c960c46d357b7e2/CASSYS%20Interface/DatabaseImportModule.vba#L4
+    https://github.com/CanadianSolar/CASSYS/blob/
+    b5487bb4e9e77174c805d64e3c960c46d357b7e2/CASSYS%20Interface/
+    DatabaseImportModule.vba#L4
 """
 
 import struct
@@ -131,7 +134,8 @@ def _extract_byte_parameters(byte_array, start_index, num_bytes):
     # Check bounds to avoid index errors
     if start_index + num_bytes > len(byte_array):
         raise IndexError(
-            f"Not enough bytes: need {num_bytes} bytes starting at {start_index}"
+            f"Not enough bytes: need {num_bytes} bytes starting at "
+            f"{start_index}"
         )
 
     # Extract the specified number of bytes starting at start_index
@@ -174,7 +178,9 @@ def _extract_iam_profile(start_index, byte_array):
         # Check if AOI is not null/empty (like VB.NET vbNullString check)
         if aoi_formatted != "":
             # Extract modifier value
-            modifier_index = _get_param_index(start_index=start_index, offset_num=i + 1)
+            modifier_index = _get_param_index(
+                start_index=start_index, offset_num=i + 1
+            )
             modifier_bytes = _extract_byte_parameters(
                 byte_array=byte_array, start_index=modifier_index, num_bytes=6
             )
@@ -230,7 +236,9 @@ def read_pan_binary(filename):
             marker=DOT_MARKER, start_index=0, byte_array=byte_array
         )
         source_start_index = _find_marker_index(
-            marker=DOT_MARKER, start_index=panel_start_index, byte_array=byte_array
+            marker=DOT_MARKER,
+            start_index=panel_start_index,
+            byte_array=byte_array
         )
         version_start_index = _find_marker_index(
             marker=DOUBLE_DOT_MARKER,
@@ -310,17 +318,23 @@ def read_pan_binary(filename):
             .strip()
         )
         data["Technology"] = (
-            byte_array[technology_start_index : cells_in_series_start_index - 1]
+            byte_array[
+                technology_start_index : cells_in_series_start_index - 1
+            ]
             .decode("latin-1")
             .strip()
         )
         data["Cells_In_Series"] = (
-            byte_array[cells_in_series_start_index : cells_in_parallel_start_index - 1]
+            byte_array[
+                cells_in_series_start_index : cells_in_parallel_start_index - 1
+            ]
             .decode("latin-1")
             .strip()
         )
         data["Cells_In_Parallel"] = (
-            byte_array[cells_in_parallel_start_index : bypass_diodes_start_index - 1]
+            byte_array[
+                cells_in_parallel_start_index : bypass_diodes_start_index - 1
+            ]
             .decode("latin-1")
             .strip()
         )
@@ -349,7 +363,9 @@ def read_pan_binary(filename):
         }
 
         for name, offset in param_map.items():
-            start = _get_param_index(start_index=real48_start_index, offset_num=offset)
+            start = _get_param_index(
+                start_index=real48_start_index, offset_num=offset
+            )
             end = start + 6
             param_bytes = byte_array[start:end]
             value = _read48_to_float(real48=param_bytes)

@@ -25,6 +25,8 @@ Enhancements
 
 Documentation
 ~~~~~~~~~~~~~
+* Substantiate definitions of solar/surface azimuth/zenith and aoi on the
+  :ref:`nomenclature` page. (:issue:`2448`, :pull:`2503`)
 
 
 Testing
@@ -48,3 +50,4 @@ Contributors
 ~~~~~~~~~~~~
 * Elijah Passmore (:ghuser:`eljpsm`)
 * Rajiv Daxini (:ghuser:`RDaxini`)
+* Omar Bahamida (:ghuser:`OmarBahamida`)

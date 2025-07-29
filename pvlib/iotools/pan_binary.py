@@ -220,7 +220,7 @@ def read_pan_binary(filename):
 
     See also
     --------
-    pvlib.iotools.panond.read_panond : for newer text-based data format
+    pvlib.iotools.read_panond : for newer text-based data format
     """
     data = {}
 

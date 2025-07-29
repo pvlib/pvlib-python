@@ -209,9 +209,9 @@ def read_pan_binary(filename):
     Notes
     -----
     The parser is intended for use with binary .pan files that were created for
-    PVsyst version 6.39 or earlier. At time of publication, no documentation for these
-    files was available. So, this parser is based on inferred logic, rather
-    than anything specified by PVsyst.
+    PVsyst version 6.39 or earlier. At time of publication, no documentation
+    for these files was available. So, this parser is based on inferred logic,
+    rather than anything specified by PVsyst.
 
     The parser can only be used on binary .pan files.
     For files that use the newer text format

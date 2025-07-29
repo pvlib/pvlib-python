@@ -696,27 +696,34 @@ def _lambertw_v_from_i(current, photocurrent, saturation_current,
 
     # Only compute using LambertW if there are cases with Gsh>0
     if np.any(idx_p):
+
+        # use only the relevant subset for what follows
+        I = I[idx_p]
+        IL = IL[idx_p]
+        I0 = I0[idx_p]
+        Rs = Rs[idx_p]
+        Gsh = Gsh[idx_p]
+        a = a[idx_p]
+
         # LambertW argument, cannot be float128, may overflow to np.inf
         # overflow is explicitly handled below, so ignore warnings here
         with np.errstate(over='ignore'):
-            argW = (I0[idx_p] / (Gsh[idx_p] * a[idx_p]) *
-                    np.exp((-I[idx_p] + IL[idx_p] + I0[idx_p]) /
-                           (Gsh[idx_p] * a[idx_p])))
+            argW = I0 / (Gsh * a) * np.exp((-I + IL + I0) / (Gsh * a))
 
         # lambertw typically returns complex value with zero imaginary part
         # may overflow to np.inf
         lambertwterm = lambertw(argW).real
 
         # Record indices where lambertw input overflowed output
-        idx_inf = np.logical_not(np.isfinite(lambertwterm))
+        idx_inf = np.isinf(lambertwterm)
 
         # Only re-compute LambertW if it overflowed
         if np.any(idx_inf):
             # Calculate using log(argW) in case argW is really big
-            logargW = (np.log(I0[idx_p]) - np.log(Gsh[idx_p]) -
-                       np.log(a[idx_p]) +
-                       (-I[idx_p] + IL[idx_p] + I0[idx_p]) /
-                       (Gsh[idx_p] * a[idx_p]))[idx_inf]
+            logargW = (np.log(I0[idx_inf]) - np.log(Gsh[idx_inf]) -
+                       np.log(a[idx_inf]) +
+                       (-I[idx_inf] + IL[idx_inf] + I0[idx_inf]) /
+                       (Gsh[idx_inf] * a[idx_inf]))
 
             # Three iterations of Newton-Raphson method to solve
             #  w+log(w)=logargW. The initial guess is w=logargW. Where direct
@@ -730,8 +737,7 @@ def _lambertw_v_from_i(current, photocurrent, saturation_current,
         # Eqn. 3 in Jain and Kapoor, 2004
         #  V = -I*(Rs + Rsh) + IL*Rsh - a*lambertwterm + I0*Rsh
         # Recast in terms of Gsh=1/Rsh for better numerical stability.
-        V[idx_p] = (IL[idx_p] + I0[idx_p] - I[idx_p]) / Gsh[idx_p] - \
-            I[idx_p] * Rs[idx_p] - a[idx_p] * lambertwterm
+        V[idx_p] = (IL + I0 - I) / Gsh - I * Rs - a * lambertwterm
 
     if output_is_scalar:
         return V.item()

@@ -194,7 +194,7 @@ def _extract_iam_profile(start_index, byte_array):
 
 def read_pan_binary(filename):
     """
-    Retrieve Module data from a .pan binary file.
+    Retreive module data from a .pan binary file, for PVsyst v6.39 and earlier .
 
     Parameters
     ----------

@@ -90,7 +90,7 @@ def _find_marker_index(marker, start_index, byte_array):
     if found_index != -1:
         return found_index + 1
     if found_index is None:
-        raise ValueError(f"Marker {marker} not found in byte array")
+        raise ValueError(f"Marker {marker} is not in byte array")
     return found_index
 
 

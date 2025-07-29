@@ -208,8 +208,8 @@ def read_pan_binary(filename):
 
     Notes
     -----
-    The parser is intended for use with .pan and .ond files that were created
-    for use by PVsyst. At time of publication, no documentation for these
+    The parser is intended for use with binary .pan files that were created for
+    PVsyst version 6.39 or earlier. At time of publication, no documentation for these
     files was available. So, this parser is based on inferred logic, rather
     than anything specified by PVsyst.
 

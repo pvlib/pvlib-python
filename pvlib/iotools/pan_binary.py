@@ -1,5 +1,5 @@
 """
-Older versions of PAN files created by PVsyst use a Borland Pascal Real48
+Read older versions of PAN files created by PVsyst (<v6.40) use a Borland Pascal Real48
 format.
 
 This is based on:

@@ -226,6 +226,7 @@ Functions for reading irradiance/weather data files.
    iotools.read_epw
    iotools.parse_epw
    iotools.read_panond
+   iotools.read_pan_binary
 
 
 A :py:class:`~pvlib.location.Location` object may be created from metadata

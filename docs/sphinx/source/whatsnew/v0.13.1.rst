@@ -19,6 +19,8 @@ Bug fixes
 
 Enhancements
 ~~~~~~~~~~~~
+* Add support for reading PAN binary files using :py:func:`~pvlib.iotools.pan_binary.read_pan_binary`.
+  (:issue:`2504`)
 
 
 Documentation
@@ -49,3 +51,4 @@ Contributors
 * Elijah Passmore (:ghuser:`eljpsm`)
 * Rajiv Daxini (:ghuser:`RDaxini`)
 * Omar Bahamida (:ghuser:`OmarBahamida`)
+* Kurt Rhee (:ghuser:`kurt-rhee`)

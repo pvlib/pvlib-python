@@ -139,7 +139,7 @@ def _extract_byte_parameters(byte_array, start_index, num_bytes):
         )
 
     # Extract the specified number of bytes starting at start_index
-    param_byte_sequence = byte_array[start_index : start_index + num_bytes]
+    param_byte_sequence = byte_array[start_index:start_index + num_bytes]
 
     return param_byte_sequence
 
@@ -292,48 +292,48 @@ def read_pan_binary(filename):
         # --- Extract string parameters ---
         # Note: latin-1 is used as it can decode any byte value without error
         data["Manufacturer"] = (
-            byte_array[manu_start_index : panel_start_index - 1]
+            byte_array[manu_start_index: panel_start_index - 1]
             .decode("latin-1")
             .strip()
         )
         data["Model"] = (
-            byte_array[panel_start_index : source_start_index - 1]
+            byte_array[panel_start_index: source_start_index - 1]
             .decode("latin-1")
             .strip()
         )
         data["Source"] = (
-            byte_array[source_start_index : version_start_index - 4]
+            byte_array[source_start_index: version_start_index - 4]
             .decode("latin-1")
             .strip()
         )
         data["Version"] = (
-            byte_array[version_start_index : version_end_index - 2]
+            byte_array[version_start_index: version_end_index - 2]
             .decode("latin-1")
             .replace("Version", "PVsyst")
             .strip()
         )
         data["Year"] = (
-            byte_array[year_start_index : year_start_index + 4]
+            byte_array[year_start_index: year_start_index + 4]
             .decode("latin-1")
             .strip()
         )
         data["Technology"] = (
             byte_array[
-                technology_start_index : cells_in_series_start_index - 1
+                technology_start_index: cells_in_series_start_index - 1
             ]
             .decode("latin-1")
             .strip()
         )
         data["Cells_In_Series"] = (
             byte_array[
-                cells_in_series_start_index : cells_in_parallel_start_index - 1
+                cells_in_series_start_index: cells_in_parallel_start_index - 1
             ]
             .decode("latin-1")
             .strip()
         )
         data["Cells_In_Parallel"] = (
             byte_array[
-                cells_in_parallel_start_index : bypass_diodes_start_index - 1
+                cells_in_parallel_start_index: bypass_diodes_start_index - 1
             ]
             .decode("latin-1")
             .strip()
@@ -379,7 +379,7 @@ def read_pan_binary(filename):
         dot_counter = 0
         iam_start_index = 0
         dot_position = data["Version"].find(".")
-        major_version = int(data["Version"][dot_position - 1 : dot_position])
+        major_version = int(data["Version"][dot_position - 1: dot_position])
         if major_version < 6:
             for i in range(real48_start_index + 170, len(byte_array)):
                 if byte_array[i] == DOT_MARKER:

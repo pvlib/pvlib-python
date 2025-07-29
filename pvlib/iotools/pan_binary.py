@@ -213,8 +213,8 @@ def read_pan_binary(filename):
     files was available. So, this parser is based on inferred logic, rather
     than anything specified by PVsyst.
 
-    The parser can only be used on PVsyst pan files that were created via
-    the older binary format.  For files that use the newer text format
+    The parser can only be used on binary .pan files.
+    For files that use the newer text format
     please refer to `pvlib.iotools.panond.read_panond`.
 
     """

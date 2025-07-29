@@ -397,6 +397,6 @@ def read_pan_binary(filename):
             )
 
     except (IndexError, TypeError, struct.error) as e:
-        return {"error": f"Failed to parse binary PAN file: {e}"}
+        raise ValueError(f"Unable to parse binary PAN file. Is this a binary file and compatible with PVsyst up to 6.39?" from e
 
     return data

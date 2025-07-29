@@ -1,6 +1,6 @@
 """
-Read older versions of PAN files created by PVsyst (<v6.40) use a Borland Pascal Real48
-format.
+Read older versions of PAN files created by PVsyst (<v6.40)
+use a Borland Pascal Real48 format.
 
 This is based on:
     https://github.com/CanadianSolar/CASSYS/blob/
@@ -194,7 +194,8 @@ def _extract_iam_profile(start_index, byte_array):
 
 def read_pan_binary(filename):
     """
-    Retreive module data from a .pan binary file, for PVsyst v6.39 and earlier .
+    Retreive module data from a .pan binary file,
+    for PVsyst v6.39 and earlier.
 
     Parameters
     ----------
@@ -397,6 +398,10 @@ def read_pan_binary(filename):
             )
 
     except (IndexError, TypeError, struct.error) as e:
-        raise ValueError(f"Unable to parse binary PAN file. Is this a binary file and compatible with PVsyst up to 6.39?" from e
+        raise ValueError(
+            "Unable to parse binary PAN file. Is this a binary file "
+            "and compatible with PVsyst up to 6.39?"
+            f"Error details: {str(e)}"
+        )
 
     return data

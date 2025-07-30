@@ -19,7 +19,8 @@ Bug fixes
 
 Enhancements
 ~~~~~~~~~~~~
-
+* Add :py:func:`pvlib.iotools.get_nasa_power` to retrieve data from NASA POWER free API.
+  (:pull:`2500`)
 
 Documentation
 ~~~~~~~~~~~~~
@@ -47,5 +48,6 @@ Maintenance
 Contributors
 ~~~~~~~~~~~~
 * Elijah Passmore (:ghuser:`eljpsm`)
+* Ioannis Sifnaios (:ghuser:`IoannisSifnaios`)
 * Rajiv Daxini (:ghuser:`RDaxini`)
 * Omar Bahamida (:ghuser:`OmarBahamida`)

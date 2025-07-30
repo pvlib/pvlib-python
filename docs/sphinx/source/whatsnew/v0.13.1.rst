@@ -10,8 +10,7 @@ Breaking Changes
 
 Deprecations
 ~~~~~~~~~~~~
-* Deprecate :py:func:`~pvlib.modelchain.get_orientation`. Removal scheduled for
-  ``v0.14.0``. (:pull:`2691`)
+* Deprecate :py:func:`~pvlib.modelchain.get_orientation`. (:pull:`2691`)
 * Rename parameter name ``aparent_azimuth`` to ``solar_azimuth`` in :py:func:`~pvlib.tracking.singleaxis`.
   (:issue:`2479`, :pull:`2480`)
 

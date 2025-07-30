@@ -19,12 +19,15 @@ Bug fixes
 
 Enhancements
 ~~~~~~~~~~~~
+* Add :py:func:`pvlib.iotools.get_nasa_power` to retrieve data from NASA POWER free API.
+  (:pull:`2500`)
 * :py:func:`pvlib.spectrum.spectral_factor_firstsolar` no longer emits warnings
-
   when airmass and precipitable water values fall out of range. (:pull:`2512`)
 
 Documentation
 ~~~~~~~~~~~~~
+* Substantiate definitions of solar/surface azimuth/zenith and aoi on the
+  :ref:`nomenclature` page. (:issue:`2448`, :pull:`2503`)
 
 
 Testing
@@ -47,4 +50,7 @@ Maintenance
 Contributors
 ~~~~~~~~~~~~
 * Elijah Passmore (:ghuser:`eljpsm`)
+* Ioannis Sifnaios (:ghuser:`IoannisSifnaios`)
+* Rajiv Daxini (:ghuser:`RDaxini`)
+* Omar Bahamida (:ghuser:`OmarBahamida`)
 * Kevin Anderson (:ghuser:`kandersolar`)

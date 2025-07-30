@@ -447,7 +447,7 @@ class ModelChain:
 
         >>> pvwatts_losses = {'soiling': 2, 'shading': 3, 'snow': 0, 'mismatch': 2,
         >>>                   'wiring': 2, 'connections': 0.5, 'lid': 1.5,
-        >>>                   'nameplate_rating': 1, 'age': 0, 'availability': 30}
+        >>>                   'nameplate_rating': 1, 'age': 0, 'availability': 3}
         >>> system_with_custom_losses = pvsystem.PVSystem(
         >>>     surface_tilt=30, surface_azimuth=180,
         >>>     module_parameters=module_parameters,

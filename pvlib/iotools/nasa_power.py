@@ -22,7 +22,7 @@ VARIABLE_MAP = {
 
 
 def get_nasa_power(latitude, longitude, start, end,
-                   parameters=DEFAULT_PARAMETERS, community='re', url=URL,
+                   parameters=DEFAULT_PARAMETERS, *, community='re', url=URL,
                    elevation=None, wind_height=None, wind_surface=None,
                    map_variables=True):
     """

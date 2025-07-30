@@ -19,7 +19,7 @@ Bug fixes
 
 Enhancements
 ~~~~~~~~~~~~
-* Added function :py:func:`~pvlib.iotools.get_nasa_power` to retrieve data from NASA POWER.
+* Add :py:func:`pvlib.iotools.get_nasa_power` to retrieve data from NASA POWER free API.
   (:pull:`2500`)
 
 Documentation

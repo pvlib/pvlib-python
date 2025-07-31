@@ -21,7 +21,7 @@ Enhancements
 ~~~~~~~~~~~~
 * Rename parameter name ``aparent_azimuth`` to ``solar_azimuth`` in :py:func:`~pvlib.tracking.singleaxis`.
   (:issue:`2479`, :pull:`2480`)
-* Adds k coefficient in :py:func:`~pvlib.temperature.ross`
+* Add k coefficient in :py:func:`~pvlib.temperature.ross`
   (:issue:`2506`, :pull:`2521`)
   
 Documentation

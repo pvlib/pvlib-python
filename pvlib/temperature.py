@@ -687,7 +687,7 @@ def ross(poa_global, temp_air, noct=None, k=None):
     .. [2] E. Skoplaki and J. A. Palyvos, “Operating temperature of
        photovoltaic modules: A survey of pertinent correlations,” Renewable
        Energy, vol. 34, no. 1, pp. 23–29, Jan. 2009,
-       doi: `10.1016/j.renene.2008.04.009`
+       :doi:`10.1016/j.renene.2008.04.009`
     '''
     if (noct is None) & (k is None):
         raise ValueError("noct or k need to be provided as numeric input.")

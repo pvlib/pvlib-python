@@ -658,25 +658,25 @@ def ross(poa_global, temp_air, noct=None, k=None):
     where :math:`S` is the plane of array irradiance in :math:`mW/{cm}^2`.
     This function expects irradiance in :math:`W/m^2`.
 
-    Reference values for k are provided in [2]_, covering different types
+    Representative values for k are provided in [2]_, covering different types
     of mounting and module structure.
 
     +---------------------+-----------+
     | Mounting            | :math:`k` |
     +=====================+===========+
-    | well_cooled         | 0.02      |
+    | Well cooled         | 0.02      |
     +---------------------+-----------+
-    | free_standing       | 0.0208    |
+    | Free standing       | 0.0208    |
     +---------------------+-----------+
-    | flat_on_roof        | 0.026     |
+    | Flat on roof        | 0.026     |
     +---------------------+-----------+
-    | not_so_well_cooled  | 0.0342    |
+    | Not so well cooled  | 0.0342    |
     +---------------------+-----------+
-    | transparent_pv      | 0.0455    |
+    | Transparent pv      | 0.0455    |
     +---------------------+-----------+
-    | facade_integrated   | 0.0538    |
+    | Facade integrated   | 0.0538    |
     +---------------------+-----------+
-    | on_sloped_roof      | 0.0563    |
+    | On sloped roof      | 0.0563    |
     +---------------------+-----------+
 
     References
@@ -690,9 +690,9 @@ def ross(poa_global, temp_air, noct=None, k=None):
        :doi:`10.1016/j.renene.2008.04.009`
     '''
     if (noct is None) & (k is None):
-        raise ValueError("noct or k need to be provided as numeric input.")
+        raise ValueError("Either noct or k need is required.")
     elif (noct is not None) & (k is not None):
-        raise ValueError("Provide only noct or k, not both.")
+        raise ValueError("Provide only one of noct or k, not both.")
     elif k is None:
         # factor of 0.1 converts irradiance from W/m2 to mW/cm2
         return temp_air + (noct - 20.) / 80. * poa_global * 0.1

@@ -346,7 +346,7 @@ def spa_python(time, latitude, longitude,
        solar radiation applications. Solar Energy, vol. 81, no. 6, p. 838,
        2007. :doi:`10.1016/j.solener.2007.01.003`.
 
-    .. [3] `USNO delta T:
+    .. [3] `U.S. Naval Observatory, delta T
        <https://maia.usno.navy.mil/products/deltaT>`_
 
     See also

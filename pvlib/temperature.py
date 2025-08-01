@@ -659,25 +659,32 @@ def ross(poa_global, temp_air, noct=None, k=None):
     This function expects irradiance in :math:`W/m^2`.
 
     Representative values for k are provided in [2]_, covering different types
-    of mounting and module structure.
+    of mounting and degrees of back ventialtion. The naming designations,
+    however, are adapted from [3]_ to enhance clarity and usability.
 
-    +---------------------+-----------+
-    | Mounting            | :math:`k` |
-    +=====================+===========+
-    | Well cooled         | 0.02      |
-    +---------------------+-----------+
-    | Free standing       | 0.0208    |
-    +---------------------+-----------+
-    | Flat on roof        | 0.026     |
-    +---------------------+-----------+
-    | Not so well cooled  | 0.0342    |
-    +---------------------+-----------+
-    | Transparent pv      | 0.0455    |
-    +---------------------+-----------+
-    | Facade integrated   | 0.0538    |
-    +---------------------+-----------+
-    | On sloped roof      | 0.0563    |
-    +---------------------+-----------+
+    +--------------------------------------+-----------+
+    | Mounting                             | :math:`k` |
+    +======================================+===========+
+    | Sloped roof, well ventilated         | 0.02      |
+    +--------------------------------------+-----------+
+    | Free-standing system                 | 0.0208    |
+    +--------------------------------------+-----------+
+    | Flat roof, well ventilated           | 0.026     |
+    +--------------------------------------+-----------+
+    | Sloped roof, poorly ventilated       | 0.0342    |
+    +--------------------------------------+-----------+
+    | Facade integrated, semi-ventilated   | 0.0455    |
+    +--------------------------------------+-----------+
+    | Facade integrated, poorly ventilted  | 0.0538    |
+    +--------------------------------------+-----------+
+    | Sloped roof, non-ventilated          | 0.0563    |
+    +--------------------------------------+-----------+
+
+    It is also worth noting that the semi-ventilated facade case refers to
+    partly transparent compound glass insulation modules, while the non-
+    ventilated case corresponds to opaque, insulated PV-cladding elements.
+    However, the emphasis in [3]_ appears to be on ventilation conditions
+    rather than module construction.
 
     References
     ----------
@@ -688,6 +695,9 @@ def ross(poa_global, temp_air, noct=None, k=None):
        photovoltaic modules: A survey of pertinent correlations,” Renewable
        Energy, vol. 34, no. 1, pp. 23–29, Jan. 2009,
        :doi:`10.1016/j.renene.2008.04.009`
+    .. [3] T. Nordmann and D. Clavadetscher, “Understanding temperature
+       effects on PV system performance," Proceedings of 3rd World Conference
+       on Photovoltaic Energy Conversion, May 2003.
     '''
     if (noct is None) & (k is None):
         raise ValueError("Either noct or k need is required.")

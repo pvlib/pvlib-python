@@ -695,7 +695,7 @@ def ross(poa_global, temp_air, noct=None, k=None):
        photovoltaic modules: A survey of pertinent correlations,” Renewable
        Energy, vol. 34, no. 1, pp. 23–29, Jan. 2009,
        :doi:`10.1016/j.renene.2008.04.009`
-    .. [3] T. Nordmann and D. Clavadetscher, “Understanding temperature
+    .. [3] T. Nordmann and L. Clavadetscher, “Understanding temperature
        effects on PV system performance," Proceedings of 3rd World Conference
        on Photovoltaic Energy Conversion, May 2003.
     '''

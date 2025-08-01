@@ -828,7 +828,7 @@ def ephemeris(time, latitude, longitude, pressure=101325.0, temperature=12.0):
     TanEl = pd.Series(np.tan(np.radians(Elevation)), index=time_utc)
     Refract = pd.Series(0., index=time_utc)
 
-    Refract[(Elevation > 5) & (Elevation <= 85)] = (
+    Refract[(Elevation > 5) & (Elevation <= 90)] = (
         58.1/TanEl - 0.07/(TanEl**3) + 8.6e-05/(TanEl**5))
 
     Refract[(Elevation > -0.575) & (Elevation <= 5)] = (

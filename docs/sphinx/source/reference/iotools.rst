@@ -57,6 +57,17 @@ clear-sky irradiance globally.
    iotools.parse_cams
 
 
+NASA POWER
+**********
+
+Satellite-derived irradiance and weather data with global coverage.
+
+.. autosummary::
+   :toctree: generated/
+
+   iotools.get_nasa_power
+
+
 NSRDB
 *****
 

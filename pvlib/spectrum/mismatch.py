@@ -239,27 +239,15 @@ def spectral_factor_firstsolar(precipitable_water, airmass_absolute,
     """
     pw = np.atleast_1d(precipitable_water)
     pw = pw.astype('float64')
-    if np.min(pw) < min_precipitable_water:
-        pw = np.maximum(pw, min_precipitable_water)
-        warn('Low precipitable water values replaced with '
-             f'{min_precipitable_water} cm in the calculation of spectral '
-             'mismatch.')
-
-    if np.max(pw) > max_precipitable_water:
-        pw[pw > max_precipitable_water] = np.nan
-        warn('High precipitable water values replaced with np.nan in '
-             'the calculation of spectral mismatch.')
+    pw = np.maximum(pw, min_precipitable_water)
+    pw[pw > max_precipitable_water] = np.nan
 
     airmass_absolute = np.minimum(airmass_absolute, max_airmass_absolute)
-
-    if np.min(airmass_absolute) < min_airmass_absolute:
-        airmass_absolute = np.maximum(airmass_absolute, min_airmass_absolute)
-        warn('Low airmass values replaced with 'f'{min_airmass_absolute} in '
-             'the calculation of spectral mismatch.')
-        # pvlib.atmosphere.get_absolute_airmass(1,
-        # pvlib.atmosphere.alt2pres(4340)) = 0.58 Elevation of
-        # Mina Pirquita, Argentian = 4340 m. Highest elevation city with
-        # population over 50,000.
+    # pvlib.atmosphere.get_absolute_airmass(1,
+    # pvlib.atmosphere.alt2pres(4340)) = 0.58 Elevation of
+    # Mina Pirquita, Argentian = 4340 m. Highest elevation city with
+    # population over 50,000.
+    airmass_absolute = np.maximum(airmass_absolute, min_airmass_absolute)
 
     _coefficients = {}
     _coefficients['cdte'] = (

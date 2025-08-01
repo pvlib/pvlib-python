@@ -202,7 +202,7 @@ def get_pvgis_hourly(latitude, longitude, start=None, end=None,
     .. [2] `PVGIS Hourly Radiation
        <https://ec.europa.eu/jrc/en/PVGIS/tools/hourly-radiation>`_
     .. [3] `PVGIS Non-interactive service
-       <https://ec.europa.eu/jrc/en/PVGIS/docs/noninteractive>`_
+       <https://joint-research-centre.ec.europa.eu/photovoltaic-geographical-information-system-pvgis/getting-started-pvgis/api-non-interactive-service_en>`_
     .. [4] `PVGIS horizon profile tool
        <https://ec.europa.eu/jrc/en/PVGIS/tools/horizon>`_
     """  # noqa: E501

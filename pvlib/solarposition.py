@@ -308,7 +308,7 @@ def spa_python(time, latitude, longitude,
         avg. yearly air pressure in Pascals.
     temperature : int or float, optional, default 12.0
         avg. yearly air temperature in degrees C.
-    delta_t : float or array, optional, default 67.0
+    delta_t : numeric, optional, default 67.0
         Difference between terrestrial time and UT1.
         If delta_t is None, uses spa.calculate_deltat
         using time.year and time.month from pandas.DatetimeIndex.
@@ -414,7 +414,7 @@ def sun_rise_set_transit_spa(times, latitude, longitude, how='numpy',
         Options are 'numpy' or 'numba'. If numba >= 0.17.0
         is installed, how='numba' will compile the spa functions
         to machine code and run them multithreaded.
-    delta_t : float or array, optional, default 67.0
+    delta_t : numeric, optional, default 67.0
         Difference between terrestrial time and UT1.
         If delta_t is None, uses spa.calculate_deltat
         using times.year and times.month from pandas.DatetimeIndex.

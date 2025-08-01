@@ -152,11 +152,38 @@ def test_faiman_rad_ir():
 
 
 def test_ross():
-    result = temperature.ross(np.array([1000., 600., 1000.]),
-                              np.array([20., 40., 60.]),
-                              np.array([40., 100., 20.]))
-    expected = np.array([45., 100., 60.])
-    assert_allclose(expected, result)
+    # single values
+    result1 = temperature.ross(1000,30,noct=50)
+    result2 = temperature.ross(1000,30,k=0.0375)
+
+    expected = 67.5
+    assert_allclose(expected, result1)
+    assert_allclose(expected, result2)
+
+    # pd.Series
+    times = pd.date_range('2025-07-30 14:00', '2025-07-30 16:00', freq='H')
+
+    df = pd.DataFrame({'t_air': np.array([20,30,40]),
+                       'ghi': np.array([800,700,600])},
+                      index=times)
+
+    result1 = temperature.ross(df['ghi'],df['t_air'],noct=50)
+    result2 = temperature.ross(df['ghi'],df['t_air'],k=0.0375)
+
+    expected = pd.Series([50,56.25,62.5],index=times)
+    assert_allclose(expected, result1)
+    assert_allclose(expected, result2)
+    
+    # np.array
+    ghi_array = df['ghi'].values
+    t_air_array = df['t_air'].values
+
+    result1 = temperature.ross(ghi_array, t_air_array, noct=50)
+    result2 = temperature.ross(ghi_array, t_air_array, k=0.0375)
+
+    expected = expected.values
+    assert_allclose(expected, result1)
+    assert_allclose(expected, result2)
 
 
 def test_faiman_series():

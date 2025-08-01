@@ -969,7 +969,7 @@ def nrel_earthsun_distance(time, how='numpy', delta_t=67.0, numthreads=4):
         is installed, how='numba' will compile the spa functions
         to machine code and run them multithreaded.
 
-    delta_t : float or array, optional, default 67.0
+    delta_t : numeric, optional, default 67.0
         Difference between terrestrial time and UT1.
         If delta_t is None, uses spa.calculate_deltat
         using time.year and time.month from pandas.DatetimeIndex.

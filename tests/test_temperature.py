@@ -173,7 +173,7 @@ def test_ross():
     expected = pd.Series([50., 56.25, 62.5], index=times)
     assert_allclose(expected, result1)
     assert_allclose(expected, result2)
-    
+
     # np.array
     ghi_array = df['ghi'].values
     t_air_array = df['t_air'].values

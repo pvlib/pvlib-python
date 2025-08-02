@@ -19,7 +19,7 @@ VARIABLE_MAP = {
     'dew_point_temperature': 'temp_dew',
 }
 
-time_step_map = {
+TIME_STEP_MAP = {
     '1h': '1_hour',
     'h': '1_hour',
     '15min': '15_minutes',
@@ -38,7 +38,8 @@ def get_meteonorm(latitude, longitude, start, end, api_key, endpoint,
     The Meteonorm data options are described in [1]_ and the API is described
     in [2]_. A detailed list of API options can be found in [3]_.
 
-    This function supports historical and forecast data, but not TMY.
+    This function supports retrieval of historical and forecast data, but not
+    TMY.
 
     Parameters
     ----------
@@ -46,12 +47,12 @@ def get_meteonorm(latitude, longitude, start, end, api_key, endpoint,
         In decimal degrees, north is positive (ISO 19115).
     longitude: float
         In decimal degrees, east is positive (ISO 19115).
-    start: datetime like, optional
+    start: datetime like
         First timestamp of the requested period. If a timezone is not
-        specified, UTC is assumed. A relative datetime string is also allowed.
-    end: datetime like, optional
+        specified, UTC is assumed. Relative datetime strings are supported.
+    end: datetime like
         Last timestamp of the requested period. If a timezone is not
-        specified, UTC is assumed. A relative datetime string is also allowed.
+        specified, UTC is assumed. Relative datetime strings are supported.
     api_key: str
         Meteonorm API key.
     endpoint : str
@@ -62,28 +63,26 @@ def get_meteonorm(latitude, longitude, start, end, api_key, endpoint,
         * ``'/forecast/basic'`` - forcast with hourly resolution
         * ``'/forecast/precision'`` - forecast with 15-min resolution
 
-    parameters : list, optional
-        List of parameters to request or 'all' to get all parameters. The
-        default is 'all'.
-    surface_tilt: float, optional
-        Tilt angle from horizontal plane. The default is 0.
-    surface_azimuth: float, optional
+    parameters: list or 'all', default 'all'
+        List of parameters to request or `'all'` to get all parameters.
+    surface_tilt: float, default : 0
+        Tilt angle from horizontal plane.
+    surface_azimuth: float, default : 180
         Orientation (azimuth angle) of the (fixed) plane. Clockwise from north
-        (north=0, east=90, south=180, west=270). The default is 180.
-    time_step : {'1min', '15min', '1h'}, optional
+        (north=0, east=90, south=180, west=270).
+    time_step : {'1min', '15min', '1h'}, default : '15min'
         Frequency of the time series. The parameter is ignored when requesting
-        forcasting data. The default is '15min'.
-    horizon : str, optional
+        forcasting data.
+    horizon : str or list, default : 'auto'
         Specification of the horizon line. Can be either a 'flat', 'auto', or
-        a list of 360 horizon elevation angles. The default is 'auto'.
-    interval_index: bool, optional
+        a list of 360 horizon elevation angles.
+    interval_index: bool, default : False
         Whether the index of the returned data object is of the type
         pd.DatetimeIndex or pd.IntervalIndex. This is an experimental feature
-        which may be removed without warning. The default is False.
-    map_variables: bool, optional
+        which may be removed without warning.
+    map_variables: bool, default : True
         When true, renames columns of the Dataframe to pvlib variable names
-        where applicable. The default is True. See variable
-        :const:`VARIABLE_MAP`.
+        where applicable. See variable :const:`VARIABLE_MAP`.
     url: str, optional
         Base URL of the Meteonorm API. The ``endpoint`` parameter is
         appended to the url. The default is
@@ -142,13 +141,12 @@ def get_meteonorm(latitude, longitude, start, end, api_key, endpoint,
         params['horizon'] = ','.join(horizon)
 
     if 'forecast' not in endpoint.lower():
-        params['frequency'] = time_step_map.get(time_step, time_step)
+        params['frequency'] = TIME_STEP_MAP.get(time_step, time_step)
 
     headers = {"Authorization": f"Bearer {api_key}"}
 
     response = requests.get(
         urljoin(url, endpoint), headers=headers, params=params)
-    print(response)
     if not response.ok:
         # response.raise_for_status() does not give a useful error message
         raise requests.HTTPError(response.json())
@@ -183,50 +181,46 @@ def get_meteonorm_tmy(latitude, longitude, api_key,
         In decimal degrees, east is positive (ISO 19115).
     api_key: str
         Meteonorm API key.
-    parameters: list, optional
-        List of parameters to request or 'all' to get all parameters. The
-        default is 'all'.
-    surface_tilt: float, optional
-        Tilt angle from horizontal plane. The default is 0.
-    surface_azimuth : float, optional
+    parameters: list or 'all', default 'all'
+        List of parameters to request or `'all'` to get all parameters.
+    surface_tilt: float, default : 0
+        Tilt angle from horizontal plane.
+    surface_azimuth : float, default : 180
         Orientation (azimuth angle) of the (fixed) plane. Clockwise from north
-        (north=0, east=90, south=180, west=270). The default is 180.
-    time_step: {'1min', '1h'}, optional
-        Frequency of the time series. The default is '1h'.
+        (north=0, east=90, south=180, west=270).
+    time_step: {'1min', '1h'}, default : '1h'
+        Frequency of the time series.
     horizon: str, optional
         Specification of the hoirzon line. Can be either 'flat' or 'auto', or
-        specified as a list of 360 horizon elevation angles. The default is
+        specified as a list of 360 horizon elevation angles.
         'auto'.
-    terrain: str, optional
+    terrain: str, default : 'open'
         Local terrain situation. Must be one of: ['open', 'depression',
         'cold_air_lake', 'sea_lake', 'city', 'slope_south',
-        'slope_west_east']. The default is 'open'.
-    albedo: float, optional
-        Ground albedo. Albedo changes due to snow fall are modelled. The
-        default is 0.2.
+        'slope_west_east'].
+    albedo: float, default : 0.2
+        Ground albedo. Albedo changes due to snow fall are modelled.
     turbidity: list or 'auto', optional
         List of 12 monthly mean atmospheric Linke turbidity values. The default
         is 'auto'.
     random_seed: int, optional
         Random seed to be used for stochastic processes. Two identical requests
         with the same random seed will yield identical results.
-    clear_sky_radiation_model : {'esra', 'solis'}
-        Which clearsky model to use. The default is 'esra'.
-    data_version : str, optional
-        Version of Meteonorm climatological data to be used. The default is
-        'latest'.
+    clear_sky_radiation_model : str, default : 'esra'
+        Which clearsky model to use. Must be either `'esra'` or `'solis'`.
+    data_version : str, default : 'latest'
+        Version of Meteonorm climatological data to be used.
     future_scenario: str, optional
         Future climate scenario.
     future_year : int, optional
         Central year for a 20-year reference period in the future.
-    interval_index: bool, optional
+    interval_index: bool, default : False
         Whether the index of the returned data object is of the type
         pd.DatetimeIndex or pd.IntervalIndex. This is an experimental feature
-        which may be removed without warning. The default is False.
-    map_variables: bool, optional
+        which may be removed without warning.
+    map_variables: bool, default : True
         When true, renames columns of the Dataframe to pvlib variable names
-        where applicable. See variable :const:`VARIABLE_MAP`. The default is
-        True.
+        where applicable. See variable :const:`VARIABLE_MAP`.
     url: str, optional.
         Base URL of the Meteonorm API. `'climate/tmy'` is
         appended to the URL. The default is:

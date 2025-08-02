@@ -212,12 +212,12 @@ def get_meteonorm_tmy(latitude, longitude, api_key,
         with the same random seed will yield identical results.
     clear_sky_radiation_model : {'esra', 'solis'}
         Which clearsky model to use. The default is 'esra'.
-    data_version : string, optional
+    data_version : str, optional
         Version of Meteonorm climatological data to be used. The default is
         'latest'.
-    future_scenario: string, optional
+    future_scenario: str, optional
         Future climate scenario.
-    future_year : integer, optional
+    future_year : int, optional
         Central year for a 20-year reference period in the future.
     interval_index: bool, optional
         Whether the index of the returned data object is of the type
@@ -228,7 +228,7 @@ def get_meteonorm_tmy(latitude, longitude, api_key,
         where applicable. See variable :const:`VARIABLE_MAP`. The default is
         True.
     url: str, optional.
-        Base URL of the Meteonorm API. 'climate/tmy'` is
+        Base URL of the Meteonorm API. `'climate/tmy'` is
         appended to the URL. The default is:
         :const:`pvlib.iotools.meteonorm.URL`.
 

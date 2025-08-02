@@ -964,3 +964,15 @@ def test_spa_python_numba_physical_dst(expected_solpos, golden):
                                               temperature=11, delta_t=67,
                                               atmos_refract=0.5667,
                                               how='numpy', numthreads=1)
+
+
+def test_ephmeris_refraction_85_90_degrees():
+    # Test that refraction is calculated rather than set to zero
+    # for solar elevatoin angles between 85 and 90 degrees
+    # PR#2524
+    # The below example has a solar elevation angle of 87.9
+    result = solarposition.ephemeris(
+        time=pd.date_range('2020-03-23 12', periods=1, tz='UTC'),
+        latitude=0, longitude=0)
+    refraction = (result['apparent_zenith'] - result['zenith']).iloc[0]
+    assert refraction == -0.0005818446332597205

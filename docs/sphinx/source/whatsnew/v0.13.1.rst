@@ -6,6 +6,9 @@ v0.13.1 (Anticipated September, 2025)
 
 Breaking Changes
 ~~~~~~~~~~~~~~~~
+* Change refraction for solar elevation angles between 85 and 90
+  degrees to be calculated rather than set to 0 in
+  :py:func:`~pvlib.solarposition.ephemeris`. (:pull:`2524`)
 
 
 Deprecations

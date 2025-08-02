@@ -38,7 +38,7 @@ def expected_meta():
             'name': 'global_horizontal_irradiance_with_shading',
             'unit': {'description': 'Watt per square meter',
                      'name': 'W/m**2'}},
-           ],
+        ],
         'surface_azimuth': 180,
         'surface_tilt': 0,
         'time_zone': 0,
@@ -141,7 +141,7 @@ def test_get_meteonorm_realtime(demo_api_key, demo_url, expected_columns_all):
         map_variables=False,
         interval_index=True,
         url=demo_url,
-        )
+    )
     assert meta['frequency'] == '1_minute'
     assert meta['lat'] == 21
     assert meta['lon'] == 79
@@ -232,7 +232,7 @@ def expected_meteonorm_tmy_meta():
             'name': 'diffuse_horizontal_irradiance',
             'unit': {'description': 'Watt per square meter',
                      'name': 'W/m**2'},
-            }],
+        }],
         'surface_azimuth': 90,
         'surface_tilt': 20,
         'time_zone': 1,
@@ -275,8 +275,8 @@ def expected_metenorm_tmy_data():
     return expected
 
 
-# @pytest.mark.remote_data
-# @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
+@pytest.mark.remote_data
+@pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_get_meteonorm_tmy(
         demo_api_key, demo_url, expected_meteonorm_tmy_meta,
         expected_metenorm_tmy_data, expected_meteonorm_tmy_index):

@@ -73,7 +73,7 @@ def get_meteonorm(latitude, longitude, start, end, api_key, endpoint,
     time_step : {'1min', '15min', '1h'}, optional
         Frequency of the time series. The parameter is ignored when requesting
         forcasting data. The default is '15min'.
-    horizon : optional
+    horizon : str, optional
         Specification of the horizon line. Can be either a 'flat', 'auto', or
         a list of 360 horizon elevation angles. The default is 'auto'.
     interval_index: bool, optional
@@ -193,11 +193,11 @@ def get_meteonorm_tmy(latitude, longitude, api_key,
         (north=0, east=90, south=180, west=270). The default is 180.
     time_step: {'1min', '1h'}, optional
         Frequency of the time series. The default is '1h'.
-    horizon: optional
+    horizon: str, optional
         Specification of the hoirzon line. Can be either 'flat' or 'auto', or
         specified as a list of 360 horizon elevation angles. The default is
         'auto'.
-    terrain: string, optional
+    terrain: str, optional
         Local terrain situation. Must be one of: ['open', 'depression',
         'cold_air_lake', 'sea_lake', 'city', 'slope_south',
         'slope_west_east']. The default is 'open'.

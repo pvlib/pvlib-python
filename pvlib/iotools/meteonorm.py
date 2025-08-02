@@ -43,31 +43,31 @@ def get_meteonorm(latitude, longitude, start, end, api_key, endpoint,
 
     Parameters
     ----------
-    latitude: float
+    latitude : float
         In decimal degrees, north is positive (ISO 19115).
     longitude: float
         In decimal degrees, east is positive (ISO 19115).
-    start: datetime like
+    start : datetime like
         First timestamp of the requested period. If a timezone is not
         specified, UTC is assumed. Relative datetime strings are supported.
-    end: datetime like
+    end : datetime like
         Last timestamp of the requested period. If a timezone is not
         specified, UTC is assumed. Relative datetime strings are supported.
-    api_key: str
+    api_key : str
         Meteonorm API key.
     endpoint : str
         API endpoint, see [3]_. Must be one of:
 
-        * ``'/observation/training'`` - historical data with a 7-day delay
-        * ``'/observation/realtime'`` - near-real time (past 7-days)
-        * ``'/forecast/basic'`` - forcast with hourly resolution
-        * ``'/forecast/precision'`` - forecast with 15-min resolution
+        * ``'observation/training'`` - historical data with a 7-day delay
+        * ``'observation/realtime'`` - near-real time (past 7-days)
+        * ``'forecast/basic'`` - forecast with hourly resolution
+        * ``'forecast/precision'`` - forecast with 15-min resolution
 
-    parameters: list or 'all', default 'all'
+    parameters : list or 'all', default : 'all'
         List of parameters to request or `'all'` to get all parameters.
-    surface_tilt: float, default : 0
+    surface_tilt : float, default : 0
         Tilt angle from horizontal plane.
-    surface_azimuth: float, default : 180
+    surface_azimuth : float, default : 180
         Orientation (azimuth angle) of the (fixed) plane. Clockwise from north
         (north=0, east=90, south=180, west=270).
     time_step : {'1min', '15min', '1h'}, default : '15min'
@@ -76,14 +76,13 @@ def get_meteonorm(latitude, longitude, start, end, api_key, endpoint,
     horizon : str or list, default : 'auto'
         Specification of the horizon line. Can be either a 'flat', 'auto', or
         a list of 360 horizon elevation angles.
-    interval_index: bool, default : False
-        Whether the index of the returned data object is of the type
-        pd.DatetimeIndex or pd.IntervalIndex. This is an experimental feature
-        which may be removed without warning.
-    map_variables: bool, default : True
+    interval_index : bool, default : False
+        Index is pd.DatetimeIndex when False, and pd.IntervalIndex when True.
+        This is an experimental feature which may be removed without warning.
+    map_variables : bool, default : True
         When true, renames columns of the Dataframe to pvlib variable names
         where applicable. See variable :const:`VARIABLE_MAP`.
-    url: str, optional
+    url : str, optional
         Base URL of the Meteonorm API. The ``endpoint`` parameter is
         appended to the url. The default is
         :const:`pvlib.iotools.meteonorm.URL`.
@@ -137,8 +136,8 @@ def get_meteonorm(latitude, longitude, start, end, api_key, endpoint,
         parameters = [parameter_dict.get(p, p) for p in parameters]
         params['parameters'] = ','.join(parameters)
 
-    if horizon not in ['auto', 'flat']:
-        params['horizon'] = ','.join(horizon)
+    if not isinstance(horizon, str):
+        params['horizon'] = ','.join(map(str, horizon))
 
     if 'forecast' not in endpoint.lower():
         params['frequency'] = TIME_STEP_MAP.get(time_step, time_step)
@@ -146,7 +145,8 @@ def get_meteonorm(latitude, longitude, start, end, api_key, endpoint,
     headers = {"Authorization": f"Bearer {api_key}"}
 
     response = requests.get(
-        urljoin(url, endpoint), headers=headers, params=params)
+        urljoin(url, endpoint.lstrip('/')), headers=headers, params=params)
+
     if not response.ok:
         # response.raise_for_status() does not give a useful error message
         raise requests.HTTPError(response.json())
@@ -175,53 +175,52 @@ def get_meteonorm_tmy(latitude, longitude, api_key,
 
     Parameters
     ----------
-    latitude: float
+    latitude : float
         In decimal degrees, north is positive (ISO 19115).
-    longitude: float
+    longitude : float
         In decimal degrees, east is positive (ISO 19115).
-    api_key: str
+    api_key : str
         Meteonorm API key.
-    parameters: list or 'all', default 'all'
+    parameters : list or 'all', default : 'all'
         List of parameters to request or `'all'` to get all parameters.
-    surface_tilt: float, default : 0
+    surface_tilt : float, default : 0
         Tilt angle from horizontal plane.
     surface_azimuth : float, default : 180
         Orientation (azimuth angle) of the (fixed) plane. Clockwise from north
         (north=0, east=90, south=180, west=270).
-    time_step: {'1min', '1h'}, default : '1h'
+    time_step : {'1min', '1h'}, default : '1h'
         Frequency of the time series.
-    horizon: str, optional
-        Specification of the hoirzon line. Can be either 'flat' or 'auto', or
+    horizon : str, optional
+        Specification of the horizon line. Can be either 'flat' or 'auto', or
         specified as a list of 360 horizon elevation angles.
         'auto'.
-    terrain: str, default : 'open'
+    terrain : str, default : 'open'
         Local terrain situation. Must be one of: ['open', 'depression',
         'cold_air_lake', 'sea_lake', 'city', 'slope_south',
         'slope_west_east'].
-    albedo: float, default : 0.2
+    albedo : float, default : 0.2
         Ground albedo. Albedo changes due to snow fall are modelled.
-    turbidity: list or 'auto', optional
+    turbidity : list or 'auto', optional
         List of 12 monthly mean atmospheric Linke turbidity values. The default
         is 'auto'.
-    random_seed: int, optional
+    random_seed : int, optional
         Random seed to be used for stochastic processes. Two identical requests
         with the same random seed will yield identical results.
     clear_sky_radiation_model : str, default : 'esra'
         Which clearsky model to use. Must be either `'esra'` or `'solis'`.
     data_version : str, default : 'latest'
         Version of Meteonorm climatological data to be used.
-    future_scenario: str, optional
+    future_scenario : str, optional
         Future climate scenario.
     future_year : int, optional
         Central year for a 20-year reference period in the future.
-    interval_index: bool, default : False
-        Whether the index of the returned data object is of the type
-        pd.DatetimeIndex or pd.IntervalIndex. This is an experimental feature
-        which may be removed without warning.
-    map_variables: bool, default : True
+    interval_index : bool, default : False
+        Index is pd.DatetimeIndex when False, and pd.IntervalIndex when True.
+        This is an experimental feature which may be removed without warning.
+    map_variables : bool, default : True
         When true, renames columns of the Dataframe to pvlib variable names
         where applicable. See variable :const:`VARIABLE_MAP`.
-    url: str, optional.
+    url : str, optional.
         Base URL of the Meteonorm API. `'climate/tmy'` is
         appended to the URL. The default is:
         :const:`pvlib.iotools.meteonorm.URL`.
@@ -264,6 +263,9 @@ def get_meteonorm_tmy(latitude, longitude, api_key,
         'turbidity': turbidity,
         'clear_sky_radiation_model': clear_sky_radiation_model,
         'data_version': data_version,
+        'random_seed': random_seed,
+        'future_scenario': future_scenario,
+        'future_year': future_year,
     }
 
     # convert list to string with values separated by commas
@@ -273,25 +275,16 @@ def get_meteonorm_tmy(latitude, longitude, api_key,
         parameters = [parameter_dict.get(p, p) for p in parameters]
         params['parameters'] = ','.join(parameters)
 
-    if horizon not in ['auto', 'flat']:
-        params['horizon'] = ','.join(horizon)
+    if isinstance(horizon, str):
+        params['horizon'] = ','.join(map(str, horizon))
 
-    if turbidity != 'auto':
-        params['turbidity'] = ','.join(turbidity)
-
-    if random_seed is not None:
-        params['random_seed'] = random_seed
-
-    if future_scenario is not None:
-        params['future_scenario'] = future_scenario
-
-    if future_year is not None:
-        params['future_year'] = future_year
+    if isinstance(turbidity, str):
+        params['turbidity'] = ','.join(map(str, turbidity))
 
     headers = {"Authorization": f"Bearer {api_key}"}
 
     response = requests.get(
-        urljoin(url, TMY_ENDPOINT), headers=headers, params=params)
+        urljoin(url, TMY_ENDPOINT.lstrip('/')), headers=headers, params=params)
 
     if not response.ok:
         # response.raise_for_status() does not give a useful error message

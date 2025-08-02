@@ -129,8 +129,14 @@ def get_meteonorm(latitude, longitude, start, end, api_key, endpoint,
         'horizon': horizon,
     }
 
+    # Allow specifying single parameters as string
+    if isinstance(parameters, str):
+        parameter_list = list(VARIABLE_MAP.keys()) + list(VARIABLE_MAP.values())
+        if parameters in parameter_list:
+            parameters = [parameters]
+
     # convert list to string with values separated by commas
-    if not isinstance(params['parameters'], (str, type(None))):
+    if not isinstance(parameters, (str, type(None))):
         # allow the use of pvlib parameter names
         parameter_dict = {v: k for k, v in VARIABLE_MAP.items()}
         parameters = [parameter_dict.get(p, p) for p in parameters]
@@ -268,8 +274,14 @@ def get_meteonorm_tmy(latitude, longitude, api_key,
         'future_year': future_year,
     }
 
+    # Allow specifying single parameters as string
+    if isinstance(parameters, str):
+        parameter_list = list(VARIABLE_MAP.keys()) + list(VARIABLE_MAP.values())
+        if parameters in parameter_list:
+            parameters = [parameters]
+
     # convert list to string with values separated by commas
-    if not isinstance(params['parameters'], (str, type(None))):
+    if not isinstance(parameters, (str, type(None))):
         # allow the use of pvlib parameter names
         parameter_dict = {v: k for k, v in VARIABLE_MAP.items()}
         parameters = [parameter_dict.get(p, p) for p in parameters]

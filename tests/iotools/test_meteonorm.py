@@ -236,18 +236,20 @@ def expected_meteonorm_tmy_meta():
         'surface_azimuth': 90,
         'surface_tilt': 20,
         'time_zone': 1,
-        'latitude': 50,
-        'longitude': 10,
+        'lat': 50,
+        'lon': 10,
     }
     return meta
 
 
 @pytest.fixture
-def expected_meteonorm_tmy_index():
+def expected_meteonorm_tmy_interval_index():
     index = pd.date_range(
         '2005-01-01', periods=8760, freq='1h', tz=3600)
     index.freq = None
-    return index
+    interval_index = pd.IntervalIndex.from_arrays(
+        index, index + pd.Timedelta(hours=1), closed='left')
+    return interval_index
 
 
 @pytest.fixture
@@ -271,7 +273,9 @@ def expected_metenorm_tmy_data():
     index = pd.date_range(
         '2005-01-01', periods=12, freq='1h', tz=3600)
     index.freq = None
-    expected = pd.DataFrame(expected, index=index, columns=columns)
+    interval_index = pd.IntervalIndex.from_arrays(
+        index, index + pd.Timedelta(hours=1), closed='left')
+    expected = pd.DataFrame(expected, index=interval_index, columns=columns)
     return expected
 
 
@@ -279,7 +283,7 @@ def expected_metenorm_tmy_data():
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_get_meteonorm_tmy(
         demo_api_key, demo_url, expected_meteonorm_tmy_meta,
-        expected_metenorm_tmy_data, expected_meteonorm_tmy_index):
+        expected_metenorm_tmy_data, expected_meteonorm_tmy_interval_index):
     data, meta = pvlib.iotools.get_meteonorm_tmy(
         latitude=50, longitude=10,
         api_key=demo_api_key,
@@ -301,4 +305,5 @@ def test_get_meteonorm_tmy(
         url=demo_url)
     assert meta == expected_meteonorm_tmy_meta
     pd.testing.assert_frame_equal(data.iloc[:12], expected_metenorm_tmy_data)
-    pd.testing.assert_index_equal(data.index, expected_meteonorm_tmy_index)
+    pd.testing.assert_index_equal(
+        data.index, expected_meteonorm_tmy_interval_index)

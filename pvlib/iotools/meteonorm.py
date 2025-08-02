@@ -325,7 +325,7 @@ def _parse_meteonorm(response, interval_index, map_variables):
         data.index = pd.IntervalIndex.from_arrays(
             left=pd.to_datetime(response.json()['start_times']),
             right=pd.to_datetime(response.json()['end_times']),
-            closed='both',
+            closed='left',
         )
     else:
         data.index = pd.to_datetime(response.json()['start_times'])

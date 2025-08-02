@@ -221,6 +221,20 @@ def test_get_meteonorm_HTTPError(demo_api_key, demo_url):
             url=demo_url)
 
 
+@pytest.mark.remote_data
+@pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
+def test_get_meteonorm_tmy_HTTPError(demo_api_key, demo_url):
+    with pytest.raises(
+            HTTPError, match='parameter "surface_azimuth"'):
+        _ = pvlib.iotools.get_meteonorm_tmy(
+            latitude=50, longitude=10,
+            api_key=demo_api_key,
+            parameters='dhi',
+            # Infeasible surface_titl
+            surface_azimuth=400,
+            url=demo_url)
+
+
 @pytest.fixture
 def expected_meteonorm_tmy_meta():
     meta = {
@@ -294,7 +308,7 @@ def test_get_meteonorm_tmy(
         horizon=list(np.ones(360).astype(int)*2),
         terrain='open',
         albedo=0.5,
-        turbidity='auto',
+        turbidity=[5.2, 4, 3, 3.1, 3.0, 2.8, 3.14, 3.0, 3, 3, 4, 5],
         random_seed=100,
         clear_sky_radiation_model='solis',
         data_version='v9.0',  # fix version

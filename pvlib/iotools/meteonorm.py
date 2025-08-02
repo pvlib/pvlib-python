@@ -100,6 +100,15 @@ def get_meteonorm(latitude, longitude, start, end, api_key, endpoint,
     meta : dict
         Metadata.
 
+    Examples
+    --------
+    >>> # Retrieve historical time series data
+    >>> df, meta = get_meteonorm(  # doctest: +SKIP
+    ...     latitude=50, longitude=10,  # doctest: +SKIP
+    ...     start='2023-01-01', end='2025-01-01',  # doctest: +SKIP
+    ...     api_key='redacted',  # doctest: +SKIP
+    ...     endpoint='observation/training')  # doctest: +SKIP
+
     See Also
     --------
     pvlib.iotools.get_meteonorm_tmy

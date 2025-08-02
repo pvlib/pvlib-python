@@ -1,7 +1,9 @@
 import pandas as pd
+import numpy as np
 import pytest
 import pvlib
 from tests.conftest import RERUNS, RERUNS_DELAY
+from requests.exceptions import HTTPError
 
 
 @pytest.fixture
@@ -29,11 +31,13 @@ def expected_meta():
            {'aggregation_method': 'average',
             'description': 'Global horizontal irradiance',
             'name': 'global_horizontal_irradiance',
-            'unit': {'description': 'Watt per square meter', 'name': 'W/m**2'}},
+            'unit': {
+                'description': 'Watt per square meter', 'name': 'W/m**2'}},
            {'aggregation_method': 'average',
-            'description': 'Global horizontal irradiance with shading taken into account',
+            'description': 'Global horizontal irradiance with shading taken into account',  # noqa: E501
             'name': 'global_horizontal_irradiance_with_shading',
-            'unit': {'description': 'Watt per square meter', 'name': 'W/m**2'}},
+            'unit': {'description': 'Watt per square meter',
+                     'name': 'W/m**2'}},
            ],
         'surface_azimuth': 180,
         'surface_tilt': 0,
@@ -186,3 +190,115 @@ def test_get_meteonorm_forecast_precision(demo_api_key, demo_url):
     assert data.index[1] - data.index[0] == pd.Timedelta(minutes=15)
     assert data.shape == (5, 1)
     assert meta['frequency'] == '15_minutes'
+
+
+@pytest.mark.remote_data
+@pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
+def test_get_meteonorm_custom_horizon(demo_api_key, demo_url):
+    data, meta = pvlib.iotools.get_meteonorm(
+        latitude=50, longitude=10,
+        start=pd.Timestamp.now(tz='UTC'),
+        end=pd.Timestamp.now(tz='UTC') + pd.Timedelta(hours=5),
+        api_key=demo_api_key,
+        parameters='ghi',
+        endpoint='forecast/basic',
+        horizon=list(np.ones(360).astype(int)*80),
+        url=demo_url)
+
+
+@pytest.mark.remote_data
+@pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
+def test_get_meteonorm_HTTPError(demo_api_key, demo_url):
+    with pytest.raises(
+            HTTPError, match="unknown parameter: not_a_real_parameter'"):
+        _ = pvlib.iotools.get_meteonorm(
+            latitude=50, longitude=10,
+            start=pd.Timestamp.now(tz='UTC'),
+            end=pd.Timestamp.now(tz='UTC') + pd.Timedelta(hours=5),
+            api_key=demo_api_key,
+            parameters='not_a_real_parameter',
+            endpoint='forecast/basic',
+            url=demo_url)
+
+
+@pytest.fixture
+def expected_meteonorm_tmy_meta():
+    meta = {
+        'altitude': 290,
+        'frequency': '1_hour',
+        'parameters': [{
+            'aggregation_method': 'average',
+            'description': 'Diffuse horizontal irradiance',
+            'name': 'diffuse_horizontal_irradiance',
+            'unit': {'description': 'Watt per square meter',
+                     'name': 'W/m**2'},
+            }],
+        'surface_azimuth': 90,
+        'surface_tilt': 20,
+        'time_zone': 1,
+        'latitude': 50,
+        'longitude': 10,
+    }
+    return meta
+
+
+@pytest.fixture
+def expected_meteonorm_tmy_index():
+    index = pd.date_range(
+        '2005-01-01', periods=8760, freq='1h', tz=3600)
+    index.freq = None
+    return index
+
+
+@pytest.fixture
+def expected_metenorm_tmy_data():
+    # The first 12 rows of data
+    columns = ['diffuse_horizontal_irradiance']
+    expected = [
+        [0.],
+        [0.],
+        [0.],
+        [0.],
+        [0.],
+        [0.],
+        [0.],
+        [0.],
+        [9.],
+        [8.4],
+        [86.6],
+        [110.5],
+    ]
+    index = pd.date_range(
+        '2005-01-01', periods=12, freq='1h', tz=3600)
+    index.freq = None
+    expected = pd.DataFrame(expected, index=index, columns=columns)
+    return expected
+
+
+# @pytest.mark.remote_data
+# @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
+def test_get_meteonorm_tmy(
+        demo_api_key, demo_url, expected_meteonorm_tmy_meta,
+        expected_metenorm_tmy_data, expected_meteonorm_tmy_index):
+    data, meta = pvlib.iotools.get_meteonorm_tmy(
+        latitude=50, longitude=10,
+        api_key=demo_api_key,
+        parameters='dhi',
+        surface_tilt=20,
+        surface_azimuth=90,
+        time_step='1h',
+        horizon=list(np.ones(360).astype(int)*2),
+        terrain='open',
+        albedo=0.5,
+        turbidity='auto',
+        random_seed=100,
+        clear_sky_radiation_model='solis',
+        data_version='v9.0',  # fix version
+        future_scenario='ssp1_26',
+        future_year=2030,
+        interval_index=True,
+        map_variables=False,
+        url=demo_url)
+    assert meta == expected_meteonorm_tmy_meta
+    pd.testing.assert_frame_equal(data.iloc[:12], expected_metenorm_tmy_data)
+    pd.testing.assert_index_equal(data.index, expected_meteonorm_tmy_index)

@@ -75,7 +75,7 @@ def get_meteonorm(latitude, longitude, start, end, api_key, endpoint,
         forcasting data.
     horizon : str or list, default : 'auto'
         Specification of the horizon line. Can be either a 'flat', 'auto', or
-        a list of 360 horizon elevation angles.
+        a list of 360 integer horizon elevation angles.
     interval_index : bool, default : False
         Index is pd.DatetimeIndex when False, and pd.IntervalIndex when True.
         This is an experimental feature which may be removed without warning.
@@ -131,7 +131,8 @@ def get_meteonorm(latitude, longitude, start, end, api_key, endpoint,
 
     # Allow specifying single parameters as string
     if isinstance(parameters, str):
-        parameter_list = list(VARIABLE_MAP.keys()) + list(VARIABLE_MAP.values())
+        parameter_list = \
+            list(VARIABLE_MAP.keys()) + list(VARIABLE_MAP.values())
         if parameters in parameter_list:
             parameters = [parameters]
 
@@ -198,7 +199,7 @@ def get_meteonorm_tmy(latitude, longitude, api_key,
         Frequency of the time series.
     horizon : str, optional
         Specification of the horizon line. Can be either 'flat' or 'auto', or
-        specified as a list of 360 horizon elevation angles.
+        specified as a list of 360 integer horizon elevation angles.
         'auto'.
     terrain : str, default : 'open'
         Local terrain situation. Must be one of: ['open', 'depression',
@@ -265,7 +266,7 @@ def get_meteonorm_tmy(latitude, longitude, api_key,
         'frequency': time_step,
         'parameters': parameters,
         'horizon': horizon,
-        'terrain': terrain,
+        'situation': terrain,
         'turbidity': turbidity,
         'clear_sky_radiation_model': clear_sky_radiation_model,
         'data_version': data_version,
@@ -276,7 +277,8 @@ def get_meteonorm_tmy(latitude, longitude, api_key,
 
     # Allow specifying single parameters as string
     if isinstance(parameters, str):
-        parameter_list = list(VARIABLE_MAP.keys()) + list(VARIABLE_MAP.values())
+        parameter_list = \
+            list(VARIABLE_MAP.keys()) + list(VARIABLE_MAP.values())
         if parameters in parameter_list:
             parameters = [parameters]
 
@@ -287,11 +289,13 @@ def get_meteonorm_tmy(latitude, longitude, api_key,
         parameters = [parameter_dict.get(p, p) for p in parameters]
         params['parameters'] = ','.join(parameters)
 
-    if isinstance(horizon, str):
+    if not isinstance(horizon, str):
         params['horizon'] = ','.join(map(str, horizon))
 
-    if isinstance(turbidity, str):
+    if not isinstance(turbidity, str):
         params['turbidity'] = ','.join(map(str, turbidity))
+
+    params['frequency'] = TIME_STEP_MAP.get(time_step, time_step)
 
     headers = {"Authorization": f"Bearer {api_key}"}
 

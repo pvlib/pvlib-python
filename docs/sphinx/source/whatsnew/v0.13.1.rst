@@ -55,3 +55,4 @@ Contributors
 * Rajiv Daxini (:ghuser:`RDaxini`)
 * Omar Bahamida (:ghuser:`OmarBahamida`)
 * Kevin Anderson (:ghuser:`kandersolar`)
+* Mikaella Brewer (:ghuser: `brwerx`)

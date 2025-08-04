@@ -49,10 +49,10 @@ def get_meteonorm(latitude, longitude, start, end, api_key, endpoint,
         In decimal degrees, east is positive (ISO 19115).
     start : datetime like
         First timestamp of the requested period. If a timezone is not
-        specified, UTC is assumed. Relative datetime strings are supported.
+        specified, UTC is assumed.
     end : datetime like
         Last timestamp of the requested period. If a timezone is not
-        specified, UTC is assumed. Relative datetime strings are supported.
+        specified, UTC is assumed.
     api_key : str
         Meteonorm API key.
     endpoint : str
@@ -61,7 +61,8 @@ def get_meteonorm(latitude, longitude, start, end, api_key, endpoint,
         * ``'observation/training'`` - historical data with a 7-day delay
         * ``'observation/realtime'`` - near-real time (past 7-days)
         * ``'forecast/basic'`` - forecast with hourly resolution
-        * ``'forecast/precision'`` - forecast with 15-min resolution
+        * ``'forecast/precision'`` - forecast with 1-min, 15-min, or hourly
+          resolution
 
     parameters : list or 'all', default : 'all'
         List of parameters to request or `'all'` to get all parameters.
@@ -71,10 +72,9 @@ def get_meteonorm(latitude, longitude, start, end, api_key, endpoint,
         Orientation (azimuth angle) of the (fixed) plane. Clockwise from north
         (north=0, east=90, south=180, west=270).
     time_step : {'1min', '15min', '1h'}, default : '15min'
-        Frequency of the time series. The parameter is ignored when requesting
-        forcasting data.
+        Frequency of the time series.
     horizon : str or list, default : 'auto'
-        Specification of the horizon line. Can be either a 'flat', 'auto', or
+        Specification of the horizon line. Can be either 'flat', 'auto', or
         a list of 360 integer horizon elevation angles.
     interval_index : bool, default : False
         Index is pd.DatetimeIndex when False, and pd.IntervalIndex when True.
@@ -103,7 +103,7 @@ def get_meteonorm(latitude, longitude, start, end, api_key, endpoint,
     Examples
     --------
     >>> # Retrieve historical time series data
-    >>> df, meta = get_meteonorm(  # doctest: +SKIP
+    >>> df, meta = pvlib.iotools.get_meteonorm(  # doctest: +SKIP
     ...     latitude=50, longitude=10,  # doctest: +SKIP
     ...     start='2023-01-01', end='2025-01-01',  # doctest: +SKIP
     ...     api_key='redacted',  # doctest: +SKIP
@@ -122,6 +122,7 @@ def get_meteonorm(latitude, longitude, start, end, api_key, endpoint,
     .. [3] `Meteonorm API reference
        <https://docs.meteonorm.com/api>`_
     """
+    # Relative date strings are not yet supported
     start = pd.Timestamp(start)
     end = pd.Timestamp(end)
     start = start.tz_localize('UTC') if start.tzinfo is None else start
@@ -136,14 +137,12 @@ def get_meteonorm(latitude, longitude, start, end, api_key, endpoint,
         'surface_tilt': surface_tilt,
         'surface_azimuth': surface_azimuth,
         'horizon': horizon,
+        'response_format': 'json',
     }
 
     # Allow specifying single parameters as string
     if isinstance(parameters, str):
-        parameter_list = \
-            list(VARIABLE_MAP.keys()) + list(VARIABLE_MAP.values())
-        if parameters in parameter_list:
-            parameters = [parameters]
+        parameters = [parameters]
 
     # convert list to string with values separated by commas
     if not isinstance(parameters, (str, type(None))):
@@ -155,7 +154,7 @@ def get_meteonorm(latitude, longitude, start, end, api_key, endpoint,
     if not isinstance(horizon, str):
         params['horizon'] = ','.join(map(str, horizon))
 
-    if 'forecast' not in endpoint.lower():
+    if 'basic' not in endpoint:
         params['frequency'] = TIME_STEP_MAP.get(time_step, time_step)
 
     headers = {"Authorization": f"Bearer {api_key}"}
@@ -165,7 +164,8 @@ def get_meteonorm(latitude, longitude, start, end, api_key, endpoint,
 
     if not response.ok:
         # response.raise_for_status() does not give a useful error message
-        raise requests.HTTPError(response.json())
+        raise requests.HTTPError("Meteonorm API returned an error: "
+                                 + response.json()['error']['message'])
 
     data, meta = _parse_meteonorm(response, interval_index, map_variables)
 
@@ -177,8 +177,8 @@ TMY_ENDPOINT = 'climate/tmy'
 
 def get_meteonorm_tmy(latitude, longitude, api_key,
                       parameters='all', *, surface_tilt=0,
-                      surface_azimuth=180, time_step='15min', horizon='auto',
-                      terrain='open', albedo=0.2, turbidity='auto',
+                      surface_azimuth=180, time_step='1h', horizon='auto',
+                      terrain='open', albedo=None, turbidity='auto',
                       random_seed=None, clear_sky_radiation_model='esra',
                       data_version='latest', future_scenario=None,
                       future_year=None, interval_index=False,
@@ -214,8 +214,10 @@ def get_meteonorm_tmy(latitude, longitude, api_key,
         Local terrain situation. Must be one of: ['open', 'depression',
         'cold_air_lake', 'sea_lake', 'city', 'slope_south',
         'slope_west_east'].
-    albedo : float, default : 0.2
-        Ground albedo. Albedo changes due to snow fall are modelled.
+    albedo : float, optional
+        Constant ground albedo. If no value is specified a baseline albedo of
+        0.2 is used and albedo cahnges due to snow fall is modeled. If a value
+        is specified, then snow fall is not modeled.
     turbidity : list or 'auto', optional
         List of 12 monthly mean atmospheric Linke turbidity values. The default
         is 'auto'.
@@ -272,7 +274,7 @@ def get_meteonorm_tmy(latitude, longitude, api_key,
         'lon': longitude,
         'surface_tilt': surface_tilt,
         'surface_azimuth': surface_azimuth,
-        'frequency': time_step,
+        'frequency': TIME_STEP_MAP.get(time_step, time_step),
         'parameters': parameters,
         'horizon': horizon,
         'situation': terrain,
@@ -282,14 +284,12 @@ def get_meteonorm_tmy(latitude, longitude, api_key,
         'random_seed': random_seed,
         'future_scenario': future_scenario,
         'future_year': future_year,
+        'response_format': 'json',
     }
 
     # Allow specifying single parameters as string
     if isinstance(parameters, str):
-        parameter_list = \
-            list(VARIABLE_MAP.keys()) + list(VARIABLE_MAP.values())
-        if parameters in parameter_list:
-            parameters = [parameters]
+        parameters = [parameters]
 
     # convert list to string with values separated by commas
     if not isinstance(parameters, (str, type(None))):
@@ -304,8 +304,6 @@ def get_meteonorm_tmy(latitude, longitude, api_key,
     if not isinstance(turbidity, str):
         params['turbidity'] = ','.join(map(str, turbidity))
 
-    params['frequency'] = TIME_STEP_MAP.get(time_step, time_step)
-
     headers = {"Authorization": f"Bearer {api_key}"}
 
     response = requests.get(
@@ -313,7 +311,8 @@ def get_meteonorm_tmy(latitude, longitude, api_key,
 
     if not response.ok:
         # response.raise_for_status() does not give a useful error message
-        raise requests.HTTPError(response.json())
+        raise requests.HTTPError("Meteonorm API returned an error: "
+                                 + response.json()['error']['message'])
 
     data, meta = _parse_meteonorm(response, interval_index, map_variables)
 

@@ -183,8 +183,7 @@ def test_get_meteonorm_forecast_precision(demo_api_key, demo_url):
         api_key=demo_api_key,
         parameters='ghi',
         endpoint='forecast/precision',
-        # test that the time_step parameter is ignored
-        time_step='1h',
+        time_step='15min',
         url=demo_url)
 
     assert data.index[1] - data.index[0] == pd.Timedelta(minutes=15)
@@ -210,7 +209,7 @@ def test_get_meteonorm_custom_horizon(demo_api_key, demo_url):
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_get_meteonorm_HTTPError(demo_api_key, demo_url):
     with pytest.raises(
-            HTTPError, match="unknown parameter: not_a_real_parameter'"):
+            HTTPError, match="unknown parameter: not_a_real_parameter"):
         _ = pvlib.iotools.get_meteonorm(
             latitude=50, longitude=10,
             start=pd.Timestamp.now(tz='UTC'),
@@ -230,7 +229,7 @@ def test_get_meteonorm_tmy_HTTPError(demo_api_key, demo_url):
             latitude=50, longitude=10,
             api_key=demo_api_key,
             parameters='dhi',
-            # Infeasible surface_titl
+            # Infeasible surface_tilt
             surface_azimuth=400,
             url=demo_url)
 

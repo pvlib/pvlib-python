@@ -12,6 +12,9 @@ VARIABLE_MAP = {
     'direct_normal_irradiance': 'dni',
     'direct_horizontal_irradiance': 'bhi',
     'global_clear_sky_irradiance': 'ghi_clear',
+    'diffuse_clear_sky_irradiance': 'dhi_clear',
+    'direct_normal_clear_sky_irradiance': 'dni_clear',
+    'direct_horizontal_clear_sky_irradiance': 'bhi_clear',
     'diffuse_tilted_irradiance': 'poa_diffuse',
     'direct_tilted_irradiance': 'poa_direct',
     'global_tilted_irradiance': 'poa',
@@ -96,7 +99,7 @@ def get_meteonorm(latitude, longitude, start, end, api_key, endpoint,
     -------
     data : pd.DataFrame
         Time series data. The index corresponds to the start (left) of the
-        interval unless ``interval_index`` is set to False.
+        interval unless ``interval_index`` is set to True.
     meta : dict
         Metadata.
 
@@ -144,12 +147,11 @@ def get_meteonorm(latitude, longitude, start, end, api_key, endpoint,
     if isinstance(parameters, str):
         parameters = [parameters]
 
+    # allow the use of pvlib parameter names
+    parameter_dict = {v: k for k, v in VARIABLE_MAP.items()}
+    parameters = [parameter_dict.get(p, p) for p in parameters]
     # convert list to string with values separated by commas
-    if not isinstance(parameters, (str, type(None))):
-        # allow the use of pvlib parameter names
-        parameter_dict = {v: k for k, v in VARIABLE_MAP.items()}
-        parameters = [parameter_dict.get(p, p) for p in parameters]
-        params['parameters'] = ','.join(parameters)
+    params['parameters'] = ','.join(parameters)
 
     if not isinstance(horizon, str):
         params['horizon'] = ','.join(map(str, horizon))
@@ -216,7 +218,7 @@ def get_meteonorm_tmy(latitude, longitude, api_key,
         'slope_west_east'].
     albedo : float, optional
         Constant ground albedo. If no value is specified a baseline albedo of
-        0.2 is used and albedo cahnges due to snow fall is modeled. If a value
+        0.2 is used and albedo changes due to snow fall are modeled. If a value
         is specified, then snow fall is not modeled.
     turbidity : list or 'auto', optional
         List of 12 monthly mean atmospheric Linke turbidity values. The default
@@ -252,7 +254,7 @@ def get_meteonorm_tmy(latitude, longitude, api_key,
     -------
     data : pd.DataFrame
         Time series data. The index corresponds to the start (left) of the
-        interval unless ``interval_index`` is set to False.
+        interval unless ``interval_index`` is set to True.
     meta : dict
         Metadata.
 
@@ -291,12 +293,11 @@ def get_meteonorm_tmy(latitude, longitude, api_key,
     if isinstance(parameters, str):
         parameters = [parameters]
 
+    # allow the use of pvlib parameter names
+    parameter_dict = {v: k for k, v in VARIABLE_MAP.items()}
+    parameters = [parameter_dict.get(p, p) for p in parameters]
     # convert list to string with values separated by commas
-    if not isinstance(parameters, (str, type(None))):
-        # allow the use of pvlib parameter names
-        parameter_dict = {v: k for k, v in VARIABLE_MAP.items()}
-        parameters = [parameter_dict.get(p, p) for p in parameters]
-        params['parameters'] = ','.join(parameters)
+    params['parameters'] = ','.join(parameters)
 
     if not isinstance(horizon, str):
         params['horizon'] = ','.join(map(str, horizon))

@@ -162,6 +162,7 @@ def test_get_meteonorm_forecast_basic(demo_api_key, demo_url):
         latitude=50, longitude=10,
         start=pd.Timestamp.now(tz='UTC'),
         end=pd.Timestamp.now(tz='UTC') + pd.Timedelta(hours=5),
+        time_step='1h',
         api_key=demo_api_key,
         parameters='ghi',
         endpoint='forecast/basic',
@@ -200,6 +201,7 @@ def test_get_meteonorm_custom_horizon(demo_api_key, demo_url):
         end=pd.Timestamp.now(tz='UTC') + pd.Timedelta(hours=5),
         api_key=demo_api_key,
         parameters='ghi',
+        time_step='1h',
         endpoint='forecast/basic',
         horizon=list(np.ones(360).astype(int)*80),
         url=demo_url)
@@ -214,8 +216,23 @@ def test_get_meteonorm_HTTPError(demo_api_key, demo_url):
             latitude=50, longitude=10,
             start=pd.Timestamp.now(tz='UTC'),
             end=pd.Timestamp.now(tz='UTC') + pd.Timedelta(hours=5),
+            time_step='1h',
             api_key=demo_api_key,
             parameters='not_a_real_parameter',
+            endpoint='forecast/basic',
+            url=demo_url)
+
+
+def test_get_meteonorm_basic_forecast_incorrect_time_step(
+        demo_api_key, demo_url):
+    with pytest.raises(
+            ValueError, match="only supports ``time_step='1h'``"):
+        _ = pvlib.iotools.get_meteonorm(
+            latitude=50, longitude=10,
+            start=pd.Timestamp.now(tz='UTC'),
+            end=pd.Timestamp.now(tz='UTC') + pd.Timedelta(hours=5),
+            time_step='15min',  # only '1h' is supported for tmy
+            api_key=demo_api_key,
             endpoint='forecast/basic',
             url=demo_url)
 
@@ -305,7 +322,7 @@ def test_get_meteonorm_tmy(
         surface_azimuth=90,
         time_step='1h',
         horizon=list(np.ones(360).astype(int)*2),
-        terrain='open',
+        terrain_situation='open',
         albedo=0.5,
         turbidity=[5.2, 4, 3, 3.1, 3.0, 2.8, 3.14, 3.0, 3, 3, 4, 5],
         random_seed=100,

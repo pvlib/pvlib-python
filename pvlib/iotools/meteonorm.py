@@ -75,7 +75,8 @@ def get_meteonorm(latitude, longitude, start, end, api_key, endpoint,
         Orientation (azimuth angle) of the (fixed) plane. Clockwise from north
         (north=0, east=90, south=180, west=270).
     time_step : {'1min', '15min', '1h'}, default : '15min'
-        Frequency of the time series.
+        Frequency of the time series. The endpoint ``'forecast/basic'`` only
+        supports ``time_step='1h'``.
     horizon : str or list, default : 'auto'
         Specification of the horizon line. Can be either 'flat', 'auto', or
         a list of 360 integer horizon elevation angles.
@@ -158,6 +159,10 @@ def get_meteonorm(latitude, longitude, start, end, api_key, endpoint,
 
     if 'basic' not in endpoint:
         params['frequency'] = TIME_STEP_MAP.get(time_step, time_step)
+    else:
+        if time_step not in ['1h', '1_hour']:
+            raise ValueError("The 'forecast/basic' api endpoint only "
+                             "supports ``time_step='1h'``.")
 
     headers = {"Authorization": f"Bearer {api_key}"}
 
@@ -180,7 +185,7 @@ TMY_ENDPOINT = 'climate/tmy'
 def get_meteonorm_tmy(latitude, longitude, api_key,
                       parameters='all', *, surface_tilt=0,
                       surface_azimuth=180, time_step='1h', horizon='auto',
-                      terrain='open', albedo=None, turbidity='auto',
+                      terrain_situation='open', albedo=None, turbidity='auto',
                       random_seed=None, clear_sky_radiation_model='esra',
                       data_version='latest', future_scenario=None,
                       future_year=None, interval_index=False,
@@ -212,7 +217,7 @@ def get_meteonorm_tmy(latitude, longitude, api_key,
         Specification of the horizon line. Can be either 'flat' or 'auto', or
         specified as a list of 360 integer horizon elevation angles.
         'auto'.
-    terrain : str, default : 'open'
+    terrain_situation : str, default : 'open'
         Local terrain situation. Must be one of: ['open', 'depression',
         'cold_air_lake', 'sea_lake', 'city', 'slope_south',
         'slope_west_east'].
@@ -279,7 +284,7 @@ def get_meteonorm_tmy(latitude, longitude, api_key,
         'frequency': TIME_STEP_MAP.get(time_step, time_step),
         'parameters': parameters,
         'horizon': horizon,
-        'situation': terrain,
+        'situation': terrain_situation,
         'turbidity': turbidity,
         'clear_sky_radiation_model': clear_sky_radiation_model,
         'data_version': data_version,

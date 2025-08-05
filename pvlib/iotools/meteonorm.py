@@ -31,18 +31,19 @@ TIME_STEP_MAP = {
 }
 
 
-def get_meteonorm(latitude, longitude, start, end, api_key, endpoint,
-                  parameters='all', *, surface_tilt=0, surface_azimuth=180,
-                  time_step='15min', horizon='auto', interval_index=False,
-                  map_variables=True, url=URL):
+def get_meteonorm_observation(
+        latitude, longitude, start, end, api_key, endpoint='training',
+        parameters='all', *, surface_tilt=0, surface_azimuth=180,
+        time_step='15min', horizon='auto', interval_index=False,
+        map_variables=True, url=URL):
     """
-    Retrieve irradiance and weather data from Meteonorm.
+    Retrieve historical and near real-time observational data from Meteonorm.
 
     The Meteonorm data options are described in [1]_ and the API is described
     in [2]_. A detailed list of API options can be found in [3]_.
 
-    This function supports retrieval of historical and forecast data, but not
-    TMY.
+    This function supports retrieval of observation data, either the
+    'training' or the 'realtime' endpoints.
 
     Parameters
     ----------
@@ -58,14 +59,11 @@ def get_meteonorm(latitude, longitude, start, end, api_key, endpoint,
         specified, UTC is assumed.
     api_key : str
         Meteonorm API key.
-    endpoint : str
+    endpoint : str, default : training
         API endpoint, see [3]_. Must be one of:
 
-        * ``'observation/training'`` - historical data with a 7-day delay
-        * ``'observation/realtime'`` - near-real time (past 7-days)
-        * ``'forecast/basic'`` - forecast with hourly resolution
-        * ``'forecast/precision'`` - forecast with 1-min, 15-min, or hourly
-          resolution
+        * ``'training'`` - historical data with a 7-day delay
+        * ``'realtime'`` - near-real time (past 7-days)
 
     parameters : list or 'all', default : 'all'
         List of parameters to request or `'all'` to get all parameters.
@@ -75,8 +73,7 @@ def get_meteonorm(latitude, longitude, start, end, api_key, endpoint,
         Orientation (azimuth angle) of the (fixed) plane. Clockwise from north
         (north=0, east=90, south=180, west=270).
     time_step : {'1min', '15min', '1h'}, default : '15min'
-        Frequency of the time series. The endpoint ``'forecast/basic'`` only
-        supports ``time_step='1h'``.
+        Frequency of the time series.
     horizon : str or list, default : 'auto'
         Specification of the horizon line. Can be either 'flat', 'auto', or
         a list of 360 integer horizon elevation angles.
@@ -87,8 +84,7 @@ def get_meteonorm(latitude, longitude, start, end, api_key, endpoint,
         When true, renames columns of the Dataframe to pvlib variable names
         where applicable. See variable :const:`VARIABLE_MAP`.
     url : str, optional
-        Base URL of the Meteonorm API. The ``endpoint`` parameter is
-        appended to the url. The default is
+        Base URL of the Meteonorm API. The default is
         :const:`pvlib.iotools.meteonorm.URL`.
 
     Raises
@@ -107,11 +103,11 @@ def get_meteonorm(latitude, longitude, start, end, api_key, endpoint,
     Examples
     --------
     >>> # Retrieve historical time series data
-    >>> df, meta = pvlib.iotools.get_meteonorm(  # doctest: +SKIP
+    >>> df, meta = pvlib.iotools.get_meteonorm_observatrion(  # doctest: +SKIP
     ...     latitude=50, longitude=10,  # doctest: +SKIP
     ...     start='2023-01-01', end='2025-01-01',  # doctest: +SKIP
     ...     api_key='redacted',  # doctest: +SKIP
-    ...     endpoint='observation/training')  # doctest: +SKIP
+    ...     endpoint='training')  # doctest: +SKIP
 
     See Also
     --------
@@ -126,6 +122,120 @@ def get_meteonorm(latitude, longitude, start, end, api_key, endpoint,
     .. [3] `Meteonorm API reference
        <https://docs.meteonorm.com/api>`_
     """
+    endpoint_base = 'observation/'
+
+    data, meta = _get_meteonorm(
+            latitude, longitude, start, end, api_key,
+            endpoint_base, endpoint,
+            parameters, surface_tilt, surface_azimuth,
+            time_step, horizon, interval_index,
+            map_variables, url)
+    return data, meta
+
+
+def get_meteonorm_forecast(
+        latitude, longitude, start, end, api_key, endpoint='precision',
+        parameters='all', *, surface_tilt=0, surface_azimuth=180,
+        time_step='15min', horizon='auto', interval_index=False,
+        map_variables=True, url=URL):
+    """
+    Retrieve historical and near real-time observational data from Meteonorm.
+
+    The Meteonorm data options are described in [1]_ and the API is described
+    in [2]_. A detailed list of API options can be found in [3]_.
+
+    This function supports retrieval of forecasting data, either the
+    'training' or the 'basic' endpoints.
+
+    Parameters
+    ----------
+    latitude : float
+        In decimal degrees, north is positive (ISO 19115).
+    longitude: float
+        In decimal degrees, east is positive (ISO 19115).
+    start : datetime like
+        First timestamp of the requested period. If a timezone is not
+        specified, UTC is assumed.
+    end : datetime like
+        Last timestamp of the requested period. If a timezone is not
+        specified, UTC is assumed.
+    api_key : str
+        Meteonorm API key.
+    endpoint : str, default : precision
+        API endpoint, see [3]_. Must be one of:
+
+        * ``'precision'`` - forecast with 1-min, 15-min, or hourly
+          resolution
+        * ``'basic'`` - forecast with hourly resolution
+
+    parameters : list or 'all', default : 'all'
+        List of parameters to request or `'all'` to get all parameters.
+    surface_tilt : float, default : 0
+        Tilt angle from horizontal plane.
+    surface_azimuth : float, default : 180
+        Orientation (azimuth angle) of the (fixed) plane. Clockwise from north
+        (north=0, east=90, south=180, west=270).
+    time_step : {'1min', '15min', '1h'}, default : '15min'
+        Frequency of the time series. The endpoint ``'basic'`` only
+        supports ``time_step='1h'``.
+    horizon : str or list, default : 'auto'
+        Specification of the horizon line. Can be either 'flat', 'auto', or
+        a list of 360 integer horizon elevation angles.
+    interval_index : bool, default : False
+        Index is pd.DatetimeIndex when False, and pd.IntervalIndex when True.
+        This is an experimental feature which may be removed without warning.
+    map_variables : bool, default : True
+        When true, renames columns of the Dataframe to pvlib variable names
+        where applicable. See variable :const:`VARIABLE_MAP`.
+    url : str, optional
+        Base URL of the Meteonorm API. The default is
+        :const:`pvlib.iotools.meteonorm.URL`.
+
+    Raises
+    ------
+    requests.HTTPError
+        Raises an error when an incorrect request is made.
+
+    Returns
+    -------
+    data : pd.DataFrame
+        Time series data. The index corresponds to the start (left) of the
+        interval unless ``interval_index`` is set to True.
+    meta : dict
+        Metadata.
+
+    See Also
+    --------
+    pvlib.iotools.get_meteonorm_observation,
+    pvlib.iotools.get_meteonorm_tmy
+
+    References
+    ----------
+    .. [1] `Meteonorm
+       <https://meteonorm.com/>`_
+    .. [2] `Meteonorm API
+       <https://docs.meteonorm.com/docs/getting-started>`_
+    .. [3] `Meteonorm API reference
+       <https://docs.meteonorm.com/api>`_
+    """
+    endpoint_base = 'forecast/'
+
+    data, meta = _get_meteonorm(
+            latitude, longitude, start, end, api_key,
+            endpoint_base, endpoint,
+            parameters, surface_tilt, surface_azimuth,
+            time_step, horizon, interval_index,
+            map_variables, url)
+    return data, meta
+
+
+def _get_meteonorm(
+        latitude, longitude, start, end, api_key,
+        endpoint_base, endpoint,
+        parameters, surface_tilt, surface_azimuth,
+        time_step, horizon, interval_index,
+        map_variables, url):
+
     # Relative date strings are not yet supported
     start = pd.Timestamp(start)
     end = pd.Timestamp(end)
@@ -167,7 +277,8 @@ def get_meteonorm(latitude, longitude, start, end, api_key, endpoint,
     headers = {"Authorization": f"Bearer {api_key}"}
 
     response = requests.get(
-        urljoin(url, endpoint.lstrip('/')), headers=headers, params=params)
+        urljoin(url, endpoint_base + endpoint.lstrip('/')),
+        headers=headers, params=params)
 
     if not response.ok:
         # response.raise_for_status() does not give a useful error message
@@ -265,7 +376,8 @@ def get_meteonorm_tmy(latitude, longitude, api_key,
 
     See Also
     --------
-    pvlib.iotools.get_meteonorm
+    pvlib.iotools.get_meteonorm_observation,
+    pvlib.iotools.get_meteonorm_forecast
 
     References
     ----------

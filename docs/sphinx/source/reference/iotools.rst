@@ -98,7 +98,8 @@ Meteonorm
 .. autosummary::
    :toctree: generated/
 
-   iotools.get_meteonorm
+   iotools.get_meteonorm_observation
+   iotools.get_meteonorm_forecast
    iotools.get_meteonorm_tmy
 
 

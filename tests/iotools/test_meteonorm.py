@@ -111,12 +111,12 @@ def expected_columns_all():
 def test_get_meteonorm_training(
         demo_api_key, demo_url, expected_meta, expected_meteonorm_index,
         expected_metenorm_data):
-    data, meta = pvlib.iotools.get_meteonorm(
+    data, meta = pvlib.iotools.get_meteonorm_observation(
         latitude=50, longitude=10,
         start='2023-01-01', end='2025-01-01',
         api_key=demo_api_key,
         parameters=['ghi', 'global_horizontal_irradiance_with_shading'],
-        endpoint='observation/training',
+        endpoint='training',
         time_step='1h',
         url=demo_url)
 
@@ -128,14 +128,14 @@ def test_get_meteonorm_training(
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_get_meteonorm_realtime(demo_api_key, demo_url, expected_columns_all):
-    data, meta = pvlib.iotools.get_meteonorm(
+    data, meta = pvlib.iotools.get_meteonorm_observation(
         latitude=21, longitude=79,
         start=pd.Timestamp.now(tz='UTC') - pd.Timedelta(hours=5),
         end=pd.Timestamp.now(tz='UTC') - pd.Timedelta(hours=1),
         surface_tilt=20, surface_azimuth=10,
         parameters=['all'],
         api_key=demo_api_key,
-        endpoint='/observation/realtime',
+        endpoint='realtime',
         time_step='1min',
         horizon='flat',
         map_variables=False,
@@ -158,14 +158,14 @@ def test_get_meteonorm_realtime(demo_api_key, demo_url, expected_columns_all):
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_get_meteonorm_forecast_basic(demo_api_key, demo_url):
-    data, meta = pvlib.iotools.get_meteonorm(
+    data, meta = pvlib.iotools.get_meteonorm_forecast(
         latitude=50, longitude=10,
         start=pd.Timestamp.now(tz='UTC'),
         end=pd.Timestamp.now(tz='UTC') + pd.Timedelta(hours=5),
         time_step='1h',
         api_key=demo_api_key,
         parameters='ghi',
-        endpoint='forecast/basic',
+        endpoint='basic',
         url=demo_url)
 
     assert data.shape == (6, 1)
@@ -177,13 +177,13 @@ def test_get_meteonorm_forecast_basic(demo_api_key, demo_url):
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_get_meteonorm_forecast_precision(demo_api_key, demo_url):
-    data, meta = pvlib.iotools.get_meteonorm(
+    data, meta = pvlib.iotools.get_meteonorm_forecast(
         latitude=50, longitude=10,
         start=pd.Timestamp.now(tz='UTC') + pd.Timedelta(hours=5),
         end=pd.Timestamp.now(tz='UTC') + pd.Timedelta(hours=6),
         api_key=demo_api_key,
         parameters='ghi',
-        endpoint='forecast/precision',
+        endpoint='precision',
         time_step='15min',
         url=demo_url)
 
@@ -195,31 +195,31 @@ def test_get_meteonorm_forecast_precision(demo_api_key, demo_url):
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_get_meteonorm_custom_horizon(demo_api_key, demo_url):
-    data, meta = pvlib.iotools.get_meteonorm(
+    data, meta = pvlib.iotools.get_meteonorm_forecast(
         latitude=50, longitude=10,
         start=pd.Timestamp.now(tz='UTC'),
         end=pd.Timestamp.now(tz='UTC') + pd.Timedelta(hours=5),
         api_key=demo_api_key,
         parameters='ghi',
         time_step='1h',
-        endpoint='forecast/basic',
+        endpoint='basic',
         horizon=list(np.ones(360).astype(int)*80),
         url=demo_url)
 
 
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
-def test_get_meteonorm_HTTPError(demo_api_key, demo_url):
+def test_get_meteonorm_forecast_HTTPError(demo_api_key, demo_url):
     with pytest.raises(
             HTTPError, match="unknown parameter: not_a_real_parameter"):
-        _ = pvlib.iotools.get_meteonorm(
+        _ = pvlib.iotools.get_meteonorm_forecast(
             latitude=50, longitude=10,
             start=pd.Timestamp.now(tz='UTC'),
             end=pd.Timestamp.now(tz='UTC') + pd.Timedelta(hours=5),
             time_step='1h',
             api_key=demo_api_key,
             parameters='not_a_real_parameter',
-            endpoint='forecast/basic',
+            endpoint='basic',
             url=demo_url)
 
 
@@ -227,13 +227,13 @@ def test_get_meteonorm_basic_forecast_incorrect_time_step(
         demo_api_key, demo_url):
     with pytest.raises(
             ValueError, match="only supports ``time_step='1h'``"):
-        _ = pvlib.iotools.get_meteonorm(
+        _ = pvlib.iotools.get_meteonorm_forecast(
             latitude=50, longitude=10,
             start=pd.Timestamp.now(tz='UTC'),
             end=pd.Timestamp.now(tz='UTC') + pd.Timedelta(hours=5),
             time_step='15min',  # only '1h' is supported for tmy
             api_key=demo_api_key,
-            endpoint='forecast/basic',
+            endpoint='basic',
             url=demo_url)
 
 

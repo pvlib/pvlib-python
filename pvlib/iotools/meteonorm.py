@@ -125,11 +125,11 @@ def get_meteonorm_observation(
     endpoint_base = 'observation/'
 
     data, meta = _get_meteonorm(
-            latitude, longitude, start, end, api_key,
-            endpoint_base, endpoint,
-            parameters, surface_tilt, surface_azimuth,
-            time_step, horizon, interval_index,
-            map_variables, url)
+        latitude, longitude, start, end, api_key,
+        endpoint_base, endpoint,
+        parameters, surface_tilt, surface_azimuth,
+        time_step, horizon, interval_index,
+        map_variables, url)
     return data, meta
 
 
@@ -221,11 +221,11 @@ def get_meteonorm_forecast(
     endpoint_base = 'forecast/'
 
     data, meta = _get_meteonorm(
-            latitude, longitude, start, end, api_key,
-            endpoint_base, endpoint,
-            parameters, surface_tilt, surface_azimuth,
-            time_step, horizon, interval_index,
-            map_variables, url)
+        latitude, longitude, start, end, api_key,
+        endpoint_base, endpoint,
+        parameters, surface_tilt, surface_azimuth,
+        time_step, horizon, interval_index,
+        map_variables, url)
     return data, meta
 
 

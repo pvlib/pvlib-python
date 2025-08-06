@@ -40,10 +40,11 @@ jobs:
 
       - name: Install Conda environment with Micromamba
         if: matrix.environment-type == 'conda'
-        uses: mamba-org/setup-micromamba@v1
+        uses: mamba-org/setup-micromamba@v2
         with:
           environment-file: ${{ env.REQUIREMENTS }}
-          cache-downloads: true
+          cache-downloads: false
+          cache-environment: false
           create-args: >-
             python=${{ matrix.python-version }}
           condarc: |

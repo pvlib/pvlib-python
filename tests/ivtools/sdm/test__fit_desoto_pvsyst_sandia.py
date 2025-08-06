@@ -56,7 +56,8 @@ def test__update_io(voc, iph, io, rs, rsh, nnsvth, expected):
     (2., 2., 2., 2., 2., 0.),
     (-1., -1., -1., -1., -1., -1.)])
 def test__update_io_nan(voc, iph, io, rs, rsh, nnsvth):
-    outio = _update_io(voc, iph, io, rs, rsh, nnsvth)
+    with np.errstate(invalid='ignore', divide='ignore'):
+        outio = _update_io(voc, iph, io, rs, rsh, nnsvth)
     assert np.isnan(outio)
 
 
@@ -89,13 +90,14 @@ def test__calc_theta_phi_exact_one_nan():
 
 
 def test__calc_theta_phi_exact_vector():
-    theta, phi = _calc_theta_phi_exact(imp=np.array([1., -1.]),
-                                       iph=np.array([-1., 1.]),
-                                       vmp=np.array([1., -1.]),
-                                       io=np.array([-1., 1.]),
-                                       nnsvth=np.array([1., -1.]),
-                                       rs=np.array([-1., 1.]),
-                                       rsh=np.array([1., -1.]))
+    with np.errstate(invalid='ignore'):
+        theta, phi = _calc_theta_phi_exact(imp=np.array([1., -1.]),
+                                           iph=np.array([-1., 1.]),
+                                           vmp=np.array([1., -1.]),
+                                           io=np.array([-1., 1.]),
+                                           nnsvth=np.array([1., -1.]),
+                                           rs=np.array([-1., 1.]),
+                                           rsh=np.array([1., -1.]))
     assert np.isnan(theta[0])
     assert np.isnan(theta[1])
     assert np.isnan(phi[0])

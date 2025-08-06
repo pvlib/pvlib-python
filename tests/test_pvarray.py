@@ -54,7 +54,7 @@ def test_huld():
     pdc0 = 100
     res = pvarray.huld(1000, 25, pdc0, cell_type='cSi')
     assert np.isclose(res, pdc0)
-    k = pvarray._infer_k_huld('cSi', pdc0, '2011')
+    k = pvarray._infer_k_huld('cSi', pdc0, 'pvgis5')
     exp_sum = np.exp(1) * (np.sum(k) + pdc0)
     res = pvarray.huld(1000*np.exp(1), 26, pdc0, cell_type='cSi')
     assert np.isclose(res, exp_sum)

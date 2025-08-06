@@ -16,9 +16,7 @@ import pandas as pd
 from dataclasses import dataclass
 from abc import ABC, abstractmethod
 from typing import Optional, Union
-
-from pvlib._deprecation import deprecated
-
+from pvlib._deprecation import renamed_kwarg_warning
 import pvlib  # used to avoid albedo name collision in the Array class
 from pvlib import (atmosphere, iam, inverter, irradiance,
                    singlediode as _singlediode, spectrum, temperature)
@@ -29,10 +27,10 @@ import pvlib.tools as tools
 # a dict of required parameter names for each DC power model
 _DC_MODEL_PARAMS = {
     'sapm': {
-        'C0', 'C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'C7',
+        # i_x and i_xx params (IXO, IXXO, C4-C7) not required
+        'C0', 'C1', 'C2', 'C3',
         'Isco', 'Impo', 'Voco', 'Vmpo', 'Aisc', 'Aimp', 'Bvoco',
-        'Mbvoc', 'Bvmpo', 'Mbvmp', 'N', 'Cells_in_Series',
-        'IXO', 'IXXO'},
+        'Mbvoc', 'Bvmpo', 'Mbvmp', 'N', 'Cells_in_Series'},
     'desoto': {
         'alpha_sc', 'a_ref', 'I_L_ref', 'I_o_ref',
         'R_sh_ref', 'R_s'},
@@ -845,8 +843,10 @@ class PVSystem:
             for array, data in zip(self.arrays, data)
         )
 
+    @renamed_kwarg_warning(
+        "0.13.0", "g_poa_effective", "effective_irradiance")
     @_unwrap_single_value
-    def pvwatts_dc(self, g_poa_effective, temp_cell):
+    def pvwatts_dc(self, effective_irradiance, temp_cell):
         """
         Calculates DC power according to the PVWatts model using
         :py:func:`pvlib.pvsystem.pvwatts_dc`, `self.module_parameters['pdc0']`,
@@ -854,15 +854,15 @@ class PVSystem:
 
         See :py:func:`pvlib.pvsystem.pvwatts_dc` for details.
         """
-        g_poa_effective = self._validate_per_array(g_poa_effective)
+        effective_irradiance = self._validate_per_array(effective_irradiance)
         temp_cell = self._validate_per_array(temp_cell)
         return tuple(
-            pvwatts_dc(g_poa_effective, temp_cell,
+            pvwatts_dc(effective_irradiance, temp_cell,
                        array.module_parameters['pdc0'],
                        array.module_parameters['gamma_pdc'],
                        **_build_kwargs(['temp_ref'], array.module_parameters))
-            for array, g_poa_effective, temp_cell
-            in zip(self.arrays, g_poa_effective, temp_cell)
+            for array, effective_irradiance, temp_cell
+            in zip(self.arrays, effective_irradiance, temp_cell)
         )
 
     def pvwatts_losses(self):
@@ -1012,6 +1012,9 @@ class Array:
         elif 'insulated' in param_set:  # after SAPM to avoid confusing keys
             return temperature._temperature_model_params('pvsyst',
                                                          'insulated')
+        elif 'semi_integrated' in param_set:
+            return temperature._temperature_model_params('pvsyst',
+                                                         'semi_integrated')
         else:
             return {}
 
@@ -1396,10 +1399,11 @@ class FixedMount(AbstractMount):
 
     racking_model : str, optional
         Valid strings are ``'open_rack'``, ``'close_mount'``,
-        ``'insulated_back'``, ``'freestanding'`` and ``'insulated'``.
+        ``'insulated_back'``, ``'freestanding'``, ``'insulated'``, and
+        ``'semi_integrated'``.
         Used to identify a parameter set for the SAPM or PVsyst cell
         temperature model.
-        See :py:func:`~pvlib.temperature.sapm_module`  and
+        See :py:func:`~pvlib.temperature.sapm_module` and
         :py:func:`~pvlib.temperature.pvsyst_cell` for definitions.
 
     module_height : float, optional
@@ -1477,7 +1481,8 @@ class SingleAxisTrackerMount(AbstractMount):
 
     racking_model : str, optional
         Valid strings are ``'open_rack'``, ``'close_mount'``,
-        ``'insulated_back'``, ``'freestanding'`` and ``'insulated'``.
+        ``'insulated_back'``, ``'freestanding'``, ``'insulated'``, and
+        ``'semi_integrated'``.
         Used to identify a parameter set for the SAPM or PVsyst cell
         temperature model. ``'open_rack'`` or ``'freestanding'`` should
         be used for systems with single-axis trackers.
@@ -2195,24 +2200,31 @@ def _parse_raw_sam_df(csvdata):
     return df
 
 
-def sapm(effective_irradiance, temp_cell, module):
+def sapm(effective_irradiance, temp_cell, module, *, temperature_ref=25,
+         irradiance_ref=1000):
     '''
     The Sandia PV Array Performance Model (SAPM) generates 5 points on a
     PV module's I-V curve (Voc, Isc, Ix, Ixx, Vmp/Imp) according to
-    SAND2004-3535. Assumes a reference cell temperature of 25 C.
+    SAND2004-3535. Assumes a reference cell temperature of 25°C.
 
     Parameters
     ----------
     effective_irradiance : numeric
         Irradiance reaching the module's cells, after reflections and
-        adjustment for spectrum. [W/m2]
+        adjustment for spectrum. [Wm⁻²]
 
     temp_cell : numeric
-        Cell temperature [C].
+        Cell temperature [°C].
 
     module : dict-like
         A dict or Series defining the SAPM parameters. See the notes section
         for more details.
+
+    temperature_ref : numeric, optional
+        Reference temperature [°C]
+
+    irradiance_ref : numeric, optional
+        Reference irradiance [Wm⁻²]
 
     Returns
     -------
@@ -2224,18 +2236,33 @@ def sapm(effective_irradiance, temp_cell, module):
         * v_mp : Voltage at maximum-power point (V)
         * p_mp : Power at maximum-power point (W)
         * i_x : Current at module V = 0.5Voc, defines 4th point on I-V
-          curve for modeling curve shape
+          curve for modeling curve shape.  Omitted if ``IXO``, ``C4``, and
+          ``C5`` parameters are not supplied.
         * i_xx : Current at module V = 0.5(Voc+Vmp), defines 5th point on
-          I-V curve for modeling curve shape
+          I-V curve for modeling curve shape.  Omitted if ``IXXO``, ``C6``,
+          and ``C7`` parameters are not supplied.
 
     Notes
     -----
-    The SAPM parameters which are required in ``module`` are
-    listed in the following table.
-
     The Sandia module database contains parameter values for a limited set
     of modules. The CEC module database does not contain these parameters.
-    Both databases can be accessed using :py:func:`retrieve_sam`.
+    Both databases can be accessed using :py:func:`retrieve_sam`. The full list
+    of SAPM parameters is presented in the table below. Those that are required
+    in the ``module`` parameter to run this model are as follows:
+
+    * ``C0``, ``C1``, ``C2``, ``C3``
+    * ``Isco``
+    * ``Impo``
+    * ``Voco``
+    * ``Vmpo``
+    * ``Aisc``
+    * ``Aimp``
+    * ``Bvoco``
+    * ``Mbvoc``
+    * ``Bvmpo``
+    * ``Mbvmp``
+    * ``N``
+    * ``Cells_in_series``
 
     ================   ========================================================
     Key                Description
@@ -2251,19 +2278,19 @@ def sapm(effective_irradiance, temp_cell, module):
     Voco               Open circuit voltage at reference condition (amps)
     Vmpo               Maximum power voltage at reference condition (amps)
     Aisc               Short circuit current temperature coefficient at
-                       reference condition (1/C)
+                       reference condition (1/°C)
     Aimp               Maximum power current temperature coefficient at
-                       reference condition (1/C)
+                       reference condition (1/°C)
     Bvoco              Open circuit voltage temperature coefficient at
-                       reference condition (V/C)
+                       reference condition (V/°C)
     Mbvoc              Coefficient providing the irradiance dependence for the
                        BetaVoc temperature coefficient at reference irradiance
-                       (V/C)
+                       (V/°C)
     Bvmpo              Maximum power voltage temperature coefficient at
                        reference condition
     Mbvmp              Coefficient providing the irradiance dependence for the
                        BetaVmp temperature coefficient at reference irradiance
-                       (V/C)
+                       (V/°C)
     N                  Empirically determined "diode factor" (dimensionless)
     Cells_in_Series    Number of cells in series in a module's cell string(s)
     IXO                Ix at reference conditions
@@ -2284,16 +2311,11 @@ def sapm(effective_irradiance, temp_cell, module):
     pvlib.temperature.sapm_module
     '''
 
-    # TODO: someday, change temp_ref and irrad_ref to reference_temperature and
-    # reference_irradiance and expose
-    temp_ref = 25
-    irrad_ref = 1000
-
     q = constants.e  # Elementary charge in units of coulombs
     kb = constants.k  # Boltzmann's constant in units of J/K
 
     # avoid problem with integer input
-    Ee = np.array(effective_irradiance, dtype='float64') / irrad_ref
+    Ee = np.array(effective_irradiance, dtype='float64') / irradiance_ref
 
     # set up masking for 0, positive, and nan inputs
     Ee_gt_0 = np.full_like(Ee, False, dtype='bool')
@@ -2316,31 +2338,34 @@ def sapm(effective_irradiance, temp_cell, module):
     out = OrderedDict()
 
     out['i_sc'] = (
-        module['Isco'] * Ee * (1 + module['Aisc']*(temp_cell - temp_ref)))
+        module['Isco'] * Ee * (1 + module['Aisc']*(temp_cell -
+                                                   temperature_ref)))
 
     out['i_mp'] = (
         module['Impo'] * (module['C0']*Ee + module['C1']*(Ee**2)) *
-        (1 + module['Aimp']*(temp_cell - temp_ref)))
+        (1 + module['Aimp']*(temp_cell - temperature_ref)))
 
     out['v_oc'] = np.maximum(0, (
         module['Voco'] + cells_in_series * delta * logEe +
-        Bvoco*(temp_cell - temp_ref)))
+        Bvoco*(temp_cell - temperature_ref)))
 
     out['v_mp'] = np.maximum(0, (
         module['Vmpo'] +
         module['C2'] * cells_in_series * delta * logEe +
         module['C3'] * cells_in_series * ((delta * logEe) ** 2) +
-        Bvmpo*(temp_cell - temp_ref)))
+        Bvmpo*(temp_cell - temperature_ref)))
 
     out['p_mp'] = out['i_mp'] * out['v_mp']
 
-    out['i_x'] = (
-        module['IXO'] * (module['C4']*Ee + module['C5']*(Ee**2)) *
-        (1 + module['Aisc']*(temp_cell - temp_ref)))
+    if 'IXO' in module and 'C4' in module and 'C5' in module:
+        out['i_x'] = (
+            module['IXO'] * (module['C4']*Ee + module['C5']*(Ee**2)) *
+            (1 + module['Aisc']*(temp_cell - temperature_ref)))
 
-    out['i_xx'] = (
-        module['IXXO'] * (module['C6']*Ee + module['C7']*(Ee**2)) *
-        (1 + module['Aimp']*(temp_cell - temp_ref)))
+    if 'IXXO' in module and 'C6' in module and 'C7' in module:
+        out['i_xx'] = (
+            module['IXXO'] * (module['C6']*Ee + module['C7']*(Ee**2)) *
+            (1 + module['Aimp']*(temp_cell - temperature_ref)))
 
     if isinstance(out['i_sc'], pd.Series):
         out = pd.DataFrame(out)
@@ -2833,7 +2858,9 @@ def scale_voltage_current_power(data, voltage=1, current=1):
     return df_sorted
 
 
-def pvwatts_dc(g_poa_effective, temp_cell, pdc0, gamma_pdc, temp_ref=25.):
+@renamed_kwarg_warning(
+    "0.13.0", "g_poa_effective", "effective_irradiance")
+def pvwatts_dc(effective_irradiance, temp_cell, pdc0, gamma_pdc, temp_ref=25.):
     r"""
     Implements NREL's PVWatts DC power model. The PVWatts DC model [1]_ is:
 
@@ -2849,7 +2876,7 @@ def pvwatts_dc(g_poa_effective, temp_cell, pdc0, gamma_pdc, temp_ref=25.):
 
     Parameters
     ----------
-    g_poa_effective: numeric
+    effective_irradiance: numeric
         Irradiance transmitted to the PV cells. To be
         fully consistent with PVWatts, the user must have already
         applied angle of incidence losses, but not soiling, spectral,
@@ -2877,7 +2904,7 @@ def pvwatts_dc(g_poa_effective, temp_cell, pdc0, gamma_pdc, temp_ref=25.):
            (2014).
     """  # noqa: E501
 
-    pdc = (g_poa_effective * 0.001 * pdc0 *
+    pdc = (effective_irradiance * 0.001 * pdc0 *
            (1 + gamma_pdc * (temp_cell - temp_ref)))
 
     return pdc

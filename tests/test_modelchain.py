@@ -8,6 +8,8 @@ from pvlib.modelchain import ModelChain
 from pvlib.pvsystem import PVSystem
 from pvlib.location import Location
 
+from pvlib._deprecation import pvlibDeprecationWarning
+
 from .conftest import assert_series_equal, assert_frame_equal
 import pytest
 
@@ -1762,6 +1764,16 @@ def test_invalid_dc_model_params(sapm_dc_snl_ac_system, cec_dc_snl_ac_system,
         ModelChain(pvwatts_dc_pvwatts_ac_system, location, **kwargs)
 
 
+def test_sapm_optional_params(sapm_dc_snl_ac_system, location):
+    # inference works when the optional (i_x, i_xx) SAPM parameters are missing
+    for array in sapm_dc_snl_ac_system.arrays:
+        for key in ['IXO', 'IXXO', 'C4', 'C5', 'C6', 'C7']:
+            array.module_parameters.pop(key)
+
+    # no error:
+    ModelChain(sapm_dc_snl_ac_system, location)
+
+
 @pytest.mark.parametrize('model', [
     'dc_model', 'ac_model', 'aoi_model', 'spectral_model',
     'temperature_model', 'losses_model'
@@ -1776,8 +1788,9 @@ def test_invalid_models(model, sapm_dc_snl_ac_system, location):
 
 
 def test_bad_get_orientation():
-    with pytest.raises(ValueError):
-        modelchain.get_orientation('bad value')
+    with pytest.warns(pvlibDeprecationWarning, match='will be removed soon'):
+        with pytest.raises(ValueError):
+            modelchain.get_orientation('bad value')
 
 
 # tests for PVSystem with multiple Arrays

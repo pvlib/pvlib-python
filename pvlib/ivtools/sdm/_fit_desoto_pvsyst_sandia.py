@@ -267,7 +267,7 @@ def _update_io(voc, iph, io, rs, rsh, nnsvth):
     .. [1] PVLib MATLAB https://github.com/sandialabs/MATLAB_PV_LIB
     .. [2] C. Hansen, Parameter Estimation for Single Diode Models of
        Photovoltaic Modules, Sandia National Laboratories Report SAND2015-2065
-    .. [3] C. Hansen, Estimation of Parameteres for Single Diode Models using
+    .. [3] C. Hansen, Estimation of Parameters for Single Diode Models using
        Measured IV Curves, Proc. of the 39th IEEE PVSC, June 2013.
     """
 
@@ -335,7 +335,7 @@ def _check_converge(prevparams, result, vmp, imp, i):
     ----------
     prevparams: Convergence Parameters from the previous Iteration (used to
                 determine Percent Change in values between iterations)
-    result: performacne paramters of the (predicted) single diode fitting,
+    result: performacne parameters of the (predicted) single diode fitting,
             which includes Voc, Vmp, Imp, Pmp and Isc
     vmp: measured values for each IV curve
     imp: measured values for each IV curve

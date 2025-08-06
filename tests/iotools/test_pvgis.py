@@ -132,6 +132,16 @@ metadata_pv_json = {
                     'WS10m': {'description': '10-m total wind speed', 'units': 'm/s'},  # noqa: E501
                     'Int': {'description': '1 means solar radiation values are reconstructed'}}}}}  # noqa: E501
 
+# Reformat the metadata as implemented in #2462
+descriptions_csv = metadata_radiation_csv.copy()
+metadata_radiation_csv = {}
+metadata_radiation_csv['descriptions'] = descriptions_csv
+metadata_radiation_csv['inputs'] = inputs_radiation_csv
+
+descriptions_json = metadata_pv_json['inputs']
+metadata_pv_json['inputs'] = inputs_pv_json
+metadata_pv_json['inputs']['descriptions'] = descriptions_json
+
 
 def generate_expected_dataframe(values, columns, index):
     """Create dataframe from arrays of values, columns and index, in order to
@@ -175,25 +185,24 @@ def expected_pv_json_mapped():
 # Test read_pvgis_hourly function using two different files with different
 # input arguments (to test variable mapping and pvgis_format)
 # pytest request.getfixturevalue is used to simplify the input arguments
-@pytest.mark.parametrize('testfile,expected_name,metadata_exp,inputs_exp,map_variables,pvgis_format', [  # noqa: E501
+@pytest.mark.parametrize('testfile,expected_name,metadata_exp,map_variables,pvgis_format', [  # noqa: E501
     (testfile_radiation_csv, 'expected_radiation_csv', metadata_radiation_csv,
-     inputs_radiation_csv, False, None),
+     False, None),
     (testfile_radiation_csv, 'expected_radiation_csv_mapped',
-     metadata_radiation_csv, inputs_radiation_csv, True, 'csv'),
-    (testfile_pv_json, 'expected_pv_json', metadata_pv_json, inputs_pv_json,
+     metadata_radiation_csv, True, 'csv'),
+    (testfile_pv_json, 'expected_pv_json', metadata_pv_json,
      False, None),
     (testfile_pv_json, 'expected_pv_json_mapped', metadata_pv_json,
-     inputs_pv_json, True, 'json')])
+     True, 'json')])
 def test_read_pvgis_hourly(testfile, expected_name, metadata_exp,
-                           inputs_exp, map_variables, pvgis_format, request):
+                           map_variables, pvgis_format, request):
     # Get expected dataframe from fixture
     expected = request.getfixturevalue(expected_name)
     # Read data from file
-    out, inputs, metadata = read_pvgis_hourly(
+    out, metadata = read_pvgis_hourly(
         testfile, map_variables=map_variables, pvgis_format=pvgis_format)
     # Assert whether dataframe, metadata, and inputs are as expected
     assert_frame_equal(out, expected)
-    assert inputs == inputs_exp
     assert metadata == metadata_exp
 
 
@@ -248,7 +257,7 @@ def test_get_pvgis_hourly(requests_mock, testfile, expected_name, args,
     # inputs are passing on correctly
     requests_mock.get(url_test, text=mock_response)
     # Make API call - an error is raised if requested URI does not match
-    out, inputs, metadata = get_pvgis_hourly(
+    out, metadata = get_pvgis_hourly(
         latitude=45, longitude=8, map_variables=map_variables, **args)
     # Get expected dataframe from fixture
     expected = request.getfixturevalue(expected_name)
@@ -362,9 +371,7 @@ def meta_expected():
 
 @pytest.fixture
 def csv_meta(meta_expected):
-    return [
-        f"{k}: {v['description']} ({v['units']})" for k, v
-        in meta_expected['outputs']['tmy_hourly']['variables'].items()]
+    return meta_expected['outputs']['tmy_hourly']['variables']
 
 
 @pytest.fixture
@@ -377,14 +384,22 @@ def pvgis_tmy_mapped_columns():
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_get_pvgis_tmy(expected, month_year_expected, inputs_expected,
                        meta_expected):
-    pvgis_data = get_pvgis_tmy(45, 8, map_variables=False)
+    pvgis_data = get_pvgis_tmy(45, 8, map_variables=False, coerce_year=None)
     _compare_pvgis_tmy_json(expected, month_year_expected, inputs_expected,
                             meta_expected, pvgis_data)
 
 
 def _compare_pvgis_tmy_json(expected, month_year_expected, inputs_expected,
                             meta_expected, pvgis_data):
-    data, months_selected, inputs, meta = pvgis_data
+    data, meta = pvgis_data
+
+    # Re-create original outputs (prior to #2470)
+    months_selected = meta['months_selected']
+    inputs = meta['inputs'].copy()
+    del inputs['descriptions']
+    meta['inputs'] = meta['inputs']['descriptions']
+    del meta['months_selected']
+
     # check each column of output separately
     for outvar in meta_expected['outputs']['tmy_hourly']['variables'].keys():
         assert np.allclose(data[outvar], expected[outvar])
@@ -410,43 +425,28 @@ def _compare_pvgis_tmy_json(expected, month_year_expected, inputs_expected,
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_get_pvgis_tmy_kwargs(userhorizon_expected):
-    _, _, inputs, _ = get_pvgis_tmy(45, 8, usehorizon=False,
-                                    map_variables=False)
-    assert inputs['meteo_data']['use_horizon'] is False
-    data, _, _, _ = get_pvgis_tmy(
-        45, 8, userhorizon=[0, 10, 20, 30, 40, 15, 25, 5], map_variables=False)
+    _, meta = get_pvgis_tmy(45, 8, usehorizon=False, map_variables=False)
+    assert meta['inputs']['meteo_data']['use_horizon'] is False
+    data, _ = get_pvgis_tmy(
+        45, 8, userhorizon=[0, 10, 20, 30, 40, 15, 25, 5], map_variables=False,
+        coerce_year=None)
     assert np.allclose(
         data['G(h)'], userhorizon_expected['G(h)'].values)
     assert np.allclose(
         data['Gb(n)'], userhorizon_expected['Gb(n)'].values)
     assert np.allclose(
         data['Gd(h)'], userhorizon_expected['Gd(h)'].values)
-    _, _, inputs, _ = get_pvgis_tmy(45, 8, startyear=2005, map_variables=False)
-    assert inputs['meteo_data']['year_min'] == 2005
-    _, _, inputs, _ = get_pvgis_tmy(45, 8, endyear=2016, map_variables=False)
-    assert inputs['meteo_data']['year_max'] == 2016
-
-
-@pytest.mark.remote_data
-@pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
-def test_get_pvgis_tmy_basic(expected, meta_expected):
-    pvgis_data = get_pvgis_tmy(45, 8, outputformat='basic',
-                               map_variables=False)
-    _compare_pvgis_tmy_basic(expected, meta_expected, pvgis_data)
-
-
-def _compare_pvgis_tmy_basic(expected, meta_expected, pvgis_data):
-    data, _, _, _ = pvgis_data
-    # check each column of output separately
-    for outvar in meta_expected['outputs']['tmy_hourly']['variables'].keys():
-        assert np.allclose(data[outvar], expected[outvar])
+    _, meta = get_pvgis_tmy(45, 8, startyear=2005, map_variables=False)
+    assert meta['inputs']['meteo_data']['year_min'] == 2005
+    _, meta = get_pvgis_tmy(45, 8, endyear=2016, map_variables=False)
+    assert meta['inputs']['meteo_data']['year_max'] == 2016
 
 
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_get_pvgis_tmy_coerce_year():
     """test utc_offset and coerce_year work as expected"""
-    base_case, _, _, _ = get_pvgis_tmy(45, 8)  # Turin
+    base_case, _ = get_pvgis_tmy(45, 8)  # Turin
     assert str(base_case.index.tz) == 'UTC'
     assert base_case.index.name == 'time(UTC)'
     noon_test_data = [
@@ -455,9 +455,9 @@ def test_get_pvgis_tmy_coerce_year():
     cet_tz = 1  # Turin time is CET
     cet_name = 'Etc/GMT-1'
     # check indices of rolled data after converting timezone
-    pvgis_data, _, _, _ = get_pvgis_tmy(45, 8, roll_utc_offset=cet_tz)
-    jan1_midnight = pd.Timestamp('1990-01-01 00:00:00', tz=cet_name)
-    dec31_midnight = pd.Timestamp('1990-12-31 23:00:00', tz=cet_name)
+    pvgis_data, _ = get_pvgis_tmy(45, 8, roll_utc_offset=cet_tz)
+    jan1_midnight = pd.Timestamp('1990-01-01 00', tz=cet_name)
+    dec31_midnight = pd.Timestamp('1990-12-31 23', tz=cet_name)
     assert pvgis_data.index[0] == jan1_midnight
     assert pvgis_data.index[-1] == dec31_midnight
     assert pvgis_data.index.name == f'time({cet_name})'
@@ -467,10 +467,10 @@ def test_get_pvgis_tmy_coerce_year():
         assert all(test_case == expected)
     # repeat tests with year coerced
     test_yr = 2021
-    pvgis_data, _, _, _ = get_pvgis_tmy(
+    pvgis_data, _ = get_pvgis_tmy(
         45, 8, roll_utc_offset=cet_tz, coerce_year=test_yr)
-    jan1_midnight = pd.Timestamp(f'{test_yr}-01-01 00:00:00', tz=cet_name)
-    dec31_midnight = pd.Timestamp(f'{test_yr}-12-31 23:00:00', tz=cet_name)
+    jan1_midnight = pd.Timestamp(f'{test_yr}-01-01 00', tz=cet_name)
+    dec31_midnight = pd.Timestamp(f'{test_yr}-12-31 23', tz=cet_name)
     assert pvgis_data.index[0] == jan1_midnight
     assert pvgis_data.index[-1] == dec31_midnight
     assert pvgis_data.index.name == f'time({cet_name})'
@@ -478,29 +478,39 @@ def test_get_pvgis_tmy_coerce_year():
         expected = pvgis_data[pvgis_data.index.month == m+1].iloc[12+cet_tz]
         assert all(test_case == expected)
     # repeat tests with year coerced but utc offset none or zero
-    pvgis_data, _, _, _ = get_pvgis_tmy(45, 8, coerce_year=test_yr)
-    jan1_midnight = pd.Timestamp(f'{test_yr}-01-01 00:00:00', tz='UTC')
-    dec31_midnight = pd.Timestamp(f'{test_yr}-12-31 23:00:00', tz='UTC')
+    pvgis_data, _ = get_pvgis_tmy(45, 8, coerce_year=test_yr)
+    jan1_midnight = pd.Timestamp(f'{test_yr}-01-01 00', tz='UTC')
+    dec31_midnight = pd.Timestamp(f'{test_yr}-12-31 23', tz='UTC')
     assert pvgis_data.index[0] == jan1_midnight
     assert pvgis_data.index[-1] == dec31_midnight
     assert pvgis_data.index.name == 'time(UTC)'
     for m, test_case in enumerate(noon_test_data):
         expected = pvgis_data[pvgis_data.index.month == m+1].iloc[12]
         assert all(test_case == expected)
+    # Test that get_pvgis_tmy defaults to coerce_year=1990
+    pvgis_data, _ = get_pvgis_tmy(45, 8)
+    assert all(pvgis_data.index.year == 1990)
 
 
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_get_pvgis_tmy_csv(expected, month_year_expected, inputs_expected,
-                           meta_expected, csv_meta):
-    pvgis_data = get_pvgis_tmy(45, 8, outputformat='csv', map_variables=False)
+                           meta_expected, csv_meta, coerce_year=None):
+    pvgis_data = get_pvgis_tmy(45, 8, outputformat='csv', map_variables=False,
+                               coerce_year=None)
     _compare_pvgis_tmy_csv(expected, month_year_expected, inputs_expected,
                            meta_expected, csv_meta, pvgis_data)
 
 
 def _compare_pvgis_tmy_csv(expected, month_year_expected, inputs_expected,
                            meta_expected, csv_meta, pvgis_data):
-    data, months_selected, inputs, meta = pvgis_data
+    data, meta = pvgis_data
+
+    # Re-create original outputs (prior to #2470)
+    months_selected = meta['months_selected']
+    inputs = meta['inputs'].copy()
+    meta = meta['descriptions']
+
     # check each column of output separately
     for outvar in meta_expected['outputs']['tmy_hourly']['variables'].keys():
         assert np.allclose(data[outvar], expected[outvar])
@@ -527,12 +537,13 @@ def _compare_pvgis_tmy_csv(expected, month_year_expected, inputs_expected,
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_get_pvgis_tmy_epw(expected, epw_meta):
-    pvgis_data = get_pvgis_tmy(45, 8, outputformat='epw', map_variables=False)
+    pvgis_data = get_pvgis_tmy(45, 8, outputformat='epw', map_variables=False,
+                               coerce_year=None)
     _compare_pvgis_tmy_epw(expected, epw_meta, pvgis_data)
 
 
 def _compare_pvgis_tmy_epw(expected, epw_meta, pvgis_data):
-    data, _, _, meta = pvgis_data
+    data, meta = pvgis_data
     assert np.allclose(data.ghi, expected['G(h)'])
     assert np.allclose(data.dni, expected['Gb(n)'])
     assert np.allclose(data.dhi, expected['Gd(h)'])
@@ -552,8 +563,18 @@ def test_get_pvgis_tmy_error():
 
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
-def test_get_pvgis_map_variables(pvgis_tmy_mapped_columns):
-    actual, _, _, _ = get_pvgis_tmy(45, 8, map_variables=True)
+def test_get_pvgis_tmy_basic():
+    # Test that a specific error message is raised when outputformat='basic'
+    err_msg = ("outputformat='basic' is no longer supported by pvlib, "
+               "please use outputformat='csv' instead.")
+    with pytest.raises(ValueError, match=err_msg):
+        get_pvgis_tmy(45, 8, outputformat='basic')
+
+
+@pytest.mark.remote_data
+@pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
+def test_get_pvgis_tmy_map_variables(pvgis_tmy_mapped_columns):
+    actual, _ = get_pvgis_tmy(45, 8, map_variables=True)
     assert all(c in pvgis_tmy_mapped_columns for c in actual.columns)
 
 
@@ -576,7 +597,7 @@ def test_read_pvgis_horizon_invalid_coords():
 
 def test_read_pvgis_tmy_map_variables(pvgis_tmy_mapped_columns):
     fn = TESTS_DATA_DIR / 'tmy_45.000_8.000_2005_2023.json'
-    actual, _, _, _ = read_pvgis_tmy(fn, map_variables=True)
+    actual, _ = read_pvgis_tmy(fn, map_variables=True)
     assert all(c in pvgis_tmy_mapped_columns for c in actual.columns)
 
 
@@ -630,26 +651,14 @@ def test_read_pvgis_tmy_csv(expected, month_year_expected, inputs_expected,
                                meta_expected, csv_meta, pvgis_data)
 
 
-def test_read_pvgis_tmy_basic(expected, meta_expected):
-    fn = TESTS_DATA_DIR / 'tmy_45.000_8.000_2005_2023.txt'
-    # XXX: can't infer outputformat from file extensions for basic
-    with pytest.raises(ValueError, match="pvgis format 'txt' was unknown"):
-        read_pvgis_tmy(fn, map_variables=False)
-    # explicit pvgis outputformat
-    pvgis_data = read_pvgis_tmy(fn, pvgis_format='basic', map_variables=False)
-    _compare_pvgis_tmy_basic(expected, meta_expected, pvgis_data)
-    with fn.open('rb') as fbuf:
-        pvgis_data = read_pvgis_tmy(fbuf, pvgis_format='basic',
-                                    map_variables=False)
-        _compare_pvgis_tmy_basic(expected, meta_expected, pvgis_data)
-        # file buffer raises TypeError if passed to pathlib.Path()
-        with pytest.raises(TypeError):
-            read_pvgis_tmy(fbuf, map_variables=False)
-
-
 def test_read_pvgis_tmy_exception():
     bad_outputformat = 'bad'
     err_msg = f"pvgis format '{bad_outputformat:s}' was unknown"
     with pytest.raises(ValueError, match=err_msg):
         read_pvgis_tmy('filename', pvgis_format=bad_outputformat,
                        map_variables=False)
+
+
+def test_read_pvgis_tmy_unknown_outputformat():
+    with pytest.raises(ValueError, match="pvgis format 'txt' was unknown"):
+        read_pvgis_tmy("hello.txt")

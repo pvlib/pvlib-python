@@ -165,7 +165,7 @@ psm3, psm3_metadata = pvlib.iotools.get_psm3(latitude, longitude, api_key,
 # module fraction and returns the average irradiance over the total module
 # surface.
 
-solar_position = location.get_solarposition(psm3.index, latitude, longitude)
+solar_position = location.get_solarposition(psm3.index)
 tracker_angles = mount.get_orientation(
     solar_position['apparent_zenith'],
     solar_position['azimuth']

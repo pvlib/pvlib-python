@@ -249,15 +249,16 @@ def _infer_k_huld(cell_type, pdc0, k_version):
     # equation that has factored Pdc0 out of the polynomial:
     #  P = G/1000 * Pdc0 * (1 + k1 log(Geff) + ...) so these parameters are
     # multiplied by pdc0
-    if k_version == '2011':
+    if k_version.lower() == 'pvgis5':
+        # coefficients from PVGIS webpage
         huld_params = {'csi': (-0.017237, -0.040465, -0.004702, 0.000149,
                                0.000170, 0.000005),
                        'cis': (-0.005554, -0.038724, -0.003723, -0.000905,
                                -0.001256, 0.000001),
                        'cdte': (-0.046689, -0.072844, -0.002262, 0.000276,
                                 0.000159, -0.000006)}
-    elif k_version == '2025':
-        # Updated coefficients from EU JRC paper
+    elif k_version.lower() == 'pvgis6':
+        # Coefficients from EU JRC paper
         huld_params = {'csi': (-0.0067560, -0.016444, -0.003015, -0.000045,
                                -0.000043, 0.0),
                        'cis': (-0.011001, -0.029734, -0.002887, 0.000217,
@@ -272,7 +273,7 @@ def _infer_k_huld(cell_type, pdc0, k_version):
 
 
 def huld(effective_irradiance, temp_mod, pdc0, k=None, cell_type=None,
-         k_version='2011'):
+         k_version='pvgis5'):
     r"""
     Power (DC) using the Huld model.
 
@@ -305,10 +306,10 @@ def huld(effective_irradiance, temp_mod, pdc0, k=None, cell_type=None,
         If provided, must be one of ``'cSi'``, ``'CIS'``, or ``'CdTe'``.
         Used to look up default values for ``k`` if ``k`` is not specified.
     k_version : str, optional
-        Either ``'2011'`` (default) or ``'2025'``. Selects values
-        for ``k`` if ``k`` is not specified. If ``'2011'``, values are
-        from PVGIS documentation and are published in [2]_ as "current".
-        If ``'2025'`` values are from [2]_ published as "updated".
+        Either ``'pvgis5'`` (default) or ``'pvgis6'``. Selects values
+        for ``k`` if ``k`` is not specified. If ``'pvgis5'``, values are
+        from PVGIS documentation and are labeled in [2]_ as "current".
+        If ``'pvgis6'`` values are from [2]_ labeled as "updated".
 
     Returns
     -------

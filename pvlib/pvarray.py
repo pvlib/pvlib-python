@@ -267,7 +267,7 @@ def _infer_k_huld(cell_type, pdc0, k_version):
                                 -0.000141, 0.000002)}
     else:
         raise ValueError(f'Invalid k_version={k_version}: must be either '
-                         '"2011" or "2025" as a string')
+                         '"pvgis5" or "pvgis6"')
     k = tuple([x*pdc0 for x in huld_params[cell_type.lower()]])
     return k
 

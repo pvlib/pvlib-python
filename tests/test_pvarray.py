@@ -88,7 +88,7 @@ def test_huld_params():
                 'pvgis6': {'csi': 77.649421,
                            'cis': 77.723110,
                            'cdte': 77.500399
-                          }
+                           }
                 }
     # Test with PVGIS5 coefficients for all cell types
     for yr in expected:

@@ -624,12 +624,18 @@ def isotropic(surface_tilt, dhi, return_components=False):
         The sky diffuse component of the solar radiation on a tilted
         surface.
 
-    diffuse_components : OrderedDict (array input) or DataFrame (Series input)
+    diffuse_components : dict (array input) or DataFrame (Series input)
         Keys/columns are:
-            * sky_diffuse: Total sky diffuse
+            * sky_diffuse (the sum of the components below)
             * isotropic
             * circumsolar
             * horizon
+            * poa_sky_diffuse (the sum of the components below)
+            * poa_isotropic
+            * poa_circumsolar
+            * poa_horizon
+        The first four elements will be deprecated in v0.14.0 and are kept
+        to avoit breaking changes.
 
     References
     ----------
@@ -646,13 +652,24 @@ def isotropic(surface_tilt, dhi, return_components=False):
     poa_sky_diffuse = dhi * (1 + tools.cosd(surface_tilt)) * 0.5
 
     if return_components:
-        diffuse_components = OrderedDict()
-        diffuse_components['poa_sky_diffuse'] = poa_sky_diffuse
+        diffuse_components = dict()
+        
+        # original formatting (to be deprecated in v0.14.0)
+        diffuse_components['sky_diffuse'] = poa_sky_diffuse # total
+        diffuse_components['isotropic'] = poa_sky_diffuse
+        diffuse_components['circumsolar'] = 0
+        diffuse_components['horizon'] = 0
 
-        # Calculate the different components
+        # new formatting
+        diffuse_components['poa_sky_diffuse'] = poa_sky_diffuse
         diffuse_components['poa_isotropic'] = poa_sky_diffuse
         diffuse_components['poa_circumsolar'] = 0
         diffuse_components['poa_horizon'] = 0
+
+        if isinstance(poa_sky_diffuse, pd.Series):
+            # follows `perez` worfklow
+            # shouldn't it include an argument `index=dhi.index`?
+            diffuse_components = pd.DataFrame(diffuse_components)
 
         return diffuse_components
     else:

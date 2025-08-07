@@ -22,7 +22,7 @@ Enhancements
 ~~~~~~~~~~~~
 * Add iotools functions to retrieve irradiance and weather data from Meteonorm:
   :py:func:`~pvlib.iotools.get_meteonorm_forecast_basic`, :py:func:`~pvlib.iotools.get_meteonorm_forecast_precision`,
-  `~pvlib.iotools.get_meteonorm_observation_realtime`, `~pvlib.iotools.get_meteonorm_observation_training`,
+  :py:func:`~pvlib.iotools.get_meteonorm_observation_realtime`, :py:func:`~pvlib.iotools.get_meteonorm_observation_training`,
   and :py:func:`~pvlib.iotools.get_meteonorm_tmy`.
   (:pull:`2499`)
 * Add :py:func:`pvlib.iotools.get_nasa_power` to retrieve data from NASA POWER free API.

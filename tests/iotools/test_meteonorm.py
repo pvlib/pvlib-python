@@ -57,7 +57,7 @@ def expected_meteonorm_index():
 
 
 @pytest.fixture
-def expected_metenorm_data():
+def expected_meteonorm_data():
     # The first 12 rows of data
     columns = ['ghi', 'global_horizontal_irradiance_with_shading']
     expected = [
@@ -110,7 +110,7 @@ def expected_columns_all():
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_get_meteonorm_training(
         demo_api_key, demo_url, expected_meta, expected_meteonorm_index,
-        expected_metenorm_data):
+        expected_meteonorm_data):
     data, meta = pvlib.iotools.get_meteonorm_observation_training(
         latitude=50, longitude=10,
         start='2023-01-01', end='2025-01-01',
@@ -121,7 +121,7 @@ def test_get_meteonorm_training(
 
     assert meta == expected_meta
     pd.testing.assert_index_equal(data.index, expected_meteonorm_index)
-    pd.testing.assert_frame_equal(data.iloc[:12], expected_metenorm_data)
+    pd.testing.assert_frame_equal(data.iloc[:12], expected_meteonorm_data)
 
 
 @pytest.mark.remote_data
@@ -175,8 +175,8 @@ def test_get_meteonorm_forecast_basic(demo_api_key, demo_url):
 def test_get_meteonorm_forecast_precision(demo_api_key, demo_url):
     data, meta = pvlib.iotools.get_meteonorm_forecast_precision(
         latitude=50, longitude=10,
-        start=pd.Timestamp.now(tz='UTC') + pd.Timedelta(hours=5),
-        end=pd.Timestamp.now(tz='UTC') + pd.Timedelta(hours=6),
+        start='now',
+        end='+3hours',
         api_key=demo_api_key,
         parameters='ghi',
         time_step='15min',
@@ -260,7 +260,7 @@ def expected_meteonorm_tmy_interval_index():
 
 
 @pytest.fixture
-def expected_metenorm_tmy_data():
+def expected_meteonorm_tmy_data():
     # The first 12 rows of data
     columns = ['diffuse_horizontal_irradiance']
     expected = [
@@ -290,7 +290,7 @@ def expected_metenorm_tmy_data():
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_get_meteonorm_tmy(
         demo_api_key, demo_url, expected_meteonorm_tmy_meta,
-        expected_metenorm_tmy_data, expected_meteonorm_tmy_interval_index):
+        expected_meteonorm_tmy_data, expected_meteonorm_tmy_interval_index):
     data, meta = pvlib.iotools.get_meteonorm_tmy(
         latitude=50, longitude=10,
         api_key=demo_api_key,
@@ -311,6 +311,6 @@ def test_get_meteonorm_tmy(
         map_variables=False,
         url=demo_url)
     assert meta == expected_meteonorm_tmy_meta
-    pd.testing.assert_frame_equal(data.iloc[:12], expected_metenorm_tmy_data)
+    pd.testing.assert_frame_equal(data.iloc[:12], expected_meteonorm_tmy_data)
     pd.testing.assert_index_equal(
         data.index, expected_meteonorm_tmy_interval_index)

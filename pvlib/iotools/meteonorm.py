@@ -3,6 +3,7 @@
 import pandas as pd
 import requests
 from urllib.parse import urljoin
+from pandas._libs.tslibs.parsing import DateParseError
 
 URL = "https://api.meteonorm.com/v1/"
 
@@ -32,20 +33,11 @@ TIME_STEP_MAP = {
 
 
 def get_meteonorm_forecast_basic(
-    latitude,
-    longitude,
-    start,
-    end,
-    api_key,
-    parameters="all",
-    *,
-    surface_tilt=0,
-    surface_azimuth=180,
-    horizon="auto",
-    interval_index=False,
-    map_variables=True,
-    url=URL,
-):
+        latitude, longitude, start, end,
+        api_key, parameters="all", *,
+        surface_tilt=0, surface_azimuth=180,
+        horizon="auto", interval_index=False,
+        map_variables=True, url=URL):
     """
     Retrieve basic forecast data from Meteonorm.
 
@@ -61,12 +53,14 @@ def get_meteonorm_forecast_basic(
         In decimal degrees, north is positive (ISO 19115).
     longitude: float
         In decimal degrees, east is positive (ISO 19115).
-    start : datetime like
+    start : datetime like or str
         First timestamp of the requested period. If a timezone is not
-        specified, UTC is assumed.
-    end : datetime like
+        specified, UTC is assumed. Relative date/time strings are
+        also allowed, e.g., 'now' or '+3hours'.
+    end : datetime like or str
         Last timestamp of the requested period. If a timezone is not
-        specified, UTC is assumed.
+        specified, UTC is assumed. Relative date/time strings are
+        also allowed, e.g., 'now' or '+3hours'.
     api_key : str
         Meteonorm API key.
     parameters : list or 'all', default : 'all'
@@ -104,7 +98,9 @@ def get_meteonorm_forecast_basic(
 
     See Also
     --------
-    pvlib.iotools.get_meteonorm_observation,
+    pvlib.iotools.get_meteonorm_forecast_precision,
+    pvlib.iotools.get_meteonorm_observation_realtime,
+    pvlib.iotools.get_meteonorm_observation_training,
     pvlib.iotools.get_meteonorm_tmy
 
     References
@@ -120,40 +116,19 @@ def get_meteonorm_forecast_basic(
     time_step = None
 
     data, meta = _get_meteonorm(
-        latitude,
-        longitude,
-        start,
-        end,
-        api_key,
-        parameters,
-        surface_tilt,
-        surface_azimuth,
-        time_step,
-        horizon,
-        interval_index,
-        map_variables,
-        url,
-        endpoint,
-    )
+        latitude, longitude, start, end,
+        api_key, parameters, surface_tilt, surface_azimuth,
+        time_step, horizon, interval_index, map_variables,
+        url, endpoint)
     return data, meta
 
 
 def get_meteonorm_forecast_precision(
-    latitude,
-    longitude,
-    start,
-    end,
-    api_key,
-    parameters="all",
-    *,
-    surface_tilt=0,
-    surface_azimuth=180,
-    time_step="15min",
-    horizon="auto",
-    interval_index=False,
-    map_variables=True,
-    url=URL,
-):
+        latitude, longitude, start, end,
+        api_key, parameters="all", *,
+        surface_tilt=0, surface_azimuth=180,
+        time_step="15min", horizon="auto", interval_index=False,
+        map_variables=True, url=URL):
     """
     Retrieve precision forecast data from Meteonorm.
 
@@ -166,12 +141,14 @@ def get_meteonorm_forecast_precision(
         In decimal degrees, north is positive (ISO 19115).
     longitude: float
         In decimal degrees, east is positive (ISO 19115).
-    start : datetime like
+    start : datetime like or str
         First timestamp of the requested period. If a timezone is not
-        specified, UTC is assumed.
-    end : datetime like
+        specified, UTC is assumed. Relative date/time strings are
+        also allowed, e.g., 'now' or '+3hours'.
+    end : datetime like or str
         Last timestamp of the requested period. If a timezone is not
-        specified, UTC is assumed.
+        specified, UTC is assumed. Relative date/time strings are
+        also allowed, e.g., 'now' or '+3hours'.
     api_key : str
         Meteonorm API key.
     parameters : list or 'all', default : 'all'
@@ -182,8 +159,7 @@ def get_meteonorm_forecast_precision(
         Orientation (azimuth angle) of the (fixed) plane. Clockwise from north
         (north=0, east=90, south=180, west=270).
     time_step : {'1min', '15min', '1h'}, default : '15min'
-        Frequency of the time series. The endpoint ``'basic'`` only
-        supports ``time_step='1h'``.
+        Frequency of the time series.
     horizon : str or list, default : 'auto'
         Specification of the horizon line. Can be either 'flat', 'auto', or
         a list of 360 integer horizon elevation angles.
@@ -212,7 +188,10 @@ def get_meteonorm_forecast_precision(
 
     See Also
     --------
-    pvlib.iotools.get_meteonorm_forecast_basic
+    pvlib.iotools.get_meteonorm_forecast_basic,
+    pvlib.iotools.get_meteonorm_observation_realtime,
+    pvlib.iotools.get_meteonorm_observation_training,
+    pvlib.iotools.get_meteonorm_tmy
 
     References
     ----------
@@ -226,40 +205,19 @@ def get_meteonorm_forecast_precision(
     endpoint = "forecast/precision"
 
     data, meta = _get_meteonorm(
-        latitude,
-        longitude,
-        start,
-        end,
-        api_key,
-        parameters,
-        surface_tilt,
-        surface_azimuth,
-        time_step,
-        horizon,
-        interval_index,
-        map_variables,
-        url,
-        endpoint,
-    )
+        latitude, longitude, start, end,
+        api_key, parameters, surface_tilt, surface_azimuth,
+        time_step, horizon, interval_index, map_variables,
+        url, endpoint)
     return data, meta
 
 
 def get_meteonorm_observation_realtime(
-    latitude,
-    longitude,
-    start,
-    end,
-    api_key,
-    parameters="all",
-    *,
-    surface_tilt=0,
-    surface_azimuth=180,
-    time_step="15min",
-    horizon="auto",
-    interval_index=False,
-    map_variables=True,
-    url=URL,
-):
+        latitude, longitude, start, end,
+        api_key, parameters="all", *,
+        surface_tilt=0, surface_azimuth=180,
+        time_step="15min", horizon="auto", interval_index=False,
+        map_variables=True, url=URL):
     """
     Retrieve near real-time observational data from Meteonorm.
 
@@ -319,7 +277,11 @@ def get_meteonorm_observation_realtime(
 
     See Also
     --------
-    pvlib.iotools.get_meteonorm_observation_training
+    pvlib.iotools.get_meteonorm_forecast_basic,
+    pvlib.iotools.get_meteonorm_forecast_precision,
+    pvlib.iotools.get_meteonorm_observation_training,
+    pvlib.iotools.get_meteonorm_tmy
+
 
     References
     ----------
@@ -333,40 +295,19 @@ def get_meteonorm_observation_realtime(
     endpoint = "observation/realtime"
 
     data, meta = _get_meteonorm(
-        latitude,
-        longitude,
-        start,
-        end,
-        api_key,
-        parameters,
-        surface_tilt,
-        surface_azimuth,
-        time_step,
-        horizon,
-        interval_index,
-        map_variables,
-        url,
-        endpoint,
-    )
+        latitude, longitude, start, end,
+        api_key, parameters, surface_tilt, surface_azimuth,
+        time_step, horizon, interval_index, map_variables,
+        url, endpoint)
     return data, meta
 
 
 def get_meteonorm_observation_training(
-    latitude,
-    longitude,
-    start,
-    end,
-    api_key,
-    parameters="all",
-    *,
-    surface_tilt=0,
-    surface_azimuth=180,
-    time_step="15min",
-    horizon="auto",
-    interval_index=False,
-    map_variables=True,
-    url=URL,
-):
+        latitude, longitude, start, end,
+        api_key, parameters="all", *,
+        surface_tilt=0, surface_azimuth=180,
+        time_step="15min", horizon="auto", interval_index=False,
+        map_variables=True, url=URL):
     """
     Retrieve historical observational data from Meteonorm.
 
@@ -428,12 +369,14 @@ def get_meteonorm_observation_training(
     >>> df, meta = pvlib.iotools.get_meteonorm_observation_training(  # doctest: +SKIP
     ...     latitude=50, longitude=10,  # doctest: +SKIP
     ...     start='2023-01-01', end='2025-01-01',  # doctest: +SKIP
-    ...     api_key='redacted',  # doctest: +SKIP
-    ...     endpoint='training')  # doctest: +SKIP
+    ...     api_key='redacted')  # doctest: +SKIP
 
     See Also
     --------
-    pvlib.iotools.get_meteonorm_observation_realtime
+    pvlib.iotools.get_meteonorm_forecast_basic,
+    pvlib.iotools.get_meteonorm_forecast_precision,
+    pvlib.iotools.get_meteonorm_observation_realtime,
+    pvlib.iotools.get_meteonorm_tmy
 
     References
     ----------
@@ -447,115 +390,21 @@ def get_meteonorm_observation_training(
     endpoint = "observation/training"
 
     data, meta = _get_meteonorm(
-        latitude,
-        longitude,
-        start,
-        end,
-        api_key,
-        parameters,
-        surface_tilt,
-        surface_azimuth,
-        time_step,
-        horizon,
-        interval_index,
-        map_variables,
-        url,
-        endpoint,
-    )
+        latitude, longitude, start, end,
+        api_key, parameters, surface_tilt, surface_azimuth,
+        time_step, horizon, interval_index, map_variables,
+        url, endpoint)
     return data, meta
-
-
-def _get_meteonorm(
-    latitude,
-    longitude,
-    start,
-    end,
-    api_key,
-    parameters,
-    surface_tilt,
-    surface_azimuth,
-    time_step,
-    horizon,
-    interval_index,
-    map_variables,
-    url,
-    endpoint,
-):
-    # Relative date strings are not yet supported
-    start = pd.Timestamp(start)
-    end = pd.Timestamp(end)
-    start = start.tz_localize("UTC") if start.tzinfo is None else start
-    end = end.tz_localize("UTC") if end.tzinfo is None else end
-
-    params = {
-        "lat": latitude,
-        "lon": longitude,
-        "start": start.strftime("%Y-%m-%dT%H:%M:%SZ"),
-        "end": end.strftime("%Y-%m-%dT%H:%M:%SZ"),
-        "parameters": parameters,
-        "surface_tilt": surface_tilt,
-        "surface_azimuth": surface_azimuth,
-        "horizon": horizon,
-        'frequency': TIME_STEP_MAP.get(time_step, time_step),
-        "response_format": "json",
-    }
-
-    # Allow specifying single parameters as string
-    if isinstance(parameters, str):
-        parameters = [parameters]
-
-    # allow the use of pvlib parameter names
-    parameter_dict = {v: k for k, v in VARIABLE_MAP.items()}
-    parameters = [parameter_dict.get(p, p) for p in parameters]
-    # convert list to string with values separated by commas
-    params["parameters"] = ",".join(parameters)
-
-    if not isinstance(horizon, str):
-        params["horizon"] = ",".join(map(str, horizon))
-
-    headers = {"Authorization": f"Bearer {api_key}"}
-
-    response = requests.get(
-        urljoin(url, endpoint), headers=headers, params=params
-    )
-
-    if not response.ok:
-        # response.raise_for_status() does not give a useful error message
-        raise requests.HTTPError(
-            "Meteonorm API returned an error: "
-            + response.json()["error"]["message"]
-        )
-
-    data, meta = _parse_meteonorm(response, interval_index, map_variables)
-
-    return data, meta
-
-
-TMY_ENDPOINT = "climate/tmy"
 
 
 def get_meteonorm_tmy(
-    latitude,
-    longitude,
-    api_key,
-    parameters="all",
-    *,
-    surface_tilt=0,
-    surface_azimuth=180,
-    time_step="1h",
-    horizon="auto",
-    terrain_situation="open",
-    albedo=None,
-    turbidity="auto",
-    random_seed=None,
-    clear_sky_radiation_model="esra",
-    data_version="latest",
-    future_scenario=None,
-    future_year=None,
-    interval_index=False,
-    map_variables=True,
-    url=URL,
-):
+        latitude, longitude, api_key, parameters="all", *,
+        surface_tilt=0, surface_azimuth=180,
+        time_step="1h", horizon="auto", terrain_situation="open",
+        albedo=None, turbidity="auto", random_seed=None,
+        clear_sky_radiation_model="esra", data_version="latest",
+        future_scenario=None, future_year=None, interval_index=False,
+        map_variables=True, url=URL):
     """
     Retrieve TMY irradiance and weather data from Meteonorm.
 
@@ -631,8 +480,10 @@ def get_meteonorm_tmy(
 
     See Also
     --------
-    pvlib.iotools.get_meteonorm_observation,
-    pvlib.iotools.get_meteonorm_forecast
+    pvlib.iotools.get_meteonorm_forecast_basic,
+    pvlib.iotools.get_meteonorm_forecast_precision,
+    pvlib.iotools.get_meteonorm_observation_realtime,
+    pvlib.iotools.get_meteonorm_observation_training
 
     References
     ----------
@@ -643,14 +494,7 @@ def get_meteonorm_tmy(
     .. [3] `Meteonorm API reference
        <https://docs.meteonorm.com/api>`_
     """
-    params = {
-        "lat": latitude,
-        "lon": longitude,
-        "surface_tilt": surface_tilt,
-        "surface_azimuth": surface_azimuth,
-        "frequency": TIME_STEP_MAP.get(time_step, time_step),
-        "parameters": parameters,
-        "horizon": horizon,
+    additional_params = {
         "situation": terrain_situation,
         "turbidity": turbidity,
         "clear_sky_radiation_model": clear_sky_radiation_model,
@@ -659,6 +503,62 @@ def get_meteonorm_tmy(
         "future_scenario": future_scenario,
         "future_year": future_year,
         "response_format": "json",
+    }
+
+    if not isinstance(turbidity, str):
+        additional_params["turbidity"] = ",".join(map(str, turbidity))
+
+    endpoint = "climate/tmy"
+
+    start, end = None, None
+
+    data, meta = _get_meteonorm(
+            latitude, longitude, start, end,
+            api_key, parameters,
+            surface_tilt, surface_azimuth,
+            time_step, horizon,
+            interval_index, map_variables,
+            url, endpoint, **additional_params)
+    return data, meta
+
+
+def _get_meteonorm(
+        latitude, longitude, start, end,
+        api_key, parameters,
+        surface_tilt, surface_azimuth,
+        time_step, horizon,
+        interval_index, map_variables,
+        url, endpoint, **kwargs):
+
+    # Check for None type in case of TMY request
+    # Check for DateParseError in case of relative times, e.g., '+3hours'
+    if (start is not None) & (start != 'now'):
+        try:
+            start = pd.Timestamp(start)
+            start = start.tz_localize("UTC") if start.tzinfo is None else start
+            start = start.strftime("%Y-%m-%dT%H:%M:%SZ")
+        except DateParseError:
+            pass
+    if (end is not None) & (end != 'now'):
+        try:
+            end = pd.Timestamp(end)
+            end = end.tz_localize("UTC") if end.tzinfo is None else end
+            end = end.strftime("%Y-%m-%dT%H:%M:%SZ")
+        except DateParseError:
+            pass
+
+    params = {
+        "lat": latitude,
+        "lon": longitude,
+        'start': start,
+        'end': end,
+        "parameters": parameters,
+        "surface_tilt": surface_tilt,
+        "surface_azimuth": surface_azimuth,
+        "horizon": horizon,
+        'frequency': TIME_STEP_MAP.get(time_step, time_step),
+        "response_format": "json",
+        **kwargs
     }
 
     # Allow specifying single parameters as string
@@ -674,13 +574,11 @@ def get_meteonorm_tmy(
     if not isinstance(horizon, str):
         params["horizon"] = ",".join(map(str, horizon))
 
-    if not isinstance(turbidity, str):
-        params["turbidity"] = ",".join(map(str, turbidity))
-
     headers = {"Authorization": f"Bearer {api_key}"}
 
-    response = requests.get(urljoin(url, TMY_ENDPOINT.lstrip("/")),
-                            headers=headers, params=params)
+    response = requests.get(
+        urljoin(url, endpoint), headers=headers, params=params
+    )
 
     if not response.ok:
         # response.raise_for_status() does not give a useful error message

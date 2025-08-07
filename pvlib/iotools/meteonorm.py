@@ -443,7 +443,7 @@ def get_meteonorm_observation_training(
        <https://docs.meteonorm.com/docs/getting-started>`_
     .. [3] `Meteonorm API reference
        <https://docs.meteonorm.com/api>`_
-    """
+    """  # noqa: E501
     endpoint = "observation/training"
 
     data, meta = _get_meteonorm(
@@ -522,7 +522,8 @@ def _get_meteonorm(
     if not response.ok:
         # response.raise_for_status() does not give a useful error message
         raise requests.HTTPError(
-            "Meteonorm API returned an error: " + response.json()["error"]["message"]
+            "Meteonorm API returned an error: "
+            + response.json()["error"]["message"]
         )
 
     data, meta = _parse_meteonorm(response, interval_index, map_variables)
@@ -678,12 +679,14 @@ def get_meteonorm_tmy(
 
     headers = {"Authorization": f"Bearer {api_key}"}
 
-    response = requests.get(urljoin(url, TMY_ENDPOINT.lstrip("/")), headers=headers, params=params)
+    response = requests.get(urljoin(url, TMY_ENDPOINT.lstrip("/")),
+                            headers=headers, params=params)
 
     if not response.ok:
         # response.raise_for_status() does not give a useful error message
         raise requests.HTTPError(
-            "Meteonorm API returned an error: " + response.json()["error"]["message"]
+            "Meteonorm API returned an error: "
+            + response.json()["error"]["message"]
         )
 
     data, meta = _parse_meteonorm(response, interval_index, map_variables)

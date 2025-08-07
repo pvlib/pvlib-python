@@ -40,8 +40,8 @@ from pvlib.iotools.solcast import get_solcast_historic  # noqa: F401
 from pvlib.iotools.solcast import get_solcast_tmy  # noqa: F401
 from pvlib.iotools.solargis import get_solargis  # noqa: F401
 from pvlib.iotools.meteonorm import get_meteonorm_forecast_basic  # noqa: F401
-from pvlib.iotools.meteonorm import get_meteonorm_forecast_precision  # noqa: F401
-from pvlib.iotools.meteonorm import get_meteonorm_observation_realtime  # noqa: F401
-from pvlib.iotools.meteonorm import get_meteonorm_observation_training  # noqa: F401
+from pvlib.iotools.meteonorm import get_meteonorm_forecast_precision  # noqa: F401, E501
+from pvlib.iotools.meteonorm import get_meteonorm_observation_realtime  # noqa: F401, E501
+from pvlib.iotools.meteonorm import get_meteonorm_observation_training  # noqa: F401, E501
 from pvlib.iotools.meteonorm import get_meteonorm_tmy  # noqa: F401
 from pvlib.iotools.nasa_power import get_nasa_power  # noqa: F401

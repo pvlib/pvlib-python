@@ -653,7 +653,7 @@ def isotropic(surface_tilt, dhi, return_components=False):
 
     if return_components:
         diffuse_components = dict()
-        
+
         # original formatting (to be deprecated in v0.14.0)
         diffuse_components['sky_diffuse'] = poa_sky_diffuse # total
         diffuse_components['isotropic'] = poa_sky_diffuse

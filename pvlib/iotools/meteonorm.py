@@ -91,7 +91,7 @@ def get_meteonorm_forecast_basic(
     Returns
     -------
     data : pd.DataFrame
-        Time series data. The index corresponds to the start (left) of the
+        Time series data. The index corresponds to the middle of the
         interval unless ``interval_index`` is set to True.
     meta : dict
         Metadata.
@@ -181,7 +181,7 @@ def get_meteonorm_forecast_precision(
     Returns
     -------
     data : pd.DataFrame
-        Time series data. The index corresponds to the start (left) of the
+        Time series data. The index corresponds to the middle of the
         interval unless ``interval_index`` is set to True.
     meta : dict
         Metadata.
@@ -270,7 +270,7 @@ def get_meteonorm_observation_realtime(
     Returns
     -------
     data : pd.DataFrame
-        Time series data. The index corresponds to the start (left) of the
+        Time series data. The index corresponds to the middle of the
         interval unless ``interval_index`` is set to True.
     meta : dict
         Metadata.
@@ -358,7 +358,7 @@ def get_meteonorm_observation_training(
     Returns
     -------
     data : pd.DataFrame
-        Time series data. The index corresponds to the start (left) of the
+        Time series data. The index corresponds to the middle of the
         interval unless ``interval_index`` is set to True.
     meta : dict
         Metadata.
@@ -473,7 +473,7 @@ def get_meteonorm_tmy(
     Returns
     -------
     data : pd.DataFrame
-        Time series data. The index corresponds to the start (left) of the
+        Time series data. The index corresponds to the middle of the
         interval unless ``interval_index`` is set to True.
     meta : dict
         Metadata.
@@ -513,12 +513,12 @@ def get_meteonorm_tmy(
     start, end = None, None
 
     data, meta = _get_meteonorm(
-            latitude, longitude, start, end,
-            api_key, parameters,
-            surface_tilt, surface_azimuth,
-            time_step, horizon,
-            interval_index, map_variables,
-            url, endpoint, **additional_params)
+        latitude, longitude, start, end,
+        api_key, parameters,
+        surface_tilt, surface_azimuth,
+        time_step, horizon,
+        interval_index, map_variables,
+        url, endpoint, **additional_params)
     return data, meta
 
 
@@ -602,14 +602,14 @@ def _parse_meteonorm(response, interval_index, map_variables):
     data = pd.DataFrame(data_json)
 
     # xxx: experimental feature - see parameter description
-    if interval_index:
-        data.index = pd.IntervalIndex.from_arrays(
-            left=pd.to_datetime(response.json()["start_times"]),
-            right=pd.to_datetime(response.json()["end_times"]),
-            closed="left",
-        )
-    else:
-        data.index = pd.to_datetime(response.json()["start_times"])
+    data.index = pd.IntervalIndex.from_arrays(
+        left=pd.to_datetime(response.json()["start_times"]),
+        right=pd.to_datetime(response.json()["end_times"]),
+        closed="left",
+    )
+
+    if not interval_index:
+        data.index = data.index.mid
 
     meta = response.json()["meta"]
 

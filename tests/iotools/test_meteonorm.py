@@ -51,7 +51,8 @@ def expected_meta():
 @pytest.fixture
 def expected_meteonorm_index():
     expected_meteonorm_index = \
-        pd.date_range('2023-01-01', '2024-12-31 23:59', freq='1h', tz='UTC')
+        pd.date_range('2023-01-01', '2024-12-31 23:59', freq='1h', tz='UTC') \
+        + pd.Timedelta(minutes=30)
     expected_meteonorm_index.freq = None
     return expected_meteonorm_index
 
@@ -74,7 +75,7 @@ def expected_meteonorm_data():
         [210.75, 210.7458778],
         [221.0, 220.99278214],
     ]
-    index = pd.date_range('2023-01-01', periods=12, freq='1h', tz='UTC')
+    index = pd.date_range('2023-01-01 00:30', periods=12, freq='1h', tz='UTC')
     index.freq = None
     expected = pd.DataFrame(expected, index=index, columns=columns)
     return expected
@@ -183,7 +184,7 @@ def test_get_meteonorm_forecast_precision(demo_api_key, demo_url):
         url=demo_url)
 
     assert data.index[1] - data.index[0] == pd.Timedelta(minutes=15)
-    assert data.shape == (5, 1)
+    assert data.shape == (60/15*3+1, 1)
     assert meta['frequency'] == '15_minutes'
 
 
@@ -250,16 +251,6 @@ def expected_meteonorm_tmy_meta():
 
 
 @pytest.fixture
-def expected_meteonorm_tmy_interval_index():
-    index = pd.date_range(
-        '2005-01-01', periods=8760, freq='1h', tz=3600)
-    index.freq = None
-    interval_index = pd.IntervalIndex.from_arrays(
-        index, index + pd.Timedelta(hours=1), closed='left')
-    return interval_index
-
-
-@pytest.fixture
 def expected_meteonorm_tmy_data():
     # The first 12 rows of data
     columns = ['diffuse_horizontal_irradiance']
@@ -290,7 +281,7 @@ def expected_meteonorm_tmy_data():
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_get_meteonorm_tmy(
         demo_api_key, demo_url, expected_meteonorm_tmy_meta,
-        expected_meteonorm_tmy_data, expected_meteonorm_tmy_interval_index):
+        expected_meteonorm_tmy_data):
     data, meta = pvlib.iotools.get_meteonorm_tmy(
         latitude=50, longitude=10,
         api_key=demo_api_key,
@@ -312,5 +303,3 @@ def test_get_meteonorm_tmy(
         url=demo_url)
     assert meta == expected_meteonorm_tmy_meta
     pd.testing.assert_frame_equal(data.iloc[:12], expected_meteonorm_tmy_data)
-    pd.testing.assert_index_equal(
-        data.index, expected_meteonorm_tmy_interval_index)

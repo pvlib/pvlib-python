@@ -51,7 +51,7 @@ def expected_meta():
 @pytest.fixture
 def expected_meteonorm_index():
     expected_meteonorm_index = \
-        pd.date_range('2023-01-01', '2024-12-31 23:59', freq='1h', tz='UTC') \
+        pd.date_range('2023-01-01', '2023-12-31 23:59', freq='1h', tz='UTC') \
         + pd.Timedelta(minutes=30)
     expected_meteonorm_index.freq = None
     return expected_meteonorm_index
@@ -114,7 +114,7 @@ def test_get_meteonorm_training(
         expected_meteonorm_data):
     data, meta = pvlib.iotools.get_meteonorm_observation_training(
         latitude=50, longitude=10,
-        start='2023-01-01', end='2025-01-01',
+        start='2023-01-01', end='2024-01-01',
         api_key=demo_api_key,
         parameters=['ghi', 'global_horizontal_irradiance_with_shading'],
         time_step='1h',
@@ -159,8 +159,8 @@ def test_get_meteonorm_realtime(demo_api_key, demo_url, expected_columns_all):
 def test_get_meteonorm_forecast_basic(demo_api_key, demo_url):
     data, meta = pvlib.iotools.get_meteonorm_forecast_basic(
         latitude=50, longitude=10,
-        start=pd.Timestamp.now(tz='UTC'),
-        end=pd.Timestamp.now(tz='UTC') + pd.Timedelta(hours=5),
+        start='+1hours',
+        end=pd.Timestamp.now(tz='UTC') + pd.Timedelta(hours=6),
         api_key=demo_api_key,
         parameters='ghi',
         url=demo_url)

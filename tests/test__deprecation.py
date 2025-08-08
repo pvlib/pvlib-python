@@ -3,6 +3,7 @@ Test the _deprecation module.
 """
 
 import pytest
+import pandas as pd
 
 from pvlib import _deprecation
 from .conftest import fail_on_pvlib_version
@@ -95,3 +96,65 @@ def test_renamed_kwarg_warning(renamed_kwarg_func):
         TypeError, match="missing 1 required positional argument"
     ):
         renamed_kwarg_func()
+
+
+def test_renamed_key_items_warning():
+    """Test the renamed_key_items_warning decorator."""
+    # Test on a dictionary
+    data_dict = {
+        "new_key1": [1, 2, 3],
+        "new_key2": [4, 5, 6],
+        "another_key": [7, 8, 9],
+    }
+    data_dict_wrapped = _deprecation.renamed_key_items_warning(
+        "0.1.0", {"old_key1": "new_key1"}, "0.2.0"
+    )(data_dict)
+
+    # Check that the new key is present in the wrapped object
+    assert "new_key1" in data_dict_wrapped
+    assert "new_key2" in data_dict_wrapped
+    assert "another_key" in data_dict_wrapped
+    assert "old_key1" not in data_dict_wrapped
+    # Check that the old key still exists in the wrapped object
+    assert data_dict_wrapped["new_key1"] == [1, 2, 3]
+    assert data_dict_wrapped["new_key2"] == [4, 5, 6]
+    assert data_dict_wrapped["another_key"] == [7, 8, 9]
+    with pytest.warns(Warning, match="use `new_key1` instead of `old_key1`."):
+        assert data_dict_wrapped["old_key1"] == [1, 2, 3]
+    # check yet again, to ensure there is no weird persistences
+    with pytest.warns(Warning, match="use `new_key1` instead of `old_key1`."):
+        assert data_dict_wrapped["old_key1"] == [1, 2, 3]
+
+    # Test on a DataFrame
+    data_df = pd.DataFrame(data_dict)
+    data_df = _deprecation.renamed_key_items_warning(
+        "0.1.0", {"old_key1": "new_key1", "old_key2": "new_key2"}, "0.2.0"
+    )(data_df)
+
+    assert "new_key1" in data_df.columns
+    assert data_df.new_key1 is not None  # ensure attribute access works
+    assert "new_key2" in data_df.columns
+    assert "old_key1" not in data_df.columns
+    assert "old_key2" not in data_df.columns
+    # Check that the old key still exists in the DataFrame
+    assert data_df["new_key1"].tolist() == [1, 2, 3]
+    with pytest.warns(Warning, match="use `new_key1` instead of `old_key1`."):
+        assert data_df["old_key1"].tolist() == [1, 2, 3]
+    with pytest.warns(Warning, match="use `new_key1` instead of `old_key1`."):
+        assert data_df["old_key1"].tolist() == [1, 2, 3]
+
+    # Test chaining decorators, on a dict, first new_key1, then new_key2
+    data_dict_wrapped = _deprecation.renamed_key_items_warning(
+        "0.1.0", {"old_key1": "new_key1"}, "0.2.0"
+    )(data_dict)
+    data_dict_wrapped = _deprecation.renamed_key_items_warning(
+        "0.3.0", {"old_key2": "new_key2"}, "0.4.0"
+    )(data_dict_wrapped)
+    # Check that the new keys are present in the wrapped object
+    assert "new_key1" in data_dict_wrapped
+    assert "new_key2" in data_dict_wrapped
+
+    with pytest.warns(Warning, match="use `new_key1` instead of `old_key1`."):
+        assert data_dict_wrapped["old_key1"] == [1, 2, 3]
+    with pytest.warns(Warning, match="use `new_key2` instead of `old_key2`."):
+        assert data_dict_wrapped["old_key2"] == [4, 5, 6]

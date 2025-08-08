@@ -389,3 +389,193 @@ def renamed_kwarg_warning(since, old_param_name, new_param_name, removal=""):
         return wrapper
 
     return deprecate
+
+
+def renamed_key_items_warning(since, old_to_new_keys_map, removal=""):
+    """
+    Decorator to mark a possible key item (e.g. ``df["key"]``) of an object as
+    deprecated and replaced with other attribute.
+
+    Raises a warning when the deprecated attribute is used, and uses the new
+    attribute instead, by wrapping the ``__getattr__`` method of the object.
+    See [1]_.
+
+    While this implementation is decorator-like, Python syntax won't allow
+    ``@decorator`` for applying it. Two sets of parenthesis are required:
+    the first one configures the wrapper and the second one applies it.
+    This leaves room for reusability too.
+
+    Code is inspired by [2]_, thou it has been generalized to arbitrary data
+    types.
+
+    .. warning::
+        Ensure ``removal`` date with a ``fail_on_pvlib_version`` decorator in
+        the test suite.
+
+    .. note::
+        This works for any object that implements a ``__getitem__`` method,
+        such as dictionaries, DataFrames, and other collections.
+
+    Parameters
+    ----------
+    since : str
+        The release at which this API became deprecated.
+    old_to_new_keys_map : dict
+        A dictionary mapping old keys to new keys.
+    removal : str, optional
+        The expected removal version, in order to compose the Warning message.
+
+    Returns
+    -------
+    object
+        A new object that behaves like the original, but raises a warning
+        when accessing deprecated keys and returns the value of the new key.
+
+    Examples
+    --------
+    >>> dict_obj = {"new_key": "renamed_value", "another_key": "another_value"}
+    >>> dict_obj = renamed_key_items_warning(
+    ...     "1.4.0", {"old_key": "new_key"}
+    ... )(dict_obj)
+    >>> dict_obj["old_key"]
+    pvlibDeprecationWarning: Please use `new_key` instead of `old_key`. \
+    Deprecated since 1.4.0 and will be removed soon.
+    'renamed_value'
+    >>> isinstance(d, dict)
+    True
+    >>> type(dict_obj)
+    <class 'pvlib._deprecation.DeprecatedKeyItems'>
+
+    >>> dict_obj = {"new_key": "renamed_value", "new_key2": "another_value"}
+    >>> dict_obj = renamed_key_items_warning(
+    ...     "1.4.0", {"old_key": "new_key", "old_key2": "new_key2"}, "1.6.0"
+    ... )(dict_obj)
+    >>> dict_obj["old_key2"]
+    pvlibDeprecationWarning: Please use `new_key2` instead of `old_key2`. \
+    Deprecated since 1.4.0 and will be removed in 1.6.0.
+    'another_value'
+
+    You can even chain the decorator to rename multiple keys at once:
+
+    >>> dict_obj = {"new_key1": "value1", "new_key2": "value2"}
+    >>> dict_obj = renamed_key_items_warning(
+    ...     "0.1.0", {"old_key1": "new_key1"}, "0.2.0"
+    ... )(dict_obj)
+    >>> dict_obj = renamed_key_items_warning(
+    ...     "0.3.0", {"old_key2": "new_key2"}, "0.4.0"
+    ... )(dict_obj)
+    >>> dict_obj["old_key1"]
+    pvlibDeprecationWarning: Please use `new_key1` instead of `old_key1`. \
+    Deprecated since 0.1.0 and will be removed in 0.4.0.
+    'value1'
+    >>> dict_obj["old_key2"]
+    pvlibDeprecationWarning: Please use `new_key2` instead of `old_key2`. \
+    Deprecated since 0.3.0 and will be removed in 0.4.0.
+    'value2'
+
+    Reusing the object wrapper factory:
+
+    >>> dict_obj1 = {"new_key": "renamed_value", "another_key": "another_value"}
+    >>> dict_obj2 = {"new_key": "just_another", "yet_another_key": "yet_another_value"}
+    >>> wrapper_renames_old_key_to_new_key = renamed_key_items_warning("1.4.0", {"old_key": "new_key"}, "2.0.0")
+    >>> new_dict_obj1 = wrapper_renames_old_key_to_new_key(dict_obj1)
+    >>> new_dict_obj2 = wrapper_renames_old_key_to_new_key(dict_obj2)
+    >>> new_dict_obj1["old_key"]
+    <stdin>:1: pvlibDeprecationWarning: Please use `new_key` instead of `old_key`. Deprecated since 1.4.0 and will be removed in 2.0.0.
+    'renamed_value'
+    >>> new_dict_obj2["old_key"]
+    <stdin>:1: pvlibDeprecationWarning: Please use `new_key` instead of `old_key`. Deprecated since 1.4.0 and will be removed in 2.0.0.
+    'just_another'
+
+    Notes
+    -----
+    This decorator does not modify the way you access methods on the original
+    type. For example, dictionaries can only be accessed with bracketed
+    indexes, ``dictionary["key"]``. After decoration, ``"old_key"`` can only
+    be used as follows: ``dictionary["old_key"]``. Both ``dictionary.key`` and
+    ``dictionary.old_key`` won't become available after wrapping.
+
+    >>> from pvlib._deprecation import renamed_key_items_warning
+    >>> dict_base = {"a": [1]}
+    >>> dict_depre = renamed_key_items_warning("0.0.1", {"b": "a"})(dict_base)
+    >>> dict_depre["a"]
+    [1]
+    >>> dict_depre["b"]
+    <stdin>:1: pvlibDeprecationWarning: Please use `a` instead of `b`. \
+    Deprecated since 0.0.1 and will be removed soon.
+    [1]
+    >>> dict_depre.a
+    Traceback (most recent call last):
+      File "<stdin>", line 1, in <module>
+    AttributeError: 'DeprecatedKeyItems' object has no attribute 'a'
+    >>> dict_depre.b
+    Traceback (most recent call last):
+      File "<stdin>", line 1, in <module>
+    AttributeError: 'DeprecatedKeyItems' object has no attribute 'b'
+
+    On the other hand, ``pandas.DataFrame`` and other types may also expose
+    indexes as attributes on the object instance. In a ``DataFrame`` you can
+    either use ``df.a`` or ``df["a"]``. An old key ``b`` that maps to ``a``
+    through the decorator, can either be accessed with ``df.b`` or ``df["b"]``.
+
+    >>> from pvlib._deprecation import renamed_key_items_warning
+    >>> import pandas as pd
+    >>> df_base = pd.DataFrame({"a": [1]})
+    >>> df_base.a
+    0    1
+    Name: a, dtype: int64
+    >>> df_depre = renamed_key_items_warning("0.0.1", {"b": "a"})(df_base)
+    >>> df_depre.a
+    0    1
+    Name: a, dtype: int64
+    >>> df_depre.b
+    Traceback (most recent call last):
+      File "<stdin>", line 1, in <module>
+      File "...", line 6299, in __getattr__
+        return object.__getattribute__(self, name)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    AttributeError: 'DeprecatedKeyItems' object has no attribute 'b'
+
+    References
+    ----------
+    .. [1] `Python docs on __getitem__
+       <https://docs.python.org/3/reference/datamodel.html#object.__getitem__>`_
+    .. [2] `StackOverflow thread on deprecating dict keys
+       <https://stackoverflow.com/questions/54095279/how-to-make-a-dict-key-deprecated>`_
+    """  # noqa: E501
+
+    def deprecated(obj, old_to_new_keys_map=old_to_new_keys_map, since=since):
+        obj_type = type(obj)
+
+        class DeprecatedKeyItems(obj_type):
+            """Handles deprecated key-indexed elements in a collection."""
+
+            def __getitem__(self, old_key):
+                if old_key in old_to_new_keys_map:
+                    new_key = old_to_new_keys_map[old_key]
+                    msg = (
+                        f"Please use `{new_key}` instead of `{old_key}`. "
+                        f"Deprecated since {since} and will be removed "
+                        + (f"in {removal}." if removal else "soon.")
+                    )
+                    with warnings.catch_warnings():
+                        # by default, only first ocurrence is shown
+                        # remove limitation to show on multiple uses
+                        warnings.simplefilter("always")
+                        warnings.warn(
+                            msg, category=_projectWarning, stacklevel=2
+                        )
+                    old_key = new_key
+                return super().__getitem__(old_key)
+
+        wrapped_obj = DeprecatedKeyItems(obj)
+
+        wrapped_obj.__class__ = type(
+            wrapped_obj.__class__.__name__,
+            (DeprecatedKeyItems, obj.__class__),
+            {},
+        )
+
+        return wrapped_obj
+
+    return deprecated

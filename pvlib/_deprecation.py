@@ -562,7 +562,7 @@ def renamed_key_items_warning(since, old_to_new_keys_map, removal=""):
                 if old_key in old_to_new_keys_map:
                     new_key = old_to_new_keys_map[old_key]
                     msg = (
-                        f"Please use `{new_key}` instead of `{old_key}`. "
+                        f"Please use '{new_key}' instead of '{old_key}'. "
                         f"Deprecated since {since} and will be removed "
                         + (f"in {removal}." if removal else "soon.")
                     )

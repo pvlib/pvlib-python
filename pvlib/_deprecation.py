@@ -169,14 +169,15 @@ def warn_deprecated(
         obj_type='attribute', addendum='', removal=''):
     """
     Used to display deprecation in a standard way.
+
     Parameters
     ----------
     since : str
         The release at which this API became deprecated.
     message : str, optional
         Override the default deprecation message.  The format
-        specifier `%(name)s` may be used for the name of the function,
-        and `%(alternative)s` may be used in the deprecation message
+        specifier ``%(name)s`` may be used for the name of the function,
+        and ``%(alternative)s`` may be used in the deprecation message
         to insert the name of an alternative to the deprecated
         function.  `%(obj_type)s` may be used to insert a friendly name
         for the type of object being deprecated.
@@ -198,12 +199,14 @@ def warn_deprecated(
         The object type being deprecated.
     addendum : str, optional
         Additional text appended directly to the final message.
+
     Examples
     --------
-        Basic example::
-            # To warn of the deprecation of "matplotlib.name_of_module"
-            warn_deprecated('1.4.0', name='matplotlib.name_of_module',
-                            obj_type='module')
+    Basic example:
+
+    >>> # To warn of the deprecation of "pvlib.name_of_module"
+    >>> warn_deprecated('1.4.0', name='pvlib.name_of_module',
+    >>>                 obj_type='module')
     """
     message = '\n' + _generate_deprecation_message(
         since, message, name, alternative, pending, obj_type, addendum,
@@ -217,6 +220,7 @@ def deprecated(since, message='', name='', alternative='', pending=False,
                addendum='', removal=''):
     """
     Decorator to mark a function or a class as deprecated.
+
     Parameters
     ----------
     since : str
@@ -224,8 +228,8 @@ def deprecated(since, message='', name='', alternative='', pending=False,
         required.
     message : str, optional
         Override the default deprecation message.  The format
-        specifier `%(name)s` may be used for the name of the object,
-        and `%(alternative)s` may be used in the deprecation message
+        specifier ``%(name)s`` may be used for the name of the object,
+        and ``%(alternative)s`` may be used in the deprecation message
         to insert the name of an alternative to the deprecated
         object.
     name : str, optional
@@ -234,9 +238,11 @@ def deprecated(since, message='', name='', alternative='', pending=False,
         though this is useful in the case of renamed functions, where
         the new function is just assigned to the name of the
         deprecated function.  For example::
+
             def new_function():
                 ...
             oldFunction = new_function
+
     alternative : str, optional
         An alternative API that the user may use in place of the deprecated
         API.  The deprecation warning will tell the user about this alternative
@@ -251,12 +257,14 @@ def deprecated(since, message='', name='', alternative='', pending=False,
         with *pending*.
     addendum : str, optional
         Additional text appended directly to the final message.
+
     Examples
     --------
-        Basic example::
-            @deprecated('1.4.0')
-            def the_function_to_deprecate():
-                pass
+    Basic example:
+
+    >>> @deprecated('1.4.0')
+    >>> def the_function_to_deprecate():
+    >>>     pass
     """
 
     def deprecate(obj, message=message, name=name, alternative=alternative,
@@ -335,7 +343,7 @@ def renamed_kwarg_warning(since, old_param_name, new_param_name, removal=""):
 
     .. note::
         Documentation for the function may updated to reflect the new parameter
-        name; it is suggested to add a |.. versionchanged::| directive.
+        name; it is suggested to add a ``.. versionchanged::`` directive.
 
     Parameters
     ----------

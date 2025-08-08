@@ -446,7 +446,7 @@ def renamed_key_items_warning(since, old_to_new_keys_map, removal=""):
     ...     "1.4.0", {"old_key": "new_key"}
     ... )(dict_obj)
     >>> dict_obj["old_key"]
-    pvlibDeprecationWarning: Please use `new_key` instead of `old_key`. \
+    pvlibDeprecationWarning: Please use 'new_key' instead of 'old_key'. \
     Deprecated since 1.4.0 and will be removed soon.
     'renamed_value'
     >>> isinstance(d, dict)
@@ -459,7 +459,7 @@ def renamed_key_items_warning(since, old_to_new_keys_map, removal=""):
     ...     "1.4.0", {"old_key": "new_key", "old_key2": "new_key2"}, "1.6.0"
     ... )(dict_obj)
     >>> dict_obj["old_key2"]
-    pvlibDeprecationWarning: Please use `new_key2` instead of `old_key2`. \
+    pvlibDeprecationWarning: Please use 'new_key2' instead of 'old_key2'. \
     Deprecated since 1.4.0 and will be removed in 1.6.0.
     'another_value'
 
@@ -473,11 +473,11 @@ def renamed_key_items_warning(since, old_to_new_keys_map, removal=""):
     ...     "0.3.0", {"old_key2": "new_key2"}, "0.4.0"
     ... )(dict_obj)
     >>> dict_obj["old_key1"]
-    pvlibDeprecationWarning: Please use `new_key1` instead of `old_key1`. \
-    Deprecated since 0.1.0 and will be removed in 0.4.0.
+    pvlibDeprecationWarning: Please use 'new_key1' instead of 'old_key1'. \
+    Deprecated since 0.1.0 and will be removed in 0.2.0.
     'value1'
     >>> dict_obj["old_key2"]
-    pvlibDeprecationWarning: Please use `new_key2` instead of `old_key2`. \
+    pvlibDeprecationWarning: Please use 'new_key2' instead of 'old_key2'. \
     Deprecated since 0.3.0 and will be removed in 0.4.0.
     'value2'
 
@@ -489,10 +489,10 @@ def renamed_key_items_warning(since, old_to_new_keys_map, removal=""):
     >>> new_dict_obj1 = wrapper_renames_old_key_to_new_key(dict_obj1)
     >>> new_dict_obj2 = wrapper_renames_old_key_to_new_key(dict_obj2)
     >>> new_dict_obj1["old_key"]
-    <stdin>:1: pvlibDeprecationWarning: Please use `new_key` instead of `old_key`. Deprecated since 1.4.0 and will be removed in 2.0.0.
+    <stdin>:1: pvlibDeprecationWarning: Please use 'new_key' instead of 'old_key'. Deprecated since 1.4.0 and will be removed in 2.0.0.
     'renamed_value'
     >>> new_dict_obj2["old_key"]
-    <stdin>:1: pvlibDeprecationWarning: Please use `new_key` instead of `old_key`. Deprecated since 1.4.0 and will be removed in 2.0.0.
+    <stdin>:1: pvlibDeprecationWarning: Please use 'new_key' instead of 'old_key'. Deprecated since 1.4.0 and will be removed in 2.0.0.
     'just_another'
 
     Notes
@@ -509,7 +509,7 @@ def renamed_key_items_warning(since, old_to_new_keys_map, removal=""):
     >>> dict_depre["a"]
     [1]
     >>> dict_depre["b"]
-    <stdin>:1: pvlibDeprecationWarning: Please use `a` instead of `b`. \
+    <stdin>:1: pvlibDeprecationWarning: Please use 'a' instead of 'b'. \
     Deprecated since 0.0.1 and will be removed soon.
     [1]
     >>> dict_depre.a

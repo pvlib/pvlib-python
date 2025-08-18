@@ -456,9 +456,7 @@ def julian_ephemeris_millennium(julian_ephemeris_century):
 @jcompile(nopython=True)
 def sum_mult_cos_add_mult(arr, x):
     # shared calculation used for heliocentric longitude, latitude, and radius
-    s = 0.
-    for row in range(arr.shape[0]):
-        s += arr[row, 0] * np.cos(arr[row, 1] + arr[row, 2] * x)
+    s = (arr[:, [0]] * np.cos(arr[:, [1]] + arr[:, [2]] * np.expand_dims(x, axis=0))).sum(axis=0)
     return s
 
 @jcompile('float64(float64)', nopython=True)
@@ -559,22 +557,20 @@ def moon_ascending_longitude(julian_ephemeris_century):
     nopython=True)
 def longitude_obliquity_nutation(julian_ephemeris_century, x0, x1, x2, x3, x4,
                                  out):
-    delta_psi_sum = 0.0
-    delta_eps_sum = 0.0
-    for row in range(NUTATION_YTERM_ARRAY.shape[0]):
-        a = NUTATION_ABCD_ARRAY[row, 0]
-        b = NUTATION_ABCD_ARRAY[row, 1]
-        c = NUTATION_ABCD_ARRAY[row, 2]
-        d = NUTATION_ABCD_ARRAY[row, 3]
-        arg = np.radians(
-            NUTATION_YTERM_ARRAY[row, 0]*x0 +
-            NUTATION_YTERM_ARRAY[row, 1]*x1 +
-            NUTATION_YTERM_ARRAY[row, 2]*x2 +
-            NUTATION_YTERM_ARRAY[row, 3]*x3 +
-            NUTATION_YTERM_ARRAY[row, 4]*x4
-        )
-        delta_psi_sum += (a + b * julian_ephemeris_century) * np.sin(arg)
-        delta_eps_sum += (c + d * julian_ephemeris_century) * np.cos(arg)
+    a = NUTATION_ABCD_ARRAY[:, [0]]
+    b = NUTATION_ABCD_ARRAY[:, [1]]
+    c = NUTATION_ABCD_ARRAY[:, [2]]
+    d = NUTATION_ABCD_ARRAY[:, [3]]
+    arg = np.radians(
+        NUTATION_YTERM_ARRAY[:, [0]]*np.expand_dims(x0, axis=0) +
+        NUTATION_YTERM_ARRAY[:, [1]]*np.expand_dims(x1, axis=0) +
+        NUTATION_YTERM_ARRAY[:, [2]]*np.expand_dims(x2, axis=0) +
+        NUTATION_YTERM_ARRAY[:, [3]]*np.expand_dims(x3, axis=0) +
+        NUTATION_YTERM_ARRAY[:, [4]]*np.expand_dims(x4, axis=0)
+    )
+
+    delta_psi_sum = ((a + b * julian_ephemeris_century) * np.sin(arg)).sum(axis=0)
+    delta_eps_sum = ((c + d * julian_ephemeris_century) * np.cos(arg)).sum(axis=0)
     delta_psi = delta_psi_sum*1.0/36000000
     delta_eps = delta_eps_sum*1.0/36000000
     # seems like we ought to be able to return a tuple here instead

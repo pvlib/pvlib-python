@@ -461,8 +461,11 @@ def sum_mult_cos_add_mult(arr, x):
         for row in range(arr.shape[0]):
             s += arr[row, 0] * np.cos(arr[row, 1] + arr[row, 2] * x)
     else:
-        s = (arr[:, [0]] * np.cos(arr[:, [1]] + arr[:, [2]] * np.expand_dims(x, axis=0))).sum(axis=0)
+        s = (arr[:, [0]] * np.cos(
+            arr[:, [1]] + arr[:, [2]] * np.expand_dims(x, axis=0)
+        )).sum(axis=0)
     return s
+
 
 @jcompile('float64(float64)', nopython=True)
 def heliocentric_longitude(jme):
@@ -562,7 +565,6 @@ def moon_ascending_longitude(julian_ephemeris_century):
     nopython=True)
 def longitude_obliquity_nutation(julian_ephemeris_century, x0, x1, x2, x3, x4,
                                  out):
-    
     if USE_NUMBA:
         delta_psi_sum = 0.0
         delta_eps_sum = 0.0
@@ -594,9 +596,13 @@ def longitude_obliquity_nutation(julian_ephemeris_century, x0, x1, x2, x3, x4,
             NUTATION_YTERM_ARRAY[:, [4]]*np.expand_dims(x4, axis=0)
         )
 
-        delta_psi_sum = ((a + b * julian_ephemeris_century) * np.sin(arg)).sum(axis=0)
-        delta_eps_sum = ((c + d * julian_ephemeris_century) * np.cos(arg)).sum(axis=0)
-    
+        delta_psi_sum = (
+            (a + b * julian_ephemeris_century) * np.sin(arg)
+        ).sum(axis=0)
+        delta_eps_sum = (
+            (c + d * julian_ephemeris_century) * np.cos(arg)
+        ).sum(axis=0)
+
     delta_psi = delta_psi_sum*1.0/36000000
     delta_eps = delta_eps_sum*1.0/36000000
     # seems like we ought to be able to return a tuple here instead

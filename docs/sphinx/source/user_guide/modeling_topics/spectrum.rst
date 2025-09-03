@@ -33,15 +33,13 @@ mismatch models using pvlib-python are also available:
 latter of which also contains downloadable spectral response and spectral
 irradiance data.
 
-On this page, a comparison of spectral mismatch estimation models available in
-pvlib-python is presented. An extended review of a wider range of models
-available in the published literature may be found in Reference [2]_.
-
 The table below summarizes the models currently available in pvlib, their
 required inputs, cell technologies for which model coefficients have been
 published, and references. Note that while most models are validated for
 specific cell technologies, the Sandia Array Performance Model (SAPM) is
-validated for a range of commercial modules.
+validated for a range of commercial modules. An extended review of a
+wider range of models available in the published literature may be found in
+Reference [2]_.
 
 
 +-----------------------------------------------------+-----------------------------+---------+---------+------+------+------+------------+-----------+

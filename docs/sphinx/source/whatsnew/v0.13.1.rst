@@ -29,9 +29,10 @@ Documentation
 ~~~~~~~~~~~~~
 * Substantiate definitions of solar/surface azimuth/zenith and aoi on the
   :ref:`nomenclature` page. (:issue:`2448`, :pull:`2503`)
-* Add a new :ref:`modeling_topics` reference page for the spectrum, documenting 
-  pvlib-python's spectrum functionality, which icnludes a comparison table of spectral
-  mismatch estimation models. (:issue:`2329`, :pull:`2353`)
+* Add a new reference page for the spectrum (:ref:`_spectrum_user_guide`) to the
+  Modeling Topics section of the user guide, documenting pvlib-python's spectrum
+  functionality, which includes a comparison table of spectral mismatch estimation
+  models. (:issue:`2329`, :pull:`2353`)
 
 
 Testing

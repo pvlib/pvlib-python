@@ -22,7 +22,8 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
-        python-version: 3.9
+        # Python version should be the minimum supported version
+        python-version: "3.9"
 
     - name: Install build tools
       run: |

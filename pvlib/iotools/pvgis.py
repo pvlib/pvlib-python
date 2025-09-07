@@ -21,7 +21,7 @@ import requests
 import numpy as np
 import pandas as pd
 import pytz
-from pvlib.iotools import read_epw, parse_epw
+from pvlib.iotools import read_epw
 
 URL = 'https://re.jrc.ec.europa.eu/api/'
 
@@ -56,6 +56,12 @@ def get_pvgis_hourly(latitude, longitude, start=None, end=None,
     """Get hourly solar irradiation and modeled PV power output from PVGIS.
 
     PVGIS data is freely available at [1]_.
+
+        .. versionchanged:: 0.13.0
+           The function now returns two items ``(data,meta)``. Previous
+           versions of this function returned three elements
+           ``(data,inputs,meta)``. The ``inputs`` dictionary is now included in
+           ``meta``, which has changed structure to accommodate it.
 
     Parameters
     ----------
@@ -130,8 +136,6 @@ def get_pvgis_hourly(latitude, longitude, start=None, end=None,
     -------
     data : pandas.DataFrame
         Time-series of hourly data, see Notes for fields
-    inputs : dict
-        Dictionary of the request input parameters
     metadata : dict
         Dictionary containing metadata
 
@@ -189,7 +193,7 @@ def get_pvgis_hourly(latitude, longitude, start=None, end=None,
     Examples
     --------
     >>> # Retrieve two years of irradiance data from PVGIS:
-    >>> data, meta, inputs = pvlib.iotools.get_pvgis_hourly(  # doctest: +SKIP
+    >>> data, meta = pvlib.iotools.get_pvgis_hourly(  # doctest: +SKIP
     >>>    latitude=45, longitude=8, start=2015, end=2016)  # doctest: +SKIP
 
     References
@@ -198,7 +202,7 @@ def get_pvgis_hourly(latitude, longitude, start=None, end=None,
     .. [2] `PVGIS Hourly Radiation
        <https://ec.europa.eu/jrc/en/PVGIS/tools/hourly-radiation>`_
     .. [3] `PVGIS Non-interactive service
-       <https://ec.europa.eu/jrc/en/PVGIS/docs/noninteractive>`_
+       <https://joint-research-centre.ec.europa.eu/photovoltaic-geographical-information-system-pvgis/getting-started-pvgis/api-non-interactive-service_en>`_
     .. [4] `PVGIS horizon profile tool
        <https://ec.europa.eu/jrc/en/PVGIS/tools/horizon>`_
     """  # noqa: E501
@@ -241,28 +245,33 @@ def get_pvgis_hourly(latitude, longitude, start=None, end=None,
 
 
 def _parse_pvgis_hourly_json(src, map_variables):
-    inputs = src['inputs']
-    metadata = src['meta']
+    metadata = src['meta'].copy()
+    # Override the "inputs" in metadata
+    metadata['inputs'] = src['inputs']
+    # Re-add the inputs in metadata one-layer down
+    metadata['inputs']['descriptions'] = src['meta']['inputs']
     data = pd.DataFrame(src['outputs']['hourly'])
     data.index = pd.to_datetime(data['time'], format='%Y%m%d:%H%M', utc=True)
     data = data.drop('time', axis=1)
     data = data.astype(dtype={'Int': 'int'})  # The 'Int' column to be integer
     if map_variables:
         data = data.rename(columns=VARIABLE_MAP)
-    return data, inputs, metadata
+    return data, metadata
 
 
 def _parse_pvgis_hourly_csv(src, map_variables):
     # The first 4 rows are latitude, longitude, elevation, radiation database
-    inputs = {}
+    metadata = {'inputs': {}, 'descriptions': {}}
+    # 'location' metadata
     # 'Latitude (decimal degrees): 45.000\r\n'
-    inputs['latitude'] = float(src.readline().split(':')[1])
+    metadata['inputs']['latitude'] = float(src.readline().split(':')[1])
     # 'Longitude (decimal degrees): 8.000\r\n'
-    inputs['longitude'] = float(src.readline().split(':')[1])
+    metadata['inputs']['longitude'] = float(src.readline().split(':')[1])
     # Elevation (m): 1389.0\r\n
-    inputs['elevation'] = float(src.readline().split(':')[1])
+    metadata['inputs']['elevation'] = float(src.readline().split(':')[1])
     # 'Radiation database: \tPVGIS-SARAH\r\n'
-    inputs['radiation_database'] = src.readline().split(':')[1].strip()
+    metadata['inputs']['radiation_database'] = \
+        src.readline().split(':')[1].strip()
     # Parse through the remaining metadata section (the number of lines for
     # this section depends on the requested parameters)
     while True:
@@ -273,7 +282,7 @@ def _parse_pvgis_hourly_csv(src, map_variables):
             break
         # Only retrieve metadata from non-empty lines
         elif line.strip() != '':
-            inputs[line.split(':')[0]] = line.split(':')[1].strip()
+            metadata['inputs'][line.split(':')[0]] = line.split(':')[1].strip()
         elif line == '':  # If end of file is reached
             raise ValueError('No data section was detected. File has probably '
                              'been modified since being downloaded from PVGIS')
@@ -295,15 +304,22 @@ def _parse_pvgis_hourly_csv(src, map_variables):
     # integer. It is necessary to convert to float, before converting to int
     data = data.astype(float).astype(dtype={'Int': 'int'})
     # Generate metadata dictionary containing description of parameters
-    metadata = {}
+    metadata['descriptions'] = {}
     for line in src.readlines():
         if ':' in line:
-            metadata[line.split(':')[0]] = line.split(':')[1].strip()
-    return data, inputs, metadata
+            metadata['descriptions'][line.split(':')[0]] = \
+                line.split(':')[1].strip()
+    return data, metadata
 
 
 def read_pvgis_hourly(filename, pvgis_format=None, map_variables=True):
     """Read a PVGIS hourly file.
+
+        .. versionchanged:: 0.13.0
+           The function now returns two items ``(data,meta)``. Previous
+           versions of this function returned three elements
+           ``(data,inputs,meta)``. The ``inputs`` dictionary is now included in
+           ``meta``, which has changed structure to accommodate it.
 
     Parameters
     ----------
@@ -323,8 +339,6 @@ def read_pvgis_hourly(filename, pvgis_format=None, map_variables=True):
     -------
     data : pandas.DataFrame
         the time series data
-    inputs : dict
-        the inputs
     metadata : dict
         metadata
 
@@ -373,7 +387,7 @@ def read_pvgis_hourly(filename, pvgis_format=None, map_variables=True):
         return _parse_pvgis_hourly_json(src, map_variables=map_variables)
 
     # CSV: use _parse_pvgis_hourly_csv()
-    if outputformat == 'csv':
+    elif outputformat == 'csv':
         try:
             pvgis_data = _parse_pvgis_hourly_csv(
                 filename, map_variables=map_variables)
@@ -383,11 +397,12 @@ def read_pvgis_hourly(filename, pvgis_format=None, map_variables=True):
                     fbuf, map_variables=map_variables)
         return pvgis_data
 
-    # raise exception if pvgis format isn't in ['csv', 'json']
-    err_msg = (
-        "pvgis format '{:s}' was unknown, must be either 'json' or 'csv'")\
-        .format(outputformat)
-    raise ValueError(err_msg)
+    else:
+        # raise exception if pvgis format isn't in ['csv', 'json']
+        err_msg = (
+            "pvgis format '{:s}' was unknown, must be either 'json' or 'csv'")\
+            .format(outputformat)
+        raise ValueError(err_msg)
 
 
 def _coerce_and_roll_tmy(tmy_data, tz, year):
@@ -410,17 +425,27 @@ def _coerce_and_roll_tmy(tmy_data, tz, year):
         np.roll(tmy_data, tz, axis=0),
         columns=tmy_data.columns,
         index=new_index)
+    # GH 2399
+    new_tmy_data = \
+        new_tmy_data.astype(dtype=dict(zip(tmy_data.columns, tmy_data.dtypes)))
     return new_tmy_data
 
 
 def get_pvgis_tmy(latitude, longitude, outputformat='json', usehorizon=True,
                   userhorizon=None, startyear=None, endyear=None,
                   map_variables=True, url=URL, timeout=30,
-                  roll_utc_offset=None, coerce_year=None):
+                  roll_utc_offset=None, coerce_year=1990):
     """
     Get TMY data from PVGIS.
 
     For more information see the PVGIS [1]_ TMY tool documentation [2]_.
+
+        .. versionchanged:: 0.13.0
+           The function now returns two items ``(data,meta)``. Previous
+           versions of this function returned four elements
+           ``(data,months_selected,inputs,meta)``. The ``inputs`` dictionary
+           and ``months_selected`` are  now included in ``meta``, which has
+           changed structure to accommodate it.
 
     Parameters
     ----------
@@ -429,7 +454,7 @@ def get_pvgis_tmy(latitude, longitude, outputformat='json', usehorizon=True,
     longitude : float
         Longitude in degrees east
     outputformat : str, default 'json'
-        Must be in ``['csv', 'basic', 'epw', 'json']``. See PVGIS TMY tool
+        Must be in ``['csv', 'epw', 'json']``. See PVGIS TMY tool
         documentation [2]_ for more info.
     usehorizon : bool, default True
         include effects of horizon
@@ -452,20 +477,18 @@ def get_pvgis_tmy(latitude, longitude, outputformat='json', usehorizon=True,
         Use to specify a time zone other than the default UTC zero and roll
         dataframe by ``roll_utc_offset`` so it starts at midnight on January
         1st. Ignored if ``None``, otherwise will force year to ``coerce_year``.
-    coerce_year: int, optional
-        Use to force indices to desired year. Will default to 1990 if
-        ``coerce_year`` is not specified, but ``roll_utc_offset`` is specified.
+    coerce_year: int, default 1990
+        Use to force indices to desired year. Defaults to 1990. Specify
+        ``None`` to return the actual indices used for the TMY. If
+        ``coerce_year`` is ``None``, but ``roll_utc_offset`` is specified,
+        then ``coerce_year`` will be set to the default.
 
     Returns
     -------
     data : pandas.DataFrame
         the weather data
-    months_selected : list
-        TMY year for each month, ``None`` for basic and EPW
-    inputs : dict
-        the inputs, ``None`` for basic and EPW
     metadata : list or dict
-        file metadata, ``None`` for basic
+        file metadata
 
     Raises
     ------
@@ -509,24 +532,20 @@ def get_pvgis_tmy(latitude, longitude, outputformat='json', usehorizon=True,
         else:
             raise requests.HTTPError(err_msg['message'])
     # initialize data to None in case API fails to respond to bad outputformat
-    data = None, None, None, None
+    data = None, None
     if outputformat == 'json':
         src = res.json()
-        data, months_selected, inputs, meta = _parse_pvgis_tmy_json(src)
+        data, meta = _parse_pvgis_tmy_json(src)
     elif outputformat == 'csv':
         with io.BytesIO(res.content) as src:
-            data, months_selected, inputs, meta = _parse_pvgis_tmy_csv(src)
-    elif outputformat == 'basic':
-        with io.BytesIO(res.content) as src:
-            data, months_selected, inputs, meta = _parse_pvgis_tmy_basic(src)
+            data, meta = _parse_pvgis_tmy_csv(src)
     elif outputformat == 'epw':
         with io.StringIO(res.content.decode('utf-8')) as src:
-            data, meta = parse_epw(src)
-            months_selected, inputs = None, None
-    else:
-        # this line is never reached because if outputformat is not valid then
-        # the response is HTTP/1.1 400 BAD REQUEST which is handled earlier
-        pass
+            data, meta = read_epw(src)
+    elif outputformat == 'basic':
+        err_msg = ("outputformat='basic' is no longer supported by pvlib, "
+                   "please use outputformat='csv' instead.")
+        raise ValueError(err_msg)
 
     if map_variables:
         data = data.rename(columns=VARIABLE_MAP)
@@ -536,36 +555,48 @@ def get_pvgis_tmy(latitude, longitude, outputformat='json', usehorizon=True,
         coerce_year = coerce_year or 1990
         data = _coerce_and_roll_tmy(data, roll_utc_offset, coerce_year)
 
-    return data, months_selected, inputs, meta
+    return data, meta
 
 
 def _parse_pvgis_tmy_json(src):
-    inputs = src['inputs']
-    meta = src['meta']
-    months_selected = src['outputs']['months_selected']
+    meta = src['meta'].copy()
+    # Override the "inputs" in metadata
+    meta['inputs'] = src['inputs']
+    # Re-add the inputs in metadata one-layer down
+    meta['inputs']['descriptions'] = src['meta']['inputs']
+    meta['months_selected'] = src['outputs']['months_selected']
     data = pd.DataFrame(src['outputs']['tmy_hourly'])
     data.index = pd.to_datetime(
         data['time(UTC)'], format='%Y%m%d:%H%M', utc=True)
     data = data.drop('time(UTC)', axis=1)
-    return data, months_selected, inputs, meta
+    return data, meta
 
 
 def _parse_pvgis_tmy_csv(src):
     # the first 3 rows are latitude, longitude, elevation
-    inputs = {}
+    meta = {'inputs': {}, 'descriptions': {}}
     # 'Latitude (decimal degrees): 45.000\r\n'
-    inputs['latitude'] = float(src.readline().split(b':')[1])
+    meta['inputs']['latitude'] = float(src.readline().split(b':')[1])
     # 'Longitude (decimal degrees): 8.000\r\n'
-    inputs['longitude'] = float(src.readline().split(b':')[1])
+    meta['inputs']['longitude'] = float(src.readline().split(b':')[1])
     # Elevation (m): 1389.0\r\n
-    inputs['elevation'] = float(src.readline().split(b':')[1])
+    meta['inputs']['elevation'] = float(src.readline().split(b':')[1])
+
+    # TMY has an extra line here: Irradiance Time Offset (h): 0.1761\r\n
+    line = src.readline()
+    if line.startswith(b'Irradiance Time Offset'):
+        meta['inputs']['irradiance time offset'] = float(line.split(b':')[1])
+        src.readline()  # skip over the "month,year\r\n"
+    else:
+        # `line` is already the "month,year\r\n" line, so nothing to do
+        pass
     # then there's a 13 row comma separated table with two columns: month, year
-    # which contains the year used for that month in the
-    src.readline()  # get "month,year\r\n"
+    # which contains the year used for that month in the TMY
     months_selected = []
     for month in range(12):
         months_selected.append(
             {'month': month+1, 'year': int(src.readline().split(b',')[1])})
+    meta['months_selected'] = months_selected
     # then there's the TMY (typical meteorological year) data
     # first there's a header row:
     #    time(UTC),T2m,RH,G(h),Gb(n),Gd(h),IR(h),WS10m,WD10m,SP
@@ -578,21 +609,25 @@ def _parse_pvgis_tmy_csv(src):
     data = pd.DataFrame(data, dtype=float)
     data.index = dtidx
     # finally there's some meta data
-    meta = [line.decode('utf-8').strip() for line in src.readlines()]
-    return data, months_selected, inputs, meta
-
-
-def _parse_pvgis_tmy_basic(src):
-    data = pd.read_csv(src)
-    data.index = pd.to_datetime(
-        data['time(UTC)'], format='%Y%m%d:%H%M', utc=True)
-    data = data.drop('time(UTC)', axis=1)
-    return data, None, None, None
+    meta['descriptions'] = {}
+    for line in src.readlines():
+        line = line.decode('utf-8').strip()
+        if ':' in line:
+            meta['descriptions'][line.split(':')[0]] = \
+                line.split(':')[1].strip()
+    return data, meta
 
 
 def read_pvgis_tmy(filename, pvgis_format=None, map_variables=True):
     """
-    Read a file downloaded from PVGIS.
+    Read a TMY file downloaded from PVGIS.
+
+        .. versionchanged:: 0.13.0
+           The function now returns two items ``(data,meta)``. Previous
+           versions of this function returned four elements
+           ``(data,months_selected,inputs,meta)``. The ``inputs`` dictionary
+           and ``months_selected`` are  now included in ``meta``, which has
+           changed structure to accommodate it.
 
     Parameters
     ----------
@@ -602,11 +637,9 @@ def read_pvgis_tmy(filename, pvgis_format=None, map_variables=True):
         Format of PVGIS file or buffer. Equivalent to the ``outputformat``
         parameter in the PVGIS TMY API. If ``filename`` is a file and
         ``pvgis_format`` is not specified then the file extension will be used
-        to determine the PVGIS format to parse. For PVGIS files from the API
-        with ``outputformat='basic'``, please set ``pvgis_format`` to
-        ``'basic'``.
+        to determine the PVGIS format to parse.
         If ``filename`` is a buffer, then ``pvgis_format`` is required and must
-        be in ``['csv', 'epw', 'json', 'basic']``.
+        be in ``['csv', 'epw', 'json']``.
     map_variables: bool, default True
         When true, renames columns of the Dataframe to pvlib variable names
         where applicable. See variable :const:`VARIABLE_MAP`.
@@ -616,19 +649,15 @@ def read_pvgis_tmy(filename, pvgis_format=None, map_variables=True):
     -------
     data : pandas.DataFrame
         the weather data
-    months_selected : list
-        TMY year for each month, ``None`` for basic and EPW
-    inputs : dict
-        the inputs, ``None`` for basic and EPW
     metadata : list or dict
-        file metadata, ``None`` for basic
+        file metadata
 
     Raises
     ------
     ValueError
         if ``pvgis_format`` is not specified and the file extension is neither
         ``.csv``, ``.json``, nor ``.epw``, or if ``pvgis_format`` is provided
-        as input but isn't in ``['csv', 'epw', 'json', 'basic']``
+        as input but isn't in ``['csv', 'epw', 'json']``
     TypeError
         if ``pvgis_format`` is not specified and ``filename`` is a buffer
 
@@ -644,18 +673,13 @@ def read_pvgis_tmy(filename, pvgis_format=None, map_variables=True):
         outputformat = Path(filename).suffix[1:].lower()
     else:
         outputformat = pvgis_format
-    # parse the pvgis file based on the output format, either 'epw', 'json',
-    # 'csv', or 'basic'
+    # parse pvgis file based on outputformat, either 'epw', 'json', or 'csv'
 
     # EPW: use the EPW parser from the pvlib.iotools epw.py module
     if outputformat == 'epw':
-        try:
-            data, meta = parse_epw(filename)
-        except AttributeError:  # str/path has no .read() attribute
-            data, meta = read_epw(filename)
-        months_selected, inputs = None, None
+        data, meta = read_epw(filename)
 
-    # NOTE: json, csv, and basic output formats have parsers defined as private
+    # NOTE: json and csv output formats have parsers defined as private
     # functions in this module
 
     # JSON: use Python built-in json module to convert file contents to a
@@ -667,32 +691,31 @@ def read_pvgis_tmy(filename, pvgis_format=None, map_variables=True):
         except AttributeError:  # str/path has no .read() attribute
             with open(str(filename), 'r') as fbuf:
                 src = json.load(fbuf)
-        data, months_selected, inputs, meta = _parse_pvgis_tmy_json(src)
+        data, meta = _parse_pvgis_tmy_json(src)
 
-    # CSV or basic: use the correct parser from this module
-    # eg: _parse_pvgis_tmy_csv() or _parse_pvgist_tmy_basic()
-    elif outputformat in ['csv', 'basic']:
-        # get the correct parser function for this output format from globals()
-        pvgis_parser = globals()['_parse_pvgis_tmy_{:s}'.format(outputformat)]
-        # NOTE: pvgis_parse() is a pvgis parser function from this module,
-        # either _parse_pvgis_tmy_csv() or _parse_pvgist_tmy_basic()
+    elif outputformat == 'csv':
         try:
-            data, months_selected, inputs, meta = pvgis_parser(filename)
+            data, meta = _parse_pvgis_tmy_csv(filename)
         except AttributeError:  # str/path has no .read() attribute
             with open(str(filename), 'rb') as fbuf:
-                data, months_selected, inputs, meta = pvgis_parser(fbuf)
+                data, meta = _parse_pvgis_tmy_csv(fbuf)
+
+    elif outputformat == 'basic':
+        err_msg = "outputformat='basic' is no longer supported, please use " \
+            "outputformat='csv' instead."
+        raise ValueError(err_msg)
 
     else:
-        # raise exception if pvgis format isn't in ['csv','basic','epw','json']
+        # raise exception if pvgis format isn't in ['csv','epw','json']
         err_msg = (
-            "pvgis format '{:s}' was unknown, must be either 'epw', 'json', "
-            "'csv', or 'basic'").format(outputformat)
+            "pvgis format '{:s}' was unknown, must be either 'json', 'csv',"
+            "or 'epw'").format(outputformat)
         raise ValueError(err_msg)
 
     if map_variables:
         data = data.rename(columns=VARIABLE_MAP)
 
-    return data, months_selected, inputs, meta
+    return data, meta
 
 
 def get_pvgis_horizon(latitude, longitude, url=URL, **kwargs):
@@ -712,7 +735,7 @@ def get_pvgis_horizon(latitude, longitude, url=URL, **kwargs):
     Returns
     -------
     data : pd.Series
-        Pandas Series of the retrived horizon elevation angles. Index is the
+        Pandas Series of the retrieved horizon elevation angles. Index is the
         corresponding horizon azimuth angles.
     metadata : dict
         Metadata returned by PVGIS.

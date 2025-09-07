@@ -2,11 +2,13 @@
 Collection of functions used in pvlib_python
 """
 
+import contextlib
 import datetime as dt
+import warnings
+
 import numpy as np
 import pandas as pd
 import pytz
-import warnings
 
 
 def cosd(angle):
@@ -119,21 +121,21 @@ def atand(number):
 
 def localize_to_utc(time, location):
     """
-    Converts or localizes a time series to UTC.
+    Converts ``time`` to UTC, localizing if necessary using location.
 
     Parameters
     ----------
     time : datetime.datetime, pandas.DatetimeIndex,
            or pandas.Series/DataFrame with a DatetimeIndex.
-    location : pvlib.Location object
+    location : pvlib.Location object (unused if ``time`` is localized)
 
     Returns
     -------
-    pandas object localized to UTC.
+    datetime.datetime or pandas object localized to UTC.
     """
     if isinstance(time, dt.datetime):
         if time.tzinfo is None:
-            time = pytz.timezone(location.tz).localize(time)
+            time = location.pytz.localize(time)
         time_utc = time.astimezone(pytz.utc)
     else:
         try:
@@ -558,3 +560,29 @@ def normalize_max2one(a):
     except ValueError:  # fails for pandas objects
         res = a.div(a.abs().max(axis=0, skipna=True))
     return res
+
+
+def _file_context_manager(filename_or_object, mode='r'):
+    """
+    Open a filename/path for reading, or pass a file-like object
+    through unchanged.
+
+    Parameters
+    ----------
+    filename_or_object : str, path-like, or file-like object
+        The filename/path or object to convert to an object
+
+    Returns
+    -------
+    context : context manager
+        A file-like object to be used via python's "with [context] as buffer:"
+        syntax.
+    """
+
+    if hasattr(filename_or_object, "read"):
+        # already a file-like object
+        context = contextlib.nullcontext(filename_or_object)
+    else:
+        # otherwise, assume a filename or path
+        context = open(str(filename_or_object), mode=mode)
+    return context

@@ -104,7 +104,7 @@ API Changes with Deprecations
 * Changes related to spectral modifier (:issue:`782`):
    * Changes to functions
       - Added the argument `pw_min` and `pw_max`, default values 0.1 and 8 resp.,
-	to `atmosphere.first_solar_spectral_correction`. This function now returns NaN
+	to :py:func:`!pvlib.atmosphere.first_solar_spectral_correction`. This function now returns NaN
 	if pw value higher than `pw_max`.
 * The `times` keyword argument has been deprecated in the
   :py:meth:`pvlib.modelchain.ModelChain.run_model`,

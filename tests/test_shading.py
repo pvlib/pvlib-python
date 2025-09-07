@@ -9,7 +9,7 @@ from datetime import timezone, timedelta
 from pvlib import shading
 from pvlib.tools import atand
 
-from pvlib.tests.conftest import fail_on_pvlib_version
+from .conftest import fail_on_pvlib_version
 from pvlib._deprecation import pvlibDeprecationWarning
 
 

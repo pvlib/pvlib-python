@@ -9,7 +9,7 @@ from pvlib import shading
 def singleaxis(apparent_zenith, apparent_azimuth,
                axis_tilt=0, axis_azimuth=0, max_angle=90,
                backtrack=True, gcr=2.0/7.0, cross_axis_tilt=0):
-    """
+    r"""
     Determine the rotation angle of a single-axis tracker when given particular
     solar zenith and azimuth angles.
 
@@ -75,15 +75,9 @@ def singleaxis(apparent_zenith, apparent_azimuth,
         2/7 is default. ``gcr`` must be <=1.
 
     cross_axis_tilt : float, default 0.0
-        The angle, relative to horizontal, of the line formed by the
-        intersection between the slope containing the tracker axes and a plane
-        perpendicular to the tracker axes. The cross-axis tilt should be
-        specified using a right-handed convention. For example, trackers with
-        axis azimuth of 180 degrees (heading south) will have a negative
-        cross-axis tilt if the tracker axes plane slopes down to the east and
-        positive cross-axis tilt if the tracker axes plane slopes down to the
-        west. Use :func:`~pvlib.tracking.calc_cross_axis_tilt` to calculate
-        ``cross_axis_tilt``. [degrees]
+        Angle of the plane containing the rows' axes relative to
+        horizontal. Right-handed rotation with respect to the rows axes.
+        See :term:`cross_axis_tilt`. In degrees :math:`^{\circ}`.
 
     Returns
     -------

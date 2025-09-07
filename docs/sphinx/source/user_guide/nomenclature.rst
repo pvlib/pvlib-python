@@ -47,6 +47,8 @@ There is a convention on consistent variable names throughout the library:
         will have a negative cross-axis tilt if the tracker axes plane slopes
         down to the east and positive cross-axis tilt if the tracker axes plane
         slopes up to the east.
+        Use :func:`~pvlib.tracking.calc_cross_axis_tilt` to calculate
+        ``cross_axis_tilt``
 
     dhi
         Diffuse horizontal irradiance

@@ -347,10 +347,10 @@ def projected_solar_zenith_angle(solar_zenith, solar_azimuth,
 
 
 @renamed_kwarg_warning(
-    since="0.11.3",
+    since="0.13.1",
     old_param_name="cross_axis_slope",
     new_param_name="cross_axis_tilt",
-    removal="0.13.0",
+    removal="0.15.0",
 )
 def shaded_fraction1d(
     solar_zenith,

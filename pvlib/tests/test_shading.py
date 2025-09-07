@@ -332,7 +332,7 @@ def test_shaded_fraction1d_unprovided_shading_row_rotation():
     assert_allclose(sf, expected_sf, atol=1e-2)
 
 
-@fail_on_pvlib_version("0.13.0")
+@fail_on_pvlib_version("0.15.0")
 def test_shaded_fraction1d_renamed_cross_axis_slope2cross_axis_tilt():
     # Tests shaded_fraction1d with cross_axis_slope instead of cross_axis_tilt
     with pytest.warns(pvlibDeprecationWarning, match="cross_axis_slope"):

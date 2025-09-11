@@ -18,6 +18,7 @@ TMY3_SOLARANYWHERE = TESTS_DATA_DIR / 'Burlington, United States SolarAnywhere T
 def test_read_tmy3():
     tmy.read_tmy3(TMY3_TESTFILE, map_variables=False)
 
+
 def test_read_tmy3_buffer():
     with open(TMY3_TESTFILE) as f:
         tmy.read_tmy3(f, map_variables=False)

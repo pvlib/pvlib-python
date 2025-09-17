@@ -58,7 +58,7 @@ def fit_desoto(v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc, cells_in_series,
     dEgdT: float, default -0.0002677 - value for silicon
         Variation of bandgap according to temperature. [1/K]
     temp_ref: float, default 25
-        Reference temperature condition. [C]
+        Reference temperature condition. [°C]
     irrad_ref: float, default 1000
         Reference irradiance condition. [Wm⁻²]
     init_guess: dict, optional
@@ -93,7 +93,7 @@ def fit_desoto(v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc, cells_in_series,
         irrad_ref: float
             Reference irradiance condition. [Wm⁻²]
         temp_ref: float
-            Reference temperature condition. [C]
+            Reference temperature condition. [°C]
 
     scipy.optimize.OptimizeResult
         Optimization result of scipy.optimize.root().
@@ -110,7 +110,7 @@ def fit_desoto(v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc, cells_in_series,
     """
 
     # Constants
-    k = constants.value('Boltzmann constant in eV/K')  # in eV/K
+    k = constants.value('Boltzmann constant in eV/K')
     Tref = temp_ref + 273.15  # [K]
 
     # initial guesses of variables for computing convergence:
@@ -234,7 +234,7 @@ def fit_desoto_sandia(ivcurves, specs, const=None, maxiter=5, eps1=1.e-3):
             effective irradiance for each IV curve, i.e., POA broadband
             irradiance adjusted by solar spectrum modifier [W / m^2]
         tc : array
-            cell temperature for each IV curve [C]
+            cell temperature for each IV curve. [°C]
         i_sc : array
             short circuit current for each IV curve [A]
         v_oc : array
@@ -254,9 +254,9 @@ def fit_desoto_sandia(ivcurves, specs, const=None, maxiter=5, eps1=1.e-3):
 
     const : dict
         E0 : float
-            effective irradiance at STC, default 1000 [W/m^2]
+            effective irradiance at STC, default 1000 [Wm⁻²]
         T0 : float
-            cell temperature at STC, default 25 [C]
+            cell temperature at STC, default 25°C. [°C]
         k : float
             Boltzmann's constant [J/K]
         q : float

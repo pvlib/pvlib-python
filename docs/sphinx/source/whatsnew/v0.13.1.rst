@@ -29,6 +29,8 @@ Enhancements
   (:pull:`2500`)
 * :py:func:`pvlib.spectrum.spectral_factor_firstsolar` no longer emits warnings
   when airmass and precipitable water values fall out of range. (:pull:`2512`)
+* Allows reading TMY data from a Path or file-like object in :py:func:`~pvlib.iotools.read_tmy3`.
+  (:pull:`2544`, :ghuser:`jerluc`)
 
 Documentation
 ~~~~~~~~~~~~~

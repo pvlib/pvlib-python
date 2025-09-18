@@ -49,7 +49,7 @@ axis_azimuth = 180  # degrees, N-S tracking axis
 collector_width = 3.2  # m
 pitch = 4.15  # m
 gcr = collector_width / pitch
-cross_axis_slope = -5  # degrees
+cross_axis_tilt = -5  # degrees
 surface_to_axis_offset = 0.07  # m
 
 # Generate a time range for the simulation
@@ -76,7 +76,7 @@ rotation_angle = pvlib.tracking.singleaxis(
     max_angle=(-50, 50),  # (min, max) degrees
     backtrack=False,
     gcr=gcr,
-    cross_axis_tilt=cross_axis_slope,
+    cross_axis_tilt=cross_axis_tilt,
 )["tracker_theta"]
 
 # %%
@@ -112,7 +112,7 @@ eastmost_shaded_fraction = np.where(
         collector_width=collector_width,
         pitch=pitch,
         surface_to_axis_offset=surface_to_axis_offset,
-        cross_axis_slope=cross_axis_slope,
+        cross_axis_tilt=cross_axis_tilt,
         shading_row_rotation=rotation_angle,
     ),
 )
@@ -130,7 +130,7 @@ middle_shaded_fraction = np.where(
         collector_width=collector_width,
         pitch=pitch,
         surface_to_axis_offset=surface_to_axis_offset,
-        cross_axis_slope=cross_axis_slope,
+        cross_axis_tilt=cross_axis_tilt,
         shading_row_rotation=rotation_angle,
     ),
     # shaded fraction in the evening
@@ -143,7 +143,7 @@ middle_shaded_fraction = np.where(
         collector_width=collector_width,
         pitch=pitch,
         surface_to_axis_offset=surface_to_axis_offset,
-        cross_axis_slope=cross_axis_slope,
+        cross_axis_tilt=cross_axis_tilt,
         shading_row_rotation=rotation_angle,
     ),
 )
@@ -161,7 +161,7 @@ westmost_shaded_fraction = np.where(
         collector_width=collector_width,
         pitch=pitch,
         surface_to_axis_offset=surface_to_axis_offset,
-        cross_axis_slope=cross_axis_slope,
+        cross_axis_tilt=cross_axis_tilt,
         shading_row_rotation=rotation_angle,
     ),
     0,  # no shaded fraction in the evening

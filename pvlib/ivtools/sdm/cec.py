@@ -27,7 +27,7 @@ def fit_cec_sam(celltype, v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
     cells_in_series : int
         Number of cells in series
     temp_ref : float, default 25
-        Reference temperature condition [C]
+        Reference temperature condition, [°C]
 
     Returns
     -------

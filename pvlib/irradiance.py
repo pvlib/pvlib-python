@@ -587,7 +587,7 @@ def get_ground_diffuse(surface_tilt, ghi, albedo=.25, surface_type=None):
     return diffuse_irrad
 
 
-def isotropic(surface_tilt, dhi):
+def isotropic(surface_tilt, dhi, return_components=False):
     r'''
     Determine diffuse irradiance from the sky on a tilted surface using
     the isotropic sky model.
@@ -613,10 +613,29 @@ def isotropic(surface_tilt, dhi):
     dhi : numeric
         Diffuse horizontal irradiance. [Wm⁻²] DHI must be >=0.
 
+    return_components : bool, default False
+        Flag used to decide whether to return the calculated diffuse components
+        or not. If `False`, ``sky_diffuse`` is returned. If `True`,
+        ``diffuse_components`` is returned.
+
     Returns
     -------
-    diffuse : numeric
-        The sky diffuse component of the solar radiation.
+    poa_sky_diffuse : numeric
+        The sky diffuse component of the solar radiation on a tilted
+        surface.
+
+    diffuse_components : dict (array input) or DataFrame (Series input)
+        Keys/columns are:
+            * sky_diffuse (the sum of the components below)
+            * isotropic
+            * circumsolar
+            * horizon
+            * poa_sky_diffuse (the sum of the components below)
+            * poa_isotropic
+            * poa_circumsolar
+            * poa_horizon
+        The first four elements will be deprecated in v0.14.0 and are kept
+        to avoit breaking changes.
 
     References
     ----------
@@ -630,9 +649,31 @@ def isotropic(surface_tilt, dhi):
        Energy vol. 201. pp. 8-12
        :doi:`10.1016/j.solener.2020.02.067`
     '''
-    sky_diffuse = dhi * (1 + tools.cosd(surface_tilt)) * 0.5
+    poa_sky_diffuse = dhi * (1 + tools.cosd(surface_tilt)) * 0.5
 
-    return sky_diffuse
+    if return_components:
+        diffuse_components = dict()
+
+        # original formatting (to be deprecated in v0.14.0)
+        diffuse_components['sky_diffuse'] = poa_sky_diffuse # total
+        diffuse_components['isotropic'] = poa_sky_diffuse
+        diffuse_components['circumsolar'] = 0
+        diffuse_components['horizon'] = 0
+
+        # new formatting
+        diffuse_components['poa_sky_diffuse'] = poa_sky_diffuse
+        diffuse_components['poa_isotropic'] = poa_sky_diffuse
+        diffuse_components['poa_circumsolar'] = 0
+        diffuse_components['poa_horizon'] = 0
+
+        if isinstance(poa_sky_diffuse, pd.Series):
+            # follows `perez` worfklow
+            # shouldn't it include an argument `index=dhi.index`?
+            diffuse_components = pd.DataFrame(diffuse_components)
+
+        return diffuse_components
+    else:
+        return poa_sky_diffuse
 
 
 def klucher(surface_tilt, surface_azimuth, dhi, ghi, solar_zenith,
@@ -782,8 +823,9 @@ def haydavies(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
         or supply ``projection_ratio``.
 
     return_components : bool, default `False`
-        If `False`, ``sky_diffuse`` is returned.
-        If `True`, ``diffuse_components`` is returned.
+       Flag used to decide whether to return the calculated diffuse components
+       or not. If `False`, ``sky_diffuse`` is returned. If `True`,
+       ``diffuse_components`` is returned.
 
     Returns
     --------

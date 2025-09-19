@@ -19,6 +19,13 @@ def test_read_tmy3():
     tmy.read_tmy3(TMY3_TESTFILE, map_variables=False)
 
 
+def test_read_tmy3_buffer():
+    with open(TMY3_TESTFILE) as f:
+        data, _ = tmy.read_tmy3(f, map_variables=False)
+        assert 'GHI source' in data.columns
+        assert len(data) == 8760
+
+
 def test_read_tmy3_norecolumn():
     data, _ = tmy.read_tmy3(TMY3_TESTFILE, map_variables=False)
     assert 'GHI source' in data.columns

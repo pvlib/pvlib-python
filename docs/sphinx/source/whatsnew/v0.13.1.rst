@@ -21,15 +21,26 @@ Bug fixes
 Enhancements
 ~~~~~~~~~~~~
 * Add new parameters for the Huld PV array mode :py:func:`~pvlib.pvarray.huld` (:issue:`2461`, :pull:`2486`)
+* Add iotools functions to retrieve irradiance and weather data from Meteonorm:
+  :py:func:`~pvlib.iotools.get_meteonorm_forecast_basic`, :py:func:`~pvlib.iotools.get_meteonorm_forecast_precision`,
+  :py:func:`~pvlib.iotools.get_meteonorm_observation_realtime`, :py:func:`~pvlib.iotools.get_meteonorm_observation_training`,
+  and :py:func:`~pvlib.iotools.get_meteonorm_tmy`.
+  (:pull:`2499`)
 * Add :py:func:`pvlib.iotools.get_nasa_power` to retrieve data from NASA POWER free API.
   (:pull:`2500`)
 * :py:func:`pvlib.spectrum.spectral_factor_firstsolar` no longer emits warnings
   when airmass and precipitable water values fall out of range. (:pull:`2512`)
+* Allows reading TMY data from a Path or file-like object in :py:func:`~pvlib.iotools.read_tmy3`.
+  (:pull:`2544`, :ghuser:`jerluc`)
 
 Documentation
 ~~~~~~~~~~~~~
 * Substantiate definitions of solar/surface azimuth/zenith and aoi on the
   :ref:`nomenclature` page. (:issue:`2448`, :pull:`2503`)
+* Add a new reference page for the spectrum (:ref:`_spectrum_user_guide`) to the
+  Modeling Topics section of the user guide, documenting pvlib-python's spectrum
+  functionality, which includes a comparison table of spectral mismatch estimation
+  models. (:issue:`2329`, :pull:`2353`)
 
 
 Testing

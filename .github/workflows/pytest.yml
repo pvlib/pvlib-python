@@ -17,7 +17,7 @@ jobs:
         suffix: ['']  # placeholder as an alternative to "-min"
         include:
           - os: ubuntu-latest
-            python-version: 3.10
+            python-version: "3.10"
             environment-type: conda
             suffix: -min
         exclude:

@@ -50,10 +50,12 @@ def test_pvefficiency_adr_round_trip():
 
 
 def test_huld():
+    # tests with default k_version='pvgis5'
     pdc0 = 100
     res = pvarray.huld(1000, 25, pdc0, cell_type='cSi')
     assert np.isclose(res, pdc0)
-    exp_sum = np.exp(1) * (np.sum(pvarray._infer_k_huld('cSi', pdc0)) + pdc0)
+    k = pvarray._infer_k_huld('cSi', pdc0, 'pvgis5')
+    exp_sum = np.exp(1) * (np.sum(k) + pdc0)
     res = pvarray.huld(1000*np.exp(1), 26, pdc0, cell_type='cSi')
     assert np.isclose(res, exp_sum)
     res = pvarray.huld(100, 30, pdc0, k=(1, 1, 1, 1, 1, 1))
@@ -67,5 +69,48 @@ def test_huld():
     res = pvarray.huld(eff_irr, tm, pdc0, k=(1, 1, 1, 1, 1, 1))
     assert_series_equal(res, expected)
     with pytest.raises(ValueError,
-                       match='Either k or cell_type must be specified'):
-        res = pvarray.huld(1000, 25, 100)
+                       match='Either k or cell_type must be specified'
+                       ):
+        pvarray.huld(1000, 25, 100)
+
+
+def test_huld_params():
+    """Test Huld with built-in coefficients."""
+    pdc0 = 100
+    # Use non-reference values so coefficients affect the result
+    eff_irr = 800  # W/m^2 (not 1000)
+    temp_mod = 35  # deg C (not 25)
+    # calculated by C. Hansen using Excel, 2025
+    expected = {'pvgis5': {'csi': 76.405089,
+                           'cis': 77.086016,
+                           'cdte': 78.642762
+                           },
+                'pvgis6': {'csi': 77.649421,
+                           'cis': 77.723110,
+                           'cdte': 77.500399
+                           }
+                }
+    # Test with PVGIS5 coefficients for all cell types
+    for yr in expected:
+        for cell_type in expected[yr]:
+            result = pvarray.huld(eff_irr, temp_mod, pdc0, cell_type=cell_type,
+                                  k_version=yr)
+            assert np.isclose(result, expected[yr][cell_type])
+
+
+def test_huld_errors():
+    # Check errors
+    pdc0 = 100
+    # Use non-reference values so coefficients affect the result
+    eff_irr = 800  # W/m^2 (not 1000)
+    temp_mod = 35  # deg C (not 25)
+    # provide both cell_type and k_version
+    with pytest.raises(KeyError):
+        pvarray.huld(
+            eff_irr, temp_mod, pdc0, cell_type='invalid', k_version='pvgis5'
+        )
+    # provide invalid k_version
+    with pytest.raises(ValueError, match='Invalid k_version=2021'):
+        pvarray.huld(
+            eff_irr, temp_mod, pdc0, cell_type='csi', k_version='2021'
+        )

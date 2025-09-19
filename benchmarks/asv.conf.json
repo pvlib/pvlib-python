@@ -116,7 +116,7 @@
             "python": "3.10",
             "build": "",
             "numpy": "1.21.2",
-            "pandas": "1.3.3",
+            "pandas": "1.4.1",  // first anaconda version to support py 3.10
             "scipy": "1.7.2",
             // Note: these don't have a minimum in setup.py
             "h5py": "3.6.0",  // first version to support py 3.10

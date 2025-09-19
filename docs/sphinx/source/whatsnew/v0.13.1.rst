@@ -52,6 +52,9 @@ Benchmarking
 
 Requirements
 ~~~~~~~~~~~~
+* Drop support for Python 3.9 (reaches End of Life in Oct 2025). (:pull:`2547`)
+* Advance minimum numpy to 2.1.0. (:pull:`2547`)
+* Advance minimum scipy to 1.14.0. (:pull:`2547`)
 
 
 Maintenance

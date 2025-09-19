@@ -108,8 +108,4 @@ testpaths = "tests"
 # https://docs.python.org/3/library/warnings.html#the-warnings-filter
 filterwarnings = [
     "ignore:Using or importing the ABCs:DeprecationWarning:.*patsy:",
-    # deprecation warnings from numpy 1.20
-    "ignore:`np.long` is a deprecated alias:DeprecationWarning:.*numba:",
-    "ignore:`np.int` is a deprecated alias:DeprecationWarning:.*(numba|scipy):",
-    "ignore:`np.bool` is a deprecated alias:DeprecationWarning:.*numba:",
 ]

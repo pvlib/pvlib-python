@@ -8,7 +8,7 @@ dependencies:
     - ephem
     - h5py
     - numba
-    - numpy >= 1.17.3
+    - numpy >= 2.1.0
     - pandas >= 1.3.0
     - pip
     - pytest
@@ -21,7 +21,7 @@ dependencies:
     - python=3.12
     - pytz
     - requests
-    - scipy >= 1.6.0
+    - scipy >= 1.14.0
     - statsmodels
     - pip:
         - nrel-pysam>=2.0

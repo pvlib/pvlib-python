@@ -9,7 +9,7 @@ on:
     - "v*"
 
 jobs:
-  build-n-publish:
+  build:
     name: Build and publish distributions to PyPI
     if: github.repository == 'pvlib/pvlib-python'
     runs-on: ubuntu-latest
@@ -49,10 +49,27 @@ jobs:
       run: du -h pvlib
       working-directory: ./tmp
 
-    # only publish distribution to PyPI for tagged commits
-    - name: Publish distribution to PyPI
-      if: startsWith(github.ref, 'refs/tags/v')
-      uses: pypa/gh-action-pypi-publish@release/v1
+    - name: Store the distribution packages
+      uses: actions/upload-artifact@v4
       with:
-        user: __token__
-        password: ${{ secrets.pypi_password }}
+        name: python-package-distributions
+        path: dist/
+
+  publish:
+    # only publish distribution to PyPI for tagged commits
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs:
+    - build
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write  # for PyPI trusted publishing
+
+    steps:
+    - name: Download all dist files
+      uses: actions/download-artifact@v4
+      with:
+        name: python-package-distributions
+        path: dist/
+
+    - name: Publish distribution to PyPI
+      uses: pypa/gh-action-pypi-publish@release/v1

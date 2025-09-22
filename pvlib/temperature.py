@@ -618,7 +618,7 @@ def faiman_rad(poa_global, temp_air, wind_speed=1.0, ir_down=None,
     return temp_air + temp_difference
 
 
-def ross(poa_global, temp_air, noct):
+def ross(poa_global, temp_air, noct=None, k=None):
     r'''
     Calculate cell temperature using the Ross model.
 
@@ -630,14 +630,19 @@ def ross(poa_global, temp_air, noct):
     Parameters
     ----------
     poa_global : numeric
-        Total incident irradiance. [W/m^2]
+        Total incident irradiance. [W/m⁻²]
 
     temp_air : numeric
         Ambient dry bulb temperature. [C]
 
-    noct : numeric
+    noct : numeric, optional
         Nominal operating cell temperature [C], determined at conditions of
-        800 W/m^2 irradiance, 20 C ambient air temperature and 1 m/s wind.
+        800 W/m⁻² irradiance, 20 C ambient air temperature and 1 m/s wind.
+        If ``noct`` is not provided, ``k`` is required.
+    k: numeric, optional
+        Ross coefficient [Km²W⁻¹], which is an alternative to employing
+        NOCT in Ross's equation. If ``k`` is not provided, ``noct`` is
+        required.
 
     Returns
     -------
@@ -650,19 +655,62 @@ def ross(poa_global, temp_air, noct):
 
     .. math::
 
-        T_{C} = T_{a} + \frac{NOCT - 20}{80} S
+        T_{C} = T_{a} + \frac{NOCT - 20}{80} S = T_{a} + k × S
 
-    where :math:`S` is the plane of array irradiance in :math:`mW/{cm}^2`.
-    This function expects irradiance in :math:`W/m^2`.
+    where :math:`S` is the plane of array irradiance in mWcm⁻².
+    This function expects irradiance in Wm⁻².
+
+    Representative values for k are provided in [2]_, covering different types
+    of mounting and degrees of back ventialtion. The naming designations,
+    however, are adapted from [3]_ to enhance clarity and usability.
+
+    +--------------------------------------+-----------+
+    | Mounting                             | :math:`k` |
+    +======================================+===========+
+    | Sloped roof, well ventilated         | 0.02      |
+    +--------------------------------------+-----------+
+    | Free-standing system                 | 0.0208    |
+    +--------------------------------------+-----------+
+    | Flat roof, well ventilated           | 0.026     |
+    +--------------------------------------+-----------+
+    | Sloped roof, poorly ventilated       | 0.0342    |
+    +--------------------------------------+-----------+
+    | Facade integrated, semi-ventilated   | 0.0455    |
+    +--------------------------------------+-----------+
+    | Facade integrated, poorly ventilated | 0.0538    |
+    +--------------------------------------+-----------+
+    | Sloped roof, non-ventilated          | 0.0563    |
+    +--------------------------------------+-----------+
+
+    It is also worth noting that the semi-ventilated facade case refers to
+    partly transparent compound glass insulation modules, while the non-
+    ventilated case corresponds to opaque, insulated PV-cladding elements.
+    However, the emphasis in [3]_ appears to be on ventilation conditions
+    rather than module construction.
 
     References
     ----------
     .. [1] Ross, R. G. Jr., (1981). "Design Techniques for Flat-Plate
        Photovoltaic Arrays". 15th IEEE Photovoltaic Specialist Conference,
        Orlando, FL.
+    .. [2] E. Skoplaki and J. A. Palyvos, "Operating temperature of
+       photovoltaic modules: A survey of pertinent correlations," Renewable
+       Energy, vol. 34, no. 1, pp. 23–29, Jan. 2009,
+       :doi:`10.1016/j.renene.2008.04.009`
+    .. [3] T. Nordmann and L. Clavadetscher, "Understanding temperature
+       effects on PV system performance," Proceedings of 3rd World Conference
+       on Photovoltaic Energy Conversion, May 2003.
     '''
-    # factor of 0.1 converts irradiance from W/m2 to mW/cm2
-    return temp_air + (noct - 20.) / 80. * poa_global * 0.1
+    if (noct is None) & (k is None):
+        raise ValueError("Either noct or k is required.")
+    elif (noct is not None) & (k is not None):
+        raise ValueError("Provide only one of noct or k, not both.")
+    elif k is None:
+        # factor of 0.1 converts irradiance from W/m2 to mW/cm2
+        return temp_air + (noct - 20.) / 80. * poa_global * 0.1
+    elif noct is None:
+        # k assumes irradiance in W.m-2, dismissing 0.1 factor
+        return temp_air + k * poa_global
 
 
 def _fuentes_hconv(tave, windmod, tinoct, temp_delta, xlen, tilt,

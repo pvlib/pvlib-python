@@ -57,6 +57,17 @@ clear-sky irradiance globally.
    iotools.parse_cams
 
 
+NASA POWER
+**********
+
+Satellite-derived irradiance and weather data with global coverage.
+
+.. autosummary::
+   :toctree: generated/
+
+   iotools.get_nasa_power
+
+
 NSRDB
 *****
 
@@ -80,6 +91,19 @@ Commercial datasets
 
 Accessing these APIs typically requires payment.
 Datasets provide near-global coverage.
+
+Meteonorm
+*********
+
+.. autosummary::
+   :toctree: generated/
+
+   iotools.get_meteonorm_forecast_basic
+   iotools.get_meteonorm_forecast_precision
+   iotools.get_meteonorm_observation_training
+   iotools.get_meteonorm_observation_realtime
+   iotools.get_meteonorm_tmy
+
 
 SolarAnywhere
 *************

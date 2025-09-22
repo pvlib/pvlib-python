@@ -64,8 +64,9 @@ def get_extra_radiation(datetime_or_doy, solar_constant=1366.1,
     -------
     dni_extra : float, array, or Series
         The extraterrestrial radiation normal to the sun.
-        Pandas Timestamp and DatetimeIndex inputs will yield a Pandas
-        TimeSeries. All other inputs will yield a float or an array of floats.
+        Pandas Timestamp and DatetimeIndex inputs for ``datetime_or_doy``
+        will return ``dni_extra`` as a Pandas TimeSeries. All other input
+        data types will yield ``dni_extra`` as a float or an array of floats.
         See :term:`dni_extra`. [Wm⁻²]
 
     References
@@ -1796,9 +1797,7 @@ def disc(ghi, solar_zenith, datetime_or_doy, pressure=101325,
         pd.DatetimeIndex.dayofyear, or pd.DatetimeIndex.
 
     pressure : numeric or None, default 101325
-        Site pressure. Uses absolute (pressure-corrected) airmass
-        by default. Set to ``None`` to use relative airmass. See
-        :term:`pressure`. [Pa]
+        Site pressure. See :term:`pressure`. [Pa]
 
     min_cos_zenith : numeric, default 0.065
         Minimum value of cos(zenith) to allow when calculating global
@@ -2310,9 +2309,7 @@ def gti_dirint(poa_global, aoi, solar_zenith, solar_azimuth, times,
         Surface azimuth angles, see :term:`surface_azimuth`. [°]
 
     pressure : numeric, default 101325.0
-        The site pressure in Pascal. Pressure may be measured or an
-        average pressure may be calculated from site altitude. See
-        :term:`pressure`. [Pa]
+        Site air pressure. See :term:`pressure`. [Pa]
 
     use_delta_kt_prime : bool, default True
         If True, indicates that the stability index delta_kt_prime is
@@ -2963,8 +2960,8 @@ def boland(ghi, solar_zenith, datetime_or_doy, a_coeff=8.645, b_coeff=0.613,
         :term:`solar_zenith`. [°]
 
     datetime_or_doy : numeric or pd.DatetimeIndex.
-    Day of year or array of days of year e.g. pd.DatetimeIndex.dayofyear,
-    or pd.DatetimeIndex.
+        Day of year or array of days of year e.g. pd.DatetimeIndex.dayofyear,
+        or pd.DatetimeIndex.
 
     a_coeff : float, default 8.645
         Logistic curve fit coefficient.
@@ -3765,7 +3762,7 @@ def complete_irradiance(solar_zenith,
     ----------
     solar_zenith : series
         Solar zenith angle, with datetime index.
-        AMust have the same datetime index as ``ghi``, ``dhi``, and ``dni``,
+        Must have the same datetime index as ``ghi``, ``dhi``, and ``dni``,
         when available. See :term:`solar_zenith`. [°]
 
     ghi : Series, optional

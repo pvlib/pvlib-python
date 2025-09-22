@@ -20,6 +20,8 @@ Bug fixes
 
 Enhancements
 ~~~~~~~~~~~~
+* Add k coefficient in :py:func:`~pvlib.temperature.ross`
+  (:issue:`2506`, :pull:`2521`)
 * Add iotools functions to retrieve irradiance and weather data from Meteonorm:
   :py:func:`~pvlib.iotools.get_meteonorm_forecast_basic`, :py:func:`~pvlib.iotools.get_meteonorm_forecast_precision`,
   :py:func:`~pvlib.iotools.get_meteonorm_observation_realtime`, :py:func:`~pvlib.iotools.get_meteonorm_observation_training`,
@@ -65,5 +67,6 @@ Contributors
 * Ioannis Sifnaios (:ghuser:`IoannisSifnaios`)
 * Rajiv Daxini (:ghuser:`RDaxini`)
 * Omar Bahamida (:ghuser:`OmarBahamida`)
+* Rodrigo Amaro e Silva (:ghuser:`ramaroesilva`)
 * Kevin Anderson (:ghuser:`kandersolar`)
 * Mikaella Brewer (:ghuser:`brwerx`)

@@ -762,7 +762,8 @@ def haydavies(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
 
     solar_zenith : numeric, optional
         Solar apparent (refraction-corrected) zenith angles. Must supply
-        ``solar_zenith`` and ``solar_azimuth``, or supply ``projection_ratio``. [°]
+        ``solar_zenith`` and ``solar_azimuth``, or supply
+        ``projection_ratio``. [°]
 
     solar_azimuth : numeric, optional
         Solar azimuth angles. Must supply ``solar_zenith`` and
@@ -3057,8 +3058,8 @@ def campbell_norman(zenith, transmittance, pressure=101325.0,
     Parameters
     ----------
     zenith: pd.Series
-        True (not refraction-corrected) zenith angles. If ``zenith`` is a vector, it
-        must be of the same size as all other vector inputs. [°]
+        True (not refraction-corrected) zenith angles. If ``zenith`` is a
+        vector, it must be of the same size as all other vector inputs. [°]
 
     transmittance: float
         Atmospheric transmittance between 0 and 1.
@@ -3689,7 +3690,8 @@ def dni(ghi, dhi, zenith, dni_clear=None, clearsky_tolerance=1.1,
         Diffuse horizontal irradiance. See :term:`dhi`. [Wm⁻²]
 
     zenith : Series
-        True (not refraction-corrected) zenith angles. See :term:`solar_zenith`. [°]
+        True (not refraction-corrected) zenith angles.
+        See :term:`solar_zenith`. [°]
 
     dni_clear : Series, optional
         Clearsky direct normal irradiance. See :term:`dni_clear`. [Wm⁻²]

@@ -635,12 +635,13 @@ def ross(poa_global, temp_air, noct=None, k=None):
     temp_air : numeric
         Ambient dry bulb temperature. [C]
 
-    noct : numeric
+    noct : numeric, optional
         Nominal operating cell temperature [C], determined at conditions of
         800 W/m^2 irradiance, 20 C ambient air temperature and 1 m/s wind.
-    k: numeric
-        Ross coefficient [Km^2/W], which is an alternative to employing
-        NOCT in Ross's equation.
+        If ``noct`` is not provided, ``k`` is required.
+    k: numeric, optional
+        Ross coefficient [Km²W⁻¹], which is an alternative to employing
+        NOCT in Ross's equation. If ``k`` is not provided, ``noct`` is required.
 
     Returns
     -------
@@ -655,8 +656,8 @@ def ross(poa_global, temp_air, noct=None, k=None):
 
         T_{C} = T_{a} + \frac{NOCT - 20}{80} S = T_{a} + k × S
 
-    where :math:`S` is the plane of array irradiance in :math:`mW/{cm}^2`.
-    This function expects irradiance in :math:`W/m^2`.
+    where :math:`S` is the plane of array irradiance in mWm⁻².
+    This function expects irradiance in Wm⁻².
 
     Representative values for k are provided in [2]_, covering different types
     of mounting and degrees of back ventialtion. The naming designations,

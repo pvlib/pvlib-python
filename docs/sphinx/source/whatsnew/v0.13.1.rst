@@ -20,8 +20,6 @@ Bug fixes
 
 Enhancements
 ~~~~~~~~~~~~
-* Rename parameter name ``aparent_azimuth`` to ``solar_azimuth`` in :py:func:`~pvlib.tracking.singleaxis`.
-  (:issue:`2479`, :pull:`2480`)
 * Add k coefficient in :py:func:`~pvlib.temperature.ross`
   (:issue:`2506`, :pull:`2521`)
 * Add iotools functions to retrieve irradiance and weather data from Meteonorm:

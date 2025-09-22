@@ -83,7 +83,7 @@ jobs:
           pytest tests --cov=./ --cov-report=xml --ignore=tests/iotools
 
       - name: Upload coverage to Codecov
-        if: matrix.python-version == 3.10 && matrix.suffix == '' && matrix.os == 'ubuntu-latest' && matrix.environment-type == 'conda'
+        if: matrix.python-version == "3.10" && matrix.suffix == '' && matrix.os == 'ubuntu-latest' && matrix.environment-type == 'conda'
         uses: codecov/codecov-action@v4
         with:
           fail_ci_if_error: true

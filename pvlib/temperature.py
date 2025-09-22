@@ -657,7 +657,7 @@ def ross(poa_global, temp_air, noct=None, k=None):
 
         T_{C} = T_{a} + \frac{NOCT - 20}{80} S = T_{a} + k × S
 
-    where :math:`S` is the plane of array irradiance in mWm⁻².
+    where :math:`S` is the plane of array irradiance in mWcm⁻².
     This function expects irradiance in Wm⁻².
 
     Representative values for k are provided in [2]_, covering different types

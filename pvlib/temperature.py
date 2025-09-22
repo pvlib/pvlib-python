@@ -630,18 +630,19 @@ def ross(poa_global, temp_air, noct=None, k=None):
     Parameters
     ----------
     poa_global : numeric
-        Total incident irradiance. [W/m^2]
+        Total incident irradiance. [W/m⁻²]
 
     temp_air : numeric
         Ambient dry bulb temperature. [C]
 
     noct : numeric, optional
         Nominal operating cell temperature [C], determined at conditions of
-        800 W/m^2 irradiance, 20 C ambient air temperature and 1 m/s wind.
+        800 W/m⁻² irradiance, 20 C ambient air temperature and 1 m/s wind.
         If ``noct`` is not provided, ``k`` is required.
     k: numeric, optional
         Ross coefficient [Km²W⁻¹], which is an alternative to employing
-        NOCT in Ross's equation. If ``k`` is not provided, ``noct`` is required.
+        NOCT in Ross's equation. If ``k`` is not provided, ``noct`` is
+        required.
 
     Returns
     -------
@@ -676,7 +677,7 @@ def ross(poa_global, temp_air, noct=None, k=None):
     +--------------------------------------+-----------+
     | Facade integrated, semi-ventilated   | 0.0455    |
     +--------------------------------------+-----------+
-    | Facade integrated, poorly ventilted  | 0.0538    |
+    | Facade integrated, poorly ventilated | 0.0538    |
     +--------------------------------------+-----------+
     | Sloped roof, non-ventilated          | 0.0563    |
     +--------------------------------------+-----------+
@@ -692,16 +693,16 @@ def ross(poa_global, temp_air, noct=None, k=None):
     .. [1] Ross, R. G. Jr., (1981). "Design Techniques for Flat-Plate
        Photovoltaic Arrays". 15th IEEE Photovoltaic Specialist Conference,
        Orlando, FL.
-    .. [2] E. Skoplaki and J. A. Palyvos, “Operating temperature of
-       photovoltaic modules: A survey of pertinent correlations,” Renewable
+    .. [2] E. Skoplaki and J. A. Palyvos, "Operating temperature of
+       photovoltaic modules: A survey of pertinent correlations," Renewable
        Energy, vol. 34, no. 1, pp. 23–29, Jan. 2009,
        :doi:`10.1016/j.renene.2008.04.009`
-    .. [3] T. Nordmann and L. Clavadetscher, “Understanding temperature
+    .. [3] T. Nordmann and L. Clavadetscher, "Understanding temperature
        effects on PV system performance," Proceedings of 3rd World Conference
        on Photovoltaic Energy Conversion, May 2003.
     '''
     if (noct is None) & (k is None):
-        raise ValueError("Either noct or k need is required.")
+        raise ValueError("Either noct or k is required.")
     elif (noct is not None) & (k is not None):
         raise ValueError("Provide only one of noct or k, not both.")
     elif k is None:

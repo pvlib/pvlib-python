@@ -187,7 +187,7 @@ def test_ross():
 
 
 def test_ross_errors():
-    with pytest.raises(ValueError, match='Either noct or k need is required'):
+    with pytest.raises(ValueError, match='Either noct or k is required'):
         temperature.ross(1000., 30.)
     with pytest.raises(ValueError, match='Provide only one of noct or k'):
         temperature.ross(1000., 30., noct=45., k=0.02)

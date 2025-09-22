@@ -1,4 +1,4 @@
-name: Publish distributions to PyPI
+name: Package build
 
 on:
   pull_request:

@@ -660,12 +660,10 @@ def klucher(surface_tilt, surface_azimuth, dhi, ghi, solar_zenith,
         Global horizontal irradiance, must be >=0. See :term:`ghi`. [Wm⁻²]
 
     solar_zenith : numeric
-        Apparent (refraction-corrected) zenith angles.
-        ``solar_zenith`` must be >=0° and <=180°. See :term:`solar_zenith`. [°]
+        Apparent (refraction-corrected) zenith angles. [°]
 
     solar_azimuth : numeric
-        Sun azimuth angles. ``solar_azimuth`` must be >=0° and <=360. See
-        :term:`solar_azimuth`. [°]
+        Sun azimuth angles. See :term:`solar_azimuth`. [°]
 
     Returns
     -------
@@ -764,8 +762,7 @@ def haydavies(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
 
     solar_zenith : numeric, optional
         Solar apparent (refraction-corrected) zenith angles. Must supply
-        ``solar_zenith`` and ``solar_azimuth``, or supply ``projection_ratio``.
-        See :term:`solar_zenith`. [°]
+        ``solar_zenith`` and ``solar_azimuth``, or supply ``projection_ratio``. [°]
 
     solar_azimuth : numeric, optional
         Solar azimuth angles. Must supply ``solar_zenith`` and
@@ -905,7 +902,7 @@ def reindl(surface_tilt, surface_azimuth, dhi, dni, ghi, dni_extra,
         Extraterrestrial normal irradiance, see :term:`dni_extra`. [Wm⁻²]
 
     solar_zenith : numeric
-        Solar apparent (refraction-corrected) zenith angles.
+        Solar apparent (refraction-corrected) zenith angles
         See :term:`solar_zenith`. [°]
 
     solar_azimuth : numeric
@@ -1008,8 +1005,7 @@ def king(surface_tilt, dhi, ghi, solar_zenith):
         Global horizontal irradiance. See :term:`ghi`. [Wm⁻²]
 
     solar_zenith : numeric
-        Solar apparent (refraction-corrected) zenith angles.
-        See :term:`solar_zenith`. [°]
+        Solar apparent (refraction-corrected) zenith angles. [°]
 
     Returns
     --------
@@ -1050,12 +1046,11 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
     Parameters
     ----------
     surface_tilt : numeric
-        Surface tilt angle, must be >=0° and <=180°. See :term:`surface_tilt`.
+        Surface tilt angle. See :term:`surface_tilt`.
         [°]
 
     surface_azimuth : numeric
-        Surface azimuth angle, must be >=0° and <=360°.
-        See :term:`surface_azimuth`. [°]
+        Surface azimuth angle. See :term:`surface_azimuth`. [°]
 
     dhi : numeric
         Diffuse horizontal irradiance, must be >=0. [Wm⁻²]
@@ -1068,12 +1063,10 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
         Extraterrestrial normal irradiance. [Wm⁻²]
 
     solar_zenith : numeric
-        apparent (refraction-corrected) zenith angle, must be >=0° and <=180°.
-        [°]
+        apparent (refraction-corrected) zenith angle. [°]
 
     solar_azimuth : numeric
-        Solar azimuth angle, must be >=0° and <=360°.
-        See :term:`solar_azimuth`. [°]
+        Solar azimuth angle. See :term:`solar_azimuth`. [°]
 
     airmass : numeric
         Relative (not pressure-corrected) airmass values. If AM is a
@@ -1314,12 +1307,10 @@ def perez_driesse(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
     Parameters
     ----------
     surface_tilt : numeric
-        Surface tilt angle, must be >=0° and <=180°. See :term:`surface_tilt`.
-        [°]
+        Surface tilt angle. See :term:`surface_tilt`. [°]
 
     surface_azimuth : numeric
-        Surface azimuth angle, must be >=0° and <=360°.
-        See :term:`surface_azimuth`. [°]
+        Surface azimuth angle. See :term:`surface_azimuth`. [°]
 
     dhi : numeric
         Diffuse horizontal irradiance, must be >=0. [Wm⁻²]
@@ -1332,12 +1323,10 @@ def perez_driesse(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
         Extraterrestrial normal irradiance. [Wm⁻²]
 
     solar_zenith : numeric
-        apparent (refraction-corrected) zenith angle, must be >=0° and <=180°.
-        [°]
+        apparent (refraction-corrected) zenith angle. [°]
 
     solar_azimuth : numeric
-        Solar azimuth angle, must be >=0° and <=360°.
-        See :term:`solar_azimuth`. [°]
+        Solar azimuth angle. See :term:`solar_azimuth`. [°]
 
     airmass : numeric, optional
         Relative (not pressure-corrected) airmass values. If ``airmass`` is a
@@ -2210,7 +2199,7 @@ def dirindex(ghi, ghi_clear, dni_clear, zenith, times, pressure=101325.,
             Renamed from ``dni_clearsky`` to ``dni_clear``.
 
     zenith : array-like
-        True (not refraction-corrected) zenith angles, must be >=0° and <=180°.
+        True (not refraction-corrected) zenith angles.
         If ``zenith`` is a vector, it must be of the same size as all other
         vector inputs. See :term`solar_zenith`. [°]
 
@@ -3068,9 +3057,8 @@ def campbell_norman(zenith, transmittance, pressure=101325.0,
     Parameters
     ----------
     zenith: pd.Series
-        True (not refraction-corrected) zenith angles, must be >=0° and <=180°.
-        If ``zenith`` is a vector, it must be of the same size as all other
-        vector inputs. [°]
+        True (not refraction-corrected) zenith angles. If ``zenith`` is a vector, it
+        must be of the same size as all other vector inputs. [°]
 
     transmittance: float
         Atmospheric transmittance between 0 and 1.
@@ -3128,7 +3116,7 @@ def _liujordan(zenith, transmittance, airmass, dni_extra=1367.0):
     zenith: pd.Series
         True (not refraction-corrected) zenith angles in decimal
         degrees. If Z is a vector it must be of the same size as all
-        other vector inputs. ``zenith`` must be >=0° and <=180°.
+        other vector inputs. [°]
 
     transmittance: float
         Atmospheric transmittance between 0 and 1.
@@ -3701,8 +3689,7 @@ def dni(ghi, dhi, zenith, dni_clear=None, clearsky_tolerance=1.1,
         Diffuse horizontal irradiance. See :term:`dhi`. [Wm⁻²]
 
     zenith : Series
-        True (not refraction-corrected) zenith angles, must be >=0° and <=180°.
-        See :term:`solar_zenith`. [°]
+        True (not refraction-corrected) zenith angles. See :term:`solar_zenith`. [°]
 
     dni_clear : Series, optional
         Clearsky direct normal irradiance. See :term:`dni_clear`. [Wm⁻²]
@@ -3776,9 +3763,8 @@ def complete_irradiance(solar_zenith,
     ----------
     solar_zenith : series
         Solar zenith angle, with datetime index.
-        Angles must be >=0° and <=180°. Must have the same datetime index
-        as ``ghi``, ``dhi``, and ``dni``, when available.
-        See :term:`solar_zenith`. [°]
+        AMust have the same datetime index as ``ghi``, ``dhi``, and ``dni``,
+        when available. See :term:`solar_zenith`. [°]
 
     ghi : Series, optional
         Pandas series of dni data [Wm⁻²], with datetime index. Must have the
@@ -3838,7 +3824,7 @@ def louche(ghi, solar_zenith, datetime_or_doy, max_zenith=90):
 
     solar_zenith : numeric
         True (not refraction-corrected) zenith angle.
-        Angles must be >=0° and <=90°. See :term:`solar_zenith`. [°]
+        See :term:`solar_zenith`. [°]
 
     datetime_or_doy : numeric, pandas.DatetimeIndex
         Day of year or array of days of year e.g.

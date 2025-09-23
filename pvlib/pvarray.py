@@ -236,7 +236,7 @@ def _infer_k_huld(cell_type, pdc0, k_version):
     pdc0 : numeric
         Power of the modules at reference conditions [W]
     k_version : str
-        Either '2011' or '2025'.
+        Either 'pvgis5' or 'pvgis6'.
 
     Returns
     -------
@@ -263,7 +263,7 @@ def _infer_k_huld(cell_type, pdc0, k_version):
                                -0.000043, 0.0),
                        'cis': (-0.011001, -0.029734, -0.002887, 0.000217,
                                -0.000163, 0.0),
-                       'cdte': (-0.020644, -0.035316, -0.003406, 0.000073,
+                       'cdte': (-0.020644, -0.035136, -0.003406, 0.000073,
                                 -0.000141, 0.000002)}
     else:
         raise ValueError(f'Invalid k_version={k_version}: must be either '

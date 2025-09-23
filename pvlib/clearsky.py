@@ -820,20 +820,29 @@ def detect_clearsky(measured, clearsky, times=None, infer_limits=False,
 
     # if infer_limits, find threshold values using the sample interval
     if infer_limits:
-        window_length, mean_diff, max_diff, lower_line_length, \
-            upper_line_length, var_diff, slope_dev = \
-                _clearsky_get_threshold(sample_interval)
+        (
+            window_length,
+            mean_diff,
+            max_diff,
+            lower_line_length,
+            upper_line_length,
+            var_diff,
+            slope_dev,
+        ) = _clearsky_get_threshold(sample_interval)
 
         # recalculate samples_per_window using returned window_length
-        sample_interval, samples_per_window = \
-            tools._get_sample_intervals(times, window_length)
+        sample_interval, samples_per_window = tools._get_sample_intervals(
+            times, window_length
+        )
 
     if samples_per_window < 3:
-        raise ValueError(f"Samples per window of {samples_per_window}"
-                         " found. Each window must contain at least 3 data"
-                         " points."
-                         f" Window length of {window_length} found; increase"
-                         f" window length to {3*sample_interval} or longer.")
+        raise ValueError(
+            f"Samples per window of {samples_per_window}"
+            " found. Each window must contain at least 3 data"
+            " points."
+            f" Window length of {window_length} found; increase"
+            f" window length to {3 * sample_interval} or longer."
+        )
 
     # check that we have enough data to produce a nonempty hankel matrix
     if len(times) < samples_per_window:

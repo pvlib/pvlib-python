@@ -840,7 +840,7 @@ def detect_clearsky(measured, clearsky, times=None, infer_limits=False,
             f"Samples per window of {samples_per_window}"
             " found. Each window must contain at least 3 data"
             " points."
-            f" Window length of {window_length} found; increase"
+            f" Window length of {window_length} found. Increase"
             f" window length to {3 * sample_interval} or longer."
         )
 

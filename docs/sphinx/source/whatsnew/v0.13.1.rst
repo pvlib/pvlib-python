@@ -21,6 +21,7 @@ Bug fixes
 
 Enhancements
 ~~~~~~~~~~~~
+* Add new parameters for the Huld PV array mode :py:func:`~pvlib.pvarray.huld` (:issue:`2461`, :pull:`2486`)
 * Add k coefficient in :py:func:`~pvlib.temperature.ross`
   (:issue:`2506`, :pull:`2521`)
 * Add iotools functions to retrieve irradiance and weather data from Meteonorm:
@@ -73,6 +74,9 @@ Maintenance
 Contributors
 ~~~~~~~~~~~~
 * Elijah Passmore (:ghuser:`eljpsm`)
+* Omar Bahamida (:ghuser:`OmarBahamida`)
+* Cliff Hansen (:ghuser:`cwhanse`)
+
 * Ioannis Sifnaios (:ghuser:`IoannisSifnaios`)
 * Rajiv Daxini (:ghuser:`RDaxini`)
 * Omar Bahamida (:ghuser:`OmarBahamida`)

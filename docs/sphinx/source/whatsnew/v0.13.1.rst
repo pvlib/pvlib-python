@@ -16,7 +16,8 @@ Deprecations
 
 Bug fixes
 ~~~~~~~~~
-
+* Fix :py:func:`~pvlib.clearsky.detect_clearsky` to use inferred window length when
+  ``infer_limits=True``. (:issue:`2542`, :pull:`2550`)
 
 Enhancements
 ~~~~~~~~~~~~
@@ -78,3 +79,4 @@ Contributors
 * Rodrigo Amaro e Silva (:ghuser:`ramaroesilva`)
 * Kevin Anderson (:ghuser:`kandersolar`)
 * Mikaella Brewer (:ghuser:`brwerx`)
+* Will Holmgren (:ghuser:`wholmgren`)

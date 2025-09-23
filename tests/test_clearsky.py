@@ -688,6 +688,14 @@ def test_detect_clearsky_window_too_short(detect_clearsky_data):
         clearsky.detect_clearsky(expected['GHI'], cs['ghi'], window_length=2)
 
 
+def test_detect_clearsky_infer_checks(detect_clearsky_threshold_data):
+    # GH 2542
+    expected, cs = detect_clearsky_threshold_data
+    expected = expected.resample('10min').mean()
+    cs = cs.resample('10min').mean()
+    clearsky.detect_clearsky(expected['GHI'], cs['ghi'], infer_limits=True)
+
+
 @pytest.mark.parametrize("window_length", [5, 10, 15, 20, 25])
 def test_detect_clearsky_optimizer_not_failed(
     detect_clearsky_data, window_length

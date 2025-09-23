@@ -36,6 +36,10 @@ Enhancements
 
 Documentation
 ~~~~~~~~~~~~~
+* Update :py:mod:`pvlib.irradiance` module documentation to include links to 
+  parameter definitions from the nomenclature page, ensure consistent
+  parameter description structure, add units to all parameters where required,
+  and other miscellaneous edits. (:issue:`2205`, :issue:`2248`, :pull:`2311`)
 * Substantiate definitions of solar/surface azimuth/zenith and aoi on the
   :ref:`nomenclature` page. (:issue:`2448`, :pull:`2503`)
 * Add a new reference page for the spectrum (:ref:`_spectrum_user_guide`) to the

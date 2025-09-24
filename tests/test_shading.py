@@ -9,7 +9,6 @@ from datetime import timezone, timedelta
 from pvlib import shading
 from pvlib.tools import atand
 
-from .conftest import fail_on_pvlib_version
 from pvlib._deprecation import pvlibDeprecationWarning
 
 
@@ -118,7 +117,7 @@ def true_tracking_angle_and_inputs_NREL():
     # data from NREL 'Slope-Aware Backtracking for Single-Axis Trackers'
     # doi.org/10.2172/1660126 ; Accessed on 2023-11-06.
     tzinfo = timezone(timedelta(hours=-5))
-    axis_tilt_angle = 9.666  # deg
+    axis_slope_angle = 9.666  # deg
     axis_azimuth_angle = 195.0  # deg
     timedata = pd.DataFrame(
         columns=("Apparent Elevation", "Solar Azimuth", "True-Tracking"),
@@ -139,7 +138,7 @@ def true_tracking_angle_and_inputs_NREL():
         "2019-01-01T08", "2019-01-01T17", freq="1h", tz=tzinfo
     )
     timedata["Apparent Zenith"] = 90.0 - timedata["Apparent Elevation"]
-    return (axis_tilt_angle, axis_azimuth_angle, timedata)
+    return (axis_slope_angle, axis_azimuth_angle, timedata)
 
 
 @pytest.fixture
@@ -161,7 +160,7 @@ def projected_solar_zenith_angle_edge_cases():
             [  45,      45,     90,      180,   -135],
             [  45,     315,     90,      180,    135],
         ],
-        columns=["solar_zenith", "solar_azimuth", "axis_tilt", "axis_azimuth",
+        columns=["solar_zenith", "solar_azimuth", "axis_slope", "axis_azimuth",
                  "psza"],
     )
     return premises_and_result_matrix
@@ -172,12 +171,12 @@ def test_projected_solar_zenith_angle_numeric(
     projected_solar_zenith_angle_edge_cases
 ):
     psza_func = shading.projected_solar_zenith_angle
-    axis_tilt, axis_azimuth, timedata = true_tracking_angle_and_inputs_NREL
+    axis_slope, axis_azimuth, timedata = true_tracking_angle_and_inputs_NREL
     # test against data provided by NREL
     psz = psza_func(
         timedata["Apparent Zenith"],
         timedata["Solar Azimuth"],
-        axis_tilt,
+        axis_slope,
         axis_azimuth,
     )
     assert_allclose(psz, timedata["True-Tracking"], atol=1e-3)
@@ -185,19 +184,19 @@ def test_projected_solar_zenith_angle_numeric(
     psza = psza_func(
         timedata["Apparent Zenith"],
         timedata["Solar Azimuth"],
-        -axis_tilt,
+        -axis_slope,
         axis_azimuth - 180,
     )
     assert_allclose(psza, -timedata["True-Tracking"], atol=1e-3)
 
     # test edge cases
-    solar_zenith, solar_azimuth, axis_tilt, axis_azimuth, psza_expected = (
+    solar_zenith, solar_azimuth, axis_slope, axis_azimuth, psza_expected = (
         v for _, v in projected_solar_zenith_angle_edge_cases.items()
     )
     psza = psza_func(
         solar_zenith,
         solar_azimuth,
-        axis_tilt,
+        axis_slope,
         axis_azimuth,
     )
     assert_allclose(psza, psza_expected, atol=1e-9)
@@ -215,17 +214,17 @@ def test_projected_solar_zenith_angle_datatypes(
     cast_type, cast_func, true_tracking_angle_and_inputs_NREL
 ):
     psz_func = shading.projected_solar_zenith_angle
-    axis_tilt, axis_azimuth, timedata = true_tracking_angle_and_inputs_NREL
+    axis_slope, axis_azimuth, timedata = true_tracking_angle_and_inputs_NREL
     sun_apparent_zenith = timedata["Apparent Zenith"].iloc[0]
     sun_azimuth = timedata["Solar Azimuth"].iloc[0]
 
-    axis_tilt, axis_azimuth, sun_apparent_zenith, sun_azimuth = (
+    axis_slope, axis_azimuth, sun_apparent_zenith, sun_azimuth = (
         cast_func(sun_apparent_zenith),
         cast_func(sun_azimuth),
-        cast_func(axis_tilt),
+        cast_func(axis_slope),
         cast_func(axis_azimuth),
     )
-    psz = psz_func(sun_apparent_zenith, axis_azimuth, axis_tilt, axis_azimuth)
+    psz = psz_func(sun_apparent_zenith, axis_azimuth, axis_slope, axis_azimuth)
     assert isinstance(psz, cast_type)
 
 
@@ -261,7 +260,7 @@ def sf1d_premises_and_expected():
         ),
     )  # fmt: skip
 
-    test_data["cross_axis_tilt"] = atand(
+    test_data["cross_axis_slope"] = atand(
         (test_data["z_R"] - test_data["z_L"])
         / (test_data["x_L"] - test_data["x_R"])
     )
@@ -317,7 +316,7 @@ def test_shaded_fraction1d_unprovided_shading_row_rotation():
     test_data = pd.DataFrame(
         columns=[
             "shaded_row_rotation", "surface_to_axis_offset", "collector_width",
-            "solar_zenith", "cross_axis_tilt", "pitch", "solar_azimuth",
+            "solar_zenith", "cross_axis_slope", "pitch", "solar_azimuth",
             "axis_azimuth", "expected_sf",
         ],
         data=[
@@ -332,8 +331,7 @@ def test_shaded_fraction1d_unprovided_shading_row_rotation():
     assert_allclose(sf, expected_sf, atol=1e-2)
 
 
-@fail_on_pvlib_version("0.15.0")
-def test_shaded_fraction1d_renamed_cross_axis_slope2cross_axis_tilt():
+def test_shaded_fraction1d_renamed_cross_axis_tilt2cross_axis_slope():
     # Tests shaded_fraction1d with cross_axis_slope instead of cross_axis_tilt
     with pytest.warns(pvlibDeprecationWarning, match="cross_axis_slope"):
         shading.shaded_fraction1d(
@@ -344,7 +342,7 @@ def test_shaded_fraction1d_renamed_cross_axis_slope2cross_axis_tilt():
             collector_width=3,
             pitch=7,
             surface_to_axis_offset=0,
-            cross_axis_slope=0,
+            cross_axis_tilt=0,
         )
 
 
@@ -408,3 +406,19 @@ def test_direct_martinez(direct_martinez_Table2):
     test_data, power_losses_expected = direct_martinez_Table2
     power_losses = shading.direct_martinez(**test_data)
     assert_allclose(power_losses, power_losses_expected, atol=5e-3)
+
+
+def test_projected_solar_zenith_angle_renamed_axis_tilt_to_axis_slope():
+    with pytest.warns(pvlibDeprecationWarning, match="axis_slope"):
+        shading.projected_solar_zenith_angle(
+            10, 180, axis_tilt=20, axis_azimuth=30
+        )
+
+
+def test_shaded_fraction1d_renamed_tilt_to_slope():
+    with (pytest.warns(pvlibDeprecationWarning, match="axis_slope"),
+          pytest.warns(pvlibDeprecationWarning, match="cross_axis_slope")):
+        shading.shaded_fraction1d(
+            10, 10, 10, 10, collector_width=2, pitch=0.3,
+            axis_tilt=10, cross_axis_tilt=10
+        )

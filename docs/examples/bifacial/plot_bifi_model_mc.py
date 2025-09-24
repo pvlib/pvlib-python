@@ -43,7 +43,7 @@ tz = 'Etc/GMT+5'
 times = pd.date_range('2021-06-21', '2021-6-22', freq='1T', tz=tz)
 
 # create site system characteristics
-axis_tilt = 0
+axis_slope = 0
 axis_azimuth = 180
 gcr = 0.35
 max_angle = 60
@@ -65,7 +65,7 @@ solar_position = site_location.get_solarposition(times)
 cs = site_location.get_clearsky(times)
 
 # load solar position and tracker orientation for use in pvsystem object
-sat_mount = pvsystem.SingleAxisTrackerMount(axis_tilt=axis_tilt,
+sat_mount = pvsystem.SingleAxisTrackerMount(axis_slope=axis_slope,
                                             axis_azimuth=axis_azimuth,
                                             max_angle=max_angle,
                                             backtrack=True,

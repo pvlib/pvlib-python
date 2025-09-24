@@ -44,12 +44,12 @@ from matplotlib.dates import DateFormatter
 latitude, longitude = 28.51, -13.89
 altitude = pvlib.location.lookup_altitude(latitude, longitude)
 
-axis_tilt = 3  # degrees, positive is upwards in the axis_azimuth direction
+axis_slope = 3  # degrees, positive is upwards in the axis_azimuth direction
 axis_azimuth = 180  # degrees, N-S tracking axis
 collector_width = 3.2  # m
 pitch = 4.15  # m
 gcr = collector_width / pitch
-cross_axis_tilt = -5  # degrees
+cross_axis_slope = -5  # degrees
 surface_to_axis_offset = 0.07  # m
 
 # Generate a time range for the simulation
@@ -71,12 +71,12 @@ solar_zenith = solar_position["apparent_zenith"]
 rotation_angle = pvlib.tracking.singleaxis(
     solar_zenith,
     solar_azimuth,
-    axis_tilt,
+    axis_slope,
     axis_azimuth,
     max_angle=(-50, 50),  # (min, max) degrees
     backtrack=False,
     gcr=gcr,
-    cross_axis_tilt=cross_axis_tilt,
+    cross_axis_slope=cross_axis_slope,
 )["tracker_theta"]
 
 # %%
@@ -95,7 +95,7 @@ rotation_angle = pvlib.tracking.singleaxis(
 # failure or with a different system configuration.
 
 psza = pvlib.shading.projected_solar_zenith_angle(
-    solar_zenith, solar_azimuth, axis_tilt, axis_azimuth
+    solar_zenith, solar_azimuth, axis_slope, axis_azimuth
 )
 
 # Calculate the shaded fraction for the eastmost row
@@ -108,11 +108,11 @@ eastmost_shaded_fraction = np.where(
         solar_azimuth,
         axis_azimuth,
         shaded_row_rotation=rotation_angle,
-        axis_tilt=axis_tilt,
+        axis_slope=axis_slope,
         collector_width=collector_width,
         pitch=pitch,
         surface_to_axis_offset=surface_to_axis_offset,
-        cross_axis_tilt=cross_axis_tilt,
+        cross_axis_slope=cross_axis_slope,
         shading_row_rotation=rotation_angle,
     ),
 )
@@ -126,11 +126,11 @@ middle_shaded_fraction = np.where(
         solar_azimuth,
         axis_azimuth,
         shaded_row_rotation=rotation_angle,
-        axis_tilt=axis_tilt,
+        axis_slope=axis_slope,
         collector_width=collector_width,
         pitch=pitch,
         surface_to_axis_offset=surface_to_axis_offset,
-        cross_axis_tilt=cross_axis_tilt,
+        cross_axis_slope=cross_axis_slope,
         shading_row_rotation=rotation_angle,
     ),
     # shaded fraction in the evening
@@ -139,11 +139,11 @@ middle_shaded_fraction = np.where(
         solar_azimuth,
         axis_azimuth,
         shaded_row_rotation=rotation_angle,
-        axis_tilt=axis_tilt,
+        axis_slope=axis_slope,
         collector_width=collector_width,
         pitch=pitch,
         surface_to_axis_offset=surface_to_axis_offset,
-        cross_axis_tilt=cross_axis_tilt,
+        cross_axis_slope=cross_axis_slope,
         shading_row_rotation=rotation_angle,
     ),
 )
@@ -157,11 +157,11 @@ westmost_shaded_fraction = np.where(
         solar_azimuth,
         axis_azimuth,
         shaded_row_rotation=rotation_angle,
-        axis_tilt=axis_tilt,
+        axis_slope=axis_slope,
         collector_width=collector_width,
         pitch=pitch,
         surface_to_axis_offset=surface_to_axis_offset,
-        cross_axis_tilt=cross_axis_tilt,
+        cross_axis_slope=cross_axis_slope,
         shading_row_rotation=rotation_angle,
     ),
     0,  # no shaded fraction in the evening

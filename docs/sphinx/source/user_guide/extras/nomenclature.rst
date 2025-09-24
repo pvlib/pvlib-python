@@ -44,10 +44,10 @@ There is a convention on consistent variable names throughout the library:
     bhi
         Beam/direct horizontal irradiance
 
-    cross_axis_tilt
+    cross_axis_slope
         Cross-axis tilt angle. [°]
         Consider two parallel rows of modules at different height;
-        ``cross_axis_tilt`` is the angle formed the line formed by the
+        ``cross_axis_slope`` is the angle formed the line formed by the
         intersection between the slope containing the tracker axes and a plane
         perpendicular to the tracker axes, and the horizontal plane.
         Cross-axis tilt is measured by using a right-handed convention.
@@ -55,8 +55,8 @@ There is a convention on consistent variable names throughout the library:
         will have a negative cross-axis tilt if the tracker axes plane slopes
         down to the east and positive cross-axis tilt if the tracker axes plane
         slopes up to the east.
-        Use :func:`~pvlib.tracking.calc_cross_axis_tilt` to calculate
-        ``cross_axis_tilt``
+        Use :func:`~pvlib.tracking.calc_cross_axis_slope` to calculate
+        ``cross_axis_slope``
 
     dhi
         Diffuse horizontal irradiance

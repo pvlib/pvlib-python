@@ -236,15 +236,20 @@ def sky_diffuse_passias(masking_angle):
     return 1 - cosd(masking_angle/2)**2
 
 
+@renamed_kwarg_warning(
+    since="0.13.1",
+    old_param_name="axis_tilt",
+    new_param_name="axis_slope",
+)
 def projected_solar_zenith_angle(solar_zenith, solar_azimuth,
-                                 axis_tilt, axis_azimuth):
+                                 axis_slope, axis_azimuth):
     r"""
     Calculate projected solar zenith angle in degrees.
 
     This solar zenith angle is projected onto the plane whose normal vector is
-    defined by ``axis_tilt`` and ``axis_azimuth``. The normal vector is in the
+    defined by ``axis_slope`` and ``axis_azimuth``. The normal vector is in the
     direction of ``axis_azimuth`` (clockwise from north) and tilted from
-    horizontal by ``axis_tilt``. See Figure 5 in [1]_:
+    horizontal by ``axis_slope``. See Figure 5 in [1]_:
 
     .. figure:: ../../_images/Anderson_Mikofski_2020_Fig5.jpg
        :alt: Wire diagram of coordinates systems to obtain the projected angle.
@@ -259,8 +264,12 @@ def projected_solar_zenith_angle(solar_zenith, solar_azimuth,
         Sun's apparent zenith in degrees.
     solar_azimuth : numeric
         Sun's azimuth in degrees.
-    axis_tilt : numeric
+    axis_slope : numeric
         Axis tilt angle in degrees. From horizontal plane to array plane.
+
+        .. versionchanged:: 0.13.1
+            Renamed from ``axis_tilt`` to ``axis_slope``
+
     axis_azimuth : numeric
         Axis azimuth angle in degrees.
         North = 0°; East = 90°; South = 180°; West = 270°
@@ -294,14 +303,14 @@ def projected_solar_zenith_angle(solar_zenith, solar_azimuth,
     single-axis tracker:
 
     >>> rotation = projected_solar_zenith_angle(solar_zenith, solar_azimuth,
-    >>>                                         axis_tilt=0, axis_azimuth=180)
+    >>>                                         axis_slope=0, axis_azimuth=180)
 
     Calculate the projected zenith angle in a south-facing fixed tilt array
     (note: the ``axis_azimuth`` of a fixed-tilt row points along the length
     of the row):
 
     >>> psza = projected_solar_zenith_angle(solar_zenith, solar_azimuth,
-    >>>                                     axis_tilt=0, axis_azimuth=90)
+    >>>                                     axis_slope=0, axis_azimuth=90)
 
     References
     ----------
@@ -328,7 +337,7 @@ def projected_solar_zenith_angle(solar_zenith, solar_azimuth,
     sind_solar_zenith = sind(solar_zenith)
     cosd_axis_azimuth = cosd(axis_azimuth)
     sind_axis_azimuth = sind(axis_azimuth)
-    sind_axis_tilt = sind(axis_tilt)
+    sind_axis_slope = sind(axis_slope)
 
     # Sun's x, y, z coords
     sx = sind_solar_zenith * sind(solar_azimuth)
@@ -337,9 +346,9 @@ def projected_solar_zenith_angle(solar_zenith, solar_azimuth,
     # Eq. (4); sx', sz' values from sun coordinates projected onto surface
     sx_prime = sx * cosd_axis_azimuth - sy * sind_axis_azimuth
     sz_prime = (
-        sx * sind_axis_azimuth * sind_axis_tilt
-        + sy * sind_axis_tilt * cosd_axis_azimuth
-        + sz * cosd(axis_tilt)
+        sx * sind_axis_azimuth * sind_axis_slope
+        + sy * sind_axis_slope * cosd_axis_azimuth
+        + sz * cosd(axis_slope)
     )
     # Eq. (5); angle between sun's beam and surface
     theta_T = np.degrees(np.arctan2(sx_prime, sz_prime))
@@ -348,9 +357,13 @@ def projected_solar_zenith_angle(solar_zenith, solar_azimuth,
 
 @renamed_kwarg_warning(
     since="0.13.1",
-    old_param_name="cross_axis_slope",
-    new_param_name="cross_axis_tilt",
-    removal="0.15.0",
+    old_param_name="axis_tilt",
+    new_param_name="axis_slope",
+)
+@renamed_kwarg_warning(
+    since="0.13.1",
+    old_param_name="cross_axis_tilt",
+    new_param_name="cross_axis_slope",
 )
 def shaded_fraction1d(
     solar_zenith,
@@ -360,9 +373,9 @@ def shaded_fraction1d(
     *,
     collector_width,
     pitch,
-    axis_tilt=0,
+    axis_slope=0,
     surface_to_axis_offset=0,
-    cross_axis_tilt=0,
+    cross_axis_slope=0,
     shading_row_rotation=None,
 ):
     r"""
@@ -400,15 +413,23 @@ def shaded_fraction1d(
         is the ratio of the shadow over this value.
     pitch : numeric
         Axis-to-axis horizontal spacing of the row.
-    axis_tilt : numeric, default 0
+    axis_slope : numeric, default 0
         Tilt of the rows axis from horizontal. In degrees :math:`^{\circ}`.
+
+        .. versionchanged:: 0.13.1
+            Renamed from ``axis_tilt`` to ``axis_slope``
+
     surface_to_axis_offset : numeric, default 0
         Distance between the rotating axis and the collector surface.
         May be used to account for a torque tube offset.
-    cross_axis_tilt : numeric, default 0
+    cross_axis_slope : numeric, default 0
         Angle of the plane containing the rows' axes relative to
         horizontal. Right-handed rotation with respect to the rows axes.
-        See :term:`cross_axis_tilt`. In degrees :math:`^{\circ}`.
+        See :term:`cross_axis_slope`. In degrees :math:`^{\circ}`.
+
+        .. versionchanged:: 0.13.1
+            Renamed from ``cross_axis_tilt`` to ``cross_axis_slope``
+
     shading_row_rotation : numeric, optional
         Right-handed rotation of the row casting the shadow, with respect
         to the row axis. In degrees :math:`^{\circ}`.
@@ -438,7 +459,7 @@ def shaded_fraction1d(
     +------------------+----------------------------+                     |
     | :math:`\theta_2` | ``shaded_row_rotation``    | Degrees             |
     +------------------+----------------------------+ :math:`^{\circ}`    |
-    | :math:`\beta_c`  | ``cross_axis_tilt``        |                     |
+    | :math:`\beta_c`  | ``cross_axis_slope``       |                     |
     +------------------+----------------------------+---------------------+
     | :math:`p`        | ``pitch``                  | Any consistent      |
     +------------------+----------------------------+ length unit across  |
@@ -459,8 +480,8 @@ def shaded_fraction1d(
 
     >>> shaded_fraction1d(solar_zenith=80, solar_azimuth=135,
     ...     axis_azimuth=90, shaded_row_rotation=30, shading_row_rotation=30,
-    ...     collector_width=2, pitch=3, axis_tilt=0,
-    ...     surface_to_axis_offset=0.05, cross_axis_tilt=0)
+    ...     collector_width=2, pitch=3, axis_slope=0,
+    ...     surface_to_axis_offset=0.05, cross_axis_slope=0)
     0.47755694708090535
 
     **Fixed-tilt north-facing array on sloped terrain**
@@ -473,8 +494,8 @@ def shaded_fraction1d(
 
     >>> shaded_fraction1d(solar_zenith=80, solar_azimuth=75.5,
     ...     axis_azimuth=270, shaded_row_rotation=50, shading_row_rotation=30,
-    ...     collector_width=2.5, pitch=4, axis_tilt=10,
-    ...     surface_to_axis_offset=0.05, cross_axis_tilt=0)
+    ...     collector_width=2.5, pitch=4, axis_slope=10,
+    ...     surface_to_axis_offset=0.05, cross_axis_slope=0)
     0.793244836197256
 
     **N-S single-axis tracker on sloped terrain**
@@ -485,8 +506,8 @@ def shaded_fraction1d(
     tracker is higher than the west-most tracker).
 
     >>> shaded_fraction1d(solar_zenith=80, solar_azimuth=90, axis_azimuth=180,
-    ...     shaded_row_rotation=-30, collector_width=1.4, pitch=3, axis_tilt=0,
-    ...     surface_to_axis_offset=0.10, cross_axis_tilt=7)
+    ...     shaded_row_rotation=-30, collector_width=1.4, pitch=3,
+    ...     axis_slope=0, surface_to_axis_offset=0.10, cross_axis_slope=7)
     0.8242176864434579
 
     Note the previous example only is valid for the shaded fraction of the
@@ -500,8 +521,8 @@ def shaded_fraction1d(
     in the afternoon.
 
     >>> shaded_fraction1d(solar_zenith=80, solar_azimuth=270, axis_azimuth=180,
-    ...     shaded_row_rotation=30, collector_width=1.4, pitch=3, axis_tilt=0,
-    ...     surface_to_axis_offset=0.10, cross_axis_tilt=7)
+    ...     shaded_row_rotation=30, collector_width=1.4, pitch=3, axis_slope=0,
+    ...     surface_to_axis_offset=0.10, cross_axis_slope=7)
     0.018002567182254348
 
     You must switch the input/output depending on the
@@ -529,14 +550,14 @@ def shaded_fraction1d(
     projected_solar_zenith = projected_solar_zenith_angle(
         solar_zenith,
         solar_azimuth,
-        axis_tilt,
+        axis_slope,
         axis_azimuth,
     )
 
     # calculate repeated elements
     thetas_1_S_diff = shading_row_rotation - projected_solar_zenith
     thetas_2_S_diff = shaded_row_rotation - projected_solar_zenith
-    thetaS_rotation_diff = projected_solar_zenith - cross_axis_tilt
+    thetaS_rotation_diff = projected_solar_zenith - cross_axis_slope
 
     cos_theta_2_S_diff_abs = np.abs(cosd(thetas_2_S_diff))
 
@@ -556,7 +577,7 @@ def shaded_fraction1d(
             / collector_width
             * cosd(thetaS_rotation_diff)
             / cos_theta_2_S_diff_abs
-            / cosd(cross_axis_tilt)
+            / cosd(cross_axis_slope)
         )
     )
 
@@ -668,7 +689,7 @@ def direct_martinez(
     >>>     solar_zenith=80, solar_azimuth=180,
     >>>     axis_azimuth=90, shaded_row_rotation=25,
     >>>     collector_width=0.5, pitch=1, surface_to_axis_offset=0,
-    >>>     cross_axis_tilt=5.711, shading_row_rotation=50)
+    >>>     cross_axis_slope=5.711, shading_row_rotation=50)
     >>> # calculation of the number of shaded blocks
     >>> shaded_blocks = np.ceil(total_blocks*shaded_fraction)
     >>> # apply the Martinez power losses to the calculated shading

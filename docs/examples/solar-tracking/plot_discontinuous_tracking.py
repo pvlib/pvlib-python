@@ -26,7 +26,7 @@ import pandas as pd
 
 class DiscontinuousTrackerMount(pvsystem.SingleAxisTrackerMount):
     # inherit from SingleAxisTrackerMount so that we get the
-    # constructor and tracking attributes (axis_tilt etc) automatically
+    # constructor and tracking attributes (axis_slope etc) automatically
 
     def get_orientation(self, solar_zenith, solar_azimuth):
         # Different trackers update at different rates; in this example we'll
@@ -37,9 +37,9 @@ class DiscontinuousTrackerMount(pvsystem.SingleAxisTrackerMount):
 
         tracking_data_15min = tracking.singleaxis(
             zenith_subset, azimuth_subset,
-            self.axis_tilt, self.axis_azimuth,
+            self.axis_slope, self.axis_azimuth,
             self.max_angle, self.backtrack,
-            self.gcr, self.cross_axis_tilt
+            self.gcr, self.cross_axis_slope
         )
         # propagate the 15-minute positions to 1-minute stair-stepped values:
         tracking_data_1min = tracking_data_15min.reindex(solar_zenith.index,

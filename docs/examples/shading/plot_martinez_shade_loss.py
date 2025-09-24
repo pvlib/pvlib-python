@@ -54,8 +54,8 @@ width = 1.5  # meters
 gcr = width / pitch  # ground coverage ratio
 N_modules_per_row = 6
 axis_azimuth = 180  # N-S axis
-axis_tilt = 0  # flat because the axis is perpendicular to the slope
-cross_axis_tilt = -7  # 7 degrees downward to the east
+axis_slope = 0  # flat because the axis is perpendicular to the slope
+cross_axis_slope = -7  # 7 degrees downward to the east
 
 latitude, longitude = 40.2712, -3.7277
 locus = pvlib.location.Location(
@@ -91,12 +91,12 @@ solar_apparent_zenith, solar_azimuth = (
 tracking_result = pvlib.tracking.singleaxis(
     apparent_zenith=solar_apparent_zenith,
     solar_azimuth=solar_azimuth,
-    axis_tilt=axis_tilt,
+    axis_slope=axis_slope,
     axis_azimuth=axis_azimuth,
-    max_angle=(-90 + cross_axis_tilt, 90 + cross_axis_tilt),  # (min, max)
+    max_angle=(-90 + cross_axis_slope, 90 + cross_axis_slope),  # (min, max)
     backtrack=False,
     gcr=gcr,
-    cross_axis_tilt=cross_axis_tilt,
+    cross_axis_slope=cross_axis_slope,
 )
 
 tracker_theta, aoi, surface_tilt, surface_azimuth = (
@@ -111,12 +111,12 @@ shaded_fraction = pvlib.shading.shaded_fraction1d(
     solar_apparent_zenith,
     solar_azimuth,
     axis_azimuth,
-    axis_tilt=axis_tilt,
+    axis_slope=axis_slope,
     shaded_row_rotation=tracker_theta,
     shading_row_rotation=tracker_theta,
     collector_width=width,
     pitch=pitch,
-    cross_axis_tilt=cross_axis_tilt,
+    cross_axis_slope=cross_axis_slope,
 )
 
 # %%

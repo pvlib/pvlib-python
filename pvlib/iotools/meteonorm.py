@@ -532,19 +532,21 @@ def _get_meteonorm(
 
     # Check for None type in case of TMY request
     # Check for DateParseError in case of relative times, e.g., '+3hours'
+    # TODO: remove ValueError when our minimum pandas version is high enough
+    # to make it unnecessary (2.0?)
     if (start is not None) & (start != 'now'):
         try:
             start = pd.Timestamp(start)
             start = start.tz_localize("UTC") if start.tzinfo is None else start
             start = start.strftime("%Y-%m-%dT%H:%M:%SZ")
-        except DateParseError:
+        except (ValueError, DateParseError):
             pass
     if (end is not None) & (end != 'now'):
         try:
             end = pd.Timestamp(end)
             end = end.tz_localize("UTC") if end.tzinfo is None else end
             end = end.strftime("%Y-%m-%dT%H:%M:%SZ")
-        except DateParseError:
+        except (ValueError, DateParseError):
             pass
 
     params = {

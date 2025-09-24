@@ -13,14 +13,14 @@ Deprecations
 * Deprecate :py:func:`~pvlib.modelchain.get_orientation`. (:pull:`2495`)
 * Rename parameter name ``apparent_azimuth`` to ``solar_azimuth`` in :py:func:`~pvlib.tracking.singleaxis`.
   (:issue:`2479`, :pull:`2480`)
-* Rename ``axis_tilt`` and ``cross_axis_tilt`` terms to ``axis_slope`` and ``cross_axis_slope`` all through the project. Affects:
+* Rename ``axis_tilt`` and ``cross_axis_tilt`` to ``axis_slope`` and ``cross_axis_slope`` all through the project. Affects:
 
   - :py:func:`pvlib.shading.shaded_fraction1d` parameters ``cross_axis_tilt`` and ``axis_tilt``
   - :py:func:`pvlib.shading.projected_solar_zenith_angle` parameter ``axis_tilt``
   - :py:func:`pvlib.tracking.singleaxis` parameters ``cross_axis_tilt`` and ``axis_tilt``
   - :py:func:`pvlib.tracking.calc_surface_orientation` parameter ``axis_tilt``
-  - :py:func:`!pvlib.tracking.calc_axis_tilt` function signature is renamed to :py:func:`pvlib.tracking.calc_axis_slope`
-  - :py:func:`!pvlib.tracking.calc_cross_axis_tilt` function signature is renamed to :py:func:`pvlib.tracking.calc_cross_axis_slope` and parameter ``axis_tilt``
+  - :py:func:`!pvlib.tracking.calc_axis_tilt` function is renamed to :py:func:`~pvlib.tracking.calc_axis_slope`
+  - :py:func:`!pvlib.tracking.calc_cross_axis_tilt` function is renamed to :py:func:`~pvlib.tracking.calc_cross_axis_slope`, and its parameter ``axis_tilt``
   - :py:class:`pvlib.pvsystem.SingleAxisTrackerMount` dataclass fields ``axis_tilt`` and ``cross_axis_tilt``
 
   (:issue:`2334`, :pull:`2543`)

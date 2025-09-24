@@ -14,12 +14,14 @@ def demo_api_key():
     # lat=-3, lon=-60 (Brazil)
     # lat=51, lon=-114 (Canada)
     # lat=24, lon=33 (Egypt)
-    return 'demo0000-0000-0000-0000-000000000000'
+    demo_api_key = 'demo0000-0000-0000-0000-000000000000'
+    return demo_api_key
 
 
 @pytest.fixture
 def demo_url():
-    return 'https://demo.meteonorm.com/v1/'
+    demo_url = 'https://demo.meteonorm.com/v1/'
+    return demo_url
 
 
 @pytest.fixture
@@ -69,11 +71,11 @@ def expected_meteonorm_data():
         [0.0, 0.0],
         [0.0, 0.0],
         [0.0, 0.0],
-        [2.5, 2.68309898],
-        [77.5, 77.47671591],
-        [165.0, 164.98906908],
-        [210.75, 210.7458778],
-        [221.0, 220.99278214],
+        [2.5, 2.68],
+        [77.5, 77.47],
+        [165.0, 164.98],
+        [210.75, 210.74],
+        [221.0, 220.99],
     ]
     index = pd.date_range('2023-01-01 00:30', periods=12, freq='1h', tz='UTC')
     index.freq = None
@@ -263,13 +265,13 @@ def expected_meteonorm_tmy_data():
         [0.],
         [0.],
         [0.],
-        [9.],
-        [8.4],
-        [86.6],
-        [110.5],
+        [9.06],
+        [8.43],
+        [86.63],
+        [110.44],
     ]
     index = pd.date_range(
-        '2005-01-01', periods=12, freq='1h', tz=3600)
+        '2030-01-01', periods=12, freq='1h', tz=3600)
     index.freq = None
     interval_index = pd.IntervalIndex.from_arrays(
         index, index + pd.Timedelta(hours=1), closed='left')

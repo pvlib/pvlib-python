@@ -295,7 +295,7 @@ def test_horizon_tilted():
 def test_low_sun_angles():
     # GH 656, 824
     result = tracking.singleaxis(
-        apparent_zenith=80, apparent_azimuth=338, axis_slope=30,
+        apparent_zenith=80, solar_azimuth=338, axis_tilt=30,
         axis_azimuth=180, max_angle=60, backtrack=True, gcr=0.35)
     expected = {
         'tracker_theta': np.array([60.0]),

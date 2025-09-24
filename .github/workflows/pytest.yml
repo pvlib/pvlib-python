@@ -12,12 +12,12 @@ jobs:
       fail-fast: false  # don't cancel other matrix jobs when one fails
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        python-version: [3.9, "3.10", "3.11", "3.12", "3.13"]
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
         environment-type: [conda, bare]
         suffix: ['']  # placeholder as an alternative to "-min"
         include:
           - os: ubuntu-latest
-            python-version: 3.9
+            python-version: "3.10"
             environment-type: conda
             suffix: -min
         exclude:
@@ -83,7 +83,7 @@ jobs:
           pytest tests --cov=./ --cov-report=xml --ignore=tests/iotools
 
       - name: Upload coverage to Codecov
-        if: matrix.python-version == 3.9 && matrix.suffix == '' && matrix.os == 'ubuntu-latest' && matrix.environment-type == 'conda'
+        if: matrix.python-version == '3.10' && matrix.suffix == '' && matrix.os == 'ubuntu-latest' && matrix.environment-type == 'conda'
         uses: codecov/codecov-action@v4
         with:
           fail_ci_if_error: true

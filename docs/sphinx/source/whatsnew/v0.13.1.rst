@@ -4,10 +4,6 @@
 v0.13.1 (Anticipated September, 2025)
 -------------------------------------
 
-Breaking Changes
-~~~~~~~~~~~~~~~~
-
-
 Deprecations
 ~~~~~~~~~~~~
 * Deprecate :py:func:`~pvlib.modelchain.get_orientation`. (:pull:`2495`)
@@ -21,8 +17,9 @@ Bug fixes
 
 Enhancements
 ~~~~~~~~~~~~
-* Add new parameters for the Huld PV array mode :py:func:`~pvlib.pvarray.huld` (:issue:`2461`, :pull:`2486`)
-* Add k coefficient in :py:func:`~pvlib.temperature.ross`
+* Add option to use the latest parameters for the Huld PV array model
+  :py:func:`~pvlib.pvarray.huld`. (:issue:`2461`, :pull:`2486`)
+* Add option to specify ``k`` coefficient in :py:func:`~pvlib.temperature.ross`.
   (:issue:`2506`, :pull:`2521`)
 * Add iotools functions to retrieve irradiance and weather data from Meteonorm:
   :py:func:`~pvlib.iotools.get_meteonorm_forecast_basic`, :py:func:`~pvlib.iotools.get_meteonorm_forecast_precision`,
@@ -33,8 +30,8 @@ Enhancements
   (:pull:`2500`)
 * :py:func:`pvlib.spectrum.spectral_factor_firstsolar` no longer emits warnings
   when airmass and precipitable water values fall out of range. (:pull:`2512`)
-* Allows reading TMY data from a Path or file-like object in :py:func:`~pvlib.iotools.read_tmy3`.
-  (:pull:`2544`, :ghuser:`jerluc`)
+* Allow reading TMY data from a Path or file-like object in :py:func:`~pvlib.iotools.read_tmy3`.
+  (:pull:`2544`)
 
 Documentation
 ~~~~~~~~~~~~~
@@ -48,15 +45,7 @@ Documentation
   Modeling Topics section of the user guide, documenting pvlib-python's spectrum
   functionality, which includes a comparison table of spectral mismatch estimation
   models. (:issue:`2329`, :pull:`2353`)
-
-
-Testing
-~~~~~~~
-
-
-Benchmarking
-~~~~~~~~~~~~
-
+* Fix FAQ URL in ``README.md``. (:pull:`2488`)
 
 Requirements
 ~~~~~~~~~~~~
@@ -65,22 +54,19 @@ Requirements
 * Advance minimum scipy to 1.7.2. (:pull:`2547`)
 * Advance minimum pandas to 1.3.3. (:pull:`2547`)
 
-
 Maintenance
 ~~~~~~~~~~~
-* Fix FAQ URL in ``README.md``. (:pull:`2488`)
-
+* Switch to using Trusted Publishing for deploying releases to PyPI. (:issue:`2511`, :pull:`2549`)
 
 Contributors
 ~~~~~~~~~~~~
 * Elijah Passmore (:ghuser:`eljpsm`)
 * Omar Bahamida (:ghuser:`OmarBahamida`)
 * Cliff Hansen (:ghuser:`cwhanse`)
-
 * Ioannis Sifnaios (:ghuser:`IoannisSifnaios`)
 * Rajiv Daxini (:ghuser:`RDaxini`)
-* Omar Bahamida (:ghuser:`OmarBahamida`)
 * Rodrigo Amaro e Silva (:ghuser:`ramaroesilva`)
 * Kevin Anderson (:ghuser:`kandersolar`)
 * Mikaella Brewer (:ghuser:`brwerx`)
 * Will Holmgren (:ghuser:`wholmgren`)
+* Jeremy Lucas (:ghuser:`jerluc`)

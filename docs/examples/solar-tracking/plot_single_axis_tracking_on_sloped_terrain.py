@@ -145,7 +145,7 @@ axis_slope = tracking.calc_axis_slope(slope_azimuth, slope_tilt, axis_azimuth)
 
 # calculate the cross-axis tilt:
 cross_axis_slope = tracking.calc_cross_axis_slope(slope_azimuth, slope_tilt,
-                                                axis_azimuth, axis_slope)
+                                                  axis_azimuth, axis_slope)
 
 print('Axis tilt:', '{:0.01f}°'.format(axis_slope))
 print('Cross-axis tilt:', '{:0.01f}°'.format(cross_axis_slope))

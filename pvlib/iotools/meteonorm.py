@@ -537,14 +537,14 @@ def _get_meteonorm(
             start = pd.Timestamp(start)
             start = start.tz_localize("UTC") if start.tzinfo is None else start
             start = start.strftime("%Y-%m-%dT%H:%M:%SZ")
-        except DateParseError:
+        except (ValueError, DateParseError):
             pass
     if (end is not None) & (end != 'now'):
         try:
             end = pd.Timestamp(end)
             end = end.tz_localize("UTC") if end.tzinfo is None else end
             end = end.strftime("%Y-%m-%dT%H:%M:%SZ")
-        except DateParseError:
+        except (ValueError, DateParseError):
             pass
 
     params = {

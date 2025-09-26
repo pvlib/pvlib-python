@@ -796,7 +796,7 @@ def haydavies(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
             * sky_diffuse: Total sky diffuse
             * isotropic
             * circumsolar
-            * horizon
+            * horizon (always zero, not accounted for by the Hay-Davies model)
 
     Notes
     ------

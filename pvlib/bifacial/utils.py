@@ -313,10 +313,6 @@ def vf_ground_sky_2d_integ(tracker_rotation, gcr, height, pitch, g0=0, g1=1,
     )
 
     # hottel string lengths, considering obstructions
-    #ac = _obstructed_string_length(a, c, ob_left, ob_right)
-    #ad = _obstructed_string_length(a, d, ob_left, ob_right)
-    #bc = _obstructed_string_length(b, c, ob_left, ob_right)
-    #bd = _obstructed_string_length(b, d, ob_left, ob_right)
     ac, ad, bc, bd = _obstructed_string_lengths(a, b, c, d, ob_left, ob_right)
 
     # crossed string formula for VF
@@ -539,10 +535,6 @@ def vf_row_ground_2d_integ(surface_tilt, gcr, height, pitch,
     d = ((k+g1)*pitch, 0)
 
     # hottel string lengths, considering obstructions
-    #ac = _obstructed_string_length(a, c, ob_left, ob_right)
-    #ad = _obstructed_string_length(a, d, ob_left, ob_right)
-    #bc = _obstructed_string_length(b, c, ob_left, ob_right)
-    #bd = _obstructed_string_length(b, d, ob_left, ob_right)
     ac, ad, bc, bd = _obstructed_string_lengths(a, b, c, d, ob_left, ob_right)
 
     # crossed string formula for VF
@@ -619,22 +611,3 @@ def _dist(p1, p2):
 
 def _angle(p1, p2):
     return np.arctan2(p2[1] - p1[1], p2[0] - p1[0])
-
-
-# def _obstructed_string_length(p1, p2, ob_left, ob_right):
-#     # string length calculations for Hottel's crossed strings method,
-#     # considering view obstructions from the left and right.
-#     # all inputs are (x, y) points.
-
-#     # unobstructed length
-#     d = _dist(p1, p2)
-#     angle_p1_p2 = _angle(p1, p2)
-#     # obstructed on the left
-#     d = np.where(angle_p1_p2 - _angle(p1, ob_left) > 1e-6,
-#                  _dist(p1, ob_left) + _dist(ob_left, p2),
-#                  d)
-#     # obstructed on the right
-#     d = np.where(_angle(p1, ob_right) - angle_p1_p2 > 1e-6,
-#                  _dist(p1, ob_right) + _dist(ob_right, p2),
-#                  d)
-#     return d

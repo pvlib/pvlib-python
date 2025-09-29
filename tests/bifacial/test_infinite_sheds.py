@@ -60,20 +60,21 @@ def test__poa_ground_shadows():
 
 
 def test__shaded_fraction_floats():
+    # inputs correspond to solar_zenith=60, surface_azimuth=solar_azimuth=180
     result = infinite_sheds._shaded_fraction(
-        solar_zenith=60., solar_azimuth=180., surface_tilt=60.,
-        surface_azimuth=180., gcr=1.0)
+        surface_tilt=60., tan_phi=np.sqrt(3), aoi=0, gcr=1.0)
     assert np.isclose(result, 0.5)
 
 
 def test__shaded_fraction_array():
-    solar_zenith = np.array([0., 60., 90., 60.])
-    solar_azimuth = np.array([180., 180., 180., 180.])
-    surface_azimuth = np.array([180., 180., 180., 210.])
+    #solar_zenith = np.array([0., 60., 90., 60.])
+    #solar_azimuth = np.array([180., 180., 180., 180.])
+    #surface_azimuth = np.array([180., 180., 180., 210.])
     surface_tilt = np.array([30., 60., 0., 30.])
+    aoi = np.array([30, 0, 90, 36.09778103])
+    tan_phi = np.array([0, np.sqrt(3), 1e10, 1.5])
     gcr = 1.0
-    result = infinite_sheds._shaded_fraction(
-        solar_zenith, solar_azimuth, surface_tilt, surface_azimuth, gcr)
+    result = infinite_sheds._shaded_fraction(surface_tilt, tan_phi, aoi, gcr)
     x = 0.75 + np.sqrt(3) / 2
     expected = np.array([0.0, 0.5, 0., (x - 1) / x])
     assert np.allclose(result, expected)

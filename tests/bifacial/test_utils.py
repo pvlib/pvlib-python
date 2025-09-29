@@ -53,29 +53,27 @@ def test__solar_projection_tangent():
 
 
 @pytest.mark.parametrize(
-    "gcr,surface_tilt,surface_azimuth,solar_zenith,solar_azimuth,expected",
-    [(0.5, 0., 180., 0., 180., 0.5),
-     (1.0, 0., 180., 0., 180., 0.0),
-     (1.0, 90., 180., 0., 180., 1.0),
-     (0.5, 45., 180., 45., 270., 1.0 - np.sqrt(2) / 4),
-     (0.5, 45., 180., 90., 180., 0.),
-     (np.sqrt(2) / 2, 45, 180, 0, 180, 0.5),
-     (np.sqrt(2) / 2, 45, 180, 45, 180, 0.0),
-     (np.sqrt(2) / 2, 45, 180, 45, 90, 0.5),
-     (np.sqrt(2) / 2, 45, 180, 45, 0, 1.0),
-     (np.sqrt(2) / 2, 45, 180, 45, 135, 0.5 * (1 - np.sqrt(2) / 2)),
+    "gcr,surface_tilt,tan_phi,solar_zenith,expected",
+    [(0.5, 0., 0., 0., 0.5),
+     (1.0, 0., 0., 0., 0.0),
+     (1.0, 90., 0., 0., 1.0),
+     (0.5, 45., 0., 45., 1.0 - np.sqrt(2) / 4),
+     (0.5, 45., 1e10, 90., 0.),
+     (np.sqrt(2) / 2, 45, 0, 0, 0.5),
+     (np.sqrt(2) / 2, 45, 1, 45, 0.0),
+     (np.sqrt(2) / 2, 45, 0, 45, 0.5),
+     (np.sqrt(2) / 2, 45, -1, 45, 1.0),
+     (np.sqrt(2) / 2, 45, np.sqrt(2) / 2, 45, 0.5 * (1 - np.sqrt(2) / 2)),
      ])
 def test__unshaded_ground_fraction(
-        surface_tilt, surface_azimuth, solar_zenith, solar_azimuth, gcr,
-        expected):
+        surface_tilt, tan_phi, solar_zenith, gcr, expected):
     # frontside, same for both sides
     f_sky_beam_f = utils._unshaded_ground_fraction(
-        surface_tilt, surface_azimuth, solar_zenith, solar_azimuth, gcr)
+        surface_tilt, tan_phi, gcr, solar_zenith)
     assert np.allclose(f_sky_beam_f, expected)
     # backside, should be the same as frontside
     f_sky_beam_b = utils._unshaded_ground_fraction(
-        180. - surface_tilt, surface_azimuth - 180., solar_zenith,
-        solar_azimuth, gcr)
+        180. - surface_tilt, -tan_phi, gcr, solar_zenith)
     assert np.allclose(f_sky_beam_b, expected)
 
 
@@ -161,7 +159,7 @@ def test_vf_row_ground_2d(test_system_fixed_tilt):
     assert np.allclose(vf, expected)
 
 
-def test_vf_ground_2d_integ(test_system_fixed_tilt):
+def test_vf_row_ground_2d_integ(test_system_fixed_tilt):
     ts, _, _ = test_system_fixed_tilt
     # with float input, check end position
     with np.errstate(invalid='ignore'):

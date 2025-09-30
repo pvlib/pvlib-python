@@ -4,6 +4,8 @@ import datetime
 import re
 import pandas as pd
 
+from pvlib.tools import _file_context_manager
+
 # Dictionary mapping TMY3 names to pvlib names
 VARIABLE_MAP = {
     'GHI (W/m^2)': 'ghi',
@@ -35,7 +37,7 @@ def read_tmy3(filename, coerce_year=None, map_variables=True, encoding=None):
 
     Parameters
     ----------
-    filename : str
+    filename : str, Path, or file-like object
         A relative file path or absolute file path.
     coerce_year : int, optional
         If supplied, the year of the index will be set to ``coerce_year``, except
@@ -186,7 +188,7 @@ def read_tmy3(filename, coerce_year=None, map_variables=True, encoding=None):
     """  # noqa: E501
     head = ['USAF', 'Name', 'State', 'TZ', 'latitude', 'longitude', 'altitude']
 
-    with open(str(filename), 'r', encoding=encoding) as fbuf:
+    with _file_context_manager(filename, mode="r", encoding=encoding) as fbuf:
         # header information on the 1st line (0 indexing)
         firstline = fbuf.readline()
         # use pandas to read the csv file buffer

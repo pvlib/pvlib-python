@@ -142,12 +142,17 @@ vf_ground_sky = pvlib.bifacial.utils.vf_ground_sky_2d_integ(
     pitch=pitch,
 )
 
-unshaded_ground_fraction = pvlib.bifacial.utils._unshaded_ground_fraction(
-    surface_tilt=tracking_orientations['surface_tilt'],
-    surface_azimuth=tracking_orientations['surface_azimuth'],
+projected_zenith_angle_tan = pvlib.bifacial.utils._solar_projection_tangent(
     solar_zenith=solpos['apparent_zenith'],
     solar_azimuth=solpos['azimuth'],
+    surface_azimuth=tracking_orientations['surface_azimuth'],
+)
+
+unshaded_ground_fraction = pvlib.bifacial.utils._unshaded_ground_fraction(
+    surface_tilt=tracking_orientations['surface_tilt'],
+    tan_phi=projected_zenith_angle_tan,
     gcr=gcr,
+    solar_zenith=solpos['apparent_zenith'],
 )
 
 crop_avg_irradiance = (unshaded_ground_fraction * clearsky['dni']

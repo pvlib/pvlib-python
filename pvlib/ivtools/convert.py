@@ -1,8 +1,9 @@
 """
-The ``sdm`` module contains functions to fit single diode models.
+The ``convert`` module contains functions to convert between single diode
+models.
 
-Function names should follow the pattern "fit_" + name of model + "_" +
- fitting method.
+Function names should follow the pattern "convert_" + name of source model +
+ "_" + name of target method + "_" + name of conversion method.
 
 """
 
@@ -132,12 +133,13 @@ def convert_cec_pvsyst(cec_model, cells_in_series, method='Nelder-Mead',
 
     See Also
     --------
-    pvlib.ivtools.sdm.convert_pvsyst_cec
+    pvlib.ivtools.convert.convert_pvsyst_cec
 
     References
     ----------
     .. [1] L. Deville et al., "Parameter Translation for Photovoltaic Single
-       Diode Models", submitted. 2024
+       Diode Models", Journal of Photovoltaics, vol. 15(3), pp. 451-457,
+       May 2025. :doi:`10.1109/jphotov.2025.3539319`
 
     .. [2] "IEC 61853-3 Photovoltaic (PV) module performance testing and energy
        rating - Part 3: Energy rating of PV modules". IEC, Geneva, 2018.
@@ -276,12 +278,13 @@ def convert_pvsyst_cec(pvsyst_model, method='Nelder-Mead', options=None):
 
     See Also
     --------
-    pvlib.ivtools.sdm.convert_cec_pvsyst
+    pvlib.ivtools.convert.convert_cec_pvsyst
 
     References
     ----------
     .. [1] L. Deville et al., "Parameter Translation for Photovoltaic Single
-       Diode Models", submitted. 2024.
+       Diode Models", Journal of Photovoltaics, vol. 15(3), pp. 451-457,
+       May 2025. :doi:`10.1109/jphotov.2025.3539319`
 
     .. [2] "IEC 61853-3 Photovoltaic (PV) module performance testing and energy
        rating - Part 3: Energy rating of PV modules". IEC, Geneva, 2018.

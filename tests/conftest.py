@@ -3,8 +3,8 @@ import platform
 import warnings
 
 import pandas as pd
+import scipy
 import os
-import sys
 from packaging.version import Version
 import pytest
 from functools import wraps
@@ -197,10 +197,9 @@ requires_pandas_2_0 = pytest.mark.skipif(not has_pandas_2_0,
 
 # single-diode equation functions have method=='chandrupatla', which relies
 # on scipy.optimize.elementwise.find_root, which is only available in
-# scipy>=1.15.  That is only available for python 3.10 and above, so
-# we need to skip those tests on python 3.9.
-# TODO remove this when we drop support for python 3.9.
-chandrupatla_available = sys.version_info >= (3, 10)
+# scipy>=1.15.
+# TODO remove this when our minimum scipy is >=1.15
+chandrupatla_available = Version(scipy.__version__) >= Version("1.15.0")
 chandrupatla = pytest.param(
     "chandrupatla", marks=pytest.mark.skipif(not chandrupatla_available,
                                              reason="needs scipy 1.15")

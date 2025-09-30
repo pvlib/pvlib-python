@@ -67,9 +67,9 @@ def test__shaded_fraction_floats():
 
 
 def test__shaded_fraction_array():
-    #solar_zenith = np.array([0., 60., 90., 60.])
-    #solar_azimuth = np.array([180., 180., 180., 180.])
-    #surface_azimuth = np.array([180., 180., 180., 210.])
+    # solar_zenith = np.array([0., 60., 90., 60.])
+    # solar_azimuth = np.array([180., 180., 180., 180.])
+    # surface_azimuth = np.array([180., 180., 180., 210.])
     surface_tilt = np.array([30., 60., 0., 30.])
     aoi = np.array([30, 0, 90, 36.09778103])
     tan_phi = np.array([0, np.sqrt(3), 1e10, 1.5])

@@ -9,6 +9,7 @@ Irradiance
    class-methods
    components
    transposition
+   reverse-transposition
    decomposition
    clearness-index
    albedo

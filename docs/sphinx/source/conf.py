@@ -56,10 +56,29 @@ extensions = [
     'sphinx_gallery.gen_gallery',
     'sphinx_toggleprompt',
     'sphinx_favicon',
+    'hoverxref.extension',
 ]
 
 mathjax3_config = {'chtml': {'displayAlign': 'left',
                              'displayIndent': '2em'}}
+
+# Example configuration for intersphinx: refer to the Python standard library.
+intersphinx_mapping = {
+    'python': ('https://docs.python.org/3/', None),
+    'numpy': ('https://numpy.org/doc/stable/', None),
+    'scipy': ('https://docs.scipy.org/doc/scipy/', None),
+    'pandas': ('https://pandas.pydata.org/pandas-docs/stable', None),
+    'matplotlib': ('https://matplotlib.org/stable', None),
+}
+
+# Enable hover tooltips
+hoverxref_auto_ref = True
+hoverxref_roles = [
+    "class", "meth", "func", "ref", "term", "obj", "mod", "data"
+]
+hoverxref_role_types = dict.fromkeys(hoverxref_roles, "tooltip")
+hoverxref_domains = ["py"]
+hoverxref_intersphinx = list(intersphinx_mapping.keys())
 
 napoleon_use_rtype = False  # group rtype on same line together with return
 
@@ -263,6 +282,8 @@ def setup(app):
     app.add_css_file("reference_format.css")
     # Add a warning banner at the top of the page if viewing the "latest" docs
     app.add_js_file("version-alert.js")
+    # Match the color theme of tooltips to PyData Sphinx Theme light/dark mode
+    app.add_css_file("tooltipster_color_theming.css")
 
 # -- Options for LaTeX output ---------------------------------------------
 
@@ -357,15 +378,6 @@ texinfo_documents = [
 # If true, do not generate a @detailmenu in the "Top" node's menu.
 # texinfo_no_detailmenu = False
 
-# Example configuration for intersphinx: refer to the Python standard library.
-intersphinx_mapping = {
-    'python': ('https://docs.python.org/3/', None),
-    'numpy': ('https://numpy.org/doc/stable/', None),
-    'scipy': ('https://docs.scipy.org/doc/scipy/reference/', None),
-    'pandas': ('https://pandas.pydata.org/pandas-docs/stable', None),
-    'matplotlib': ('https://matplotlib.org/stable', None),
-}
-
 ipython_warning_is_error = False
 
 # suppress "WARNING: Footnote [1] is not referenced." messages
@@ -398,6 +410,41 @@ warnings.filterwarnings("ignore", category=UserWarning,
 # %% helper functions for intelligent "View on Github" linking
 # based on
 # https://gist.github.com/flying-sheep/b65875c0ce965fbdd1d9e5d0b9851ef1
+
+
+# select correct base URL depending on the build system context
+def get_source_files_base_url():
+    """
+    Get the base URL for the source code to generate links to GitHub source.
+    If the build is on ReadTheDocs and it's a stable version, use the
+    versioned link. If it's a latest version, use the main link.
+
+    For other builds (e.g. pull requests), use the main link.
+    Local builds will also use the main link.
+
+    Resulting base URL should end with a trailing slash.
+
+    See https://docs.readthedocs.com/platform/stable/reference/environment-variables.html
+    """  # noqa: E501
+    repo_url = os.environ.get(
+        "READTHEDOCS_GIT_CLONE_URL",
+        default="https://github.com/pvlib/pvlib-python",
+    )
+    READTHEDOCS_ENV = os.environ.get("READTHEDOCS", None) == "True"
+    READTHEDOCS_VERSION = os.environ.get("READTHEDOCS_VERSION", None)
+    READTHEDOCS_GIT_IDENTIFIER = os.environ.get(
+        "READTHEDOCS_GIT_IDENTIFIER", None
+    )
+    if READTHEDOCS_ENV:  # Building docs on ReadTheDocs
+        if READTHEDOCS_VERSION == "latest":  # latest version, commited to main
+            repo_url += "/blob/main/"
+        elif READTHEDOCS_VERSION == "stable":  # stable version, has a tag
+            repo_url += f"/blob/{READTHEDOCS_GIT_IDENTIFIER}/"
+        else:  # pull request, user and branch are unknown so use main
+            repo_url += "/blob/main/"
+    else:  # Local build
+        repo_url += "/blob/main/"  # can't tell where to point to
+    return repo_url
 
 
 def get_obj_module(qualname):
@@ -444,6 +491,9 @@ def get_linenos(obj):
         return start, start + len(lines) - 1
 
 
+URL_BASE = get_source_files_base_url()  # Edit on GitHub source code links
+
+
 def make_github_url(file_name):
     """
     Generate the appropriate GH link for a given docs page.  This function
@@ -451,11 +501,8 @@ def make_github_url(file_name):
 
     The target URL is built differently based on the type of page.  The pydata
     sphinx theme has a built-in `file_name` variable that looks like
-    "/docs/sphinx/source/api.rst" or "generated/pvlib.atmosphere.alt2pres.rst"
+    "docs/sphinx/source/api.rst" or "generated/pvlib.atmosphere.alt2pres.rst"
     """
-
-    URL_BASE = "https://github.com/pvlib/pvlib-python/blob/main/"
-
     # is it a gallery page?
     if any(d in file_name for d in sphinx_gallery_conf['gallery_dirs']):
         example_folder = file_name.split("/")[-2]

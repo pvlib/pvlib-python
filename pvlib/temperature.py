@@ -21,7 +21,8 @@ TEMPERATURE_MODEL_PARAMETERS = {
         'insulated_back_glass_polymer': {'a': -2.81, 'b': -.0455, 'deltaT': 0},
     },
     'pvsyst': {'freestanding': {'u_c': 29.0, 'u_v': 0},
-               'insulated': {'u_c': 15.0, 'u_v': 0}}
+               'insulated': {'u_c': 15.0, 'u_v': 0},
+               'semi_integrated': {'u_c': 20.0, 'u_v': 0}}
 }
 """Dictionary of temperature parameters organized by model.
 
@@ -118,12 +119,24 @@ def sapm_cell(poa_global, temp_air, wind_speed, a, b, deltaT,
     +===============+================+=======+=========+=====================+
     | glass/glass   | open rack      | -3.47 | -0.0594 | 3                   |
     +---------------+----------------+-------+---------+---------------------+
-    | glass/glass   | close roof     | -2.98 | -0.0471 | 1                   |
+    | glass/glass   | close mount    | -2.98 | -0.0471 | 1                   |
     +---------------+----------------+-------+---------+---------------------+
     | glass/polymer | open rack      | -3.56 | -0.075  | 3                   |
     +---------------+----------------+-------+---------+---------------------+
     | glass/polymer | insulated back | -2.81 | -0.0455 | 0                   |
     +---------------+----------------+-------+---------+---------------------+
+
+    Mounting cases can be described in terms of air flow across and around the
+    rear-facing surface of the module:
+
+    * "open rack" refers to mounting that allows relatively free air flow.
+      This case is typical of ground-mounted systems on fixed racking or
+      single axis trackers.
+    * "close mount" refers to limited or restricted air flow. This case is
+      typical of roof-mounted systems with some gap behind the module.
+    * "insulated back" refers to systems with no air flow contacting the rear
+      surface of the module. This case is typical of building-integrated PV
+      systems, or systems laid flat on a ground surface.
 
     References
     ----------
@@ -199,12 +212,24 @@ def sapm_module(poa_global, temp_air, wind_speed, a, b):
     +===============+================+=======+=========+=====================+
     | glass/glass   | open rack      | -3.47 | -0.0594 | 3                   |
     +---------------+----------------+-------+---------+---------------------+
-    | glass/glass   | close roof     | -2.98 | -0.0471 | 1                   |
+    | glass/glass   | close mount    | -2.98 | -0.0471 | 1                   |
     +---------------+----------------+-------+---------+---------------------+
     | glass/polymer | open rack      | -3.56 | -0.075  | 3                   |
     +---------------+----------------+-------+---------+---------------------+
     | glass/polymer | insulated back | -2.81 | -0.0455 | 0                   |
     +---------------+----------------+-------+---------+---------------------+
+
+    Mounting cases can be described in terms of air flow across and around the
+    rear-facing surface of the module:
+
+    * "open rack" refers to mounting that allows relatively free air flow.
+      This case is typical of ground-mounted systems on fixed racking or
+      single axis trackers.
+    * "close mount" refers to limited or restricted air flow. This case is
+      typical of roof-mounted systems with some gap behind the module.
+    * "insulated back" refers to systems with no air flow contacting the rear
+      surface of the module. This case is typical of building-integrated PV
+      systems, or systems laid flat on a ground surface.
 
     References
     ----------
@@ -269,12 +294,24 @@ def sapm_cell_from_module(module_temperature, poa_global, deltaT,
     +===============+================+=======+=========+=====================+
     | glass/glass   | open rack      | -3.47 | -0.0594 | 3                   |
     +---------------+----------------+-------+---------+---------------------+
-    | glass/glass   | close roof     | -2.98 | -0.0471 | 1                   |
+    | glass/glass   | close mount    | -2.98 | -0.0471 | 1                   |
     +---------------+----------------+-------+---------+---------------------+
     | glass/polymer | open rack      | -3.56 | -0.075  | 3                   |
     +---------------+----------------+-------+---------+---------------------+
     | glass/polymer | insulated back | -2.81 | -0.0455 | 0                   |
     +---------------+----------------+-------+---------+---------------------+
+
+    Mounting cases can be described in terms of air flow across and around the
+    rear-facing surface of the module:
+
+    * "open rack" refers to mounting that allows relatively free air flow.
+      This case is typical of ground-mounted systems on fixed racking or
+      single axis trackers.
+    * "close mount" refers to limited or restricted air flow. This case is
+      typical of roof-mounted systems with some gap behind the module.
+    * "insulated back" refers to systems with no air flow contacting the rear
+      surface of the module. This case is typical of building-integrated PV
+      systems, or systems laid flat on a ground surface.
 
     References
     ----------
@@ -346,19 +383,31 @@ def pvsyst_cell(poa_global, temp_air, wind_speed=1.0, u_c=29.0, u_v=0.0,
     air temperature :math:`T_{a}` (C) and wind speed :math:`WS` (m/s). Model
     output is cell temperature :math:`T_{C}`. Model parameters depend both on
     the module construction and its mounting. Parameters are provided in
-    [1]_ for open (freestanding) and close (insulated) mounting configurations,
-    , and are coded for convenience in
+    [1]_ for open (freestanding), close (insulated), and intermediate
+    (semi_integrated) mounting configurations, and are coded for convenience in
     :data:`~pvlib.temperature.TEMPERATURE_MODEL_PARAMETERS`. The heat loss
     factors provided represent the combined effect of convection, radiation and
     conduction, and their values are experimentally determined.
 
-    +--------------+---------------+---------------+
-    | Mounting     | :math:`U_{c}` | :math:`U_{v}` |
-    +==============+===============+===============+
-    | freestanding | 29.0          | 0.0           |
-    +--------------+---------------+---------------+
-    | insulated    | 15.0          | 0.0           |
-    +--------------+---------------+---------------+
+    +-----------------+---------------+---------------+
+    | Mounting        | :math:`U_{c}` | :math:`U_{v}` |
+    +=================+===============+===============+
+    | freestanding    | 29.0          | 0.0           |
+    +-----------------+---------------+---------------+
+    | insulated       | 15.0          | 0.0           |
+    +-----------------+---------------+---------------+
+    | semi_integrated | 20.0          | 0.0           |
+    +-----------------+---------------+---------------+
+
+    Mounting cases can be described in terms of air flow across and around the
+    rear-facing surface of the module:
+
+    * "freestanding" refers to mounting that allows relatively free air
+      circulation around the modules. This case is typical of ground-mounted
+      systems on tilted, fixed racking or single axis trackers.
+    * "insulated" refers to mounting with air flow across only the front
+      surface. This case is typical of roof-mounted systems with no gap
+      behind the module.
 
     References
     ----------
@@ -569,7 +618,7 @@ def faiman_rad(poa_global, temp_air, wind_speed=1.0, ir_down=None,
     return temp_air + temp_difference
 
 
-def ross(poa_global, temp_air, noct):
+def ross(poa_global, temp_air, noct=None, k=None):
     r'''
     Calculate cell temperature using the Ross model.
 
@@ -581,14 +630,19 @@ def ross(poa_global, temp_air, noct):
     Parameters
     ----------
     poa_global : numeric
-        Total incident irradiance. [W/m^2]
+        Total incident irradiance. [W/m⁻²]
 
     temp_air : numeric
         Ambient dry bulb temperature. [C]
 
-    noct : numeric
+    noct : numeric, optional
         Nominal operating cell temperature [C], determined at conditions of
-        800 W/m^2 irradiance, 20 C ambient air temperature and 1 m/s wind.
+        800 W/m⁻² irradiance, 20 C ambient air temperature and 1 m/s wind.
+        If ``noct`` is not provided, ``k`` is required.
+    k: numeric, optional
+        Ross coefficient [Km²W⁻¹], which is an alternative to employing
+        NOCT in Ross's equation. If ``k`` is not provided, ``noct`` is
+        required.
 
     Returns
     -------
@@ -601,19 +655,62 @@ def ross(poa_global, temp_air, noct):
 
     .. math::
 
-        T_{C} = T_{a} + \frac{NOCT - 20}{80} S
+        T_{C} = T_{a} + \frac{NOCT - 20}{80} S = T_{a} + k × S
 
-    where :math:`S` is the plane of array irradiance in :math:`mW/{cm}^2`.
-    This function expects irradiance in :math:`W/m^2`.
+    where :math:`S` is the plane of array irradiance in mWcm⁻².
+    This function expects irradiance in Wm⁻².
+
+    Representative values for k are provided in [2]_, covering different types
+    of mounting and degrees of back ventialtion. The naming designations,
+    however, are adapted from [3]_ to enhance clarity and usability.
+
+    +--------------------------------------+-----------+
+    | Mounting                             | :math:`k` |
+    +======================================+===========+
+    | Sloped roof, well ventilated         | 0.02      |
+    +--------------------------------------+-----------+
+    | Free-standing system                 | 0.0208    |
+    +--------------------------------------+-----------+
+    | Flat roof, well ventilated           | 0.026     |
+    +--------------------------------------+-----------+
+    | Sloped roof, poorly ventilated       | 0.0342    |
+    +--------------------------------------+-----------+
+    | Facade integrated, semi-ventilated   | 0.0455    |
+    +--------------------------------------+-----------+
+    | Facade integrated, poorly ventilated | 0.0538    |
+    +--------------------------------------+-----------+
+    | Sloped roof, non-ventilated          | 0.0563    |
+    +--------------------------------------+-----------+
+
+    It is also worth noting that the semi-ventilated facade case refers to
+    partly transparent compound glass insulation modules, while the non-
+    ventilated case corresponds to opaque, insulated PV-cladding elements.
+    However, the emphasis in [3]_ appears to be on ventilation conditions
+    rather than module construction.
 
     References
     ----------
     .. [1] Ross, R. G. Jr., (1981). "Design Techniques for Flat-Plate
        Photovoltaic Arrays". 15th IEEE Photovoltaic Specialist Conference,
        Orlando, FL.
+    .. [2] E. Skoplaki and J. A. Palyvos, "Operating temperature of
+       photovoltaic modules: A survey of pertinent correlations," Renewable
+       Energy, vol. 34, no. 1, pp. 23–29, Jan. 2009,
+       :doi:`10.1016/j.renene.2008.04.009`
+    .. [3] T. Nordmann and L. Clavadetscher, "Understanding temperature
+       effects on PV system performance," Proceedings of 3rd World Conference
+       on Photovoltaic Energy Conversion, May 2003.
     '''
-    # factor of 0.1 converts irradiance from W/m2 to mW/cm2
-    return temp_air + (noct - 20.) / 80. * poa_global * 0.1
+    if (noct is None) & (k is None):
+        raise ValueError("Either noct or k is required.")
+    elif (noct is not None) & (k is not None):
+        raise ValueError("Provide only one of noct or k, not both.")
+    elif k is None:
+        # factor of 0.1 converts irradiance from W/m2 to mW/cm2
+        return temp_air + (noct - 20.) / 80. * poa_global * 0.1
+    elif noct is None:
+        # k assumes irradiance in W.m-2, dismissing 0.1 factor
+        return temp_air + k * poa_global
 
 
 def _fuentes_hconv(tave, windmod, tinoct, temp_delta, xlen, tilt,

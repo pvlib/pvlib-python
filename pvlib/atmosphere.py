@@ -6,9 +6,6 @@ speed at different heights.
 
 import numpy as np
 import pandas as pd
-import pvlib
-
-from pvlib._deprecation import deprecated
 
 APPARENT_ZENITH_MODELS = ('simple', 'kasten1966', 'kastenyoung1989',
                           'gueymard1993', 'pickering2002')
@@ -150,20 +147,13 @@ def get_relative_airmass(zenith, model='kastenyoung1989'):
 
         * 'simple' - secant(apparent zenith angle) -
           Note that this gives -Inf at zenith=90
-        * 'kasten1966' - See reference [1] -
-          requires apparent sun zenith
-        * 'youngirvine1967' - See reference [2] -
-          requires true sun zenith
-        * 'kastenyoung1989' (default) - See reference [3] -
-          requires apparent sun zenith
-        * 'gueymard1993' - See reference [4] -
-          requires apparent sun zenith
-        * 'young1994' - See reference [5] -
-          requires true sun zenith
-        * 'pickering2002' - See reference [6] -
-          requires apparent sun zenith
-        * 'gueymard2003' - See references [7] and [8] -
-          requires apparent sun zenith
+        * 'kasten1966' - See [1]_ - requires apparent sun zenith
+        * 'youngirvine1967' - See [2]_ - requires true sun zenith
+        * 'kastenyoung1989' (default) - See [3]_ - requires apparent sun zenith
+        * 'gueymard1993' - See [4]_, [5]_ - requires apparent sun zenith
+        * 'young1994' - See [6]_ - requires true sun zenith
+        * 'pickering2002' - See [7]_ - requires apparent sun zenith
+        * 'gueymard2003' - See [8]_, [9]_ - requires apparent sun zenith
 
     Returns
     -------
@@ -177,41 +167,57 @@ def get_relative_airmass(zenith, model='kastenyoung1989'):
     other models use true (not refraction-adjusted) zenith angle. Apparent
     zenith angles should be calculated at sea level.
 
+    Comparison among several models is reported in [10]_.
+
     References
     ----------
-    .. [1] Fritz Kasten. "A New Table and Approximation Formula for the
-       Relative Optical Air Mass". Technical Report 136, Hanover, N.H.:
-       U.S. Army Material Command, CRREL.
+    .. [1] Fritz Kasten, "A New Table and Approximation Formula for the
+       Relative Optical Air Mass," CRREL (U.S. Army), Hanover, NH, USA,
+       Technical Report 136, 1965.
+       :doi:`11681/5671`
 
     .. [2] A. T. Young and W. M. Irvine, "Multicolor Photoelectric
-       Photometry of the Brighter Planets," The Astronomical Journal, vol.
-       72, pp. 945-950, 1967.
+       Photometry of the Brighter Planets. I. Program and Procedure,"
+       The Astronomical Journal, vol. 72, pp. 945-950, 1967.
+       :doi:`10.1086/110366`
 
-    .. [3] Fritz Kasten and Andrew Young. "Revised optical air mass tables
-       and approximation formula". Applied Optics 28:4735-4738
+    .. [3] Fritz Kasten and Andrew Young, "Revised optical air mass tables
+       and approximation formula," Applied Optics 28:4735-4738, 1989.
+       :doi:`10.1364/AO.28.004735`
 
     .. [4] C. Gueymard, "Critical analysis and performance assessment of
        clear sky solar irradiance models using theoretical and measured
        data," Solar Energy, vol. 51, pp. 121-138, 1993.
+       :doi:`10.1016/0038-092X(93)90074-X`
 
-    .. [5] A. T. Young, "AIR-MASS AND REFRACTION," Applied Optics, vol. 33,
-       pp. 1108-1110, Feb 1994.
+    .. [5] C. Gueymard, "Development and performance assessment of a clear
+       sky spectral radiation model,” in Proc. of the 22nd ASES Conference,
+       Solar ’93, 1993, pp. 433–438.
 
-    .. [6] Keith A. Pickering. "The Ancient Star Catalog". DIO 12:1, 20,
+    .. [6] A. T. Young, "Air-Mass and Refraction," Applied Optics, vol. 33,
+       pp. 1108-1110, Feb. 1994.
+       :doi:`10.1364/AO.33.001108`
 
-    .. [7] C. Gueymard, "Direct solar transmittance and irradiance
+    .. [7] Keith A. Pickering, "The Southern Limits of the Ancient Star Catalog
+       and the Commentary of Hipparchos," DIO, vol. 12, pp. 3-27, Sept. 2002.
+       Available at `DIO <http://dioi.org/jc01.pdf>`_
+
+    .. [8] C. Gueymard, "Direct solar transmittance and irradiance
        predictions with broadband models. Part I: detailed theoretical
        performance assessment". Solar Energy, vol 74, pp. 355-379, 2003.
        :doi:`10.1016/S0038-092X(03)00195-6`
 
-    .. [8] C. Gueymard (2019). Clear-Sky Radiation Models and Aerosol Effects.
-       In: Polo, J., Martín-Pomares, L., Sanfilippo, A. (eds) Solar Resources
-       Mapping. Green Energy and Technology. Springer, Cham.
+    .. [9] C. Gueymard, "Clear-Sky Radiation Models and Aerosol Effects", in
+       Solar Resources Mapping: Fundamentals and Applications,
+       Polo, J., Martín-Pomares, L., Sanfilippo, A. (Eds), Cham, CH: Springer,
+       2019, pp. 137-182.
        :doi:`10.1007/978-3-319-97484-2_5`
 
-    .. [9] Matthew J. Reno, Clifford W. Hansen and Joshua S. Stein, "Global
+    .. [10] Matthew J. Reno, Clifford W. Hansen and Joshua S. Stein, "Global
        Horizontal Irradiance Clear Sky Models: Implementation and Analysis"
-       Sandia Report, (2012).
+       Sandia National Laboratories, Albuquerque, NM, USA, SAND2012-2389, 2012.
+       :doi:`10.2172/1039404`
+
     '''
 
     # set zenith values greater than 90 to nans
@@ -239,7 +245,7 @@ def get_relative_airmass(zenith, model='kastenyoung1989'):
               (np.cos(zenith_rad) ** 3 +
               0.149864*(np.cos(zenith_rad) ** 2) +
               0.0102963*(np.cos(zenith_rad)) + 0.000303978))
-    elif 'gueymard1993' == model:
+    elif 'gueymard1993' == model:  # [4], Eq. 22 and [5], Eq. 3b
         am = (1.0 / (np.cos(zenith_rad) +
               0.00176759*(z)*((94.37515 - z) ** - 1.21563)))
     elif 'gueymard2003' == model:
@@ -337,10 +343,83 @@ def gueymard94_pw(temp_air, relative_humidity):
     return pw
 
 
-first_solar_spectral_correction = deprecated(
-    since='0.10.0',
-    alternative='pvlib.spectrum.spectral_factor_firstsolar'
-)(pvlib.spectrum.spectral_factor_firstsolar)
+def rh_from_tdew(temp_air, temp_dew, coeff=(6.112, 17.62, 243.12)):
+    """
+    Calculate relative humidity from dewpoint temperature using the Magnus
+    equation.
+
+    Parameters
+    ----------
+    temp_air : numeric
+        Air temperature (dry-bulb temperature). [°C]
+    temp_dew : numeric
+        Dew-point temperature. [°C]
+    coeff : tuple, default (6.112, 17.62, 243.12)
+        Magnus equation coefficients (A, B, C).  The default values are those
+        recommended by the WMO [1]_.
+
+    Returns
+    -------
+    numeric
+        Relative humidity (0.0-100.0). [%]
+
+    References
+    ----------
+    .. [1] "Guide to Instruments and Methods of Observation",
+       World Meteorological Organization, WMO-No. 8, 2023.
+       https://library.wmo.int/idurl/4/68695
+    """
+
+    # Calculate vapor pressure (e) and saturation vapor pressure (es)
+    e = coeff[0] * np.exp((coeff[1] * temp_air) / (coeff[2] + temp_air))
+    es = coeff[0] * np.exp((coeff[1] * temp_dew) / (coeff[2] + temp_dew))
+
+    # Calculate relative humidity as percentage
+    relative_humidity = 100 * (es / e)
+
+    return relative_humidity
+
+
+def tdew_from_rh(temp_air, relative_humidity, coeff=(6.112, 17.62, 243.12)):
+    """
+    Calculate dewpoint temperature using the Magnus equation.
+    This is a reversal of the calculation in :py:func:`rh_from_tdew`.
+
+    Parameters
+    ----------
+    temp_air : numeric
+        Air temperature (dry-bulb temperature). [°C]
+    relative_humidity : numeric
+        Relative humidity (0-100). [%]
+    coeff: tuple, default (6.112, 17.62, 243.12)
+        Magnus equation coefficients (A, B, C).  The default values are those
+        recommended by the WMO [1]_.
+
+    Returns
+    -------
+    numeric
+        Dewpoint temperature. [°C]
+
+    References
+    ----------
+    .. [1] "Guide to Instruments and Methods of Observation",
+       World Meteorological Organization, WMO-No. 8, 2023.
+       https://library.wmo.int/idurl/4/68695
+    """
+    # Calculate the term inside the log
+    # From RH = 100 * (es/e), we get es = (RH/100) * e
+    # Substituting the Magnus equation and solving for dewpoint
+
+    # First calculate ln(es/A)
+    ln_term = (
+        (coeff[1] * temp_air) / (coeff[2] + temp_air)
+        + np.log(relative_humidity/100)
+    )
+
+    # Then solve for dewpoint
+    dewpoint = coeff[2] * ln_term / (coeff[1] - ln_term)
+
+    return dewpoint
 
 
 def bird_hulstrom80_aod_bb(aod380, aod500):

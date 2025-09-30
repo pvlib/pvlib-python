@@ -9,21 +9,23 @@ from pvlib.bifacial import utils
 from pvlib.irradiance import beam_component, aoi, haydavies
 
 
-def _poa_ground_shadows(poa_ground, f_gnd_beam, df, vf_gnd_sky):
+def _poa_ground_shadows(ghi, dhi, albedo, f_gnd_beam, vf_gnd_sky):
     """
     Reduce ground-reflected irradiance to the tilted plane (poa_ground) to
     account for shadows on the ground.
 
     Parameters
     ----------
-    poa_ground : numeric
-        Ground reflected irradiance on the tilted surface, assuming full GHI
-        illumination on all of the ground. [W/m^2]
+    ghi : numeric
+        Global horizontal irradiance, with no adjustments. [W/m^2]
+    dhi : numeric
+        Diffuse horizontal irradiance, with no adjustments. [W/m^2]
+    albedo : numeric
+        Ground albedo, the ratio of reflected to incident irradiance of the
+        ground surface. [W/m^2]
     f_gnd_beam : numeric
         Fraction of the distance between rows that is illuminated (unshaded).
         [unitless]
-    df : numeric
-        Diffuse fraction, the ratio of DHI to GHI. [unitless]
     vf_gnd_sky : numeric
         View factor from the ground to the sky, integrated along the distance
         between rows. [unitless]
@@ -35,7 +37,7 @@ def _poa_ground_shadows(poa_ground, f_gnd_beam, df, vf_gnd_sky):
         ground. [W/m^2]
 
     """
-    return poa_ground * (f_gnd_beam*(1 - df) + df*vf_gnd_sky)
+    return albedo * (f_gnd_beam * (ghi - dhi) + vf_gnd_sky * dhi)
 
 
 def _poa_sky_diffuse_pv(dhi, gcr, surface_tilt):
@@ -260,8 +262,9 @@ def get_irradiance_poa(surface_tilt, surface_azimuth, solar_zenith,
     Returns
     -------
     output : dict or DataFrame
-        Output is a DataFrame when input ghi is a Series. See Notes for
-        descriptions of content.
+        Output is a ``pandas.DataFrame`` when ``ghi`` is a Series.
+        Otherwise it is a dict of ``numpy.ndarray``
+        See Notes for descriptions of content.
 
     Notes
     -----
@@ -338,18 +341,11 @@ def get_irradiance_poa(surface_tilt, surface_azimuth, solar_zenith,
     # and restricted views
     # this is a deviation from [1], because the row to ground view factor
     # is accounted for in a different manner
-    ground_diffuse = ghi * albedo
-
-    # diffuse fraction
-    diffuse_fraction = np.clip(dhi / ghi, 0., 1.)
-    # make diffuse fraction 0 when ghi is small
-    diffuse_fraction = np.where(ghi < 0.0001, 0., diffuse_fraction)
-
     # Reduce ground-reflected irradiance because other rows in the array
     # block irradiance from reaching the ground.
     # [2], Eq. 9
-    ground_diffuse = _poa_ground_shadows(
-        ground_diffuse, f_gnd_beam, diffuse_fraction, vf_gnd_sky)
+    ground_diffuse = _poa_ground_shadows(ghi, dhi, albedo, f_gnd_beam,
+                                         vf_gnd_sky)
 
     # Ground-reflected irradiance on the row surface accounting for
     # the view to the ground. This deviates from [1], Eq. 10, 11 and
@@ -372,7 +368,7 @@ def get_irradiance_poa(surface_tilt, surface_azimuth, solar_zenith,
         'poa_global': poa_global, 'poa_direct': poa_direct,
         'poa_diffuse': poa_diffuse, 'poa_ground_diffuse': poa_gnd_pv,
         'poa_sky_diffuse': poa_sky_pv, 'shaded_fraction': f_x}
-    if isinstance(poa_global, pd.Series):
+    if isinstance(ghi, pd.Series):
         output = pd.DataFrame(output)
     return output
 

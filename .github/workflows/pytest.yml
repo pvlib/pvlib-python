@@ -12,12 +12,12 @@ jobs:
       fail-fast: false  # don't cancel other matrix jobs when one fails
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        python-version: [3.9, "3.10", "3.11", "3.12"]
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
         environment-type: [conda, bare]
         suffix: ['']  # placeholder as an alternative to "-min"
         include:
           - os: ubuntu-latest
-            python-version: 3.9
+            python-version: "3.10"
             environment-type: conda
             suffix: -min
         exclude:
@@ -40,10 +40,11 @@ jobs:
 
       - name: Install Conda environment with Micromamba
         if: matrix.environment-type == 'conda'
-        uses: mamba-org/setup-micromamba@v1
+        uses: mamba-org/setup-micromamba@v2
         with:
           environment-file: ${{ env.REQUIREMENTS }}
-          cache-downloads: true
+          cache-downloads: false
+          cache-environment: false
           create-args: >-
             python=${{ matrix.python-version }}
           condarc: |
@@ -79,10 +80,10 @@ jobs:
         shell: bash -l {0}  # necessary for conda env to be active
         run: |
           # ignore iotools; those tests are run in a separate workflow
-          pytest pvlib --cov=./ --cov-report=xml --ignore=pvlib/tests/iotools
+          pytest tests --cov=./ --cov-report=xml --ignore=tests/iotools
 
       - name: Upload coverage to Codecov
-        if: matrix.python-version == 3.9 && matrix.suffix == '' && matrix.os == 'ubuntu-latest' && matrix.environment-type == 'conda'
+        if: matrix.python-version == '3.10' && matrix.suffix == '' && matrix.os == 'ubuntu-latest' && matrix.environment-type == 'conda'
         uses: codecov/codecov-action@v4
         with:
           fail_ci_if_error: true

@@ -68,20 +68,24 @@ Documentation
 =============
 
 Full documentation can be found at [readthedocs](http://pvlib-python.readthedocs.io/en/stable/),
-including an [FAQ](http://pvlib-python.readthedocs.io/en/stable/user_guide/faq.html) page.
+including an [FAQ](https://pvlib-python.readthedocs.io/en/stable/user_guide/extras/faq.html) page.
 
 Installation
 ============
 
 pvlib-python releases may be installed using the ``pip`` and ``conda`` tools.
-Please see the [Installation page](https://pvlib-python.readthedocs.io/en/stable/user_guide/installation.html) of the documentation for complete instructions.
+```bash
+pip install pvlib
+conda install -c conda-forge pvlib
+```
+Please see the [Installation page](https://pvlib-python.readthedocs.io/en/stable/user_guide/getting_started/installation.html) of the documentation for complete instructions.
 
 
 Contributing
 ============
 
 We need your help to make pvlib-python a great tool!
-Please see the [Contributing page](http://pvlib-python.readthedocs.io/en/stable/contributing.html) for more on how you can contribute.
+Please see the [Contributing page](https://pvlib-python.readthedocs.io/en/stable/contributing/index.html) for more on how you can contribute.
 The long-term success of pvlib-python requires substantial community support.
 
 

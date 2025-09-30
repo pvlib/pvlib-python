@@ -239,27 +239,15 @@ def spectral_factor_firstsolar(precipitable_water, airmass_absolute,
     """
     pw = np.atleast_1d(precipitable_water)
     pw = pw.astype('float64')
-    if np.min(pw) < min_precipitable_water:
-        pw = np.maximum(pw, min_precipitable_water)
-        warn('Low precipitable water values replaced with '
-             f'{min_precipitable_water} cm in the calculation of spectral '
-             'mismatch.')
-
-    if np.max(pw) > max_precipitable_water:
-        pw[pw > max_precipitable_water] = np.nan
-        warn('High precipitable water values replaced with np.nan in '
-             'the calculation of spectral mismatch.')
+    pw = np.maximum(pw, min_precipitable_water)
+    pw[pw > max_precipitable_water] = np.nan
 
     airmass_absolute = np.minimum(airmass_absolute, max_airmass_absolute)
-
-    if np.min(airmass_absolute) < min_airmass_absolute:
-        airmass_absolute = np.maximum(airmass_absolute, min_airmass_absolute)
-        warn('Low airmass values replaced with 'f'{min_airmass_absolute} in '
-             'the calculation of spectral mismatch.')
-        # pvlib.atmosphere.get_absolute_airmass(1,
-        # pvlib.atmosphere.alt2pres(4340)) = 0.58 Elevation of
-        # Mina Pirquita, Argentian = 4340 m. Highest elevation city with
-        # population over 50,000.
+    # pvlib.atmosphere.get_absolute_airmass(1,
+    # pvlib.atmosphere.alt2pres(4340)) = 0.58 Elevation of
+    # Mina Pirquita, Argentian = 4340 m. Highest elevation city with
+    # population over 50,000.
+    airmass_absolute = np.maximum(airmass_absolute, min_airmass_absolute)
 
     _coefficients = {}
     _coefficients['cdte'] = (
@@ -520,7 +508,7 @@ def spectral_factor_pvspec(airmass_absolute, clearsky_index,
         One of the following PV technology strings from [1]_:
 
         * ``'fs4-1'`` - First Solar series 4-1 and earlier CdTe module.
-        * ``'fs4-2'`` - First Solar 4-2 and later CdTe module.
+        * ``'fs4-2'`` - First Solar series 4-2 and later CdTe module.
         * ``'monosi'`` - anonymous monocrystalline Si module.
         * ``'multisi'`` - anonymous multicrystalline Si module.
         * ``'cigs'`` - anonymous copper indium gallium selenide module.
@@ -576,8 +564,8 @@ def spectral_factor_pvspec(airmass_absolute, clearsky_index,
     _coefficients = {}
     _coefficients['multisi'] = (0.9847, -0.05237, 0.03034)
     _coefficients['monosi'] = (0.9845, -0.05169, 0.03034)
-    _coefficients['fs-2'] = (1.002, -0.07108, 0.02465)
-    _coefficients['fs-4'] = (0.9981, -0.05776, 0.02336)
+    _coefficients['fs4-2'] = (1.002, -0.07108, 0.02465)
+    _coefficients['fs4-1'] = (0.9981, -0.05776, 0.02336)
     _coefficients['cigs'] = (0.9791, -0.03904, 0.03096)
     _coefficients['asi'] = (1.051, -0.1033, 0.009838)
 

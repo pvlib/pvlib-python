@@ -18,6 +18,7 @@ Bug fixes
 
 Enhancements
 ~~~~~~~~~~~~
+* Eliminate some repeated calculations in :py:mod:`pvlib.bifacial.infinite_sheds`. (:pull:`2897`) 
 
 
 Documentation
@@ -42,4 +43,5 @@ Maintenance
 
 Contributors
 ~~~~~~~~~~~~
+* Kevin Anderson (:ghuser:`kandersolar`)
 

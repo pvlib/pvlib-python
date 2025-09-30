@@ -30,16 +30,6 @@ Enhancements
   (:pull:`2500`)
 * :py:func:`pvlib.spectrum.spectral_factor_firstsolar` no longer emits warnings
   when airmass and precipitable water values fall out of range. (:pull:`2512`)
-* Add ``method='chandrupatla'`` (faster than ``brentq`` and slower than ``newton``,
-  but convergence is guaranteed) as an option for
-  :py:func:`pvlib.pvsystem.singlediode`,
-  :py:func:`~pvlib.pvsystem.i_from_v`,
-  :py:func:`~pvlib.pvsystem.v_from_i`,
-  :py:func:`~pvlib.pvsystem.max_power_point`,
-  :py:func:`~pvlib.singlediode.bishop88_mpp`,
-  :py:func:`~pvlib.singlediode.bishop88_v_from_i`, and
-  :py:func:`~pvlib.singlediode.bishop88_i_from_v`. (:issue:`2497`, :pull:`2498`)
-
 * Allow reading TMY data from a Path or file-like object in :py:func:`~pvlib.iotools.read_tmy3`.
   (:pull:`2544`)
 

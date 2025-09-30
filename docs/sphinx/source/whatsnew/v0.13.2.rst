@@ -18,6 +18,16 @@ Bug fixes
 
 Enhancements
 ~~~~~~~~~~~~
+* Add ``method='chandrupatla'`` (faster than ``brentq`` and slower than ``newton``,
+  but convergence is guaranteed) as an option for
+  :py:func:`pvlib.pvsystem.singlediode`,
+  :py:func:`~pvlib.pvsystem.i_from_v`,
+  :py:func:`~pvlib.pvsystem.v_from_i`,
+  :py:func:`~pvlib.pvsystem.max_power_point`,
+  :py:func:`~pvlib.singlediode.bishop88_mpp`,
+  :py:func:`~pvlib.singlediode.bishop88_v_from_i`, and
+  :py:func:`~pvlib.singlediode.bishop88_i_from_v`. (:issue:`2497`, :pull:`2498`)
+
 
 
 Documentation

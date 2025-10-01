@@ -501,8 +501,8 @@ def poa_components(aoi, dni, poa_sky_diffuse, poa_ground_diffuse):
         * ``poa_direct`` : Total in-plane beam irradiance. [Wm⁻²]
         * ``poa_diffuse`` : Total in-plane diffuse irradiance. [Wm⁻²]
         * ``poa_sky_diffuse`` : In-plane diffuse irradiance from sky. [Wm⁻²]
-        * ``poa_ground_diffuse`` : In-plane diffuse irradiance from ground
-         . [Wm⁻²]
+        * ``poa_ground_diffuse`` : In-plane diffuse irradiance from ground.
+          [Wm⁻²]
 
     Notes
     ------
@@ -796,7 +796,7 @@ def haydavies(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
             * sky_diffuse: Total sky diffuse
             * isotropic
             * circumsolar
-            * horizon
+            * horizon (always zero, not accounted for by the Hay-Davies model)
 
     Notes
     ------
@@ -997,11 +997,11 @@ def king(surface_tilt, dhi, ghi, solar_zenith):
 
     Parameters
     ----------
-   surface_tilt : numeric
-       Panel tilt from the horizontal. See :term:`surface_tilt`. [°]
+    surface_tilt : numeric
+        Panel tilt from the horizontal. See :term:`surface_tilt`. [°]
 
-   dhi : numeric
-       Diffuse horizontal irradiance. See :term:`dhi`. [Wm⁻²]
+    dhi : numeric
+        Diffuse horizontal irradiance. See :term:`dhi`. [Wm⁻²]
 
     ghi : numeric
         Global horizontal irradiance. See :term:`ghi`. [Wm⁻²]
@@ -1729,7 +1729,7 @@ def clearness_index_zenith_independent(clearness_index, airmass,
         plane. [unitless]
 
     airmass : numeric
-        Airmass. See :term:`relative_airmass`. [unitless]
+        Airmass. See :term:`airmass_relative`. [unitless]
 
     max_clearness_index : numeric, default 2.0
         Maximum value of the clearness index. The default, 2.0, allows

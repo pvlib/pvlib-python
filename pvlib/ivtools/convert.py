@@ -19,7 +19,7 @@ from pvlib.pvsystem import (calcparams_pvsyst, calcparams_cec, singlediode)
 CONSTANTS = {'E0': 1000.0, 'T0': 25.0, 'k': constants.k, 'q': constants.e}
 
 
-IEC61853 = pd.DataFrame(
+IEC61853_plus = pd.DataFrame(
     columns=['effective_irradiance', 'temp_cell'],
     data=np.array(
         [[100, 100, 100, 100, 200, 200, 200, 200, 400, 400, 400, 400,
@@ -30,11 +30,24 @@ IEC61853 = pd.DataFrame(
     dtype=np.float64)
 
 
-def _pvsyst_objfun(pvs_mod, cec_ivs, ee, tc, cs):
+IEC61853 = pd.DataFrame(
+    columns=['effective_irradiance', 'temp_cell'],
+    data=np.array(
+        [[100, 100, 200, 200, 400, 400, 400,
+          600, 600, 600, 600, 800, 800, 800, 800, 1000, 1000, 1000, 1000,
+          1100, 1100, 1100],
+         [15, 25, 15, 25, 15, 25, 50,
+          15, 25, 50, 75, 15, 25, 50, 75, 15, 25, 50, 75,
+          25, 50, 75]]).T,
+    dtype=np.float64)
 
+
+def _pvsyst_objfun(pvs_mod, cec_ivs, ee, tc, cs):
+    # objective function for converting CEC to PVsyst model
     # translate the guess into named args that are used in the functions
-    # order : [alpha_sc, gamma_ref, mu_gamma, I_L_ref, I_o_ref,
-    # R_sh_mult, R_sh_ref, R_s]
+    # order of variables in pvs_mod:
+    # [alpha_sc, gamma_ref, mu_gamma, I_L_ref, I_o_ref,
+    #  R_sh_mult, R_sh_ref, R_s]
     # cec_ivs : DataFrame with columns i_sc, v_oc, i_mp, v_mp, p_mp
     # ee : effective irradiance
     # tc : cell temperature
@@ -56,6 +69,9 @@ def _pvsyst_objfun(pvs_mod, cec_ivs, ee, tc, cs):
 
     pvsyst_ivs = singlediode(*pvs_params)
 
+
+    # calculate error metric, mean absolute relative error for PVsyst model as
+    # the target
     isc_diff = np.abs((pvsyst_ivs['i_sc'] - cec_ivs['i_sc']) /
                       cec_ivs['i_sc']).mean()
     imp_diff = np.abs((pvsyst_ivs['i_mp'] - cec_ivs['i_mp']) /
@@ -194,8 +210,10 @@ def convert_cec_pvsyst(cec_model, cells_in_series, method='Nelder-Mead',
 
 
 def _cec_objfun(cec_mod, pvs_ivs, ee, tc, alpha_sc):
+    # objective function for converting PVsyst to CEC model
     # translate the guess into named args that are used in the functions
-    # order : [I_L_ref, I_o_ref, a_ref, R_sh_ref, R_s, alpha_sc, Adjust]
+    # order of variables in cec_mod:
+    # [I_L_ref, I_o_ref, a_ref, R_sh_ref, R_s, alpha_sc, Adjust]
     # pvs_ivs : DataFrame with columns i_sc, v_oc, i_mp, v_mp, p_mp
     # ee : effective irradiance
     # tc : cell temperature
@@ -212,6 +230,7 @@ def _cec_objfun(cec_mod, pvs_ivs, ee, tc, alpha_sc):
         ee, tc, alpha_sc, a_ref, I_L_ref, I_o_ref, R_sh_ref, R_s, Adjust)
     cec_ivs = singlediode(*cec_params)
 
+    # calculate error metric, root sum of squares for CEC model as the target
     isc_rss = np.sqrt(sum((cec_ivs['i_sc'] - pvs_ivs['i_sc'])**2))
     imp_rss = np.sqrt(sum((cec_ivs['i_mp'] - pvs_ivs['i_mp'])**2))
     voc_rss = np.sqrt(sum((cec_ivs['v_oc'] - pvs_ivs['v_oc'])**2))

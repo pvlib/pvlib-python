@@ -30,7 +30,6 @@ IEC61853 = pd.DataFrame(
     dtype=np.float64)
 
 
-
 def _pvsyst_objfun(pvs_mod, cec_ivs, ee, tc, cs):
 
     # translate the guess into named args that are used in the functions

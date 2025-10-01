@@ -6,7 +6,6 @@ v0.13.1 (September 24, 2025)
 
 Deprecations
 ~~~~~~~~~~~~
-* Deprecate :py:func:`~pvlib.modelchain.get_orientation`. (:pull:`2495`)
 * Deprecate :py:func:`pvlib.modelchain.get_orientation`. (:pull:`2495`)
 * Rename parameter name ``apparent_azimuth`` to ``solar_azimuth`` in :py:func:`~pvlib.tracking.singleaxis`.
   (:issue:`2479`, :pull:`2480`)

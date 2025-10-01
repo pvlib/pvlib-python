@@ -10,7 +10,7 @@ Supporting functions and parameter fitting functions may also be found here.
 
 import numpy as np
 from scipy.optimize import curve_fit
-from scipy.special import exp10
+from scipy.special import exp10, lambertw
 
 
 def pvefficiency_adr(effective_irradiance, temp_cell,
@@ -394,3 +394,92 @@ def huld(effective_irradiance, temp_mod, pdc0, k=None, cell_type=None,
         k[5] * tprime**2
     )
     return pdc
+
+
+def batzelis(effective_irradiance, temp_cell,
+             isc0, voc0, imp0, vmp0, alpha_sc, beta_voc):
+    """
+    Compute maximum power point, open circuit, and short circuit
+    values using the Batzelis method.
+
+    Batzelis's method [1]_ is a fast method of computing the maximum
+    power current and voltage.  The calculations are rooted in the
+    single-diode equation, but only typical datasheet information
+    is required.
+
+    Parameters
+    ----------
+    effective_irradiance : numeric, non-negative
+        Effective irradiance incident on the PV module. [Wm⁻²]
+    temp_cell : numeric
+        PV module operating temperature. [°C]
+    isc0 : float
+        Short-circuit current at STC. [A]
+    voc0 : float
+        Open-circuit voltage at STC. [V]
+    imp0 : float
+        Maximum power point current at STC. [A]
+    vmp0 : float
+        Maximum power point voltage at STC. [V]
+    alpha_sc : float
+        Short-circuit current temperature coefficient at STC. [1/K]
+    beta_voc : float
+        Open-circuit voltage temperature coefficient at STC. [1/K]    
+
+    Returns
+    -------
+    dict
+        The returned dict-like object always contains the keys/columns:
+
+        * i_sc - short circuit current in amperes.
+        * v_oc - open circuit voltage in volts.
+        * i_mp - current at maximum power point in amperes.
+        * v_mp - voltage at maximum power point in volts.
+        * p_mp - power at maximum power point in watts.
+
+    Notes
+    -----
+    The ``alpha_sc`` and ``beta_voc`` temperature coefficient parameters
+    must be given as normalized values.
+
+    References
+    ----------
+    .. [1] E. I. Batzelis, "Simple PV Performance Equations Theoretically Well
+       Founded on the Single-Diode Model," Journal of Photovoltaics vol. 7, 
+       no. 5, pp. 1400-1409, Sep 2017, :doi:`10.1109/JPHOTOV.2017.2711431`
+    """
+
+    t0 = 298.15
+    delT = temp_cell - (t0 - 273.15)
+    lamT = (temp_cell + 273.15) / t0
+    g = effective_irradiance / 1000
+    lnG = np.log(g)
+
+    # Eq 9-10
+    del0 = (1 - beta_voc * t0) / (50.1 - alpha_sc * t0)
+    w0 = lambertw(np.exp(1/del0 + 1)).real
+
+    # Eqs 27-28
+    alpha_imp = alpha_sc + (beta_voc - 1/t0) / (w0 - 1)
+    beta_vmp = (voc0 / vmp0) * (
+        beta_voc / (1 + del0) +
+        (del0 * (w0 - 1) - 1/(1 + del0)) / t0
+    )
+
+    # Eq 26
+    eps0 = (del0 / (1 + del0)) * (voc0 / vmp0)
+    eps1 = del0 * (w0 - 1) * (voc0 / vmp0) - 1
+
+    # Eqs 22-25
+    isc = g * isc0 * (1 + alpha_sc * delT)
+    voc = voc0 * (1 + del0 * lamT * lnG + beta_voc * delT)
+    imp = g * imp0 * (1 + alpha_imp * delT)
+    vmp = vmp0 * (1 + eps0 * lamT * lnG + eps1 * (1 - g) + beta_vmp * delT)
+
+    return {
+        'p_mp': vmp * imp,
+        'i_mp': imp,
+        'v_mp': vmp,
+        'i_sc': isc,
+        'v_oc': voc,
+    }

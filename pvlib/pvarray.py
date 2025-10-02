@@ -474,7 +474,11 @@ def batzelis(effective_irradiance, temp_cell,
     delT = temp_cell - (t0 - 273.15)
     lamT = (temp_cell + 273.15) / t0
     g = effective_irradiance / 1000
-    lnG = np.log(g)
+    # for zero/negative irradiance, use lnG=large negative number so that
+    # computed voltages are negative and then clipped to zero
+    with np.errstate(divide='ignore'):  # needed for pandas for some reason
+        lnG = np.log(g, out=np.full_like(g, -9e9), where=g>0)
+        lnG = np.where(np.isfinite(g), lnG, np.nan)  # also preserve nans
 
     # Eq 9-10
     del0 = (1 - beta_voc * t0) / (50.1 - alpha_sc * t0)
@@ -496,6 +500,10 @@ def batzelis(effective_irradiance, temp_cell,
     voc = voc0 * (1 + del0 * lamT * lnG + beta_voc * delT)
     imp = g * imp0 * (1 + alpha_imp * delT)
     vmp = vmp0 * (1 + eps0 * lamT * lnG + eps1 * (1 - g) + beta_vmp * delT)
+
+    # handle negative voltages from zero and extremely small irradiance
+    vmp = np.clip(vmp, a_min=0, a_max=None)
+    voc = np.clip(voc, a_min=0, a_max=None)
 
     return {
         'p_mp': vmp * imp,

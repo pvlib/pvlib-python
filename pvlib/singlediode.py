@@ -876,16 +876,12 @@ def batzelis_keypoints(photocurrent, saturation_current, resistance_series,
     ----------
     photocurrent : numeric
         Light-generated current. [A]
-    
     saturation_current : numeric
         Diode saturation current. [A]
-    
     resistance_series : numeric
         Series resistance. [Ohm]
-    
     resistance_shunt : numeric
         Shunt resistance. [Ohm]
-    
     nNsVth : numeric
         The product of the usual diode ideality factor (n, unitless),
         number of cells in series (Ns), and cell thermal voltage at
@@ -922,7 +918,7 @@ def batzelis_keypoints(photocurrent, saturation_current, resistance_series,
 
     # Eqs 5-8
     w = np.real(lambertw(np.e * Iph / Is))
-    #vmp = (1 + Rs/Rsh) * a * (w - 1) - Rs * Iph * (1 - 1/w)  # not needed
+    # vmp = (1 + Rs/Rsh) * a * (w - 1) - Rs * Iph * (1 - 1/w)  # not needed
     with np.errstate(divide='ignore', invalid='ignore'):  # zero Iph -> zero w
         imp = Iph * (1 - 1/w) - a * (w - 1) / Rsh
 

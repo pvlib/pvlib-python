@@ -116,4 +116,3 @@ def test_fit_desoto_batzelis():
     assert iv['i_mp'] == pytest.approx(params['imp0'], rel=3e-3)
     assert iv['v_oc'] == pytest.approx(params['voc0'], rel=3e-4)
     assert iv['v_mp'] == pytest.approx(params['vmp0'], rel=4e-3)
-    

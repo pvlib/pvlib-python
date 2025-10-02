@@ -861,3 +861,73 @@ def _pwr_optfcn(df, loc):
                                  df['resistance_shunt'], df['nNsVth'])
 
     return current * df[loc]
+
+
+def batzelis_keypoints(photocurrent, saturation_current, resistance_series,
+                       resistance_shunt, nNsVth):
+    """
+    Estimate maximum power, open-circuit, and short-circuit values
+    using Batzelis's method.
+
+    This method is described in Section II.B of [1]_.
+
+    Parameters
+    ----------
+    photocurrent : numeric
+        Light-generated current. [A]
+    
+    saturation_current : numeric
+        Diode saturation current. [A]
+    
+    resistance_series : numeric
+        Series resistance. [Ohm]
+    
+    resistance_shunt : numeric
+        Shunt resistance. [Ohm]
+    
+    nNsVth : numeric
+        The product of the usual diode ideality factor (n, unitless),
+        number of cells in series (Ns), and cell thermal voltage at
+        specified effective irradiance and cell temperature. [V]
+
+    Returns
+    -------
+    dict
+        The returned dict-like object contains the keys/columns:
+
+        * ``p_mp`` - power at maximum power point. [W]
+        * ``i_mp`` - current at maximum power point. [A]
+        * ``v_mp`` - voltage at maximum power point. [V]
+        * ``i_sc`` - short circuit current. [A]
+        * ``v_oc`` - open circuit voltage. [V]
+
+    References
+    ----------
+    .. [1] E. I. Batzelis, "Simple PV Performance Equations Theoretically Well
+       Founded on the Single-Diode Model," Journal of Photovoltaics vol. 7, 
+       no. 5, pp. 1400-1409, Sep 2017, :doi:`10.1109/JPHOTOV.2017.2711431`
+    """
+    # convenience variables
+    Iph = photocurrent
+    Is = saturation_current
+    Rsh = resistance_shunt
+    Rs = resistance_series
+    a = nNsVth
+
+    # Eqs 3-4
+    isc = Iph * Rsh / (Rs + Rsh)
+    voc = a * np.log(Iph / Is)
+
+    # Eqs 5-8
+    w = lambertw(np.e * Iph / Is).real
+    #vmp = (1 + Rs/Rsh) * a * (w - 1) - Rs * Iph * (1 - 1/w)  # not needed
+    imp = Iph * (1 - 1/w) - a * (w - 1) / Rsh
+    vmp = a * (w - 1) - Rs * imp
+
+    return {
+        'p_mp': imp * vmp,
+        'i_mp': imp,
+        'v_mp': vmp,
+        'i_sc': isc,
+        'v_oc': voc,
+    }

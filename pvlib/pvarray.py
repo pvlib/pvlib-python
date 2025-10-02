@@ -429,13 +429,13 @@ def batzelis(effective_irradiance, temp_cell,
     Returns
     -------
     dict
-        The returned dict-like object always contains the keys/columns:
+        The returned dict-like object contains the keys/columns:
 
-        * p_mp - power at maximum power point. [W]
-        * i_mp - current at maximum power point. [A]
-        * v_mp - voltage at maximum power point. [V]
-        * i_sc - short circuit current. [A]
-        * v_oc - open circuit voltage. [V]
+        * ``p_mp`` - power at maximum power point. [W]
+        * ``i_mp`` - current at maximum power point. [A]
+        * ``v_mp`` - voltage at maximum power point. [V]
+        * ``i_sc`` - short circuit current. [A]
+        * ``v_oc`` - open circuit voltage. [V]
 
     Notes
     -----
@@ -505,6 +505,7 @@ def batzelis(effective_irradiance, temp_cell,
     vmp = np.clip(vmp, a_min=0, a_max=None)
     voc = np.clip(voc, a_min=0, a_max=None)
 
+    # TODO return dataframe for is_pandas
     return {
         'p_mp': vmp * imp,
         'i_mp': imp,

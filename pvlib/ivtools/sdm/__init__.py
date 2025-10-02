@@ -4,6 +4,10 @@ Function names should follow the pattern "fit_" + name of model + "_" +
  fitting method.
 """
 
+from pvlib.ivtools.sdm.batzelis import (  # noqa: F401
+    fit_desoto_batzelis,
+)
+
 from pvlib.ivtools.sdm.cec import (  # noqa: F401
     fit_cec_sam,
 )

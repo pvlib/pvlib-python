@@ -137,8 +137,9 @@ def test_batzelis():
 
     # pandas series
     actual = pvarray.batzelis(pd.Series(g), pd.Series(t), **params)
+    assert isinstance(actual, pd.DataFrame)
     for key, exp in expected.items():
-        pd.testing.assert_series_equal(actual[key], pd.Series(exp), atol=1e-3)
+        np.testing.assert_allclose(actual[key], pd.Series(exp), atol=1e-3)
 
     # scalar
     actual = pvarray.batzelis(g[1], t[1], **params)

@@ -3,6 +3,7 @@ Low-level functions for solving the single diode equation.
 """
 
 import numpy as np
+import pandas as pd
 from pvlib.tools import _golden_sect_DataFrame
 
 from scipy.optimize import brentq, newton
@@ -866,8 +867,8 @@ def _pwr_optfcn(df, loc):
 def batzelis_keypoints(photocurrent, saturation_current, resistance_series,
                        resistance_shunt, nNsVth):
     """
-    Estimate maximum power, open-circuit, and short-circuit values
-    using Batzelis's method.
+    Estimate maximum power, open-circuit, and short-circuit points from
+    single-diode equation parameters using Batzelis's method.
 
     This method is described in Section II.B of [1]_.
 
@@ -916,18 +917,34 @@ def batzelis_keypoints(photocurrent, saturation_current, resistance_series,
 
     # Eqs 3-4
     isc = Iph * Rsh / (Rs + Rsh)
-    voc = a * np.log(Iph / Is)
+    with np.errstate(divide='ignore'):  # zero Iph
+        voc = a * np.log(Iph / Is)
 
     # Eqs 5-8
-    w = lambertw(np.e * Iph / Is).real
+    w = np.real(lambertw(np.e * Iph / Is))
     #vmp = (1 + Rs/Rsh) * a * (w - 1) - Rs * Iph * (1 - 1/w)  # not needed
-    imp = Iph * (1 - 1/w) - a * (w - 1) / Rsh
+    with np.errstate(divide='ignore', invalid='ignore'):  # zero Iph -> zero w
+        imp = Iph * (1 - 1/w) - a * (w - 1) / Rsh
+
     vmp = a * (w - 1) - Rs * imp
 
-    return {
+    vmp = np.where(Iph > 0, vmp, 0)
+    voc = np.where(Iph > 0, voc, 0)
+    imp = np.where(Iph > 0, imp, 0)
+    isc = np.where(Iph > 0, isc, 0)
+
+    out = {
         'p_mp': imp * vmp,
         'i_mp': imp,
         'v_mp': vmp,
         'i_sc': isc,
         'v_oc': voc,
     }
+
+    # if pandas in, ensure pandas out
+    pandas_inputs = [
+        x for x in [Iph, Is, Rsh, Rs, a] if isinstance(x, pd.Series)]
+    if pandas_inputs:
+        out = pd.DataFrame(out, index=pandas_inputs[0].index)
+
+    return out

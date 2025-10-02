@@ -9,6 +9,7 @@ Supporting functions and parameter fitting functions may also be found here.
 """
 
 import numpy as np
+import pandas as pd
 from scipy.optimize import curve_fit
 from scipy.special import exp10, lambertw
 
@@ -482,7 +483,7 @@ def batzelis(effective_irradiance, temp_cell,
 
     # Eq 9-10
     del0 = (1 - beta_voc * t0) / (50.1 - alpha_sc * t0)
-    w0 = lambertw(np.exp(1/del0 + 1)).real
+    w0 = np.real(lambertw(np.exp(1/del0 + 1)))
 
     # Eqs 27-28
     alpha_imp = alpha_sc + (beta_voc - 1/t0) / (w0 - 1)
@@ -505,11 +506,20 @@ def batzelis(effective_irradiance, temp_cell,
     vmp = np.clip(vmp, a_min=0, a_max=None)
     voc = np.clip(voc, a_min=0, a_max=None)
 
-    # TODO return dataframe for is_pandas
-    return {
+    out = {
         'p_mp': vmp * imp,
         'i_mp': imp,
         'v_mp': vmp,
         'i_sc': isc,
         'v_oc': voc,
     }
+
+    # if pandas in, ensure pandas out
+    pandas_inputs = [
+        x for x in [effective_irradiance, temp_cell]
+        if isinstance(x, pd.Series)
+    ]
+    if pandas_inputs:
+        out = pd.DataFrame(out, index=pandas_inputs[0].index)
+
+    return out

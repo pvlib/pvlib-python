@@ -18,6 +18,14 @@ Bug fixes
 
 Enhancements
 ~~~~~~~~~~~~
+* Add :py:func:`~pvlib.ivtools.sdm.fit_desoto_batzelis`, a function to estimate
+  parameters for the De Soto single-diode model from datasheet values. (:pull:`2563`)
+* Add :py:func:`~pvlib.ivtools.singlediode.batzelis_keypoints`, a function to estimate
+  maximum power, open circuit, and short circuit points using parameters for
+  the single-diode equation. (:pull:`2563`)
+* Add :py:func:`~pvlib.pvarray.batzelis`, a function to estimate maximum power
+  open circuit, and short circuit points from datasheet values. (:pull:`2563`)
+
 
 
 Documentation
@@ -42,4 +50,3 @@ Maintenance
 
 Contributors
 ~~~~~~~~~~~~
-

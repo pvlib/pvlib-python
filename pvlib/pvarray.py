@@ -424,7 +424,7 @@ def batzelis(effective_irradiance, temp_cell,
     alpha_sc : float
         Short-circuit current temperature coefficient at STC. [1/K]
     beta_voc : float
-        Open-circuit voltage temperature coefficient at STC. [1/K]    
+        Open-circuit voltage temperature coefficient at STC. [1/K]
 
     Returns
     -------
@@ -455,7 +455,7 @@ def batzelis(effective_irradiance, temp_cell,
     References
     ----------
     .. [1] E. I. Batzelis, "Simple PV Performance Equations Theoretically Well
-       Founded on the Single-Diode Model," Journal of Photovoltaics vol. 7, 
+       Founded on the Single-Diode Model," Journal of Photovoltaics vol. 7,
        no. 5, pp. 1400-1409, Sep 2017, :doi:`10.1109/JPHOTOV.2017.2711431`
 
     Examples
@@ -477,7 +477,7 @@ def batzelis(effective_irradiance, temp_cell,
     # for zero/negative irradiance, use lnG=large negative number so that
     # computed voltages are negative and then clipped to zero
     with np.errstate(divide='ignore'):  # needed for pandas for some reason
-        lnG = np.log(g, out=np.full_like(g, -9e9), where=g>0)
+        lnG = np.log(g, out=np.full_like(g, -9e9), where=(g > 0))
         lnG = np.where(np.isfinite(g), lnG, np.nan)  # also preserve nans
 
     # Eq 9-10

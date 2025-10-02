@@ -129,7 +129,7 @@ def test_batzelis():
         'i_sc': [ 15.980,   7.972,  19.132,   8.082,  19.397, 0, nan, nan],
         'v_oc': [ 50.260,  49.687,  51.172,  45.948,  47.585, 0, nan, nan],
      }
-    
+
     # numpy array
     actual = pvarray.batzelis(g, t, **params)
     for key, exp in expected.items():
@@ -152,3 +152,4 @@ def test_batzelis_negative_voltage():
     actual = pvarray.batzelis(1e-10, 25, **params)
     assert actual['v_mp'] == 0
     assert actual['v_oc'] == 0
+

@@ -400,12 +400,12 @@ def batzelis(effective_irradiance, temp_cell,
              isc0, voc0, imp0, vmp0, alpha_sc, beta_voc):
     """
     Compute maximum power point, open circuit, and short circuit
-    values using the Batzelis method.
+    values using Batzelis's method.
 
-    Batzelis's method [1]_ is a fast method of computing the maximum
-    power current and voltage.  The calculations are rooted in the
-    single-diode equation, but only typical datasheet information
-    is required.
+    Batzelis's method (described in Section III of [1]_) is a fast method
+    of computing the maximum power current and voltage.  The calculations
+    are rooted in the De Soto single-diode model, but require only typical
+    datasheet information.
 
     Parameters
     ----------
@@ -431,22 +431,43 @@ def batzelis(effective_irradiance, temp_cell,
     dict
         The returned dict-like object always contains the keys/columns:
 
-        * i_sc - short circuit current in amperes.
-        * v_oc - open circuit voltage in volts.
-        * i_mp - current at maximum power point in amperes.
-        * v_mp - voltage at maximum power point in volts.
-        * p_mp - power at maximum power point in watts.
+        * p_mp - power at maximum power point. [W]
+        * i_mp - current at maximum power point. [A]
+        * v_mp - voltage at maximum power point. [V]
+        * i_sc - short circuit current. [A]
+        * v_oc - open circuit voltage. [V]
 
     Notes
     -----
+    This method is the combination of three sub-methods for:
+
+    1. estimating single-diode model parameters from datasheet information
+    2. translating SDM parameters from STC to operating conditions
+       (taken from the De Soto model)
+    3. estimating the MPP, OC, and SC points on the resulting I-V curve.
+
     The ``alpha_sc`` and ``beta_voc`` temperature coefficient parameters
     must be given as normalized values.
+
+    At extremely low irradiance (e.g. 1e-10 Wm⁻²), this model can produce
+    negative voltages.  This function clips any negative voltages to zero.
 
     References
     ----------
     .. [1] E. I. Batzelis, "Simple PV Performance Equations Theoretically Well
        Founded on the Single-Diode Model," Journal of Photovoltaics vol. 7, 
        no. 5, pp. 1400-1409, Sep 2017, :doi:`10.1109/JPHOTOV.2017.2711431`
+
+    Examples
+    --------
+    >>> params = {'isc0': 15.98, 'voc0': 50.26, 'imp0': 15.27, 'vmp0': 42.57,
+    ...           'alpha_sc': 0.00046, 'beta_voc': -0.0024}
+    >>> batzelis(np.array([1000, 800]), np.array([25, 30]), **params)
+    {'p_mp': array([650.0439    , 512.99195952]),
+     'i_mp': array([15.27      , 12.23049227]),
+     'v_mp': array([42.57      , 41.94368864]),
+     'i_sc': array([15.98     , 12.8134032]),
+     'v_oc': array([50.26      , 49.26532905])}
     """
 
     t0 = 298.15

@@ -1,7 +1,114 @@
 .. _singlediode:
 
-Single Diode Equation
-=====================
+Single diode models
+===================
+
+Single-diode models are a popular means of simulating the electrical output
+of a PV module under any given irradiance and temperature conditions.
+A single-diode model (SDM) pairs the single-diode equation (SDE) with a set of
+auxiliary equations that predict the SDE parameters at any given irradiance
+and temperature.  All SDMs use the SDE, but their auxiliary equations differ.
+For more background on SDMs, see the `PVPMC website
+<https://pvpmc.sandia.gov/modeling-guide/2-dc-module-iv/single-diode-equivalent-circuit-models/>`_.
+
+Three SDMs are currently available in pvlib: the CEC SDM, the PVsyst SDM,
+and the De Soto SDM.  pvlib splits these models into two steps.  The first
+is to compute the auxiliary equations using one of the following functions:
+
+* CEC SDM: :py:func:`~pvlib.pvsystem.calcparams_cec`
+* PVsyst SDM: :py:func:`~pvlib.pvsystem.calcparams_pvsyst`
+* De Soto SDM: :py:func:`~pvlib.pvsystem.calcparams_desoto`
+
+The second step is to use the output of these functions to compute points on
+the SDE's I-V curve, as described in the following sections.
+
+Computing key SDE I-V points
+----------------------------
+Three points on the SDE I-V curve are typically of special interest for PV modeling:
+the maximum power (MP), open circuit (OC) and short circuit (SC) points.  However,
+because the SDE is an implicit transcendental equation, it is not possible
+to directly calculate these points.  Instead, pvlib provides several algorithms
+for computing these points.
+
+The most accurate and convenient function is :py:func:`pvlib.pvsystem.singlediode`.
+It provides several methods of computing these points:
+
++------------------+------------+-----------+-------------------------+
+| Method           | Type       | Speed     | Guaranteed convergence? |
++==================+============+===========+=========================+
+| ``newton``       | iterative  | fast      | no                      |
++------------------+------------+-----------+-------------------------+
+| ``brentq``       | iterative  | slow      | yes                     |
++------------------+------------+-----------+-------------------------+
+| ``chandrupatla`` | iterative  | fast      | yes                     |
++------------------+------------+-----------+-------------------------+
+| ``lambertw``     | explicit   | medium    | yes                     |
++------------------+------------+-----------+-------------------------+
+
+If lower accuracy (within ~1%) is allowable, these points can be estimated
+much more quickly using :py:func:`pvlib.singlediode.batzelis_keypoints`.
+
+
+Computing full I-V curves
+-------------------------
+
+Full I-V curves with an arbitrary number of points can be computed using
+:py:func:`pvlib.pvsystem.i_from_v` and :py:func:`pvlib.pvsystem.v_from_i`, which
+calculate either current or voltage from the other.  It is often useful to
+first compute the key points using :py:func:`pvlib.pvsystem.singlediode` to
+determine the open-circuit or short-circuit values, and then compute a range
+of voltages/currents from zero to those extreme points.  This range can then
+be used with the above functions to compute the I-V curve.
+
+
+Special thin film parameters
+----------------------------
+
+The PVsyst SDM has two additional, optional parameters to better represent
+the behavior of CdTe and a-Si modules.  As these parameters are not included
+in the standard SDE, special methods are needed to account for them.
+The functions :py:func:`pvlib.pvsystem.max_power_point`,
+:py:func:`pvlib.singlediode.bishop88_i_from_v`,
+and :py:func:`pvlib.singlediode.bishop88_v_from_i`
+can compute the key points and full I-V curves using these parameters.
+
+
+Reverse bias breakdown
+----------------------
+
+Although the standard SDE does not account for reverse bias breakdown, the
+following functions can optionally include an extra term for modeling it:
+:py:func:`pvlib.pvsystem.max_power_point`,
+:py:func:`pvlib.singlediode.bishop88_i_from_v`,
+and :py:func:`pvlib.singlediode.bishop88_v_from_i`. 
+
+
+Model parameter values
+----------------------
+
+Despite some models having parameters with similar names, parameter values are
+specific to the model and thus must be produced with the intended model in mind.
+Sometimes sets of parameter values can be read in from external sources, for example:
+
+* CEC SDM parameter database available from :py:func:`~pvlib.pvsystem.retrieve_sam`
+* PAN files, which can be read using :py:func:`~pvlib.iotools.read_panond`
+
+pvlib also provides a set of functions that can estimate SDM parameter values
+from various datasources:
+
++---------------------------------------------------------------+---------+--------------------+
+| Function                                                      | SDM     | Inputs             |
++===============================================================+=========+====================+
+| :py:func:`~pvlib.ivtools.sdm.fit_cec_sam`                     | CEC     | datasheet          |
+| :py:func:`~pvlib.ivtools.sdm.fit_desoto`                      | De Soto | datasheet          |
+| :py:func:`~pvlib.ivtools.sdm.fit_desoto_sandia`               | De Soto | I-V curves         |
+| :py:func:`~pvlib.ivtools.sdm.fit_pvsyst_sandia`               | PVsyst  | I-V curves         |
+| :py:func:`~pvlib.ivtools.sdm.fit_pvsyst_iec61853_sandia_2025` | PVsyst  | IEC 61853-1 matrix |
++---------------------------------------------------------------+---------+--------------------+
+
+
+Single-diode equation
+---------------------
 
 This section reviews the solutions to the single diode equation used in
 pvlib-python to generate an IV curve of a PV module.
@@ -15,7 +122,7 @@ The :func:`pvlib.pvsystem.singlediode` function allows the user to choose the
 method using the ``method`` keyword.
 
 Lambert W-Function
-------------------
+******************
 When ``method='lambertw'``, the Lambert W-function is used as previously shown
 by Jain, Kapoor [1, 2] and Hansen [3]. The following algorithm can be found on
 `Wikipedia: Theory of Solar Cells
@@ -50,7 +157,7 @@ Then the module current can be solved using the Lambert W-function,
 
 
 Bishop's Algorithm
-------------------
+******************
 The function :func:`pvlib.singlediode.bishop88` uses an explicit solution [4]
 that finds points on the IV curve by first solving for pairs :math:`(V_d, I)`
 where :math:`V_d` is the diode voltage :math:`V_d = V + I*Rs`. Then the voltage

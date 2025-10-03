@@ -22,6 +22,7 @@ Enhancements
 
 Documentation
 ~~~~~~~~~~~~~
+* Provide an overview of single-diode modeling functionality in :ref:`singlediode`. (:pull:`2565`)
 
 
 Testing

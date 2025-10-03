@@ -914,6 +914,7 @@ def _lambertw(photocurrent, saturation_current, resistance_series,
 
     # Find the voltage, v_mp, where the power is maximized.
     # use scipy.elementwise if available
+    # remove try/except when scipy>=1.15, and golden mean is retired
     try:
         from scipy.optimize.elementwise import find_minimum
         init = (0., 0.8*v_oc, 1.01*v_oc)

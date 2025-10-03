@@ -2910,6 +2910,85 @@ def pvwatts_dc(effective_irradiance, temp_cell, pdc0, gamma_pdc, temp_ref=25.):
     return pdc
 
 
+def pvwatts_dc_marion(effective_irradiance, temp_cell, pdc0, gamma_pdc,
+                      k=0.005, temp_ref=25.):
+    r"""
+    Implements a modified version of NREL's PVWatts Version 5 DC power model
+    [1]_ that adjusts for a reduction in module efficiency that often occurs at
+    low irradiance. Based on based on [2]_. An irradiance correction factor,
+    `k`, is used for a piece-wise adjustment to power based on irradiance,
+    where `k` is the reduction in actual power at 200 W/m^2 relative to ideal
+    power calculated linearly from standard test conditions, normalized to
+    nameplate power at standard test conditions.
+
+    .. math::
+
+        k=\frac{0.2P_{dc0}-P_{200}}{P_{dc0}}
+
+    For example, a 500 W module that produces 95 W at 200 W/m^2 (a 5% relative
+    reduction in efficiency) would have a value of `k` = 0.01.
+
+    Note that ``pdc0`` is also used as a symbol in
+    :py:func:`pvlib.inverter.pvwatts`. ``pdc0`` in this function refers to the DC
+    power of the modules at reference conditions. ``pdc0`` in
+    :py:func:`pvlib.inverter.pvwatts` refers to the DC power input limit of
+    the inverter.
+
+    Parameters
+    ----------
+    effective_irradiance: numeric
+        Irradiance transmitted to the PV cells. To be
+        fully consistent with PVWatts, the user must have already
+        applied angle of incidence losses, but not soiling, spectral,
+        etc. [W/m^2]
+    temp_cell: numeric
+        Cell temperature [C].
+    pdc0: numeric
+        Power of the modules at 1000 W/m^2 and cell reference temperature. [W]
+    gamma_pdc: numeric
+        The temperature coefficient of power. Typically -0.002 to
+        -0.005 per degree C. [1/C]
+    k: numeric, default 0.005
+        Irradiance correction factor, defined in [2]_. [unitless]
+    temp_ref: numeric, default 25.0
+        Cell reference temperature. PVWatts defines it to be 25 C and
+        is included here for flexibility. [C]
+
+    Returns
+    -------
+    pdc: numeric
+        DC power. [W]
+
+    References
+    ----------
+    .. [1] A. P. Dobos, "PVWatts Version 5 Manual"
+           http://pvwatts.nrel.gov/downloads/pvwattsv5.pdf
+           (2014).
+    .. [2] B. Marion, "Comparison of Predictive Models for
+           Photovoltaic Module Performance," 
+           https://doi.org/10.1109/PVSC.2008.4922586,
+           https://docs.nrel.gov/docs/fy08osti/42511.pdf
+           (2008).
+
+    See Also
+    --------
+    pvwatts_dc
+    """  # noqa: E501
+
+    pdc_unscaled = (effective_irradiance * 0.001 * pdc0 *
+                    (1 + gamma_pdc * (temp_cell - temp_ref)))
+
+    err_1 = (k * (1 - (1 - effective_irradiance / 200)**4) /
+             (effective_irradiance / 1000))
+    err_2 = (k * (1000 - effective_irradiance) / (1000 - 200))
+
+    pdc = np.where(effective_irradiance <= 200,
+                   pdc_unscaled * (1 - err_1),
+                   pdc_unscaled * (1 - err_2))
+
+    return pdc
+
+
 def pvwatts_losses(soiling=2, shading=3, snow=0, mismatch=2, wiring=2,
                    connections=0.5, lid=1.5, nameplate_rating=1, age=0,
                    availability=3):

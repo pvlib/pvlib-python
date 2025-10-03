@@ -421,9 +421,9 @@ def fit_desoto_batzelis(v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc):
     i_sc : float
         Short-circuit current at STC. [A]
     alpha_sc : float
-        Short-circuit current temperature coefficient at STC. [1/K]
+        Short-circuit current temperature coefficient at STC. [A/K]
     beta_voc : float
-        Open-circuit voltage temperature coefficient at STC. [1/K]
+        Open-circuit voltage temperature coefficient at STC. [V/K]
 
     Returns
     -------
@@ -447,6 +447,10 @@ def fit_desoto_batzelis(v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc):
        IEEE Trans. Sustain. Energy, vol. 7, no. 2, pp. 504-512, Apr 2016.
        :doi:`10.1109/TSTE.2015.2503435`
     """
+    # convert temp coeffs from A/K and V/K to 1/K
+    alpha_sc = alpha_sc / i_sc
+    beta_voc = beta_voc / v_oc
+
     # Equation numbers refer to [1]
     t0 = 298.15  # K
     del0 = (1 - beta_voc * t0) / (50.1 - alpha_sc * t0)  # Eq 9

@@ -423,9 +423,9 @@ def batzelis(effective_irradiance, temp_cell,
     i_sc : float
         Short-circuit current at STC. [A]
     alpha_sc : float
-        Short-circuit current temperature coefficient at STC. [1/K]
+        Short-circuit current temperature coefficient at STC. [A/K]
     beta_voc : float
-        Open-circuit voltage temperature coefficient at STC. [1/K]
+        Open-circuit voltage temperature coefficient at STC. [V/K]
 
     Returns
     -------
@@ -447,9 +447,6 @@ def batzelis(effective_irradiance, temp_cell,
        (taken from the De Soto model)
     3. estimating the MPP, OC, and SC points on the resulting I-V curve.
 
-    The ``alpha_sc`` and ``beta_voc`` temperature coefficient parameters
-    must be given as normalized values.
-
     At extremely low irradiance (e.g. 1e-10 Wm⁻²), this model can produce
     negative voltages.  This function clips any negative voltages to zero.
 
@@ -461,15 +458,18 @@ def batzelis(effective_irradiance, temp_cell,
 
     Examples
     --------
-    ...           'alpha_sc': 0.00046, 'beta_voc': -0.0024}
     >>> params = {'i_sc': 15.98, 'v_oc': 50.26, 'i_mp': 15.27, 'v_mp': 42.57,
+    ...           'alpha_sc': 0.007351, 'beta_voc': -0.120624}
     >>> batzelis(np.array([1000, 800]), np.array([25, 30]), **params)
-    {'p_mp': array([650.0439    , 512.99195952]),
-     'i_mp': array([15.27      , 12.23049227]),
-     'v_mp': array([42.57      , 41.94368864]),
-     'i_sc': array([15.98     , 12.8134032]),
-     'v_oc': array([50.26      , 49.26532905])}
+    {'p_mp': array([650.0439    , 512.99199048]),
+     'i_mp': array([15.27      , 12.23049303]),
+     'v_mp': array([42.57      , 41.94368856]),
+     'i_sc': array([15.98    , 12.813404]),
+     'v_oc': array([50.26      , 49.26532902])}
     """
+    # convert temp coeffs from A/K and V/K to 1/K
+    alpha_sc = alpha_sc / i_sc
+    beta_voc = beta_voc / v_oc
 
     t0 = 298.15
     delT = temp_cell - (t0 - 273.15)

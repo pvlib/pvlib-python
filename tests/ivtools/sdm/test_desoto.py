@@ -95,15 +95,15 @@ def test_fit_desoto_sandia(cec_params_cansol_cs5p_220p):
 
 
 def test_fit_desoto_batzelis():
-              'alpha_sc': 0.00046, 'beta_voc': -0.0024}
     params = {'i_sc': 15.98, 'v_oc': 50.26, 'i_mp': 15.27, 'v_mp': 42.57,
+              'alpha_sc': 0.007351, 'beta_voc': -0.120624}
     expected = {  # calculated with the function itself
-        'alpha_sc': 0.0073508,
-        'a_ref': 1.7257631194825132,
-        'I_L_ref': 15.985408869737098,
-        'I_o_ref': 3.594300567343102e-12,
-        'R_sh_ref': 389.4378389153357,
-        'R_s': 0.1318159287478395
+        'alpha_sc': 0.007351,
+        'a_ref': 1.7257632483733483,
+        'I_L_ref': 15.985408866796396,
+        'I_o_ref': 3.594308384705643e-12,
+        'R_sh_ref': 389.4379947026243,
+        'R_s': 0.13181590981241956,
     }
     out = sdm.fit_desoto_batzelis(**params)
     for k in expected:

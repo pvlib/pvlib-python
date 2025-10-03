@@ -20,17 +20,11 @@ is to compute the auxiliary equations using one of the following functions:
 * De Soto SDM: :py:func:`~pvlib.pvsystem.calcparams_desoto`
 
 The second step is to use the output of these functions to compute points on
-the SDE's I-V curve, as described in the following sections.
-
-Computing key SDE I-V points
-----------------------------
-Three points on the SDE I-V curve are typically of special interest for PV modeling:
-the maximum power (MP), open circuit (OC), and short circuit (SC) points. 
-Unfortunately, computing them is complicated by the SDE being an implicit transcendental
-equation.  pvlib provides several algorithms for computing these points.
-
-The most accurate and convenient function is :py:func:`pvlib.pvsystem.singlediode`.
-It provides several methods of computing these points:
+the SDE's I-V curve. Three points on the SDE I-V curve are typically of special
+interest for PV modeling: the maximum power (MP), open circuit (OC), and
+short circuit (SC) points. The most convenient function for computing these
+points is :py:func:`pvlib.pvsystem.singlediode`. It provides several methods
+for solving the SDE:
 
 +------------------+------------+-----------+-------------------------+
 | Method           | Type       | Speed     | Guaranteed convergence? |
@@ -44,7 +38,7 @@ It provides several methods of computing these points:
 | ``lambertw``     | explicit   | medium    | yes                     |
 +------------------+------------+-----------+-------------------------+
 
-If lower accuracy (within ~1%) is allowable, these points can be estimated
+If lower accuracy (within ~1%) is allowable, the special points can be estimated
 much more quickly using :py:func:`pvlib.singlediode.batzelis_keypoints`.
 
 
@@ -53,43 +47,44 @@ Computing full I-V curves
 
 Full I-V curves can be computed using
 :py:func:`pvlib.pvsystem.i_from_v` and :py:func:`pvlib.pvsystem.v_from_i`, which
-calculate either current or voltage from the other.  It is often useful to
+calculate either current or voltage from the other, with the methods listed
+above.  It is often useful to
 first compute the open-circuit or short-circuit values using
 :py:func:`pvlib.pvsystem.singlediode` and then compute a range
 of voltages/currents from zero to those extreme points.  This range can then
 be used with the above functions to compute the I-V curve.
 
 
-Special thin film parameters
-----------------------------
+IV curves in reverse bias
+-------------------------
 
-The PVsyst SDM has two additional, optional parameters to better represent
-the behavior of CdTe and a-Si modules.  As these parameters are not included
-in the standard SDE, special methods are needed to account for them.
-The functions :py:func:`pvlib.pvsystem.max_power_point`,
-:py:func:`pvlib.singlediode.bishop88_i_from_v`,
-and :py:func:`pvlib.singlediode.bishop88_v_from_i`
-can compute the key points and full I-V curves using these parameters.
-
-
-Reverse bias breakdown
-----------------------
-
-Although the standard SDE does not account for reverse bias breakdown, the
+The standard SDE does not account for diode breakdown at reverse bias. The
 following functions can optionally include an extra term for modeling it:
 :py:func:`pvlib.pvsystem.max_power_point`,
 :py:func:`pvlib.singlediode.bishop88_i_from_v`,
 and :py:func:`pvlib.singlediode.bishop88_v_from_i`. 
 
 
+Recombination current for thin film cells
+-----------------------------------------
+
+The PVsyst SDM optionally modifies the SDE to better represent recombination
+current in CdTe and a-Si modules. The modified SDE requires two additional
+parameters. pvlib functions can compute the key points or full I-V curves using
+the modified SDE:
+:py:func:`pvlib.pvsystem.max_power_point`,
+:py:func:`pvlib.singlediode.bishop88_i_from_v`,
+and :py:func:`pvlib.singlediode.bishop88_v_from_i`.
+
 Model parameter values
 ----------------------
 
 Despite some models having parameters with similar names, parameter values are
-specific to the model and thus must be produced with the intended model in mind.
-Sometimes sets of parameter values can be read in from external sources, for example:
+specific to each model and thus must be produced with the intended model in mind.
+For some models, sets of parameter values can be read from external sources,
+for example:
 
-* CEC SDM parameter database available from :py:func:`~pvlib.pvsystem.retrieve_sam`
+* CEC SDM parameter database can be read using :py:func:`~pvlib.pvsystem.retrieve_sam`
 * PAN files, which can be read using :py:func:`~pvlib.iotools.read_panond`
 
 pvlib also provides a set of functions that can estimate SDM parameter values

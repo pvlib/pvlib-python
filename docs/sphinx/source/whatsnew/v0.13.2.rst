@@ -25,6 +25,15 @@ Enhancements
   the single-diode equation. (:pull:`2563`)
 * Add :py:func:`~pvlib.pvarray.batzelis`, a function to estimate maximum power
   open circuit, and short circuit points from datasheet values. (:pull:`2563`)
+* Add ``method='chandrupatla'`` (faster than ``brentq`` and slower than ``newton``,
+  but convergence is guaranteed) as an option for
+  :py:func:`pvlib.pvsystem.singlediode`,
+  :py:func:`~pvlib.pvsystem.i_from_v`,
+  :py:func:`~pvlib.pvsystem.v_from_i`,
+  :py:func:`~pvlib.pvsystem.max_power_point`,
+  :py:func:`~pvlib.singlediode.bishop88_mpp`,
+  :py:func:`~pvlib.singlediode.bishop88_v_from_i`, and
+  :py:func:`~pvlib.singlediode.bishop88_i_from_v`. (:issue:`2497`, :pull:`2498`)
 
 
 
@@ -50,3 +59,4 @@ Maintenance
 
 Contributors
 ~~~~~~~~~~~~
+

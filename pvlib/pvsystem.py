@@ -2498,7 +2498,11 @@ def singlediode(photocurrent, saturation_current, resistance_series,
 
     method : str, default 'lambertw'
         Determines the method used to calculate points on the IV curve. The
-        options are ``'lambertw'``, ``'newton'``, or ``'brentq'``.
+        options are ``'lambertw'``, ``'newton'``, ``'brentq'``, or
+        ``'chandrupatla'``.
+
+        .. note::
+           ``'chandrupatla'`` requires scipy 1.15 or greater.
 
     Returns
     -------
@@ -2630,7 +2634,11 @@ def max_power_point(photocurrent, saturation_current, resistance_series,
         cells ``Ns`` and the builtin voltage ``Vbi`` of the intrinsic layer.
         [V].
     method : str
-        either ``'newton'`` or ``'brentq'``
+        either ``'newton'``, ``'brentq'``, or ``'chandrupatla'``.
+
+        .. note::
+           ``'chandrupatla'`` requires scipy 1.15 or greater.
+
 
     Returns
     -------
@@ -2713,8 +2721,13 @@ def v_from_i(current, photocurrent, saturation_current, resistance_series,
         0 < nNsVth
 
     method : str
-        Method to use: ``'lambertw'``, ``'newton'``, or ``'brentq'``. *Note*:
-        ``'brentq'`` is limited to 1st quadrant only.
+        Method to use: ``'lambertw'``, ``'newton'``, ``'brentq'``, or
+        ``'chandrupatla'``. *Note*: ``'brentq'`` is limited to
+        non-negative current.
+
+        .. note::
+           ``'chandrupatla'`` requires scipy 1.15 or greater.
+
 
     Returns
     -------
@@ -2795,8 +2808,13 @@ def i_from_v(voltage, photocurrent, saturation_current, resistance_series,
         0 < nNsVth
 
     method : str
-        Method to use: ``'lambertw'``, ``'newton'``, or ``'brentq'``. *Note*:
-        ``'brentq'`` is limited to 1st quadrant only.
+        Method to use: ``'lambertw'``, ``'newton'``, ``'brentq'``, or
+        ``'chandrupatla'``. *Note*: ``'brentq'`` is limited to
+        non-negative current.
+
+        .. note::
+           ``'chandrupatla'`` requires scipy 1.15 or greater.
+
 
     Returns
     -------

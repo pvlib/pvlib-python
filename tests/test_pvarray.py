@@ -122,13 +122,13 @@ def test_batzelis():
               'alpha_sc': 0.00046, 'beta_voc': -0.0024}
     g = np.array([1000, 500, 1200, 500, 1200, 0, nan, 1000])
     t = np.array([25, 20, 20, 50, 50, 25, 0, nan])
-    expected = {  # these values were computed using the function itself
+    expected = {  # these values were computed using pvarray.batzelis itself
         'p_mp': [650.044, 328.599, 789.136, 300.079, 723.401, 0, nan, nan],
         'i_mp': [ 15.270, 7.626, 18.302, 7.680, 18.433, 0, nan, nan],
         'v_mp': [ 42.570, 43.090, 43.117, 39.071, 39.246, 0, nan, nan],
         'i_sc': [ 15.980, 7.972, 19.132, 8.082, 19.397, 0, nan, nan],
         'v_oc': [ 50.260, 49.687, 51.172, 45.948, 47.585, 0, nan, nan],
-     }
+    }
 
     # numpy array
     actual = pvarray.batzelis(g, t, **params)

@@ -407,7 +407,8 @@ def fit_desoto_batzelis(isc0, voc0, imp0, vmp0, alpha_sc, beta_voc):
     Determine De Soto single-diode model parameters from datasheet values
     using Batzelis's method.
 
-    This method is described in Section II.C of [1]_ and fully documented in [2]_.
+    This method is described in Section II.C of [1]_ and fully documented
+    in [2]_.
 
     Parameters
     ----------
@@ -441,11 +442,12 @@ def fit_desoto_batzelis(isc0, voc0, imp0, vmp0, alpha_sc, beta_voc):
     .. [1] E. I. Batzelis, "Simple PV Performance Equations Theoretically Well
        Founded on the Single-Diode Model," Journal of Photovoltaics vol. 7,
        no. 5, pp. 1400-1409, Sep 2017, :doi:`10.1109/JPHOTOV.2017.2711431`
-    .. [2] E. I. Batzelis and S. A. Papathanassiou, "A method for the analytical
-       extraction of the single-diode PV model parameters, IEEE Trans.
-       Sustain. Energy, vol. 7, no. 2, pp. 504-512, Apr 2016.
+    .. [2] E. I. Batzelis and S. A. Papathanassiou, "A method for the
+       analytical extraction of the single-diode PV model parameters,"
+       IEEE Trans. Sustain. Energy, vol. 7, no. 2, pp. 504-512, Apr 2016.
        :doi:`10.1109/TSTE.2015.2503435`
     """
+    # Equation numbers refer to [1]
     t0 = 298.15  # K
     del0 = (1 - beta_voc * t0) / (50.1 - alpha_sc * t0)  # Eq 9
     w0 = np.real(lambertw(np.exp(1/del0 + 1)))

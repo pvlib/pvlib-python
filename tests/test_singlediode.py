@@ -630,7 +630,7 @@ def test_batzelis_keypoints():
     params = {'photocurrent': 10, 'saturation_current': 1e-10,
               'resistance_series': 0.2, 'resistance_shunt': 3000,
               'nNsVth': 1.7}
-    
+
     exact_values = {  # calculated using pvlib.pvsystem.singlediode
         'i_sc': 9.999333377550565,
         'v_oc': 43.05589965219406,

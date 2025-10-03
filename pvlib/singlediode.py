@@ -917,7 +917,7 @@ def _lambertw(photocurrent, saturation_current, resistance_series,
     # remove try/except when scipy>=1.15, and golden mean is retired
     try:
         from scipy.optimize.elementwise import find_minimum
-        init = (0., 0.5*v_oc, v_oc)
+        init = (0., 0.8*v_oc, v_oc)
         res = find_minimum(_vmp_opt, init,
                            args=(params['photocurrent'],
                                  params['saturation_current'],

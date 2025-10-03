@@ -25,10 +25,9 @@ the SDE's I-V curve, as described in the following sections.
 Computing key SDE I-V points
 ----------------------------
 Three points on the SDE I-V curve are typically of special interest for PV modeling:
-the maximum power (MP), open circuit (OC) and short circuit (SC) points.  However,
-because the SDE is an implicit transcendental equation, it is not possible
-to directly calculate these points.  Instead, pvlib provides several algorithms
-for computing these points.
+the maximum power (MP), open circuit (OC), and short circuit (SC) points. 
+Unfortunately, computing them is complicated by the SDE being an implicit transcendental
+equation.  pvlib provides several algorithms for computing these points.
 
 The most accurate and convenient function is :py:func:`pvlib.pvsystem.singlediode`.
 It provides several methods of computing these points:
@@ -52,11 +51,11 @@ much more quickly using :py:func:`pvlib.singlediode.batzelis_keypoints`.
 Computing full I-V curves
 -------------------------
 
-Full I-V curves with an arbitrary number of points can be computed using
+Full I-V curves can be computed using
 :py:func:`pvlib.pvsystem.i_from_v` and :py:func:`pvlib.pvsystem.v_from_i`, which
 calculate either current or voltage from the other.  It is often useful to
-first compute the key points using :py:func:`pvlib.pvsystem.singlediode` to
-determine the open-circuit or short-circuit values, and then compute a range
+first compute the open-circuit or short-circuit values using
+:py:func:`pvlib.pvsystem.singlediode` and then compute a range
 of voltages/currents from zero to those extreme points.  This range can then
 be used with the above functions to compute the I-V curve.
 

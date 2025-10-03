@@ -914,7 +914,6 @@ def _lambertw(photocurrent, saturation_current, resistance_series,
 
     # Find the voltage, v_mp, where the power is maximized.
     # use scipy.elementwise if available
-    use_gs = False
     try:
         from scipy.optimize.elementwise import find_minimum
         init = (0., 0.8*v_oc, 1.01*v_oc)
@@ -924,16 +923,10 @@ def _lambertw(photocurrent, saturation_current, resistance_series,
                                  params['resistance_series'],
                                  params['resistance_shunt'],
                                  params['nNsVth'],))
-        if res.success.all():
-            v_mp = res.x
-            p_mp = -1.*res.f_x
-        else:
-            use_gs = True
+        v_mp = res.x
+        p_mp = -1.*res.f_x
     except ModuleNotFoundError:
-        use_gs = True
-
-    if use_gs:
-        # gracefully switch to old golden section method
+        # switch to old golden section method
         p_mp, v_mp = _golden_sect_DataFrame(params, 0., v_oc * 1.14, _pwr_optfcn)
 
     # Find Imp using Lambert W
@@ -960,7 +953,7 @@ def _lambertw(photocurrent, saturation_current, resistance_series,
 
 def _vmp_opt(v, iph, io, rs, rsh, nNsVth):
     '''
-    Function to find power from ``i_from_v``.
+    Function to find negative of power from ``i_from_v``.
     '''
     current = _lambertw_i_from_v(v, iph, io, rs, rsh, nNsVth)
 

@@ -10,7 +10,8 @@ from pvlib.ivtools.sdm.cec import (  # noqa: F401
 
 from pvlib.ivtools.sdm.desoto import (  # noqa: F401
     fit_desoto,
-    fit_desoto_sandia
+    fit_desoto_batzelis,
+    fit_desoto_sandia,
 )
 
 from pvlib.ivtools.sdm.pvsyst import (  # noqa: F401

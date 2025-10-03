@@ -402,7 +402,7 @@ def _fit_desoto_sandia_diode(ee, voc, vth, tc, specs, const):
     return np.array(res.params)[1]
 
 
-def fit_desoto_batzelis(isc0, voc0, imp0, vmp0, alpha_sc, beta_voc):
+def fit_desoto_batzelis(v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc):
     """
     Determine De Soto single-diode model parameters from datasheet values
     using Batzelis's method.
@@ -412,14 +412,14 @@ def fit_desoto_batzelis(isc0, voc0, imp0, vmp0, alpha_sc, beta_voc):
 
     Parameters
     ----------
-    isc0 : float
-        Short-circuit current at STC. [A]
-    voc0 : float
-        Open-circuit voltage at STC. [V]
-    imp0 : float
-        Maximum power point current at STC. [A]
-    vmp0 : float
+    v_mp : float
         Maximum power point voltage at STC. [V]
+    i_mp : float
+        Maximum power point current at STC. [A]
+    v_oc : float
+        Open-circuit voltage at STC. [V]
+    i_sc : float
+        Short-circuit current at STC. [A]
     alpha_sc : float
         Short-circuit current temperature coefficient at STC. [1/K]
     beta_voc : float
@@ -453,14 +453,14 @@ def fit_desoto_batzelis(isc0, voc0, imp0, vmp0, alpha_sc, beta_voc):
     w0 = np.real(lambertw(np.exp(1/del0 + 1)))
 
     # Eqs 11-15
-    a0 = del0 * voc0
-    Rs0 = (a0 * (w0 - 1) - vmp0) / imp0
-    Rsh0 = a0 * (w0 - 1) / (isc0 * (1 - 1/w0) - imp0)
-    Iph0 = (1 + Rs0 / Rsh0) * isc0
+    a0 = del0 * v_oc
+    Rs0 = (a0 * (w0 - 1) - v_mp) / i_mp
+    Rsh0 = a0 * (w0 - 1) / (i_sc * (1 - 1/w0) - i_mp)
+    Iph0 = (1 + Rs0 / Rsh0) * i_sc
     Isat0 = Iph0 * np.exp(-1/del0)
 
     return {
-        'alpha_sc': alpha_sc * isc0,  # convert 1/K to A/K
+        'alpha_sc': alpha_sc * i_sc,  # convert 1/K to A/K
         'a_ref': a0,
         'I_L_ref': Iph0,
         'I_o_ref': Isat0,

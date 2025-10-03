@@ -118,8 +118,8 @@ def test_huld_errors():
 
 
 def test_batzelis():
-    params = {'isc0': 15.98, 'voc0': 50.26, 'imp0': 15.27, 'vmp0': 42.57,
               'alpha_sc': 0.00046, 'beta_voc': -0.0024}
+    params = {'i_sc': 15.98, 'v_oc': 50.26, 'i_mp': 15.27, 'v_mp': 42.57,
     g = np.array([1000, 500, 1200, 500, 1200, 0, nan, 1000])
     t = np.array([25, 20, 20, 50, 50, 25, 0, nan])
     expected = {  # these values were computed using pvarray.batzelis itself
@@ -148,8 +148,8 @@ def test_batzelis():
 
 
 def test_batzelis_negative_voltage():
-    params = {'isc0': 15.98, 'voc0': 50.26, 'imp0': 15.27, 'vmp0': 42.57,
               'alpha_sc': 0.00046, 'beta_voc': -0.0024}
+    params = {'i_sc': 15.98, 'v_oc': 50.26, 'i_mp': 15.27, 'v_mp': 42.57,
     actual = pvarray.batzelis(1e-10, 25, **params)
     assert actual['v_mp'] == 0
     assert actual['v_oc'] == 0

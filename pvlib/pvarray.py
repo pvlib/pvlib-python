@@ -398,7 +398,7 @@ def huld(effective_irradiance, temp_mod, pdc0, k=None, cell_type=None,
 
 
 def batzelis(effective_irradiance, temp_cell,
-             isc0, voc0, imp0, vmp0, alpha_sc, beta_voc):
+             v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc):
     """
     Compute maximum power point, open circuit, and short circuit
     values using Batzelis's method.
@@ -414,14 +414,14 @@ def batzelis(effective_irradiance, temp_cell,
         Effective irradiance incident on the PV module. [Wm⁻²]
     temp_cell : numeric
         PV module operating temperature. [°C]
-    isc0 : float
-        Short-circuit current at STC. [A]
-    voc0 : float
-        Open-circuit voltage at STC. [V]
-    imp0 : float
-        Maximum power point current at STC. [A]
-    vmp0 : float
+    v_mp : float
         Maximum power point voltage at STC. [V]
+    i_mp : float
+        Maximum power point current at STC. [A]
+    v_oc : float
+        Open-circuit voltage at STC. [V]
+    i_sc : float
+        Short-circuit current at STC. [A]
     alpha_sc : float
         Short-circuit current temperature coefficient at STC. [1/K]
     beta_voc : float
@@ -461,8 +461,8 @@ def batzelis(effective_irradiance, temp_cell,
 
     Examples
     --------
-    >>> params = {'isc0': 15.98, 'voc0': 50.26, 'imp0': 15.27, 'vmp0': 42.57,
     ...           'alpha_sc': 0.00046, 'beta_voc': -0.0024}
+    >>> params = {'i_sc': 15.98, 'v_oc': 50.26, 'i_mp': 15.27, 'v_mp': 42.57,
     >>> batzelis(np.array([1000, 800]), np.array([25, 30]), **params)
     {'p_mp': array([650.0439    , 512.99195952]),
      'i_mp': array([15.27      , 12.23049227]),
@@ -487,20 +487,20 @@ def batzelis(effective_irradiance, temp_cell,
 
     # Eqs 27-28
     alpha_imp = alpha_sc + (beta_voc - 1/t0) / (w0 - 1)
-    beta_vmp = (voc0 / vmp0) * (
+    beta_vmp = (v_oc / v_mp) * (
         beta_voc / (1 + del0) +
         (del0 * (w0 - 1) - 1/(1 + del0)) / t0
     )
 
     # Eq 26
-    eps0 = (del0 / (1 + del0)) * (voc0 / vmp0)
-    eps1 = del0 * (w0 - 1) * (voc0 / vmp0) - 1
+    eps0 = (del0 / (1 + del0)) * (v_oc / v_mp)
+    eps1 = del0 * (w0 - 1) * (v_oc / v_mp) - 1
 
     # Eqs 22-25
-    isc = g * isc0 * (1 + alpha_sc * delT)
-    voc = voc0 * (1 + del0 * lamT * lnG + beta_voc * delT)
-    imp = g * imp0 * (1 + alpha_imp * delT)
-    vmp = vmp0 * (1 + eps0 * lamT * lnG + eps1 * (1 - g) + beta_vmp * delT)
+    isc = g * i_sc * (1 + alpha_sc * delT)
+    voc = v_oc * (1 + del0 * lamT * lnG + beta_voc * delT)
+    imp = g * i_mp * (1 + alpha_imp * delT)
+    vmp = v_mp * (1 + eps0 * lamT * lnG + eps1 * (1 - g) + beta_vmp * delT)
 
     # handle negative voltages from zero and extremely small irradiance
     vmp = np.clip(vmp, a_min=0, a_max=None)

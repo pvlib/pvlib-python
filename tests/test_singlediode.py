@@ -667,3 +667,10 @@ def test_batzelis_keypoints_night():
                              nNsVth=1.7)
     for k, v in out.items():
         assert v == 0, k  # ensure all outputs are zero (not nan, etc)
+
+    # test also when Rsh=inf but Iph > 0
+    out = batzelis_keypoints(photocurrent=0.1, saturation_current=1e-10,
+                             resistance_series=0.2, resistance_shunt=np.inf,
+                             nNsVth=1.7)
+    for k, v in out.items():
+        assert v > 0, k  # ensure all outputs >0 (not nan, etc)

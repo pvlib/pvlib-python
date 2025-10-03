@@ -1000,7 +1000,7 @@ def batzelis_keypoints(photocurrent, saturation_current, resistance_series,
     a = nNsVth
 
     # Eqs 3-4
-    isc = Iph * Rsh / (Rs + Rsh)
+    isc = Iph / (Rs / Rsh + 1)  # manipulated to handle Rsh=np.inf correctly
     with np.errstate(divide='ignore'):  # zero Iph
         voc = a * np.log(Iph / Is)
 

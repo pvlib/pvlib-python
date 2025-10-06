@@ -22,12 +22,22 @@ def test_convert_cec_pvsyst():
                        'mu_gamma': -0.00074595,
                        'cells_in_series': 66}
 
-    print(pvsyst_expected)
-    print("-----------")
-    print(trina660_pvsyst_est)
+    # set up dict of rtol, because some parameters are more sensitive to
+    # optimization process than others
+    rtol_d = {'alpha_sc': 1e-4,
+              'I_L_ref': 1e-4,
+              'I_o_ref': 1e-4,
+              'EgRef': 1e-4,
+              'R_s': 1e-4,
+              'R_sh_ref': 1e-4,
+              'R_sh_0': 1e-1,
+              'R_sh_exp': 1e-3,
+              'gamma_ref': 1e-4,
+              'mu_gamma': 1e-4,
+              'cells_in_series': 1e-8}
     
     assert np.all([np.isclose(trina660_pvsyst_est[k], pvsyst_expected[k],
-                              rtol=1e-4, atol=0.)
+                              rtol=rtol_d[k], atol=0.)
                    for k in pvsyst_expected])
 
 

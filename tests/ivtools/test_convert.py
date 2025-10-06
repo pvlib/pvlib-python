@@ -22,6 +22,10 @@ def test_convert_cec_pvsyst():
                        'mu_gamma': -0.00074595,
                        'cells_in_series': 66}
 
+    print(pvsyst_expected)
+    print("-----------")
+    print(trina660_pvsyst_est)
+    
     assert np.all([np.isclose(trina660_pvsyst_est[k], pvsyst_expected[k],
                               rtol=1e-4, atol=0.)
                    for k in pvsyst_expected])

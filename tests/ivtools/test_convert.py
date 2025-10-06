@@ -11,16 +11,16 @@ def test_convert_cec_pvsyst():
     trina660_pvsyst_est = convert.convert_cec_pvsyst(trina660_cec,
                                                      cells_in_series)
     pvsyst_expected = {'alpha_sc': 0.0096671,
-                   'I_L_ref': 18.19305,
-                   'I_o_ref': 6.94494e-12,
-                   'EgRef': 1.121,
-                   'R_s': 0.16318,
-                   'R_sh_ref': 1000.947,
-                   'R_sh_0': 8593.35,
-                   'R_sh_exp': 5.5,
-                   'gamma_ref': 1.0724,
-                   'mu_gamma': -0.00074595,
-                   'cells_in_series': 66}
+                       'I_L_ref': 18.19305,
+                       'I_o_ref': 6.94494e-12,
+                       'EgRef': 1.121,
+                       'R_s': 0.16318,
+                       'R_sh_ref': 1000.947,
+                       'R_sh_0': 8593.35,
+                       'R_sh_exp': 5.5,
+                       'gamma_ref': 1.0724,
+                       'mu_gamma': -0.00074595,
+                       'cells_in_series': 66}
 
     assert np.all([np.isclose(trina660_pvsyst_est[k], pvsyst_expected[k],
                               rtol=1e-4, atol=0.)

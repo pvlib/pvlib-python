@@ -58,7 +58,6 @@ def _pvsyst_objfun(pvs_mod, cec_ivs, ee, tc, cs):
 
     pvsyst_ivs = singlediode(*pvs_params)
 
-
     # calculate error metric, mean absolute relative error for PVsyst model as
     # the target
     isc_diff = np.abs((pvsyst_ivs['i_sc'] - cec_ivs['i_sc']) /
@@ -75,7 +74,6 @@ def _pvsyst_objfun(pvs_mod, cec_ivs, ee, tc, cs):
     mean_abs_diff = (isc_diff + imp_diff + voc_diff + vmp_diff + pmp_diff) / 5
 
     return mean_abs_diff
-
 
 
 def convert_cec_pvsyst(cec_model, cells_in_series, initial=None,
@@ -242,7 +240,7 @@ def _cec_objfun(cec_mod, pvs_ivs, ee, tc, alpha_sc):
     return mean_diff
 
 
-def convert_pvsyst_cec(pvsyst_model, initial=None, method='Nelder-Mead', 
+def convert_pvsyst_cec(pvsyst_model, initial=None, method='Nelder-Mead',
                        bounds=None, options=None,
                        EgRef=1.121, dEgdT=-0.0002677):
     r"""

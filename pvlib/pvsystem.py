@@ -2931,7 +2931,7 @@ def pvwatts_dc(effective_irradiance, temp_cell, pdc0, gamma_pdc, temp_ref=25.,
     temp_ref: numeric, default 25.0
         Cell reference temperature. PVWatts defines it to be 25 C and
         is included here for flexibility. [C]
-    k: numeric, default 0.005
+    k: numeric, optional
         Irradiance correction factor, defined in [2]_. [unitless]
     cap_adjustment: Boolean, default False
         Optional modification to [2]_, where no adjustment is applied above

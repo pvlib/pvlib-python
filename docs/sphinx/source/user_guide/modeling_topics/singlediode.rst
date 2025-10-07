@@ -38,8 +38,6 @@ for solving the SDE:
 | ``lambertw``     | explicit   | medium    | yes                     |
 +------------------+------------+-----------+-------------------------+
 
-If lower accuracy (within ~1%) is allowable, the special points can be estimated
-much more quickly using :py:func:`pvlib.singlediode.batzelis_keypoints`.
 
 
 Computing full I-V curves

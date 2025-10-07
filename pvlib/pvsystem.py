@@ -2879,7 +2879,7 @@ def scale_voltage_current_power(data, voltage=1, current=1):
 @renamed_kwarg_warning(
     "0.13.0", "g_poa_effective", "effective_irradiance")
 def pvwatts_dc(effective_irradiance, temp_cell, pdc0, gamma_pdc, temp_ref=25.,
-               k=0.0, capped_adjustment=False):
+               k=None, cap_adjustment=False):
     r"""
     Implements NREL's PVWatts (Version 5) DC power model. The PVWatts Version
     5 DC model [1]_ is:
@@ -2892,16 +2892,15 @@ def pvwatts_dc(effective_irradiance, temp_cell, pdc0, gamma_pdc, temp_ref=25.,
     model.
 
     This function accepts an optional irradiance adjustment factor, `k`, based
-    on based on [2]_. This applies a piece-wise adjustment to power based on
-    irradiance, where `k` is the reduction in actual power at 200 W/m^2
-    relative to power calculated at 200 W/m^2 as 0.2*`pdc0`.
+    on [2]_. This applies a piece-wise adjustment to power based on irradiance,
+    where `k` is the reduction in actual power at 200 W/m^2 relative to power
+    calculated at 200 W/m^2 as 0.2*`pdc0`. For example, a 500 W module that
+    produces 95 W at 200 W/m^2 (a 5% relative reduction in efficiency) would
+    have a value of `k` = 0.01.
 
     .. math::
 
         k=\frac{0.2P_{dc0}-P_{200}}{P_{dc0}}
-
-    For example, a 500 W module that produces 95 W at 200 W/m^2 (a 5% relative
-    reduction in efficiency) would have a value of `k` = 0.01.
 
     This adjustment increases relative efficiency for irradiance above 1000
     W/m^2, which may not be desired. An optional input, `capped_adjustment`,
@@ -2966,7 +2965,7 @@ def pvwatts_dc(effective_irradiance, temp_cell, pdc0, gamma_pdc, temp_ref=25.,
                               pdc * (1 - err_2))
 
         # "cap" Marion's correction at 1000 W/m^2
-        if capped_adjustment is True:
+        if cap_adjustment is True:
             pdc_marion = np.where(effective_irradiance >= 1000,
                                   pdc,
                                   pdc_marion)

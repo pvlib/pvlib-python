@@ -2894,8 +2894,7 @@ def pvwatts_dc(effective_irradiance, temp_cell, pdc0, gamma_pdc, temp_ref=25.,
     This function accepts an optional irradiance adjustment factor, `k`, based
     on based on [2]_. This applies a piece-wise adjustment to power based on
     irradiance, where `k` is the reduction in actual power at 200 W/m^2
-    relative to ideal power calculated linearly from standard test conditions,
-    normalized to nameplate power at standard test conditions.
+    relative to power calculated at 200 W/m^2 as 0.2*`pdc0`.
 
     .. math::
 

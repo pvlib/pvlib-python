@@ -2907,7 +2907,7 @@ def pvwatts_dc(effective_irradiance, temp_cell, pdc0, gamma_pdc, temp_ref=25.,
     This adjustment increases relative efficiency for irradiance above 1000
     W/m^2, which may not be desired. An optional input, `capped_adjustment`,
     modifies the adjustment from [2]_ to only apply below 1000 W/m^2.
-   
+
     Note that ``pdc0`` is also used as a symbol in
     :py:func:`pvlib.inverter.pvwatts`. ``pdc0`` in this function refers to the DC
     power of the modules at reference conditions. ``pdc0`` in
@@ -2948,7 +2948,7 @@ def pvwatts_dc(effective_irradiance, temp_cell, pdc0, gamma_pdc, temp_ref=25.,
            http://pvwatts.nrel.gov/downloads/pvwattsv5.pdf
            (2014).
     .. [2] B. Marion, "Comparison of Predictive Models for
-           Photovoltaic Module Performance," 
+           Photovoltaic Module Performance,"
            https://doi.org/10.1109/PVSC.2008.4922586,
            https://docs.nrel.gov/docs/fy08osti/42511.pdf
            (2008).

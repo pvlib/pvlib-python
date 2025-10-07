@@ -2934,8 +2934,7 @@ def pvwatts_dc(effective_irradiance, temp_cell, pdc0, gamma_pdc, temp_ref=25.,
     k: numeric, optional
         Irradiance correction factor, defined in [2]_. [unitless]
     cap_adjustment: Boolean, default False
-        Optional modification to [2]_, where no adjustment is applied above
-        1000 W/m^2.
+        If True, apply the optional adjustment at and below 1000 W/m^2.
 
     Returns
     -------

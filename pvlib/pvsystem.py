@@ -2933,7 +2933,7 @@ def pvwatts_dc(effective_irradiance, temp_cell, pdc0, gamma_pdc, temp_ref=25.,
         is included here for flexibility. [C]
     k: numeric, default 0.005
         Irradiance correction factor, defined in [2]_. [unitless]
-    modified_marion: Boolean, default False
+    cap_adjustment: Boolean, default False
         Optional modification to [2]_, where no adjustment is applied above
         1000 W/m^2.
 

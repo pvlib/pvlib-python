@@ -2957,7 +2957,7 @@ def pvwatts_dc(effective_irradiance, temp_cell, pdc0, gamma_pdc, temp_ref=25.,
            (1 + gamma_pdc * (temp_cell - temp_ref)))
 
     # apply Marion's correction if k is anything but zero
-    if k != 0:
+    if k is not None:
         err_1 = (k * (1 - (1 - effective_irradiance / 200)**4) /
                  (effective_irradiance / 1000))
         err_2 = (k * (1000 - effective_irradiance) / (1000 - 200))

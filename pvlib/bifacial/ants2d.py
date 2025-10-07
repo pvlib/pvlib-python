@@ -209,7 +209,7 @@ def _ants2d_singleside(tracker_rotation, cos_aoi, phi, vf_gnd_sky,
     poa_direct = dni * projection * (1 - row_shaded_fraction)
     poa_direct = poa_direct[0]  # drop unnecessary first dimension
 
-    
+
     # in-plane sky diffuse component
     vf_row_sky = utils.vf_row_sky_2d_integ(tracker_rotation, gcr, x0, x1)
     poa_sky_diffuse = vf_row_sky * dhi
@@ -223,7 +223,7 @@ def _ants2d_singleside(tracker_rotation, cos_aoi, phi, vf_gnd_sky,
 
     ground_shaded_fraction = 1 - ground_unshaded_fraction
     ground_shaded_fraction = ground_shaded_fraction[:, np.newaxis, :]
-    
+
     vf_row_ground = utils.vf_row_ground_2d_integ(surface_tilt=tracker_rotation,
                                                  gcr=gcr, height=height,
                                                  pitch=pitch,
@@ -250,6 +250,78 @@ def _ants2d_singleside(tracker_rotation, cos_aoi, phi, vf_gnd_sky,
     if isinstance(ghi, pd.Series):
         output = pd.DataFrame(output)
     return output
+
+
+def _apply_sky_diffuse_model(dni, dhi, model, solar_zenith, solar_azimuth,
+                             dni_extra, airmass):
+
+    if model in ['haydavies', 'perez']:
+        # determine circumsolar irradiance, add it to DNI
+
+        if model == 'haydavies':
+            if dni_extra is None:
+                raise ValueError(f'Must supply dni_extra for {model} model')
+            diffuse_model_func = haydavies
+            extra_kwargs = {}
+
+        elif model == 'perez':
+            # note: horizon brightening is ignored
+            if dni_extra is None or airmass is None:
+                raise ValueError(
+                    f'Must supply dni_extra and airmass for {model} model')
+            diffuse_model_func = perez
+            extra_kwargs = {'airmass': airmass}
+
+        kwargs = dict(
+            dhi=dhi, dni=dni, dni_extra=dni_extra,
+            solar_zenith=solar_zenith, solar_azimuth=solar_azimuth,
+            return_components=True
+        )
+        # Call the model first time within the horizontal plane - to subtract
+        # circumsolar_horizontal from DHI
+        sky_diffuse_comps_horizontal = diffuse_model_func(
+            surface_tilt=0, surface_azimuth=180, **kwargs, **extra_kwargs)
+        circumsolar_horizontal = sky_diffuse_comps_horizontal['circumsolar']
+
+        # Call the model a second time where circumsolar_normal is facing
+        # directly towards sun, and can be added to DNI
+        sky_diffuse_comps_normal = diffuse_model_func(
+            surface_tilt=solar_zenith, surface_azimuth=solar_azimuth,
+            **kwargs, **extra_kwargs)
+        circumsolar_normal = sky_diffuse_comps_normal['circumsolar']
+
+        dhi = dhi - circumsolar_horizontal
+        dni = dni + circumsolar_normal
+    elif model != 'isotropic':
+        raise ValueError(f"Invalid model: {model}")
+
+
+def _apply_ground_slope(height, pitch, gcr, tracker_rotation, ghi, dni, dhi,
+                        solar_zenith, solar_azimuth, axis_tilt, axis_azimuth,
+                        cross_axis_slope):
+    slope_azimuth = axis_azimuth + np.degrees(
+        np.arctan2(sind(cross_axis_slope),
+                   cosd(cross_axis_slope) * sind(axis_tilt))
+    )
+    slope_tilt = acosd(cosd(axis_tilt) * cosd(cross_axis_slope))
+
+    height = height * cosd(slope_tilt)
+    pitch = pitch / cosd(cross_axis_slope)
+    gcr = gcr * cosd(cross_axis_slope)
+    tracker_rotation = tracker_rotation - cross_axis_slope
+    tracker_rotation = ((tracker_rotation + 180) % 360) - 180  # put back to [-180, 180]
+
+    ghi = dhi + dni * np.maximum(
+        aoi_projection(slope_tilt, slope_azimuth,
+                       solar_zenith, solar_azimuth),
+        0)
+    # dhi: no need to adjust; the blocked view is only near the
+    #      the horizon, and that part of the sky is blocked by rows anyway
+    # dni: no adjustment needed; the measurement plane is not affected
+    #dhi = dhi
+    #dni = dni
+    return height, pitch, gcr, tracker_rotation, ghi
+
 
 
 def get_irradiance(tracker_rotation, axis_azimuth, solar_zenith, solar_azimuth,
@@ -413,66 +485,18 @@ def get_irradiance(tracker_rotation, axis_azimuth, solar_zenith, solar_azimuth,
     """
 
     # preparation steps
-    if model in ['haydavies', 'perez']:
-        # determine circumsolar irradiance, add it to DNI
 
-        if model == 'haydavies':
-            if dni_extra is None:
-                raise ValueError(f'must supply dni_extra for {model} model')
-            diffuse_model_func = haydavies
-            extra_kwargs = {}
-
-        elif model == 'perez':
-            # note: horizon brightening is ignored
-            if dni_extra is None or airmass is None:
-                raise ValueError(
-                    f'must supply dni_extra and airmass for {model} model')
-            diffuse_model_func = perez
-            extra_kwargs = {'airmass': airmass}
-
-        kwargs = dict(
-            dhi=dhi, dni=dni, dni_extra=dni_extra,
-            solar_zenith=solar_zenith, solar_azimuth=solar_azimuth,
-            return_components=True
-        )
-        # Call the model first time within the horizontal plane - to subtract
-        # circumsolar_horizontal from DHI
-        sky_diffuse_comps_horizontal = diffuse_model_func(
-            surface_tilt=0, surface_azimuth=180, **kwargs, **extra_kwargs)
-        circumsolar_horizontal = sky_diffuse_comps_horizontal['circumsolar']
-
-        # Call the model a second time where circumsolar_normal is facing
-        # directly towards sun, and can be added to DNI
-        sky_diffuse_comps_normal = diffuse_model_func(
-            surface_tilt=solar_zenith, surface_azimuth=solar_azimuth,
-            **kwargs, **extra_kwargs)
-        circumsolar_normal = sky_diffuse_comps_normal['circumsolar']
-
-        dhi = dhi - circumsolar_horizontal
-        dni = dni + circumsolar_normal
-
+    dni, dhi = _apply_sky_diffuse_model(dni, dhi, model, solar_zenith,
+                                        solar_azimuth, dni_extra, airmass)
 
     true_tracker_rotation = tracker_rotation
+    
     if axis_tilt != 0 or cross_axis_slope != 0:
-        slope_azimuth = axis_azimuth + np.degrees(np.arctan2(sind(cross_axis_slope), cosd(cross_axis_slope) * sind(axis_tilt)))
-        slope_tilt = acosd(cosd(axis_tilt) * cosd(cross_axis_slope))
-
-        height = height * cosd(slope_tilt)
-        pitch = pitch / cosd(cross_axis_slope)
-        gcr = gcr * cosd(cross_axis_slope)
-        tracker_rotation = tracker_rotation - cross_axis_slope
-        tracker_rotation = ((tracker_rotation + 180) % 360) - 180  # put back to [-180, 180]
-        
-        
-        ghi = dhi + dni * np.maximum(
-            aoi_projection(slope_tilt, slope_azimuth,
-                           solar_zenith, solar_azimuth),
-            0)
-        #  + dhi: maybe no need to adjust, since the blocked view is only near the
-        #         the horizon, and that part of the sky is blocked by rows anyway?
-        #  + dni: no adjustment needed; the measurement plane is not affected
-        #dhi = dhi
-        #dni = dni
+        height, pitch, gcr, tracker_rotation, ghi = _apply_ground_slope(
+            height, pitch, gcr, tracker_rotation, ghi, dni, dhi,
+            solar_zenith, solar_azimuth, axis_tilt, axis_azimuth,
+            cross_axis_slope
+        )
 
     x_row = np.linspace(0, 1, n_row_segments+1)
     x0 = x_row[:-1]

@@ -39,3 +39,28 @@ def test__shaded_fraction():
     fs = ants2d._shaded_fraction(tracker_rotation, phi, gcr)
     np.testing.assert_allclose(fs, expected)
 
+
+def test__shaded_fraction_x0x1():
+    fs = ants2d._shaded_fraction(np.array([60, -60]), np.array([60, -60]),
+                                 2/3, x0=[0, 0.5], x1=[0.5, 1])
+    np.testing.assert_allclose(fs, np.array([[0.5, 0.0], [0.0, 0.5]]))
+
+
+def test__ants2d_singleside():
+    pass
+
+
+def test__apply_sky_diffuse_model():
+    pass
+
+
+def test__apply_sky_diffuse_model_errors():
+    with pytest.raises(ValueError, match='Must supply dni_extra'):
+        ants2d._apply_sky_diffuse_model(0, 0, 'haydavies', None,
+                                        None, None, None)
+    with pytest.raises(ValueError, match='Must supply dni_extra and airmass'):
+        ants2d._apply_sky_diffuse_model(0, 0, 'perez', None,
+                                        None, None, None)
+    with pytest.raises(ValueError, match='Invalid model: not_a_model'):
+        ants2d._apply_sky_diffuse_model(0, 0, 'not_a_model', None,
+                                        None, None, None)

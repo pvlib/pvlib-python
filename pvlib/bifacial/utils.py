@@ -408,6 +408,13 @@ def vf_row_sky_2d_integ(surface_tilt, gcr, x0=0, x1=1):
         from x0 to x1. [unitless]
 
     '''
+    # keep track of scalar inputs so that we can have output match at the end
+    squeeze = []
+    if np.isscalar(x0) and np.isscalar(x1):
+        squeeze.append(0)
+    if np.isscalar(surface_tilt):
+        squeeze.append(1)
+
     # dimensions: row segment, time
     
     surface_tilt = np.atleast_1d(surface_tilt)[np.newaxis, :]
@@ -426,6 +433,7 @@ def vf_row_sky_2d_integ(surface_tilt, gcr, x0=0, x1=1):
                           vf_row_sky_2d(surface_tilt, gcr, x0),
                           0.5*(1 + 1/u * (p1 - p0))
                           )
+    result = result.squeeze(axis=tuple(squeeze))
     return result
 
 

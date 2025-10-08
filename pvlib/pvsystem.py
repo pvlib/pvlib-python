@@ -2946,7 +2946,7 @@ def pvwatts_dc(effective_irradiance, temp_cell, pdc0, gamma_pdc, temp_ref=25.,
            (2014).
     .. [2] B. Marion, "Comparison of Predictive Models for
            Photovoltaic Module Performance,"
-           https://doi.org/10.1109/PVSC.2008.4922586,
+           :doi:`10.1109/PVSC.2008.4922586`,
            https://docs.nrel.gov/docs/fy08osti/42511.pdf
            (2008).
     """  # noqa: E501

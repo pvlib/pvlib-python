@@ -496,7 +496,15 @@ def vf_row_ground_2d_integ(surface_tilt, gcr, height, pitch,
         [unitless]
 
     '''
-    
+    # keep track of scalar inputs so that we can have output match at the end
+    squeeze = []
+    if np.isscalar(g0) and np.isscalar(g1):
+        squeeze.append(0)
+    if np.isscalar(x0) and np.isscalar(x1):
+        squeeze.append(1)
+    if np.isscalar(surface_tilt):
+        squeeze.append(2)
+
     # dimensions: k/max_rows, ground segment, row segment, time
 
     surface_tilt = np.atleast_1d(surface_tilt)[np.newaxis, np.newaxis, np.newaxis, :]
@@ -541,6 +549,9 @@ def vf_row_ground_2d_integ(surface_tilt, gcr, height, pitch,
     vf_slats = 0.5 * (1/((x1 - x0) * collector_width)) * ((ac + bd) - (bc + ad))
     vf_total = np.sum(np.maximum(vf_slats, 0), axis=0)  # sum along k dimension
     
+    # dimensions are now ground_segment, row_segment, time
+    vf_total = vf_total.squeeze(axis=tuple(squeeze))
+
     return vf_total
 
 

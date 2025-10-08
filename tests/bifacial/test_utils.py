@@ -166,15 +166,17 @@ def test_vf_ground_2d_integ(test_system_fixed_tilt):
     # with float input, check end position
     with np.errstate(invalid='ignore'):
         vf = utils.vf_row_ground_2d_integ(ts['surface_tilt'], ts['gcr'],
-                                          0., 0.)
+                                          ts['height'], ts['pitch'],
+                                          x0=0., x1=0.00001, max_rows=1000)
     expected = utils.vf_row_ground_2d(ts['surface_tilt'], ts['gcr'], 0.)
-    assert np.isclose(vf, expected)
+    assert np.isclose(vf, expected, atol=1e-4)
     # with array input
     fx0 = np.array([0., 0.5])
-    fx1 = np.array([0., 0.8])
+    fx1 = np.array([0.00001, 0.8])
     with np.errstate(invalid='ignore'):
         vf = utils.vf_row_ground_2d_integ(ts['surface_tilt'], ts['gcr'],
-                                          fx0, fx1)
+                                          ts['height'], ts['pitch'],
+                                          x0=fx0, x1=fx1, max_rows=1000)
     phi = ground_angle(ts['surface_tilt'], ts['gcr'], fx0[0])
     y0 = 0.5 * (1 - cosd(phi - ts['surface_tilt']))
     x = np.arange(fx0[1], fx1[1], 1e-4)
@@ -184,7 +186,9 @@ def test_vf_ground_2d_integ(test_system_fixed_tilt):
     expected = np.array([y0, y1])
     assert np.allclose(vf, expected, rtol=1e-2)
     # with defaults (0, 1)
-    vf = utils.vf_row_ground_2d_integ(ts['surface_tilt'], ts['gcr'], 0, 1)
+    vf = utils.vf_row_ground_2d_integ(ts['surface_tilt'], ts['gcr'],
+                                      ts['height'], ts['pitch'], x0=0, x1=1,
+                                      max_rows=1000)
     x = np.arange(0, 1, 1e-4)
     phi_y = ground_angle(ts['surface_tilt'], ts['gcr'], x)
     y = 0.5 * (1 - cosd(phi_y - ts['surface_tilt']))

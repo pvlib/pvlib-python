@@ -86,119 +86,87 @@ def _ants2d_singleside(tracker_rotation, cos_aoi, phi, vf_gnd_sky,
                        gcr, height, pitch, ghi, dhi, dni,
                        albedo, x0, x1, g0, g1, max_rows):
     r"""
-    Calculate plane-of-array (POA) irradiance on one side of a row of modules.
+    Calculate plane-of-array irradiance components on one side of a row
+    of modules.
 
-    The infinite sheds model [1] assumes the PV system comprises parallel,
-    evenly spaced rows on a level, horizontal surface. Rows can be on fixed
-    racking or single axis trackers. The model calculates irradiance at a
-    location far from the ends of any rows, in effect, assuming that the
-    rows (sheds) are infinitely long.
-
-    POA irradiance components include direct, diffuse and global (total).
-    Irradiance values are reduced to account for reflection of direct light,
-    but are not adjusted for solar spectrum or reduced by a module's
-    bifaciality factor.
-
-    Parameters  TODO fix these
+    Parameters
     ----------
-    surface_tilt : numeric
-        Tilt of the surface from horizontal. Must be between 0 and 180. For
-        example, for a fixed tilt module mounted at 30 degrees from
-        horizontal, use ``surface_tilt=30`` to get front-side irradiance and
-        ``surface_tilt=150`` to get rear-side irradiance. [degree]
-
-    surface_azimuth : numeric
-        Surface azimuth in decimal degrees east of north
-        (e.g. North = 0, South = 180, East = 90, West = 270). [degree]
-
-    solar_zenith : numeric
-        Refraction-corrected solar zenith. [degree]
-
-    solar_azimuth : numeric
-        Solar azimuth. [degree]
-
+    tracker_rotation : numeric
+        Tracker rotation angle as a right-handed rotation around
+        the axis defined by ``axis_tilt`` and ``axis_azimuth``.  For example,
+        with ``axis_tilt=0`` and ``axis_azimuth=180``, ``tracker_theta > 0``
+        results in ``surface_azimuth`` to the West while ``tracker_theta < 0``
+        results in ``surface_azimuth`` to the East. [degree]
+    cos_aoi : numeric
+        Cosine of the angle of incidence of beam irradiance; can be
+        calculated using :py:func:`pvlib.irradiance.aoi_projection`. [unitless]
+    phi : numeric
+        Project solar zenith angle; calculate with
+        :py:func:`pvlib.shading.projected_solar_zenith_angle`. [degree]
+    vf_gnd_sky : numeric
+        View factors from the ground surface to the sky. Dimensions are
+        TODO,TODO,TODO. [unitless]
     gcr : float
         Ground coverage ratio, ratio of row slant length to row spacing.
         [unitless]
-
     height : float
         Height of the center point of the row above the ground; must be in the
         same units as ``pitch``.
-
     pitch : float
         Distance between two rows; must be in the same units as ``height``.
-
     ghi : numeric
-        Global horizontal irradiance. [W/m2]
-
+        Global horizontal irradiance. [Wm⁻²]
     dhi : numeric
-        Diffuse horizontal irradiance. [W/m2]
-
+        Diffuse horizontal irradiance. [Wm⁻²]
     dni : numeric
-        Direct normal irradiance. [W/m2]
-
+        Direct normal irradiance. [Wm⁻²]
     albedo : numeric
-        Surface albedo. [unitless]
-
-    model : str, default 'isotropic'
-        Irradiance model - can be one of 'isotropic' or 'haydavies'.
-
-    dni_extra : numeric, optional
-        Extraterrestrial direct normal irradiance. Required when
-        ``model='haydavies'``. [W/m2]
-
-    iam : numeric, default 1.0
-        Incidence angle modifier, the fraction of direct irradiance incident
-        on the surface that is not reflected away. [unitless]
-
-    npoints : int, default 100
-
-        .. deprecated:: v0.11.2
-
-           This parameter has no effect; integrated view factors are now
-           calculated exactly instead of with discretized approximations.
-
-    vectorize : bool, default False
-
-        .. deprecated:: v0.11.2
-
-           This parameter has no effect; calculations are now vectorized
-           with no memory usage penality.
-
+        Surface albedo. TODO shape [unitless]
+    x0 : numeric, default 0
+        Position on the row's slant length, as a fraction of the slant length.
+        ``x0=0`` corresponds to the left side of the row.
+        ``x0`` should be less than ``x1``. [unitless]
+    x1 : numeric, default 1
+        Position on the row's slant length, as a fraction of the slant length.
+        ``x1=1`` corresponds to the right side of the row.
+        ``x1`` should be greater than ``x0``. [unitless]
+    g0 : numeric
+        Position on the ground surface, as a fraction of the row-to-row
+        spacing. ``g0=0`` corresponds to ground underneath the middle of the
+        left row. ``g0`` should be less than ``g1``. [unitless]
+    g1 : numeric
+        Position on the ground surface, as a fraction of the row-to-row
+        spacing. ``g1=0`` corresponds to ground underneath the middle of the
+        right row. ``g1`` should be greater than ``g0``. [unitless]
+    max_rows : int
+        Number of array units (sky wedges, ground segments, etc) to consider.
+        [unitless]
 
     Returns
     -------
-    output : dict or DataFrame
-        Output is a ``pandas.DataFrame`` when ``ghi`` is a Series.
-        Otherwise it is a dict of ``numpy.ndarray``
-        See Notes for descriptions of content.
+    output : dict of ``numpy.ndarray``
+
+        ``output`` includes the following quantities:
+
+        - ``poa_global``: total POA irradiance. [Wm⁻²]
+        - ``poa_diffuse``: total diffuse POA irradiance from all sources.
+          [Wm⁻²]
+        - ``poa_direct``: direct POA irradiance. [Wm⁻²]
+        - ``poa_sky_diffuse``: sky diffuse POA irradiance. [Wm⁻²]
+        - ``poa_ground_diffuse``: ground-reflected diffuse POA irradiance.
+          [Wm⁻²]
+        - ``shaded_fraction``: fraction of row slant height from the bottom
+          that is shaded from direct irradiance by adjacent rows. [unitless]
+
+        Shape of each quantity depends on TODO x0/x1 g0/g1
 
     Notes
     -----
     Input parameters ``height`` and ``pitch`` must have the same unit.
 
-    ``output`` always includes:
-
-    - ``poa_global`` : total POA irradiance. [W/m^2]
-    - ``poa_diffuse`` : total diffuse POA irradiance from all sources. [W/m^2]
-    - ``poa_direct`` : total direct POA irradiance. [W/m^2]
-    - ``poa_sky_diffuse`` : total sky diffuse irradiance on the plane of array.
-      [W/m^2]
-    - ``poa_ground_diffuse`` : total ground-reflected diffuse irradiance on the
-      plane of array. [W/m^2]
-    - ``shaded_fraction`` : fraction of row slant height from the bottom that
-      is shaded from direct irradiance by adjacent rows. [unitless]
-
     References
     ----------
-    .. [1] Mikofski, M., Darawali, R., Hamer, M., Neubert, A., and Newmiller,
-       J. "Bifacial Performance Modeling in Large Arrays". 2019 IEEE 46th
-       Photovoltaic Specialists Conference (PVSC), 2019, pp. 1282-1287.
-       :doi:`10.1109/PVSC40753.2019.8980572`.
-
-    See also
-    --------
-    get_irradiance
+    .. [1] TODO
     """
 
     # in-plane beam component
@@ -242,13 +210,13 @@ def _ants2d_singleside(tracker_rotation, cos_aoi, phi, vf_gnd_sky,
     poa_global = poa_direct + poa_diffuse
 
     output = {
-        'poa_global': poa_global, 'poa_direct': poa_direct,
-        'poa_diffuse': poa_diffuse, 'poa_ground_diffuse': poa_ground_diffuse,
+        'poa_global': poa_global,
+        'poa_direct': poa_direct,
+        'poa_diffuse': poa_diffuse,
         'poa_sky_diffuse': poa_sky_diffuse,
+        'poa_ground_diffuse': poa_ground_diffuse,
         'shaded_fraction': row_shaded_fraction
     }
-    if isinstance(ghi, pd.Series):
-        output = pd.DataFrame(output)
     return output
 
 
@@ -331,10 +299,10 @@ def get_irradiance(tracker_rotation, axis_azimuth, solar_zenith, solar_azimuth,
                    n_row_segments=1, n_ground_segments=1, axis_tilt=0,
                    cross_axis_slope=0):
     """
-    Get front and rear irradiance using the infinite sheds model.
+    Get front and rear irradiance using the ANTS-2D bifacial irradiance model.
 
-    The infinite sheds model [1] assumes the PV system comprises parallel,
-    evenly spaced rows on a level, horizontal surface. Rows can be on fixed
+    The ANTS-2D model [1] assumes the PV system comprises parallel,
+    evenly spaced rows on flat or uniformly sloped ground. Rows can be on fixed
     racking or single axis trackers. The model calculates irradiance at a
     location far from the ends of any rows, in effect, assuming that the
     rows (sheds) are infinitely long.
@@ -345,144 +313,108 @@ def get_irradiance(tracker_rotation, axis_azimuth, solar_zenith, solar_azimuth,
     - restricted view of the ground from module surfaces due to nearby rows.
     - restricted view of the sky from the ground due to rows.
     - shading of module surfaces by nearby rows.
-    - shading of rear cells of a module by mounting structure and by
-      module features.
-
-    The model implicitly assumes that diffuse irradiance from the sky is
-    isotropic, and that module surfaces do not allow irradiance to transmit
-    through the module to the ground through gaps between cells.
+    - nonuniform ground albedo.
+    - sloped ground surface.
 
     Parameters
-    ----------  TODO fix
-    surface_tilt : numeric
-        Tilt from horizontal of the front-side surface. [degree]
-
-    surface_azimuth : numeric
-        Surface azimuth in decimal degrees east of north
-        (e.g. North = 0, South = 180, East = 90, West = 270). [degree]
-
+    ----------
+    tracker_rotation : numeric
+        Tracker rotation angle as a right-handed rotation around
+        the axis defined by ``axis_tilt`` and ``axis_azimuth``.  For example,
+        with ``axis_tilt=0`` and ``axis_azimuth=180``, ``tracker_theta > 0``
+        results in ``surface_azimuth`` to the West while ``tracker_theta < 0``
+        results in ``surface_azimuth`` to the East. [degree]
+    axis_azimuth : numeric
+        Axis azimuth angle in degrees.
+        North = 0°; East = 90°; South = 180°; West = 270°
     solar_zenith : numeric
         Refraction-corrected solar zenith. [degree]
-
     solar_azimuth : numeric
         Solar azimuth. [degree]
-
     gcr : float
         Ground coverage ratio, ratio of row slant length to row spacing.
         [unitless]
-
     height : float
         Height of the center point of the row above the ground; must be in the
         same units as ``pitch``.
-
     pitch : float
         Distance between two rows; must be in the same units as ``height``.
-
     ghi : numeric
-        Global horizontal irradiance. [W/m2]
-
+        Global horizontal irradiance. [Wm⁻²]
     dhi : numeric
-        Diffuse horizontal irradiance. [W/m2]
-
+        Diffuse horizontal irradiance. [Wm⁻²]
     dni : numeric
-        Direct normal irradiance. [W/m2]
-
+        Direct normal irradiance. [Wm⁻²]
     albedo : numeric
-        Surface albedo. [unitless]
-
+        Surface albedo. TODO shape [unitless]
     model : str, default 'isotropic'
-        Irradiance model - can be one of 'isotropic' or 'haydavies'.
-
+        Irradiance model - can be one of 'isotropic', 'haydavies', or 'perez'.
     dni_extra : numeric, optional
         Extraterrestrial direct normal irradiance. Required when
-        ``model='haydavies'``. [W/m2]
-
-    iam_front : numeric, default 1.0
-        Incidence angle modifier, the fraction of direct irradiance incident
-        on the front surface that is not reflected away. [unitless]
-
-    iam_back : numeric, default 1.0
-        Incidence angle modifier, the fraction of direct irradiance incident
-        on the back surface that is not reflected away. [unitless]
-
-    bifaciality : numeric, default 0.8
-        Ratio of the efficiency of the module's rear surface to the efficiency
-        of the front surface. [unitless]
-
-    shade_factor : numeric, default -0.02
-        Fraction of back surface irradiance that is blocked by array mounting
-        structures. Negative value is a reduction in back irradiance.
-        [unitless]
-
-    transmission_factor : numeric, default 0.0
-        Fraction of irradiance on the back surface that does not reach the
-        module's cells due to module features such as busbars, junction box,
-        etc. A negative value is a reduction in back irradiance. [unitless]
-
-    npoints : int, default 100
-
-        .. deprecated:: v0.11.2
-
-           This parameter has no effect; integrated view factors are now
-           calculated exactly instead of with discretized approximations.
-
-    vectorize : bool, default False
-
-        .. deprecated:: v0.11.2
-
-           This parameter has no effect; calculations are now vectorized
-           with no memory usage penality.
+        ``model='haydavies'`` or ``model='perez'``. [Wm⁻²]
+    airmass : numeric, optional
+        Relative airmass. Required when ``model='perez'``. [unitless]
+    n_row_segments : int, default 1
+        Number of segments to partition the row surface into. Irradiance
+        will be computed and returned for each segment.
+    n_ground_segments : int, default 1
+        Number of segments to partition the ground surface into. If specified,
+        ``albedo`` must be specified for each segment.
+    axis_tilt : numeric, default 0
+        Tilt of the axis of rotation with respect to horizontal. [degree]
+    cross_axis_slope : numeric, default 0
+        The angle, relative to horizontal, of the line formed by the
+        intersection between the slope containing the tracker axes and a plane
+        perpendicular to the tracker axes. The cross-axis slope should be
+        specified using a right-handed convention. For example, trackers with
+        axis azimuth of 180 degrees (heading south) will have a negative
+        cross-axis tilt if the tracker axes plane slopes down to the east and
+        positive cross-axis slope if the tracker axes plane slopes down to the
+        west. Use :func:`~pvlib.tracking.calc_cross_axis_tilt` to calculate
+        ``cross_axis_slope``. [degrees]
 
     Returns
     -------
     output : dict or DataFrame
-        Output is a DataFrame when input ghi is a Series. See Notes for
-        descriptions of content.
+        ``output`` is a DataFrame when input ghi is a Series and
+        ``n_row_segments=1`` and a dict of ``np.ndarray`` otherwise.
+
+        ``output`` includes the following quantities:
+        
+        - ``poa_global``: sum of front- and back-side incident irradiance.
+          [Wm⁻²]
+        - ``poa_front``: total incident irradiance on the front surface. [Wm⁻²]
+        - ``poa_back``: total incident irradiance on the back surface. [Wm⁻²]
+        - ``poa_front_direct``: direct irradiance incident on the front
+          surface. [Wm⁻²]
+        - ``poa_front_diffuse``: total diffuse irradiance incident on the front
+          surface. [Wm⁻²]
+        - ``poa_front_sky_diffuse``: sky diffuse irradiance incident on the
+          front surface. [Wm⁻²]
+        - ``poa_front_ground_diffuse``: ground-reflected diffuse irradiance
+          incident on the front surface. [Wm⁻²]
+        - ``shaded_fraction_front``: fraction of row slant height that is
+          shaded from direct irradiance on the front surface by adjacent
+          rows. [unitless]
+        - ``poa_back_direct``: direct irradiance incident on the back
+          surface. [Wm⁻²]
+        - ``poa_back_diffuse``: total diffuse irradiance incident on the back
+          surface. [Wm⁻²]
+        - ``poa_back_sky_diffuse``: sky diffuse irradiance incident on the
+          back surface. [Wm⁻²]
+        - ``poa_back_ground_diffuse``: ground-reflected diffuse irradiance
+          incident on the back surface. [Wm⁻²]
+        - ``shaded_fraction_back``: fraction of row slant height that is
+          shaded from direct irradiance on the back surface by adjacent
+          rows. [unitless]
 
     Notes
     -----
-
-    ``output`` includes:
-
-    - ``poa_global`` : total irradiance reaching the module cells from both
-      front and back surfaces. [W/m^2]
-    - ``poa_front`` : total irradiance reaching the module cells from the front
-      surface. [W/m^2]
-    - ``poa_back`` : total irradiance reaching the module cells from the back
-      surface. [W/m^2]
-    - ``poa_front_direct`` : direct irradiance reaching the module cells from
-      the front surface. [W/m^2]
-    - ``poa_front_diffuse`` : total diffuse irradiance reaching the module
-      cells from the front surface. [W/m^2]
-    - ``poa_front_sky_diffuse`` : sky diffuse irradiance reaching the module
-      cells from the front surface. [W/m^2]
-    - ``poa_front_ground_diffuse`` : ground-reflected diffuse irradiance
-      reaching the module cells from the front surface. [W/m^2]
-    - ``shaded_fraction_front`` : fraction of row slant height from the bottom
-      that is shaded from direct irradiance on the front surface by adjacent
-      rows. [unitless]
-    - ``poa_back_direct`` : direct irradiance reaching the module cells from
-      the back surface. [W/m^2]
-    - ``poa_back_diffuse`` : total diffuse irradiance reaching the module
-      cells from the back surface. [W/m^2]
-    - ``poa_back_sky_diffuse`` : sky diffuse irradiance reaching the module
-      cells from the back surface. [W/m^2]
-    - ``poa_back_ground_diffuse`` : ground-reflected diffuse irradiance
-      reaching the module cells from the back surface. [W/m^2]
-    - ``shaded_fraction_back`` : fraction of row slant height from the bottom
-      that is shaded from direct irradiance on the back surface by adjacent
-      rows. [unitless]
+    Input parameters ``height`` and ``pitch`` must have the same unit.
 
     References
     ----------
-    .. [1] Mikofski, M., Darawali, R., Hamer, M., Neubert, A., and Newmiller,
-       J. "Bifacial Performance Modeling in Large Arrays". 2019 IEEE 46th
-       Photovoltaic Specialists Conference (PVSC), 2019, pp. 1282-1287.
-       :doi:`10.1109/PVSC40753.2019.8980572`.
-
-    See also
-    --------
-    get_irradiance_poa
+    .. [1] TODO
     """
 
     # preparation steps
@@ -549,12 +481,12 @@ def get_irradiance(tracker_rotation, axis_azimuth, solar_zenith, solar_azimuth,
                                   solar_azimuth=solar_azimuth)
     tracker_rotation_rear = tracker_rotation + 180
     tracker_rotation_rear = ((tracker_rotation_rear + 180) % 360) - 180
-    poa_rear = _ants2d_singleside(tracker_rotation_rear, cos_aoi_rear, phi,
+    poa_back = _ants2d_singleside(tracker_rotation_rear, cos_aoi_rear, phi,
                                   vf_gnd_sky, gcr, height, pitch, ghi, dhi,
                                   dni, albedo, x0, x1, g0, g1, max_rows)
 
-    for key, value in poa_rear.items():
-        poa_rear[key] = value[::-1, :]  # invert x0/x1 dimension
+    for key, value in poa_back.items():
+        poa_back[key] = value[::-1, :]  # invert x0/x1 dimension
 
     colmap_front = {
         'poa_global': 'poa_front',
@@ -564,25 +496,16 @@ def get_irradiance(tracker_rotation, axis_azimuth, solar_zenith, solar_azimuth,
         'poa_ground_diffuse': 'poa_front_ground_diffuse',
         'shaded_fraction': 'shaded_fraction_front',
     }
-    colmap_rear = {
-        'poa_global': 'poa_back',
-        'poa_direct': 'poa_back_direct',
-        'poa_diffuse': 'poa_back_diffuse',
-        'poa_sky_diffuse': 'poa_back_sky_diffuse',
-        'poa_ground_diffuse': 'poa_back_ground_diffuse',
-        'shaded_fraction': 'shaded_fraction_back',
+    colmap_back = {
+        k: v.replace("front", "back") for k, v in colmap_front.items()
     }
+    for old_key, new_key in colmap_front.items():
+        poa_front[new_key] = poa_front.pop(old_key)
+    for old_key, new_key in colmap_back.items():
+        poa_back[new_key] = poa_back.pop(old_key)
+    poa_front.update(poa_back)
 
-    if isinstance(ghi, pd.Series):
-        poa_front = poa_front.rename(columns=colmap_front)
-        poa_rear = poa_rear.rename(columns=colmap_rear)
-        output = pd.concat([poa_front, poa_rear], axis=1)
-    else:
-        for old_key, new_key in colmap_front.items():
-            poa_front[new_key] = poa_front.pop(old_key)
-        for old_key, new_key in colmap_rear.items():
-            poa_rear[new_key] = poa_rear.pop(old_key)
-        poa_front.update(poa_rear)
-        output = poa_front
+    if n_row_segments == 1 and isinstance(ghi, pd.Series):
+        poa_front = pd.DataFrame(poa_front, index=ghi.index)
 
-    return output
+    return poa_front

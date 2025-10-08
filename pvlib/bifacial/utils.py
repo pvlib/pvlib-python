@@ -244,14 +244,29 @@ def vf_ground_sky_2d_integ(tracker_rotation, gcr, height, pitch, g0=0, g1=1,
         same units as ``pitch``.
     pitch : float
         Distance between two rows. Must be in the same units as ``height``.
-    g0, g1 : TODO
+    g0 : numeric
+        Position on the ground surface, as a fraction of the row-to-row
+        spacing. ``g0=0`` corresponds to ground underneath the middle of the
+        left row. ``g0`` should be less than ``g1``. [unitless]
+    g1 : numeric
+        Position on the ground surface, as a fraction of the row-to-row
+        spacing. ``g1=0`` corresponds to ground underneath the middle of the
+        right row. ``g1`` should be greater than ``g0``. [unitless]
     max_rows : int, default 10
         Maximum number of rows to consider in front and behind the current row.
-    npoints : int, default 100
-        Number of points used to discretize distance along the ground.
-    vectorize : bool, default False
-        If True, vectorize the view factor calculation across ``surface_tilt``.
-        This increases speed with the cost of increased memory usage.
+    npoints : int, optional
+
+        .. deprecated:: TODO
+
+           This parameter has no effect; integrated view factors are now
+           calculated exactly instead of with discretized approximations.
+
+    vectorize : bool, optional
+
+        .. deprecated:: TODO
+
+           This parameter has no effect; calculations are now vectorized
+           with no memory usage penality.
 
     Returns
     -------

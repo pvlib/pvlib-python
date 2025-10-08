@@ -295,6 +295,8 @@ def _apply_sky_diffuse_model(dni, dhi, model, solar_zenith, solar_azimuth,
     elif model != 'isotropic':
         raise ValueError(f"Invalid model: {model}")
 
+    return dni, dhi
+
 
 def _apply_ground_slope(height, pitch, gcr, tracker_rotation, ghi, dni, dhi,
                         solar_zenith, solar_azimuth, axis_tilt, axis_azimuth,

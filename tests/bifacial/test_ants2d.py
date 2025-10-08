@@ -4,6 +4,7 @@ test ants2d
 
 import numpy as np
 import pandas as pd
+import pvlib
 from pvlib.bifacial import ants2d
 
 import pytest
@@ -50,8 +51,41 @@ def test__ants2d_singleside():
     pass
 
 
-def test__apply_sky_diffuse_model():
-    pass
+@pytest.mark.parametrize('model', ['perez', 'haydavies'])
+def test__apply_sky_diffuse_model(model):
+    inputs = {'dni': 900, 'dhi': 150, 'solar_zenith': 41, 'solar_azimuth': 67,
+              'dni_extra': 1360, 'airmass': 1.324}
+    dni_adj, dhi_adj = ants2d._apply_sky_diffuse_model(**inputs, model=model)
+    # ensure that the adjusted values+isotropic yield the same poa_global as
+    # the target model
+    kwargs = inputs.copy()
+    kwargs.pop('dni')
+    kwargs.pop('dhi')
+    if model != 'perez':
+        kwargs.pop('airmass')
+    kwargs['surface_tilt'] = 20
+    kwargs['surface_azimuth'] = 180
+    adj = pvlib.irradiance.get_total_irradiance(dni=dni_adj, dhi=dhi_adj,
+                                                ghi=1000,  # doesn't matter
+                                                model='isotropic', **kwargs)
+    func = {'perez': pvlib.irradiance.perez,
+            'haydavies': pvlib.irradiance.haydavies}[model]
+    diffuse = func(dni=inputs['dni'], dhi=inputs['dhi'], **kwargs,
+                   return_components=True)
+    aoi_proj = pvlib.irradiance.aoi_projection(kwargs['surface_tilt'],
+                                               kwargs['surface_azimuth'],
+                                               kwargs['solar_zenith'],
+                                               kwargs['solar_azimuth'])
+    poa_direct = inputs['dni'] * aoi_proj + diffuse['circumsolar']
+    poa_sky_diffuse = diffuse['isotropic']
+    poa_ground = 1000 * 0.25 * (1 - pvlib.tools.cosd(20)) / 2
+    assert adj['poa_direct'] == pytest.approx(poa_direct, abs=1e-10)
+    assert adj['poa_sky_diffuse'] == pytest.approx(poa_sky_diffuse, abs=1e-10)
+    assert adj['poa_ground_diffuse'] == pytest.approx(poa_ground, abs=1e-10)
+    # sum of components, ignoring horizon brightening per ANTS-2D assumption
+    assert adj['poa_global'] == pytest.approx(
+        poa_direct + poa_sky_diffuse + poa_ground, abs=1e-10)
+
 
 
 def test__apply_sky_diffuse_model_errors():

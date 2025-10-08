@@ -323,7 +323,6 @@ def _apply_ground_slope(height, pitch, gcr, tracker_rotation, ghi, dni, dhi,
     return height, pitch, gcr, tracker_rotation, ghi
 
 
-
 def get_irradiance(tracker_rotation, axis_azimuth, solar_zenith, solar_azimuth,
                    gcr, height, pitch, ghi, dhi, dni,
                    albedo, model='isotropic', dni_extra=None, airmass=None,

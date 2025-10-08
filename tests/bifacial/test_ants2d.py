@@ -64,3 +64,88 @@ def test__apply_sky_diffuse_model_errors():
     with pytest.raises(ValueError, match='Invalid model: not_a_model'):
         ants2d._apply_sky_diffuse_model(0, 0, 'not_a_model', None,
                                         None, None, None)
+
+
+def test__apply_ground_slope_cross_axis_slope():
+    # use an outrageous cross_axis_slope, just for testing
+    inputs = {
+        'height': 2, 'pitch': 4, 'gcr': 0.5, 'tracker_rotation': 50,
+        'ghi': 600, 'dni': 900, 'dhi': 150, 'solar_zenith': 60,
+        'solar_azimuth': 270,
+    }
+    outputs = ants2d._apply_ground_slope(axis_tilt=0, axis_azimuth=180,
+                                         cross_axis_slope=60, **inputs)
+    # cosd(60) gives a factor of 2 difference in various inputs
+    expected = {'height': inputs['height'] / 2, 'pitch': inputs['pitch'] * 2,
+                'gcr': inputs['gcr'] / 2, 'tracker_rotation': -10,
+                # zenith aligns with cross_axis_slope:
+                'ghi': inputs['dni'] + inputs['dhi']}
+    for (key, exp), actual in zip(expected.items(), outputs):
+        assert actual == pytest.approx(exp, abs=1e-10), key
+
+    # now flip it around and check negative cross-axis slope
+    outputs = ants2d._apply_ground_slope(axis_tilt=0, axis_azimuth=180,
+                                         cross_axis_slope=-60, **inputs)
+    expected = {'height': inputs['height'] / 2, 'pitch': inputs['pitch'] * 2,
+                'gcr': inputs['gcr'] / 2, 'tracker_rotation': 110,
+                'ghi': inputs['dhi']}
+    for (key, exp), actual in zip(expected.items(), outputs):
+        assert actual == pytest.approx(exp, abs=1e-10), key
+
+
+def test__apply_ground_slope_axis_tilt():
+    # use an outrageous axis_tilt, just for testing
+    inputs = {
+        'height': 2, 'pitch': 4, 'gcr': 0.5, 'tracker_rotation': 50,
+        'ghi': 600, 'dni': 900, 'dhi': 150, 'solar_zenith': 60,
+        'solar_azimuth': 180,
+    }
+    outputs = ants2d._apply_ground_slope(axis_tilt=60, axis_azimuth=180,
+                                         cross_axis_slope=0, **inputs)
+    expected = {'height': inputs['height'] / 2, 'pitch': inputs['pitch'],
+                'gcr': inputs['gcr'],
+                'tracker_rotation': inputs['tracker_rotation'],
+                # zenith aligns with axis_tilt:
+                'ghi': inputs['dni'] + inputs['dhi']}
+    for (key, exp), actual in zip(expected.items(), outputs):
+        assert actual == pytest.approx(exp, abs=1e-10), key
+
+    # now flip it around and check negative axis tilt
+    outputs = ants2d._apply_ground_slope(axis_tilt=-60, axis_azimuth=180,
+                                         cross_axis_slope=0, **inputs)
+
+    expected = {'height': inputs['height'] / 2, 'pitch': inputs['pitch'],
+                'gcr': inputs['gcr'],
+                'tracker_rotation': inputs['tracker_rotation'],
+                'ghi': inputs['dhi']}
+    for (key, exp), actual in zip(expected.items(), outputs):
+        assert actual == pytest.approx(exp, abs=1e-10), key
+
+
+def test__apply_ground_slope_both():
+    inputs = {
+        'height': 2, 'pitch': 4, 'gcr': 0.5, 'tracker_rotation': 50,
+        'ghi': 600, 'dni': 900, 'dhi': 150, 'solar_zenith': 15,
+        # the azimuth that results from the tilt/slope parameters below
+        'solar_azimuth': 234.73561031724535,
+    }
+    outputs = ants2d._apply_ground_slope(axis_tilt=45, axis_azimuth=180,
+                                         cross_axis_slope=45, **inputs)
+    expected = {'height': inputs['height'] / 2,
+                'pitch': inputs['pitch'] * 2**0.5,
+                'gcr': inputs['gcr'] / 2**0.5,
+                'tracker_rotation': inputs['tracker_rotation'] - 45,
+                # zenith aligns with axis_tilt:
+                'ghi': inputs['dni'] / 2**0.5 + inputs['dhi']}
+    for (key, exp), actual in zip(expected.items(), outputs):
+        assert actual == pytest.approx(exp, abs=1e-10), key
+
+
+def test__apply_ground_slope_zero():
+    inputs = [2, 4, 0.5, 45, 600, 900, 150, 60, 210]
+    outputs = ants2d._apply_ground_slope(*inputs, axis_tilt=0,
+                                         axis_azimuth=180,
+                                         cross_axis_slope=0)
+    for input, output in zip(inputs, outputs):
+        assert pytest.approx(input, abs=1e-10) == output
+

@@ -2968,7 +2968,7 @@ def pvwatts_dc(effective_irradiance, temp_cell, pdc0, gamma_pdc, temp_ref=25.,
                               pdc * (1 - err_2))
 
         # "cap" Marion's correction at 1000 W/m^2
-        if cap_adjustment is True:
+        if cap_adjustment:
             pdc_marion = np.where(effective_irradiance >= 1000,
                                   pdc,
                                   pdc_marion)

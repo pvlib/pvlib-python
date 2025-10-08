@@ -2881,36 +2881,7 @@ def scale_voltage_current_power(data, voltage=1, current=1):
 def pvwatts_dc(effective_irradiance, temp_cell, pdc0, gamma_pdc, temp_ref=25.,
                k=None, cap_adjustment=False):
     r"""
-    Implements NREL's PVWatts (Version 5) DC power model. The PVWatts Version
-    5 DC model [1]_ is:
-
-    .. math::
-
-        P_{dc} = \frac{G_{poa eff}}{1000} P_{dc0} ( 1 + \gamma_{pdc} (T_{cell} - T_{ref}))
-
-    This model has also been referred to as the power temperature coefficient
-    model.
-
-    This function accepts an optional irradiance adjustment factor, `k`, based
-    on [2]_. This applies a piece-wise adjustment to power based on irradiance,
-    where `k` is the reduction in actual power at 200 Wm⁻² relative to power
-    calculated at 200 W/m^2 as 0.2*`pdc0`. For example, a 500 W module that
-    produces 95 W at 200 W/m^2 (a 5% relative reduction in efficiency) would
-    have a value of `k` = 0.01.
-
-    .. math::
-
-        k=\frac{0.2P_{dc0}-P_{200}}{P_{dc0}}
-
-    This adjustment increases relative efficiency for irradiance above 1000
-    Wm⁻², which may not be desired. An optional input, `capped_adjustment`,
-    modifies the adjustment from [2]_ to only apply below 1000 Wm⁻².
-
-    Note that ``pdc0`` is also used as a symbol in
-    :py:func:`pvlib.inverter.pvwatts`. ``pdc0`` in this function refers to the DC
-    power of the modules at reference conditions. ``pdc0`` in
-    :py:func:`pvlib.inverter.pvwatts` refers to the DC power input limit of
-    the inverter.
+    Implement NREL's PVWatts (Version 5) DC power model. 
 
     Parameters
     ----------
@@ -2938,6 +2909,38 @@ def pvwatts_dc(effective_irradiance, temp_cell, pdc0, gamma_pdc, temp_ref=25.,
     -------
     pdc: numeric
         DC power. [W]
+
+    Notes
+    -----
+    The PVWatts Version 5 DC model [1]_ is:
+
+    .. math::
+
+        P_{dc} = \frac{G_{poa eff}}{1000} P_{dc0} ( 1 + \gamma_{pdc} (T_{cell} - T_{ref}))
+
+    This model has also been referred to as the power temperature coefficient
+    model.
+
+    This function accepts an optional irradiance adjustment factor, `k`, based
+    on [2]_. This applies a piece-wise adjustment to power based on irradiance,
+    where `k` is the reduction in actual power at 200 Wm⁻² relative to power
+    calculated at 200 Wm-2 as 0.2*`pdc0`. For example, a 500 W module that
+    produces 95 W at 200 Wm-2 (a 5% relative reduction in efficiency) would
+    have a value of `k` = 0.01.
+
+    .. math::
+
+        k=\frac{0.2P_{dc0}-P_{200}}{P_{dc0}}
+
+    This adjustment increases relative efficiency for irradiance above 1000
+    Wm⁻², which may not be desired. An optional input, `capped_adjustment`,
+    modifies the adjustment from [2]_ to only apply below 1000 Wm⁻².
+
+    Note that ``pdc0`` is also used as a symbol in
+    :py:func:`pvlib.inverter.pvwatts`. ``pdc0`` in this function refers to the DC
+    power of the modules at reference conditions. ``pdc0`` in
+    :py:func:`pvlib.inverter.pvwatts` refers to the DC power input limit of
+    the inverter.
 
     References
     ----------

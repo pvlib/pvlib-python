@@ -456,7 +456,7 @@ def get_irradiance(tracker_rotation, axis_azimuth, solar_zenith, solar_azimuth,
     phi = phi - cross_axis_slope
 
     # compute this here, as it is expensive and does not differ between the
-    # front and rear sides
+    # front and back sides
     vf_gnd_sky = utils.vf_ground_sky_2d_integ(
         tracker_rotation, gcr, height, pitch, g0=g0, g1=g1, max_rows=max_rows)
     vf_gnd_sky = vf_gnd_sky[:, np.newaxis, :]
@@ -471,17 +471,17 @@ def get_irradiance(tracker_rotation, axis_azimuth, solar_zenith, solar_azimuth,
                                    vf_gnd_sky, gcr, height, pitch, ghi, dhi,
                                    dni, albedo, x0, x1, g0, g1, max_rows)
 
-    # rear
-    tracker_rotation_rear = true_tracker_rotation + 180
-    tracker_rotation_rear = ((tracker_rotation_rear + 180) % 360) - 180
-    rear_orientation = calc_surface_orientation(tracker_rotation_rear,
+    # back
+    tracker_rotation_back = true_tracker_rotation + 180
+    tracker_rotation_back = ((tracker_rotation_back + 180) % 360) - 180
+    back_orientation = calc_surface_orientation(tracker_rotation_back,
                                                 axis_tilt, axis_azimuth)
-    cos_aoi_rear = aoi_projection(**rear_orientation,
+    cos_aoi_back = aoi_projection(**back_orientation,
                                   solar_zenith=solar_zenith,
                                   solar_azimuth=solar_azimuth)
-    tracker_rotation_rear = tracker_rotation + 180
-    tracker_rotation_rear = ((tracker_rotation_rear + 180) % 360) - 180
-    poa_back = _ants2d_singleside(tracker_rotation_rear, cos_aoi_rear, phi,
+    tracker_rotation_back = tracker_rotation + 180
+    tracker_rotation_back = ((tracker_rotation_back + 180) % 360) - 180
+    poa_back = _ants2d_singleside(tracker_rotation_back, cos_aoi_back, phi,
                                   vf_gnd_sky, gcr, height, pitch, ghi, dhi,
                                   dni, albedo, x0, x1, g0, g1, max_rows)
 

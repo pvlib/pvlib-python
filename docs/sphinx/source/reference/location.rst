@@ -23,6 +23,7 @@ metadata returned by these file types:
 
    location.Location.from_tmy
    location.Location.from_epw
+
 Methods for calculating time series of certain variables for a given
 location are available through this class.
 

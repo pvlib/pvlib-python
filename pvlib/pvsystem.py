@@ -2933,9 +2933,12 @@ def pvwatts_dc(effective_irradiance, temp_cell, pdc0, gamma_pdc, temp_ref=25.,
 
         k=\frac{0.2P_{dc0}-P_{200}}{P_{dc0}}
 
-    This adjustment increases relative efficiency for irradiance above 1000
-    Wm⁻², which may not be desired. An optional input, `capped_adjustment`,
-    modifies the adjustment from [2]_ to only apply below 1000 Wm⁻².
+    For positive `k` values, and `k` is typically positive, this adjustment
+    increases relative efficiency when irradiance is above 1000 Wm⁻². This may
+    not be desired, as modules with nonlinear irradiance response often have
+    peak efficiency near 1000 Wm⁻², and it is either flat or declining at
+    higher irradiance. An optional parameter, `cap_adjustment`, can address
+    this by modifying the adjustment from [2]_ to only apply below 1000 Wm⁻².
 
     Note that ``pdc0`` is also used as a symbol in
     :py:func:`pvlib.inverter.pvwatts`. ``pdc0`` in this function refers to the DC

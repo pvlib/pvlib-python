@@ -238,12 +238,12 @@ def test_get_irradiance_symmetry(ants_params):
     60,  # partial ground shading, no module shading
     80,  # full ground shading, partial module shading
 ])
-def test_get_irradiance_vertical(ants_params, solar_zenith):
+@pytest.mark.parametrize('tracker_rotation', [+90, -90])
+def test_get_irradiance_vertical(ants_params, solar_zenith, tracker_rotation):
     # check symmetries for vertical panels (tilt=90)
     ants_params['solar_zenith'] = pd.Series(solar_zenith,
                                             index=ants_params['ghi'].index)
-
-    ants_params['tracker_rotation'] = pd.Series([90, 90],
+    ants_params['tracker_rotation'] = pd.Series(tracker_rotation,
                                                 index=ants_params['ghi'].index)
     out = ants2d.get_irradiance(**ants_params, n_row_segments=1)
     # inputs are symmetrical morning/afternoon, so morning front should equal
@@ -256,17 +256,7 @@ def test_get_irradiance_vertical(ants_params, solar_zenith):
         assert np.isclose(out.iloc[0][front_key], out.iloc[1][back_key])
         assert np.isclose(out.iloc[1][front_key], out.iloc[0][back_key])
 
-    # now same, but for rotation=-90
-    ants_params['tracker_rotation'] *= -1
-    out = ants2d.get_irradiance(**ants_params, n_row_segments=1)
-    for front_key in front_keys:
-        back_key = front_key.replace("front", "back")
-        assert np.isclose(out.iloc[0][front_key], out.iloc[1][back_key])
-        assert np.isclose(out.iloc[1][front_key], out.iloc[0][back_key])
-
-    # now back to +90, but with >1 row segment
-    ants_params['tracker_rotation'] = pd.Series([90, 90],
-                                                index=ants_params['ghi'].index)
+    # now with >1 row segment
     out = ants2d.get_irradiance(**ants_params, n_row_segments=2)
     lower_half = 0
     upper_half = 1
@@ -285,24 +275,34 @@ def test_get_irradiance_vertical(ants_params, solar_zenith):
 
 
 def test_get_irradiance_limit(ants_params):
-    # check that as pitch->infinity, front-side irradiance converges to
-    # output of get_total_irradiance
-    ants_params['pitch'] *= 1000
-    ants_params['gcr'] /= 1000
-    ants = ants2d.get_irradiance(**ants_params, n_row_segments=1)
-
+    # check that diffuse components of front-side irradiance are lower
+    # than what get_total_irradiance predicts
     surface_tilt = ants_params['tracker_rotation'].abs()
     surface_azimuth = np.where(ants_params['tracker_rotation'] > 0, 270, 90)
-    total_irrad = pvlib.irradiance.get_total_irradiance(
+    irrad = pvlib.irradiance.get_total_irradiance(
         surface_tilt, surface_azimuth,
         ants_params['solar_zenith'], ants_params['solar_azimuth'],
         ants_params['dni'], ants_params['ghi'], ants_params['dhi'],
         albedo=ants_params['albedo'], model='isotropic')
+
+    ants = ants2d.get_irradiance(**ants_params, n_row_segments=1)
+    # 15 W/m2 happens to be just below the difference (determined empirically)
+    diff_sky = irrad['poa_sky_diffuse'] - ants['poa_front_sky_diffuse']
+    diff_ground = irrad['poa_ground_diffuse'] - ants['poa_front_ground_diffuse']
+    assert all(diff_sky > 15)
+    assert all(diff_ground > 15)
+
+    # but as pitch->infinity, front-side irradiance converges to
+    # output of get_total_irradiance
+    ants_params['pitch'] *= 1000
+    ants_params['gcr'] /= 1000
+    ants = ants2d.get_irradiance(**ants_params, n_row_segments=1)
 
     colmap = {'poa_front': 'poa_global', 'poa_front_direct': 'poa_direct',
               'poa_front_diffuse': 'poa_diffuse',
               'poa_front_sky_diffuse': 'poa_sky_diffuse',
               'poa_front_ground_diffuse': 'poa_ground_diffuse'}
     ants_front = ants[list(colmap)].rename(columns=colmap)
-    pd.testing.assert_frame_equal(ants_front, total_irrad, atol=0.1)
+    pd.testing.assert_frame_equal(ants_front, irrad, atol=0.1)
+    
 

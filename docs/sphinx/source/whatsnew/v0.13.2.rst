@@ -27,9 +27,7 @@ Enhancements
   :py:func:`~pvlib.singlediode.bishop88_mpp`,
   :py:func:`~pvlib.singlediode.bishop88_v_from_i`, and
   :py:func:`~pvlib.singlediode.bishop88_i_from_v`. (:issue:`2497`, :pull:`2498`)
-* Add capability for :py:func:`~pvlib.singlediode._lambertw` to use scipy
-  find_minimum to get the maximum power point instead of pvlib's golden
-  mean search. (:issue:`2497`, :pull:`2567`)
+* Accelerate :py:func:`~pvlib.pvsystem.singlediode` when scipy>=1.15 is installed. (:issue:`2497`, :pull:`2567`)
 
 
 Documentation

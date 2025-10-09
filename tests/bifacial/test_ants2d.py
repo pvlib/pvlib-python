@@ -306,3 +306,58 @@ def test_get_irradiance_limit(ants_params):
     pd.testing.assert_frame_equal(ants_front, irrad, atol=0.1)
     
 
+@pytest.fixture
+def ants_params_fixed():
+    # parameters for get_irradiance, for a fixed-tilt system
+    inputs = {
+        'tracker_rotation': 30,
+        'axis_azimuth': 90,
+        'solar_zenith': 60,
+        'solar_azimuth': 175,
+        'gcr': 0.6, 'height': 1.5, 'pitch': 3.5,
+        'ghi': 700,
+        'dni': 1000,
+        'dhi': 200,
+        'albedo': 0.2,
+        'dni_extra': 1360,
+        'airmass': 2,
+    }
+    return inputs
+
+
+def test_get_irradiance_direct_shading(ants_params_fixed):
+    # check that direct shading increases as sun approaches horizon
+    ants_params_fixed.pop('solar_zenith')
+    out60 = ants2d.get_irradiance(solar_zenith=60, **ants_params_fixed)
+    out80 = ants2d.get_irradiance(solar_zenith=80, **ants_params_fixed)
+    assert out80['poa_front_direct'] < out60['poa_front_direct']
+
+
+def test_get_irradiance_multiple_row_segments(ants_params_fixed):
+    # check that granular sims average to the same value as n_row_segments=1
+    out4 = ants2d.get_irradiance(**ants_params_fixed, n_row_segments=4)
+    out2 = ants2d.get_irradiance(**ants_params_fixed, n_row_segments=2)
+    out1 = ants2d.get_irradiance(**ants_params_fixed, n_row_segments=1)
+
+    for k in out4:
+        # check two bottom quarters average to the bottom half, and top
+        # two quarters average to the top half
+        assert np.isclose(np.mean(out4[k][0:2, 0]), out2[k][0, 0])
+        assert np.isclose(np.mean(out4[k][2:4, 0]), out2[k][1, 0])
+
+        # check that two halves average to the whole
+        assert np.isclose(np.mean(out2[k][:, 0]), out1[k])
+
+
+def test_get_irradiance_slope(ants_params_fixed):
+    # check the slope affects direct & diffuse shading
+    flat = ants2d.get_irradiance(cross_axis_slope=0, **ants_params_fixed)
+    # negative slope with axis_azimuth=90 means sloping down to the north
+    tilt = ants2d.get_irradiance(cross_axis_slope=-10, **ants_params_fixed)
+    assert tilt['poa_front_direct'] < flat['poa_front_direct']
+    assert tilt['poa_front_sky_diffuse'] < flat['poa_front_sky_diffuse']
+
+
+def test_get_irradiance_nonuniform_albedo():
+    # check that specifying albedo for each ground segment works
+    

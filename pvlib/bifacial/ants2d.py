@@ -74,12 +74,12 @@ def _shaded_fraction(tracker_rotation, phi, gcr, x0=0, x1=1):
                             axis_azimuth=0,
                             shaded_row_rotation=tracker_rotation,
                             collector_width=1, pitch=1/gcr)
-    
+
     # dimensions: row segment, time
     f_s = np.atleast_1d(f_s)[np.newaxis, :]
     x0 = np.atleast_1d(x0)[:, np.newaxis]
     x1 = np.atleast_1d(x1)[:, np.newaxis]
-    
+
     swap = tracker_rotation < 0
     x0, x1 = np.where(swap, 1 - x1, x0), np.where(swap, 1 - x0, x1)
 
@@ -384,11 +384,13 @@ def get_irradiance(tracker_rotation, axis_azimuth, solar_zenith, solar_azimuth,
     Returns
     -------
     output : dict or DataFrame
-        ``output`` is a DataFrame when input ghi is a Series and
-        ``n_row_segments=1`` and a dict of ``np.ndarray`` otherwise.
+        ``output`` is a DataFrame when input ``tracker_rotation`` is a Series
+        and ``n_row_segments=1``, a dict of scalars when ``tracker_rotation``
+        is a scalar and ``n_row_segments=1``, and a dict of ``np.ndarray``
+        otherwise.
 
         ``output`` includes the following quantities:
-        
+
         - ``poa_global``: sum of front- and back-side incident irradiance.
           [Wm⁻²]
         - ``poa_front``: total incident irradiance on the front surface. [Wm⁻²]
@@ -424,7 +426,6 @@ def get_irradiance(tracker_rotation, axis_azimuth, solar_zenith, solar_azimuth,
     ----------
     .. [1] TODO
     """
-    pandas_index = ghi.index if isinstance(ghi, pd.Series) else None
 
     # preparation steps
 
@@ -453,6 +454,7 @@ def get_irradiance(tracker_rotation, axis_azimuth, solar_zenith, solar_azimuth,
     ghi = np.atleast_1d(ghi)[np.newaxis, np.newaxis, :]
     dhi = np.atleast_1d(dhi)[np.newaxis, np.newaxis, :]
     dni = np.atleast_1d(dni)[np.newaxis, np.newaxis, :]
+    tracker_rotation = np.atleast_1d(tracker_rotation)
 
     # Calculate some geometric quantities
     # rows to consider in front and behind current row
@@ -518,7 +520,13 @@ def get_irradiance(tracker_rotation, axis_azimuth, solar_zenith, solar_azimuth,
         for k, v in poa_front.items():
             poa_front[k] = v[0]  # drop row segment dimension
 
-        if pandas_index is not None:
-            poa_front = pd.DataFrame(poa_front, index=pandas_index)
+        if np.isscalar(true_tracker_rotation):
+            # drop the second dimension too, so scalars are returned
+            for k, v in poa_front.items():
+                poa_front[k] = float(v[0])
+
+        elif isinstance(true_tracker_rotation, pd.Series):
+            poa_front = pd.DataFrame(poa_front,
+                                     index=true_tracker_rotation.index)
 
     return poa_front

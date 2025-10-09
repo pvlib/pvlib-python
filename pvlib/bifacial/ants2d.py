@@ -58,6 +58,12 @@ def _shaded_fraction(tracker_rotation, phi, gcr, x0=0, x1=1):
        Single-Axis Trackers", Technical Report NREL/TP-5K00-76626, July 2020.
        https://www.nrel.gov/docs/fy20osti/76626.pdf
     """
+    # keep track of scalar inputs so that we can have output match at the end
+    squeeze = []
+    if np.isscalar(x0) and np.isscalar(x1):
+        squeeze.append(0)
+    if np.isscalar(tracker_rotation):
+        squeeze.append(1)
 
     # note: ground slope is already accounted for in phi and gcr, so don't
     # apply it here.
@@ -78,7 +84,8 @@ def _shaded_fraction(tracker_rotation, phi, gcr, x0=0, x1=1):
     x0, x1 = np.where(swap, 1 - x1, x0), np.where(swap, 1 - x0, x1)
 
     f_s = np.clip((f_s - x0) / (x1 - x0), a_min=0, a_max=1)
-    
+    f_s = f_s.squeeze(axis=tuple(squeeze))
+
     return f_s
 
 
@@ -158,7 +165,7 @@ def _ants2d_singleside(tracker_rotation, cos_aoi, phi, vf_gnd_sky,
         - ``shaded_fraction``: fraction of row slant height from the bottom
           that is shaded from direct irradiance by adjacent rows. [unitless]
 
-        Shape of each quantity depends on TODO x0/x1 g0/g1
+        Each array has shape (len(x0), len(tracker_rotation)).
 
     Notes
     -----
@@ -168,20 +175,19 @@ def _ants2d_singleside(tracker_rotation, cos_aoi, phi, vf_gnd_sky,
     ----------
     .. [1] TODO
     """
+    # reminder of base dimensions: ground segment, row segment, time
 
     # in-plane beam component
     projection = np.array(np.clip(cos_aoi, a_min=0, a_max=None))
-    projection = projection[np.newaxis, np.newaxis, :]
     row_shaded_fraction = _shaded_fraction(tracker_rotation, phi, gcr, x0, x1)
-    row_shaded_fraction = row_shaded_fraction[np.newaxis, :, :]
     poa_direct = dni * projection * (1 - row_shaded_fraction)
-    poa_direct = poa_direct[0]  # drop unnecessary first dimension
+    poa_direct = poa_direct[0]  # drop ground segment dimension
 
 
     # in-plane sky diffuse component
     vf_row_sky = utils.vf_row_sky_2d_integ(tracker_rotation, gcr, x0, x1)
     poa_sky_diffuse = vf_row_sky * dhi
-    poa_sky_diffuse = poa_sky_diffuse[0]  # drop unnecesary first dimension
+    poa_sky_diffuse = poa_sky_diffuse[0]  # drop ground segment dimension
 
 
     # in-plane ground-reflected component
@@ -201,7 +207,8 @@ def _ants2d_singleside(tracker_rotation, cos_aoi, phi, vf_gnd_sky,
         (1-ground_shaded_fraction) * (ghi - dhi)  # reflected beam
         + vf_gnd_sky * dhi  # reflected diffuse
     )
-    poa_ground_diffuse = np.sum(poa_ground_diffuse, axis=0)  # sum over ground segments
+    # sum over ground segments
+    poa_ground_diffuse = np.sum(poa_ground_diffuse, axis=0)
 
 
     # add sky and ground-reflected irradiance on the row by irradiance
@@ -209,6 +216,7 @@ def _ants2d_singleside(tracker_rotation, cos_aoi, phi, vf_gnd_sky,
     poa_diffuse = poa_ground_diffuse + poa_sky_diffuse
     poa_global = poa_direct + poa_diffuse
 
+    # all arrays are now 2D with shape (n_row_segments, len(tracker_rotation))
     output = {
         'poa_global': poa_global,
         'poa_direct': poa_direct,
@@ -296,7 +304,7 @@ def _apply_ground_slope(height, pitch, gcr, tracker_rotation, ghi, dni, dhi,
 def get_irradiance(tracker_rotation, axis_azimuth, solar_zenith, solar_azimuth,
                    gcr, height, pitch, ghi, dhi, dni,
                    albedo, model='isotropic', dni_extra=None, airmass=None,
-                   n_row_segments=1, n_ground_segments=1, axis_tilt=0,
+                   n_row_segments=1, n_ground_segments=10, axis_tilt=0,
                    cross_axis_slope=0):
     """
     Get front and rear irradiance using the ANTS-2D bifacial irradiance model.
@@ -357,9 +365,9 @@ def get_irradiance(tracker_rotation, axis_azimuth, solar_zenith, solar_azimuth,
     n_row_segments : int, default 1
         Number of segments to partition the row surface into. Irradiance
         will be computed and returned for each segment.
-    n_ground_segments : int, default 1
-        Number of segments to partition the ground surface into. If specified,
-        ``albedo`` must be specified for each segment.
+    n_ground_segments : int, default 10
+        Number of segments to partition the ground surface into. ``albedo``
+        can be specified for each segment.
     axis_tilt : numeric, default 0
         Tilt of the axis of rotation with respect to horizontal. [degree]
     cross_axis_slope : numeric, default 0
@@ -416,6 +424,7 @@ def get_irradiance(tracker_rotation, axis_azimuth, solar_zenith, solar_azimuth,
     ----------
     .. [1] TODO
     """
+    pandas_index = ghi.index if isinstance(ghi, pd.Series) else None
 
     # preparation steps
 
@@ -423,7 +432,7 @@ def get_irradiance(tracker_rotation, axis_azimuth, solar_zenith, solar_azimuth,
                                         solar_azimuth, dni_extra, airmass)
 
     true_tracker_rotation = tracker_rotation
-    
+
     if axis_tilt != 0 or cross_axis_slope != 0:
         height, pitch, gcr, tracker_rotation, ghi = _apply_ground_slope(
             height, pitch, gcr, tracker_rotation, ghi, dni, dhi,
@@ -505,7 +514,11 @@ def get_irradiance(tracker_rotation, axis_azimuth, solar_zenith, solar_azimuth,
         poa_back[new_key] = poa_back.pop(old_key)
     poa_front.update(poa_back)
 
-    if n_row_segments == 1 and isinstance(ghi, pd.Series):
-        poa_front = pd.DataFrame(poa_front, index=ghi.index)
+    if n_row_segments == 1:
+        for k, v in poa_front.items():
+            poa_front[k] = v[0]  # drop row segment dimension
+
+        if pandas_index is not None:
+            poa_front = pd.DataFrame(poa_front, index=pandas_index)
 
     return poa_front

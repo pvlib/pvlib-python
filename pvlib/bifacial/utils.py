@@ -92,9 +92,6 @@ def _unshaded_ground_fraction(tracker_rotation, phi, gcr, pitch, height,
        :doi:`10.1109/PVSC40753.2019.8980572`.
     """
     
-    swap = (tracker_rotation > 90) | (tracker_rotation <= -90)
-    tracker_rotation = np.where(swap, tracker_rotation + 180, tracker_rotation)
-    
     # dimensions: k/max_rows, ground segment, time
 
     tracker_rotation = np.atleast_1d(tracker_rotation)[np.newaxis, np.newaxis, :]
@@ -119,6 +116,9 @@ def _unshaded_ground_fraction(tracker_rotation, phi, gcr, pitch, height,
     
     cp = c[0] + c[1] * tanphi
     dp = d[0] + d[1] * tanphi
+    swap = dp > cp
+    cp, dp = np.where(swap, dp, cp), np.where(swap, cp, dp)
+    
     a = g0*pitch
     b = g1*pitch
 

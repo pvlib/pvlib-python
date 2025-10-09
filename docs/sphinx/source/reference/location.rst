@@ -18,6 +18,7 @@ Classes
    location.Location
 A :py:class:`~pvlib.location.Location` object may be created from the
 metadata returned by these file types:
+
 .. autosummary::
    :toctree: generated/
 

@@ -2960,9 +2960,8 @@ def pvwatts_dc(effective_irradiance, temp_cell, pdc0, gamma_pdc, temp_ref=25.,
 
     # apply Marion's correction if k is anything but zero
     if k is not None:
-        err_1 = (k * (1 - (1 - effective_irradiance / 200)**4) /
-                 (effective_irradiance / 1000))
-        err_2 = (k * (1000 - effective_irradiance) / (1000 - 200))
+        err_1 = k * (1 - (1 - effective_irradiance / 200)**4)
+        err_2 = k * (1000 - effective_irradiance) / (1000 - 200)
 
         pdc_marion = np.where(effective_irradiance <= 200,
                               pdc * (1 - err_1),

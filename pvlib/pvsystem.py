@@ -2901,7 +2901,8 @@ def pvwatts_dc(effective_irradiance, temp_cell, pdc0, gamma_pdc, temp_ref=25.,
         Cell reference temperature. PVWatts defines it to be 25 C and
         is included here for flexibility. [C]
     k: numeric, optional
-        Irradiance correction factor, defined in [2]_. [unitless]
+        Irradiance correction factor, defined in [2]_. Typically positive.
+        [unitless]
     cap_adjustment: Boolean, default False
         If True, apply the optional adjustment at and below 1000 W/m^2.
 
@@ -2972,6 +2973,10 @@ def pvwatts_dc(effective_irradiance, temp_cell, pdc0, gamma_pdc, temp_ref=25.,
             pdc_marion = np.where(effective_irradiance >= 1000,
                                   pdc,
                                   pdc_marion)
+
+        # large k values can result in negative power at low irradiance, so
+        # set negative power to zero
+        pdc_marion[pdc_marion < 0] = 0
 
         pdc = pdc_marion
 

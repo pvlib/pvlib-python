@@ -16,7 +16,7 @@ def test__shaded_fraction():
     tracker_rotation = np.array([60, 60, 60, 60])
     phi = np.array([60, 60, 60, 60])
     gcr = np.array([1, 0.75, 2/3, 0.5])
-    expected = np.array([[0.5, 1/3, 0.25, 0]])
+    expected = np.array([0.5, 1/3, 0.25, 0])
     fs = ants2d._shaded_fraction(tracker_rotation, phi, gcr)
     np.testing.assert_allclose(fs, expected)
     fs = ants2d._shaded_fraction(-tracker_rotation, -phi, gcr)
@@ -36,7 +36,7 @@ def test__shaded_fraction():
     phi = np.array([0, 90, -90, 0, 90, -90, 0, 90, -90])
     gcr = 0.5
     # (some of these are debatable as well)
-    expected = np.array([[0, 0, 0, 0, 1, 1, 0, 1, 1]])
+    expected = np.array([0, 0, 0, 0, 1, 1, 0, 1, 1])
     fs = ants2d._shaded_fraction(tracker_rotation, phi, gcr)
     np.testing.assert_allclose(fs, expected)
 
@@ -182,4 +182,127 @@ def test__apply_ground_slope_zero():
                                          cross_axis_slope=0)
     for input, output in zip(inputs, outputs):
         assert pytest.approx(input, abs=1e-10) == output
+
+
+@pytest.fixture
+def ants_params():
+    # parameters for get_irradiance
+    times = pd.date_range("2019-06-01 11:30", freq="h", periods=2)
+    inputs = {
+        'tracker_rotation': [45, -45],
+        'axis_azimuth': 180,
+        'solar_zenith': [60, 60],
+        'solar_azimuth': [225, 135],
+        'gcr': 0.5, 'height': 2.5, 'pitch': 4.0,
+        'ghi': [700, 700],
+        'dni': [1000, 1000],
+        'dhi': [200, 200],
+        'albedo': 0.2,
+        'dni_extra': [1360, 1360],
+        'airmass': [2, 2],
+    }
+    for k, v in inputs.items():
+        if isinstance(v, list):
+            inputs[k] = pd.Series(v, index=times)
+    return inputs
+
+
+def test_get_irradiance_return_type(ants_params):
+    # verify pandas in -> pandas out, and shapes of numpy outputs
+    out = ants2d.get_irradiance(**ants_params, n_row_segments=1)
+    assert isinstance(out, pd.DataFrame)  # DataFrame, since n_row_segments=1
+    expected_keys = ['poa_front', 'poa_front_direct', 'poa_front_diffuse',
+       'poa_front_sky_diffuse', 'poa_front_ground_diffuse',
+       'shaded_fraction_front', 'poa_back', 'poa_back_direct',
+       'poa_back_diffuse', 'poa_back_sky_diffuse', 'poa_back_ground_diffuse',
+       'shaded_fraction_back']
+    assert set(out.columns) == set(expected_keys)
+    assert len(out) == 2  # 2 timestamps
+
+    out = ants2d.get_irradiance(**ants_params, n_row_segments=3)
+    assert isinstance(out, dict)  # dict, since n_row_segments>1
+    assert set(out.keys()) == set(expected_keys)
+    for k, v in out.items():
+        assert v.shape == (3, 2), k  # 3 row segments, 2 timestamps
+
+
+def test_get_irradiance_symmetry(ants_params):
+    # check symmetries for normal tracker
+    out = ants2d.get_irradiance(**ants_params, n_row_segments=1)
+    # symmetrical/mirrored inputs should produce equal outputs
+    pd.testing.assert_series_equal(out.iloc[0, :], out.iloc[1, :],
+                                   check_names=False)
+
+
+@pytest.mark.parametrize('solar_zenith', [
+    60,  # partial ground shading, no module shading
+    80,  # full ground shading, partial module shading
+])
+def test_get_irradiance_vertical(ants_params, solar_zenith):
+    # check symmetries for vertical panels (tilt=90)
+    ants_params['solar_zenith'] = pd.Series(solar_zenith,
+                                            index=ants_params['ghi'].index)
+
+    ants_params['tracker_rotation'] = pd.Series([90, 90],
+                                                index=ants_params['ghi'].index)
+    out = ants2d.get_irradiance(**ants_params, n_row_segments=1)
+    # inputs are symmetrical morning/afternoon, so morning front should equal
+    # afternoon back, and vice versa
+    front_keys = ['poa_front', 'poa_front_direct', 'poa_front_diffuse',
+       'poa_front_sky_diffuse', 'poa_front_ground_diffuse',
+       'shaded_fraction_front']
+    for front_key in front_keys:
+        back_key = front_key.replace("front", "back")
+        assert np.isclose(out.iloc[0][front_key], out.iloc[1][back_key])
+        assert np.isclose(out.iloc[1][front_key], out.iloc[0][back_key])
+
+    # now same, but for rotation=-90
+    ants_params['tracker_rotation'] *= -1
+    out = ants2d.get_irradiance(**ants_params, n_row_segments=1)
+    for front_key in front_keys:
+        back_key = front_key.replace("front", "back")
+        assert np.isclose(out.iloc[0][front_key], out.iloc[1][back_key])
+        assert np.isclose(out.iloc[1][front_key], out.iloc[0][back_key])
+
+    # now back to +90, but with >1 row segment
+    ants_params['tracker_rotation'] = pd.Series([90, 90],
+                                                index=ants_params['ghi'].index)
+    out = ants2d.get_irradiance(**ants_params, n_row_segments=2)
+    lower_half = 0
+    upper_half = 1
+    morning = 0
+    afternoon = 1
+    for front_key in front_keys:
+        back_key = front_key.replace("front", "back")
+        assert np.isclose(out[front_key][lower_half, morning],
+                          out[back_key][lower_half, afternoon])
+        assert np.isclose(out[front_key][upper_half, morning],
+                          out[back_key][upper_half, afternoon])
+        assert np.isclose(out[back_key][lower_half, morning],
+                          out[front_key][lower_half, afternoon])
+        assert np.isclose(out[back_key][upper_half, morning],
+                          out[front_key][upper_half, afternoon])
+
+
+def test_get_irradiance_limit(ants_params):
+    # check that as pitch->infinity, front-side irradiance converges to
+    # output of get_total_irradiance
+    ants_params['pitch'] *= 1000
+    ants_params['gcr'] /= 1000
+    ants = ants2d.get_irradiance(**ants_params, n_row_segments=1)
+
+    surface_tilt = ants_params['tracker_rotation'].abs()
+    surface_azimuth = np.where(ants_params['tracker_rotation'] > 0, 270, 90)
+    total_irrad = pvlib.irradiance.get_total_irradiance(
+        surface_tilt, surface_azimuth,
+        ants_params['solar_zenith'], ants_params['solar_azimuth'],
+        ants_params['dni'], ants_params['ghi'], ants_params['dhi'],
+        albedo=ants_params['albedo'], model='isotropic')
+
+    colmap = {'poa_front': 'poa_global', 'poa_front_direct': 'poa_direct',
+              'poa_front_diffuse': 'poa_diffuse',
+              'poa_front_sky_diffuse': 'poa_sky_diffuse',
+              'poa_front_ground_diffuse': 'poa_ground_diffuse'}
+    ants_front = ants[list(colmap)].rename(columns=colmap)
+    pd.testing.assert_frame_equal(ants_front, total_irrad, atol=0.1)
 

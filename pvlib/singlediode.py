@@ -930,9 +930,7 @@ def _lambertw(photocurrent, saturation_current, resistance_series,
         # switch to old golden section method
         p_mp, v_mp = _golden_sect_DataFrame(params, 0., v_oc * 1.14,
                                             _pwr_optfcn)
-
-    # Find Imp using Lambert W
-    i_mp = _lambertw_i_from_v(v_mp, **params)
+    i_mp = p_mp / v_mp
 
     # Find Ix and Ixx using Lambert W
     i_x = _lambertw_i_from_v(0.5 * v_oc, **params)

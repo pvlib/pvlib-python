@@ -27,7 +27,7 @@ Enhancements
   :py:func:`~pvlib.singlediode.bishop88_mpp`,
   :py:func:`~pvlib.singlediode.bishop88_v_from_i`, and
   :py:func:`~pvlib.singlediode.bishop88_i_from_v`. (:issue:`2497`, :pull:`2498`)
-
+* Eliminate some repeated calculations in :py:mod:`pvlib.bifacial.infinite_sheds`. (:pull:`2897`) 
 
 
 Documentation
@@ -53,4 +53,5 @@ Maintenance
 
 Contributors
 ~~~~~~~~~~~~
+* Kevin Anderson (:ghuser:`kandersolar`)
 

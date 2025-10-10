@@ -37,8 +37,8 @@ def _solar_projection_tangent(solar_zenith, solar_azimuth, surface_azimuth):
     return tan_phi
 
 
-def _unshaded_ground_fraction(surface_tilt, surface_azimuth, solar_zenith,
-                              solar_azimuth, gcr, max_zenith=87):
+def _unshaded_ground_fraction(surface_tilt, tan_phi, gcr,
+                              solar_zenith, max_zenith=87):
     r"""
     Calculate the fraction of the ground with incident direct irradiance.
 
@@ -56,16 +56,14 @@ def _unshaded_ground_fraction(surface_tilt, surface_azimuth, solar_zenith,
         Surface tilt angle. The tilt angle is defined as
         degrees from horizontal, e.g., surface facing up = 0, surface facing
         horizon = 90. [degree]
-    surface_azimuth : numeric
-        Azimuth of the module surface, i.e., North=0, East=90, South=180,
-        West=270. [degree]
-    solar_zenith : numeric
-        Solar zenith angle. [degree].
-    solar_azimuth : numeric
-        Solar azimuth. [degree].
+    tan_phi : numeric
+        Tangent of the angle between vertical and the projection of the
+        sun direction onto the YZ plane. [unitless]
     gcr : float
         Ground coverage ratio, which is the ratio of row slant length to row
         spacing (pitch). [unitless]
+    solar_zenith : numeric
+        Solar zenith angle. [degree].
     max_zenith : numeric, default 87
         Maximum zenith angle. For solar_zenith > max_zenith, unshaded ground
         fraction is set to 0. [degree]
@@ -83,8 +81,6 @@ def _unshaded_ground_fraction(surface_tilt, surface_azimuth, solar_zenith,
        Photovoltaic Specialists Conference (PVSC), 2019, pp. 1282-1287.
        :doi:`10.1109/PVSC40753.2019.8980572`.
     """
-    tan_phi = _solar_projection_tangent(solar_zenith, solar_azimuth,
-                                        surface_azimuth)
     f_gnd_beam = 1.0 - np.minimum(
         1.0, gcr * np.abs(cosd(surface_tilt) + sind(surface_tilt) * tan_phi))
     # [1], Eq. 4

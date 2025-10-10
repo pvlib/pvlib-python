@@ -27,7 +27,8 @@ Enhancements
   :py:func:`~pvlib.singlediode.bishop88_mpp`,
   :py:func:`~pvlib.singlediode.bishop88_v_from_i`, and
   :py:func:`~pvlib.singlediode.bishop88_i_from_v`. (:issue:`2497`, :pull:`2498`)
-
+* Accelerate :py:func:`~pvlib.pvsystem.singlediode` when scipy>=1.15 is
+  installed. (:issue:`2497`, :pull:`XXXX`)
 
 
 Documentation
@@ -53,4 +54,4 @@ Maintenance
 
 Contributors
 ~~~~~~~~~~~~
-
+* Cliff Hansen (:ghuser:`cwhanse`)

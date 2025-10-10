@@ -12,3 +12,4 @@ Contributing
    how_to_contribute_new_code
    style_guide
    testing
+   devops

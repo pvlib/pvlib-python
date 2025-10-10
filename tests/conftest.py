@@ -3,6 +3,7 @@ import platform
 import warnings
 
 import pandas as pd
+import scipy
 import os
 from packaging.version import Version
 import pytest
@@ -192,6 +193,17 @@ requires_pysam = pytest.mark.skipif(not has_pysam, reason="requires PySAM")
 has_pandas_2_0 = Version(pd.__version__) >= Version("2.0.0")
 requires_pandas_2_0 = pytest.mark.skipif(not has_pandas_2_0,
                                          reason="requires pandas>=2.0.0")
+
+
+# single-diode equation functions have method=='chandrupatla', which relies
+# on scipy.optimize.elementwise.find_root, which is only available in
+# scipy>=1.15.
+# TODO remove this when our minimum scipy is >=1.15
+chandrupatla_available = Version(scipy.__version__) >= Version("1.15.0")
+chandrupatla = pytest.param(
+    "chandrupatla", marks=pytest.mark.skipif(not chandrupatla_available,
+                                             reason="needs scipy 1.15")
+)
 
 
 @pytest.fixture()

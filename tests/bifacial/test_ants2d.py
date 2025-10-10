@@ -354,10 +354,33 @@ def test_get_irradiance_slope(ants_params_fixed):
     flat = ants2d.get_irradiance(cross_axis_slope=0, **ants_params_fixed)
     # negative slope with axis_azimuth=90 means sloping down to the north
     tilt = ants2d.get_irradiance(cross_axis_slope=-10, **ants_params_fixed)
+    assert tilt['shaded_fraction_front'] > flat['shaded_fraction_front']
     assert tilt['poa_front_direct'] < flat['poa_front_direct']
     assert tilt['poa_front_sky_diffuse'] < flat['poa_front_sky_diffuse']
 
 
 def test_get_irradiance_nonuniform_albedo():
     # check that specifying albedo for each ground segment works
-    
+
+    # horizontal array, very close to the ground, with different albedo
+    # on left and right sides. check that ground-reflected irradiance at
+    # the edges of the module match the corresponding albedos
+    inputs = {
+        'tracker_rotation': 0.0001,
+        'axis_azimuth': 180,
+        'solar_zenith': 0.001,
+        'solar_azimuth': 180.001,
+        'gcr': 0.1, 'height': 0.05, 'pitch': 20,
+        'ghi': 1000,
+        'dni': 1000,
+        'dhi': 0,
+        'albedo': np.array([[0.5]*10 + [0.1]*10]).T,
+    }
+    out = ants2d.get_irradiance(n_ground_segments=20,
+                                n_row_segments=10000,
+                                max_rows=2,
+                                **inputs)
+    left, right = out['poa_back_ground_diffuse'][[0, -1], 0]
+    # divide by two because ~half the visible ground is fully shaded
+    np.testing.assert_allclose(left, 0.1 * 1000 / 2, rtol=0.002)
+    np.testing.assert_allclose(right, 0.5 * 1000 / 2, rtol=0.002)

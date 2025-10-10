@@ -305,7 +305,7 @@ def get_irradiance(tracker_rotation, axis_azimuth, solar_zenith, solar_azimuth,
                    gcr, height, pitch, ghi, dhi, dni,
                    albedo, model='isotropic', dni_extra=None, airmass=None,
                    n_row_segments=1, n_ground_segments=10, axis_tilt=0,
-                   cross_axis_slope=0):
+                   cross_axis_slope=0, max_rows=None):
     """
     Get front and rear irradiance using the ANTS-2D bifacial irradiance model.
 
@@ -380,6 +380,10 @@ def get_irradiance(tracker_rotation, axis_azimuth, solar_zenith, solar_azimuth,
         positive cross-axis slope if the tracker axes plane slopes down to the
         west. Use :func:`~pvlib.tracking.calc_cross_axis_tilt` to calculate
         ``cross_axis_slope``. [degrees]
+    max_rows : int, optional
+        Number of array units (sky wedges, ground segments, etc) to consider.
+        If not specified, units out to within 4 degrees of the horizon will
+        be considered. [unitless]
 
     Returns
     -------
@@ -460,8 +464,9 @@ def get_irradiance(tracker_rotation, axis_azimuth, solar_zenith, solar_azimuth,
     # rows to consider in front and behind current row
     # ensures that view factors to the sky are computed to within 4 degrees
     # of the horizon
-    max_rows = np.ceil(height / (pitch * tand(4)))
-    
+    if max_rows is None:
+        max_rows = np.ceil(height / (pitch * tand(4)))
+
     phi = projected_solar_zenith_angle(solar_zenith, solar_azimuth,
                                        axis_tilt, axis_azimuth)
     phi = phi - cross_axis_slope

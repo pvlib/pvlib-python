@@ -2878,19 +2878,10 @@ def scale_voltage_current_power(data, voltage=1, current=1):
 
 @renamed_kwarg_warning(
     "0.13.0", "g_poa_effective", "effective_irradiance")
-def pvwatts_dc(effective_irradiance, temp_cell, pdc0, gamma_pdc, temp_ref=25.):
+def pvwatts_dc(effective_irradiance, temp_cell, pdc0, gamma_pdc, temp_ref=25.,
+               k=None, cap_adjustment=False):
     r"""
-    Implements NREL's PVWatts DC power model. The PVWatts DC model [1]_ is:
-
-    .. math::
-
-        P_{dc} = \frac{G_{poa eff}}{1000} P_{dc0} ( 1 + \gamma_{pdc} (T_{cell} - T_{ref}))
-
-    Note that ``pdc0`` is also used as a symbol in
-    :py:func:`pvlib.inverter.pvwatts`. ``pdc0`` in this function refers to the DC
-    power of the modules at reference conditions. ``pdc0`` in
-    :py:func:`pvlib.inverter.pvwatts` refers to the DC power input limit of
-    the inverter.
+    Implement NREL's PVWatts (Version 5) DC power model. 
 
     Parameters
     ----------
@@ -2909,21 +2900,87 @@ def pvwatts_dc(effective_irradiance, temp_cell, pdc0, gamma_pdc, temp_ref=25.):
     temp_ref: numeric, default 25.0
         Cell reference temperature. PVWatts defines it to be 25 C and
         is included here for flexibility. [C]
+    k: numeric, optional
+        Irradiance correction factor, defined in [2]_. Typically positive.
+        [unitless]
+    cap_adjustment: Boolean, default False
+        If True, apply the optional adjustment at and below 1000 W/m^2.
 
     Returns
     -------
     pdc: numeric
         DC power. [W]
 
+    Notes
+    -----
+    The PVWatts Version 5 DC model [1]_ is:
+
+    .. math::
+
+        P_{dc} = \frac{G_{poa eff}}{1000} P_{dc0} ( 1 + \gamma_{pdc} (T_{cell} - T_{ref}))
+
+    This model has also been referred to as the power temperature coefficient
+    model.
+
+    This function accepts an optional irradiance adjustment factor, `k`, based
+    on [2]_. This applies a piece-wise adjustment to power based on irradiance,
+    where `k` is the reduction in actual power at 200 Wm⁻² relative to power
+    calculated at 200 Wm-2 as 0.2*`pdc0`. For example, a 500 W module that
+    produces 95 W at 200 Wm-2 (a 5% relative reduction in efficiency) would
+    have a value of `k` = 0.01.
+
+    .. math::
+
+        k=\frac{0.2P_{dc0}-P_{200}}{P_{dc0}}
+
+    For positive `k` values, and `k` is typically positive, this adjustment
+    increases relative efficiency when irradiance is above 1000 Wm⁻². This may
+    not be desired, as modules with nonlinear irradiance response often have
+    peak efficiency near 1000 Wm⁻², and it is either flat or declining at
+    higher irradiance. An optional parameter, `cap_adjustment`, can address
+    this by modifying the adjustment from [2]_ to only apply below 1000 Wm⁻².
+
+    Note that ``pdc0`` is also used as a symbol in
+    :py:func:`pvlib.inverter.pvwatts`. ``pdc0`` in this function refers to the DC
+    power of the modules at reference conditions. ``pdc0`` in
+    :py:func:`pvlib.inverter.pvwatts` refers to the DC power input limit of
+    the inverter.
+
     References
     ----------
     .. [1] A. P. Dobos, "PVWatts Version 5 Manual"
            http://pvwatts.nrel.gov/downloads/pvwattsv5.pdf
            (2014).
+    .. [2] B. Marion, "Comparison of Predictive Models for
+           Photovoltaic Module Performance,"
+           :doi:`10.1109/PVSC.2008.4922586`,
+           https://docs.nrel.gov/docs/fy08osti/42511.pdf
+           (2008).
     """  # noqa: E501
 
     pdc = (effective_irradiance * 0.001 * pdc0 *
            (1 + gamma_pdc * (temp_cell - temp_ref)))
+
+    # apply Marion's correction if k is anything but zero
+    if k is not None:
+        err_1 = k * (1 - (1 - effective_irradiance / 200)**4)
+        err_2 = k * (1000 - effective_irradiance) / (1000 - 200)
+
+        pdc_marion = np.where(effective_irradiance <= 200,
+                              pdc - (pdc0 * err_1),
+                              pdc - (pdc0 * err_2))
+
+        # "cap" Marion's correction at 1000 W/m^2
+        if cap_adjustment:
+            pdc_marion = np.where(effective_irradiance >= 1000,
+                                  pdc,
+                                  pdc_marion)
+
+        # large k values can result in negative power at low irradiance, so
+        # set negative power to zero
+        pdc_marion[pdc_marion < 0] = 0
+
+        pdc = pdc_marion
 
     return pdc
 

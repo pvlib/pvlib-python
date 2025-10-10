@@ -913,11 +913,24 @@ def _lambertw(photocurrent, saturation_current, resistance_series,
             v_oc = 0.
 
     # Find the voltage, v_mp, where the power is maximized.
-    # Start the golden section search at v_oc * 1.14
-    p_mp, v_mp = _golden_sect_DataFrame(params, 0., v_oc * 1.14, _pwr_optfcn)
-
-    # Find Imp using Lambert W
-    i_mp = _lambertw_i_from_v(v_mp, **params)
+    # use scipy.elementwise if available
+    # remove try/except when scipy>=1.15, and golden mean is retired
+    try:
+        from scipy.optimize.elementwise import find_minimum
+        init = (0., 0.8*v_oc, v_oc)
+        res = find_minimum(_vmp_opt, init,
+                           args=(params['photocurrent'],
+                                 params['saturation_current'],
+                                 params['resistance_series'],
+                                 params['resistance_shunt'],
+                                 params['nNsVth'],))
+        v_mp = res.x
+        p_mp = -1.*res.f_x
+    except ModuleNotFoundError:
+        # switch to old golden section method
+        p_mp, v_mp = _golden_sect_DataFrame(params, 0., v_oc * 1.14,
+                                            _pwr_optfcn)
+    i_mp = p_mp / v_mp
 
     # Find Ix and Ixx using Lambert W
     i_x = _lambertw_i_from_v(0.5 * v_oc, **params)
@@ -936,6 +949,15 @@ def _lambertw(photocurrent, saturation_current, resistance_series,
         out += (ivcurve_i, ivcurve_v)
 
     return out
+
+
+def _vmp_opt(v, iph, io, rs, rsh, nNsVth):
+    '''
+    Function to find negative of power from ``i_from_v``.
+    '''
+    current = _lambertw_i_from_v(v, iph, io, rs, rsh, nNsVth)
+
+    return -v * current
 
 
 def _pwr_optfcn(df, loc):

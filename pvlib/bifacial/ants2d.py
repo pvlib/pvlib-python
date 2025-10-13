@@ -16,31 +16,26 @@ def _shaded_fraction(tracker_rotation, phi, gcr, x0=0, x1=1):
     Calculate fraction (from the bottom) of row slant height that is shaded
     from direct irradiance by the row in front toward the sun.
 
-    See [1], Eq. 14 and also [2], Eq. 32.
-
-    .. math::
-        F_x = \\max \\left( 0, \\min \\left(\\frac{\\text{GCR} \\cos \\theta
-        + \\left( \\text{GCR} \\sin \\theta - \\tan \\beta_{c} \\right)
-        \\tan Z - 1}
-        {\\text{GCR} \\left( \\cos \\theta + \\sin \\theta \\tan Z \\right)},
-        1 \\right) \\right)
-
     Parameters
-    ---------- TODO fix
-    solar_zenith : numeric
-        Apparent (refraction-corrected) solar zenith. [degrees]
-    solar_azimuth : numeric
-        Solar azimuth. [degrees]
-    surface_tilt : numeric
-        Row tilt from horizontal, e.g. surface facing up = 0, surface facing
-        horizon = 90. [degrees]
-    surface_azimuth : numeric
-        Azimuth angle of the row surface. North=0, East=90, South=180,
-        West=270. [degrees]
+    ----------
+    tracker_rotation : numeric
+        Tracker rotation angle as a right-handed rotation around
+        the axis defined by ``axis_tilt`` and ``axis_azimuth``.  For example,
+        with ``axis_tilt=0`` and ``axis_azimuth=180``, ``tracker_theta > 0``
+        results in ``surface_azimuth`` to the West while ``tracker_theta < 0``
+        results in ``surface_azimuth`` to the East. [degree]
+    phi : numeric
+        Projected solar zenith angle. [degrees]
     gcr : numeric
         Ground coverage ratio, which is the ratio of row slant length to row
         spacing (pitch). [unitless]
-    x0, x1 : TODO
+    x0 : numeric, default 0.
+        Position on the row's slant length, as a fraction of the slant length.
+        ``x0=0`` corresponds to the bottom of the row. ``x0`` should be less
+        than ``x1``. [unitless]
+    x1 : numeric, default 1.
+        Position on the row's slant length, as a fraction of the slant length.
+        ``x1`` should be greater than ``x0``. [unitless]
 
     Returns
     -------
@@ -50,11 +45,7 @@ def _shaded_fraction(tracker_rotation, phi, gcr, x0=0, x1=1):
 
     References
     ----------
-    .. [1] Mikofski, M., Darawali, R., Hamer, M., Neubert, A., and Newmiller,
-       J. "Bifacial Performance Modeling in Large Arrays". 2019 IEEE 46th
-       Photovoltaic Specialists Conference (PVSC), 2019, pp. 1282-1287.
-       :doi:`10.1109/PVSC40753.2019.8980572`.
-    .. [2] Kevin Anderson and Mark Mikofski, "Slope-Aware Backtracking for
+    .. [1] Kevin Anderson and Mark Mikofski, "Slope-Aware Backtracking for
        Single-Axis Trackers", Technical Report NREL/TP-5K00-76626, July 2020.
        https://www.nrel.gov/docs/fy20osti/76626.pdf
     """
@@ -112,7 +103,7 @@ def _ants2d_singleside(tracker_rotation, cos_aoi, phi, vf_gnd_sky,
         :py:func:`pvlib.shading.projected_solar_zenith_angle`. [degree]
     vf_gnd_sky : numeric
         View factors from the ground surface to the sky. Dimensions are
-        TODO,TODO,TODO. [unitless]
+        (ground segment, row segment, timestamp). [unitless]
     gcr : float
         Ground coverage ratio, ratio of row slant length to row spacing.
         [unitless]
@@ -128,23 +119,29 @@ def _ants2d_singleside(tracker_rotation, cos_aoi, phi, vf_gnd_sky,
     dni : numeric
         Direct normal irradiance. [Wm⁻²]
     albedo : numeric
-        Surface albedo. TODO shape [unitless]
+        Surface albedo. If a scalar, it is applied to all ground segments and
+        timestamps.  Otherwise, must be specified as an array with shape
+        (n_ground_segments, n_timestamps). [unitless]
     x0 : numeric, default 0
         Position on the row's slant length, as a fraction of the slant length.
         ``x0=0`` corresponds to the left side of the row.
-        ``x0`` should be less than ``x1``. [unitless]
+        ``x0`` should be less than ``x1``.  If specified as array, it
+        must have the same length as ``x1``. [unitless]
     x1 : numeric, default 1
         Position on the row's slant length, as a fraction of the slant length.
         ``x1=1`` corresponds to the right side of the row.
-        ``x1`` should be greater than ``x0``. [unitless]
+        ``x1`` should be greater than ``x0``. If specified as array, it
+        must have the same length as ``x0``.[unitless]
     g0 : numeric
         Position on the ground surface, as a fraction of the row-to-row
         spacing. ``g0=0`` corresponds to ground underneath the middle of the
-        left row. ``g0`` should be less than ``g1``. [unitless]
+        left row. ``g0`` should be less than ``g1``. If specified as array, it
+        must have the same length as ``g1``.[unitless]
     g1 : numeric
         Position on the ground surface, as a fraction of the row-to-row
         spacing. ``g1=1`` corresponds to ground underneath the middle of the
-        right row. ``g1`` should be greater than ``g0``. [unitless]
+        right row. ``g1`` should be greater than ``g0``. If specified as array, it
+        must have the same length as ``g0``.[unitless]
     max_rows : int
         Number of array units (sky wedges, ground segments, etc) to consider.
         [unitless]
@@ -166,10 +163,6 @@ def _ants2d_singleside(tracker_rotation, cos_aoi, phi, vf_gnd_sky,
           that is shaded from direct irradiance by adjacent rows. [unitless]
 
         Each array has shape (len(x0), len(tracker_rotation)).
-
-    Notes
-    -----
-    Input parameters ``height`` and ``pitch`` must have the same unit.
 
     References
     ----------
@@ -336,9 +329,9 @@ def get_irradiance(tracker_rotation, axis_azimuth, solar_zenith, solar_azimuth,
         Axis azimuth angle in degrees.
         North = 0°; East = 90°; South = 180°; West = 270°
     solar_zenith : numeric
-        Refraction-corrected solar zenith. [degree]
+        Refraction-corrected solar zenith angle. [degree]
     solar_azimuth : numeric
-        Solar azimuth. [degree]
+        Solar azimuth angle. [degree]
     gcr : float
         Ground coverage ratio, ratio of row slant length to row spacing.
         [unitless]
@@ -354,7 +347,9 @@ def get_irradiance(tracker_rotation, axis_azimuth, solar_zenith, solar_azimuth,
     dni : numeric
         Direct normal irradiance. [Wm⁻²]
     albedo : numeric
-        Surface albedo. TODO shape [unitless]
+        Surface albedo. If a scalar, it is applied to all ground segments and
+        timestamps.  Otherwise, must be specified as an array with shape
+        (``n_ground_segments``, ``len(tracker_rotation)``). [unitless]
     model : str, default 'perez'
         Irradiance model - can be one of 'isotropic', 'haydavies', or 'perez'.
     dni_extra : numeric, optional
@@ -382,8 +377,8 @@ def get_irradiance(tracker_rotation, axis_azimuth, solar_zenith, solar_azimuth,
         ``cross_axis_slope``. [degrees]
     max_rows : int, optional
         Number of array units (sky wedges, ground segments, etc) to consider.
-        If not specified, units out to within 4 degrees of the horizon will
-        be considered. [unitless]
+        If not specified, units will be considered to within 4 degrees of the
+        horizon. [unitless]
 
     Returns
     -------
@@ -391,9 +386,7 @@ def get_irradiance(tracker_rotation, axis_azimuth, solar_zenith, solar_azimuth,
         ``output`` is a DataFrame when input ``tracker_rotation`` is a Series
         and ``n_row_segments=1``, a dict of scalars when ``tracker_rotation``
         is a scalar and ``n_row_segments=1``, and a dict of ``np.ndarray``
-        otherwise.
-
-        ``output`` includes the following quantities:
+        otherwise.  The following quantities are included:
 
         - ``poa_global``: sum of front- and back-side incident irradiance.
           [Wm⁻²]
@@ -421,10 +414,6 @@ def get_irradiance(tracker_rotation, axis_azimuth, solar_zenith, solar_azimuth,
         - ``shaded_fraction_back``: fraction of row slant height that is
           shaded from direct irradiance on the back surface by adjacent
           rows. [unitless]
-
-    Notes
-    -----
-    Input parameters ``height`` and ``pitch`` must have the same unit.
 
     References
     ----------

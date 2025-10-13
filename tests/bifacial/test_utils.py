@@ -90,7 +90,7 @@ def test__unshaded_ground_fraction_horizontal():
     np.testing.assert_allclose(neg, zero, atol=0.01)
 
 
-def test__vf_ground_sky_2d(test_system_fixed_tilt):
+def test_vf_ground_sky_2d(test_system_fixed_tilt):
     # vector input
     ts, pts, vfs_gnd_sky = test_system_fixed_tilt
     vfs = utils.vf_ground_sky_2d(ts['rotation'], ts['gcr'], pts,

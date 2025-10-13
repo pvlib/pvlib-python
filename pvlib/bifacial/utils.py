@@ -38,8 +38,9 @@ def _solar_projection_tangent(solar_zenith, solar_azimuth, surface_azimuth):
     return tan_phi
 
 
-def _unshaded_ground_fraction(tracker_rotation, phi, gcr, pitch, height,
-                              g0=0, g1=1, max_rows=10, max_zenith=85):
+def _unshaded_ground_fraction(tracker_rotation, phi, gcr, pitch=None,
+                              height=None, g0=0, g1=1, max_rows=10,
+                              max_zenith=85):
     r"""
     Calculate the fraction of the ground with incident direct irradiance.
 
@@ -67,12 +68,21 @@ def _unshaded_ground_fraction(tracker_rotation, phi, gcr, pitch, height,
     gcr : float
         Ground coverage ratio, which is the ratio of row slant length to row
         spacing (pitch). [unitless]
-    height : float
+    height : float, optional
         Height of the center point of the row above the ground; must be in the
-        same units as ``pitch``.
-    pitch : float
+        same units as ``pitch``.  Required if ``g0`` is not zero or ``g1`` is
+        not one.
+    pitch : float, optional
         Distance between two rows; must be in the same units as ``height``.
-    g0, g1 : TODO
+        Required if ``g0`` is not zero or ``g1`` is not one.
+    g0 : numeric
+        Position on the ground surface, as a fraction of the row-to-row
+        spacing. ``g0=0`` corresponds to ground underneath the middle of the
+        left row. ``g0`` should be less than ``g1``. [unitless]
+    g1 : numeric
+        Position on the ground surface, as a fraction of the row-to-row
+        spacing. ``g1=1`` corresponds to ground underneath the middle of the
+        right row. ``g1`` should be greater than ``g0``. [unitless]
     max_rows : TODO
     max_zenith : numeric, default 85
         Maximum zenith angle. For solar_zenith > max_zenith, unshaded ground
@@ -92,6 +102,11 @@ def _unshaded_ground_fraction(tracker_rotation, phi, gcr, pitch, height,
        :doi:`10.1109/PVSC40753.2019.8980572`.
     """
     
+    if np.isscalar(g0) and g0 == 0 and np.isscalar(g1) and g1 == 1:
+        # height and pitch have no effect, so set to arbitrary values so
+        # that they can be optional parameters
+        height = 1
+        pitch = 1 / gcr
     # dimensions: k/max_rows, ground segment, time
 
     tracker_rotation = np.atleast_1d(tracker_rotation)[np.newaxis, np.newaxis, :]
@@ -480,7 +495,6 @@ def vf_row_ground_2d(surface_tilt, gcr, x):
     return 0.5 * (1 - (1/gcr * cosd(surface_tilt) + x)/p)
 
 
-def vf_row_ground_2d_integ(surface_tilt, gcr, height, pitch,
                            x0=0, x1=1, g0=0, g1=1, max_rows=20):
     r'''
     Calculate the average view factor to the ground from a segment of the row
@@ -497,10 +511,13 @@ def vf_row_ground_2d_integ(surface_tilt, gcr, height, pitch,
         = 0, surface facing horizon = 90. [degree]
     gcr : numeric
         Ratio of the row slant length to the row spacing (pitch). [unitless]
-    height : float
-        TODO, make optional if x0=g0=0 and x1=g1=1?
-    pitch : float
-        TODO, make optional if x0=g0=0 and x1=g1=1?
+    height : float, optional
+        Height of the center point of the row above the ground; must be in the
+        same units as ``pitch``.  Required if ``g0`` or ``x0` is not zero or
+        if ``g1`` or ``x1`` is not one.
+    pitch : float, optional
+        Distance between two rows; must be in the same units as ``height``.
+        Required if ``g0`` or ``x0` is not zero or if ``g1`` or ``x1``
     x0 : numeric, default 0.
         Position on the row's slant length, as a fraction of the slant length.
         x0=0 corresponds to the bottom of the row. ``x0`` should be less than
@@ -525,6 +542,12 @@ def vf_row_ground_2d_integ(surface_tilt, gcr, height, pitch,
         [unitless]
 
     '''
+    if all(np.isscalar(x) for x in [x0, x1, g0, g1]) and (
+            g0 == 0 and g1 == 1 and x0 == 0 and x1 == 1):
+        # height and pitch have no effect, so set to arbitrary values so
+        # that they can be optional parameters
+        height = 1
+        pitch = 1 / gcr
     # keep track of scalar inputs so that we can have output match at the end
     squeeze = []
     if np.isscalar(g0) and np.isscalar(g1):

@@ -47,10 +47,6 @@ def test__shaded_fraction_x0x1():
     np.testing.assert_allclose(fs, np.array([[0.5, 0.0], [0.0, 0.5]]))
 
 
-def test__ants2d_singleside():
-    pass
-
-
 @pytest.mark.parametrize('model', ['perez', 'haydavies'])
 def test__apply_sky_diffuse_model(model):
     inputs = {'dni': 900, 'dhi': 150, 'solar_zenith': 41, 'solar_azimuth': 67,
@@ -285,7 +281,8 @@ def test_get_irradiance_limit(ants_params):
         ants_params['dni'], ants_params['ghi'], ants_params['dhi'],
         albedo=ants_params['albedo'], model='isotropic')
 
-    ants = ants2d.get_irradiance(**ants_params, n_row_segments=1)
+    ants = ants2d.get_irradiance(**ants_params, n_row_segments=1,
+                                 model='isotropic')
     # 15 W/m2 happens to be just below the difference (determined empirically)
     diff_sky = irrad['poa_sky_diffuse'] - ants['poa_front_sky_diffuse']
     diff_ground = irrad['poa_ground_diffuse'] - ants['poa_front_ground_diffuse']
@@ -296,7 +293,8 @@ def test_get_irradiance_limit(ants_params):
     # output of get_total_irradiance
     ants_params['pitch'] *= 1000
     ants_params['gcr'] /= 1000
-    ants = ants2d.get_irradiance(**ants_params, n_row_segments=1)
+    ants = ants2d.get_irradiance(**ants_params, n_row_segments=1,
+                                 model='isotropic')
 
     colmap = {'poa_front': 'poa_global', 'poa_front_direct': 'poa_direct',
               'poa_front_diffuse': 'poa_diffuse',
@@ -397,11 +395,14 @@ def test_get_irradiance_nonuniform_albedo():
         'dni': 1000,
         'dhi': 0,
         'albedo': np.array([[0.5]*10 + [0.1]*10]).T,
+        'model': 'isotropic'
     }
     out = ants2d.get_irradiance(n_ground_segments=20,
                                 n_row_segments=10000,
                                 max_rows=2,
                                 **inputs)
+    # check far left and right segments, on the edge of the module.
+    # need a large n_row_segments so that these segments are very thin
     left, right = out['poa_back_ground_diffuse'][[0, -1], 0]
     # divide by two because ~half the visible ground is fully shaded
     np.testing.assert_allclose(left, 0.1 * 1000 / 2, rtol=0.002)
@@ -420,8 +421,9 @@ def test_get_irradiance_nonuniform_albedo_limit():
         'dni': 0,  # set dni to zero so that shadows don't confound results
         'dhi': 300,
         'n_ground_segments': 2,
-        'max_rows': 100000,
-    }
+        'max_rows': 10000,
+        'model': 'isotropic',
+   }
     out_uni = ants2d.get_irradiance(albedo=0.3,
                                     **base_inputs)
     out_non = ants2d.get_irradiance(albedo=np.array([[0.5, 0.1]]).T,

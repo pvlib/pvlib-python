@@ -303,7 +303,7 @@ def _apply_ground_slope(height, pitch, gcr, tracker_rotation, ghi, dni, dhi,
 
 def get_irradiance(tracker_rotation, axis_azimuth, solar_zenith, solar_azimuth,
                    gcr, height, pitch, ghi, dhi, dni,
-                   albedo, model='isotropic', dni_extra=None, airmass=None,
+                   albedo, model='perez', dni_extra=None, airmass=None,
                    n_row_segments=1, n_ground_segments=10, axis_tilt=0,
                    cross_axis_slope=0, max_rows=None):
     """
@@ -355,7 +355,7 @@ def get_irradiance(tracker_rotation, axis_azimuth, solar_zenith, solar_azimuth,
         Direct normal irradiance. [Wm⁻²]
     albedo : numeric
         Surface albedo. TODO shape [unitless]
-    model : str, default 'isotropic'
+    model : str, default 'perez'
         Irradiance model - can be one of 'isotropic', 'haydavies', or 'perez'.
     dni_extra : numeric, optional
         Extraterrestrial direct normal irradiance. Required when

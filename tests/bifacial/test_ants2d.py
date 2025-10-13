@@ -431,3 +431,48 @@ def test_get_irradiance_nonuniform_albedo_limit():
     for key in out_non:
         np.testing.assert_allclose(out_non[key], out_uni[key], atol=1e-6)
 
+
+@pytest.mark.parametrize('model,expected', [
+    ('isotropic', {'poa_front': 1006.3548761345762,
+         'poa_front_direct': 833.3333333333335,
+         'poa_front_diffuse': 173.0215428012428,
+         'poa_front_sky_diffuse': 172.27247024391784,
+         'poa_front_ground_diffuse': 0.7490725573249604,
+         'shaded_fraction_front': 0.035915234551783914,
+         'poa_back': 23.626216052516494,
+         'poa_back_direct': 0.0,
+         'poa_back_diffuse': 23.626216052516494,
+         'poa_back_sky_diffuse': 8.509173579096064,
+         'poa_back_ground_diffuse': 15.11704247342043,
+         'shaded_fraction_back': 0.035915234551784025}),
+    ('haydavies', {'poa_front': 1124.2311927022897,
+         'poa_front_direct': 1078.4313725490197,
+         'poa_front_diffuse': 45.79982015327015,
+         'poa_front_sky_diffuse': 45.60153624103707,
+         'poa_front_ground_diffuse': 0.19828391223307773,
+         'shaded_fraction_front': 0.035915234551783914,
+         'poa_back': 6.2539983668426,
+         'poa_back_direct': 0.0,
+         'poa_back_diffuse': 6.2539983668426,
+         'poa_back_sky_diffuse': 2.252428300348958,
+         'poa_back_ground_diffuse': 4.001570066493642,
+         'shaded_fraction_back': 0.035915234551784025}),
+    ('perez', {'poa_front': 1060.3368384162613,
+               'poa_front_direct': 945.5770264984124,
+               'poa_front_diffuse': 114.75981191784896,
+               'poa_front_sky_diffuse': 114.26297537137229,
+               'poa_front_ground_diffuse': 0.4968365464766687,
+               'shaded_fraction_front': 0.035915234551783914,
+               'poa_back': 15.670534816764919,
+               'poa_back_direct': 0.0,
+               'poa_back_diffuse': 15.670534816764919,
+               'poa_back_sky_diffuse': 5.643870374194696,
+               'poa_back_ground_diffuse': 10.026664442570222,
+               'shaded_fraction_back': 0.035915234551784025})
+    ])
+def test_get_irradiance_regression(model, expected, ants_params_fixed):
+    # values computed for typical but arbitrary inputs, to verify that output
+    # is stable over time
+    out = ants2d.get_irradiance(**ants_params_fixed, model=model)
+    for key in expected:
+        np.testing.assert_allclose(out[key], expected[key], atol=1e-10)

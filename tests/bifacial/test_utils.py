@@ -220,3 +220,15 @@ def test_vf_ground_2d_integ(test_system_fixed_tilt):
     y = 0.5 * (1 - cosd(phi_y - ts['surface_tilt']))
     y1 = trapezoid(y, x) / (1 - 0)
     assert np.allclose(vf, y1, rtol=1e-2)
+
+
+def test_vf_row_ground_2d_integ():
+    # horizontal, rear-side
+    inputs = {'surface_tilt': np.array([-180]),
+              'gcr': 0.6, 'height': 1.5, 'pitch': 3.5,
+              'x0': np.array([0.]), 'x1': np.array([1.]),
+              'g0': np.array([0., 0.5]),
+              'g1': np.array([0.5, 1.]),
+              'max_rows': 7}
+    vf_row_ground = utils.vf_row_ground_2d_integ(**inputs)
+    assert all(vf_row_ground > 1e-3)

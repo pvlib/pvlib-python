@@ -529,6 +529,10 @@ def vf_row_ground_2d_integ(surface_tilt, gcr, height, pitch,
 
     # dimensions: k/max_rows, ground segment, row segment, time
 
+    # cheat a little to prevent numerical issues with surface_tilt==180, -180
+    surface_tilt = np.where(surface_tilt == 180, 179.9999, surface_tilt)
+    surface_tilt = np.where(surface_tilt == -180, -179.9999, surface_tilt)
+    
     surface_tilt = np.atleast_1d(surface_tilt)[np.newaxis, np.newaxis, np.newaxis, :]
     
     x0 = np.atleast_1d(x0)[np.newaxis, np.newaxis, :, np.newaxis]

@@ -388,10 +388,10 @@ def test_get_irradiance_nonuniform_albedo():
     # on left and right sides. check that ground-reflected irradiance at
     # the edges of the module match the corresponding albedos
     inputs = {
-        'tracker_rotation': 0.0001,
+        'tracker_rotation': 0,
         'axis_azimuth': 180,
-        'solar_zenith': 0.001,
-        'solar_azimuth': 180.001,
+        'solar_zenith': 0,
+        'solar_azimuth': 180,
         'gcr': 0.1, 'height': 0.05, 'pitch': 20,
         'ghi': 1000,
         'dni': 1000,

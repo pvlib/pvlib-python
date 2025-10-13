@@ -143,7 +143,7 @@ def _ants2d_singleside(tracker_rotation, cos_aoi, phi, vf_gnd_sky,
         left row. ``g0`` should be less than ``g1``. [unitless]
     g1 : numeric
         Position on the ground surface, as a fraction of the row-to-row
-        spacing. ``g1=0`` corresponds to ground underneath the middle of the
+        spacing. ``g1=1`` corresponds to ground underneath the middle of the
         right row. ``g1`` should be greater than ``g0``. [unitless]
     max_rows : int
         Number of array units (sky wedges, ground segments, etc) to consider.

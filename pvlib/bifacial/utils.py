@@ -249,7 +249,7 @@ def vf_ground_sky_2d_integ(tracker_rotation, gcr, height, pitch, g0=0, g1=1,
         left row. ``g0`` should be less than ``g1``. [unitless]
     g1 : numeric
         Position on the ground surface, as a fraction of the row-to-row
-        spacing. ``g1=0`` corresponds to ground underneath the middle of the
+        spacing. ``g1=1`` corresponds to ground underneath the middle of the
         right row. ``g1`` should be greater than ``g0``. [unitless]
     max_rows : int, default 10
         Maximum number of rows to consider in front and behind the current row.
@@ -503,12 +503,19 @@ def vf_row_ground_2d_integ(surface_tilt, gcr, height, pitch,
         TODO, make optional if x0=g0=0 and x1=g1=1?
     x0 : numeric, default 0.
         Position on the row's slant length, as a fraction of the slant length.
-        x0=0 corresponds to the bottom of the row. x0 should be less than x1.
-        [unitless]
+        x0=0 corresponds to the bottom of the row. ``x0`` should be less than
+        ``x1``. [unitless]
     x1 : numeric, default 1.
         Position on the row's slant length, as a fraction of the slant length.
-        x1 should be greater than x0. [unitless]
-    g0, g1 : TODO
+        ``x1`` should be greater than ``x0``. [unitless]
+    g0 : numeric
+        Position on the ground surface, as a fraction of the row-to-row
+        spacing. ``g0=0`` corresponds to ground underneath the middle of the
+        left row. ``g0`` should be less than ``g1``. [unitless]
+    g1 : numeric
+        Position on the ground surface, as a fraction of the row-to-row
+        spacing. ``g1=0`` corresponds to ground underneath the middle of the
+        right row. ``g1`` should be greater than ``g0``. [unitless]
     max_rows : TODO
 
     Returns

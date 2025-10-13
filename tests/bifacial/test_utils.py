@@ -8,6 +8,8 @@ from pvlib.shading import masking_angle, ground_angle
 from pvlib.tools import cosd
 from scipy.integrate import trapezoid
 
+from pvlib._deprecation import pvlibDeprecationWarning
+
 
 @pytest.fixture
 def test_system_fixed_tilt():
@@ -53,29 +55,25 @@ def test__solar_projection_tangent():
 
 
 @pytest.mark.parametrize(
-    "gcr,surface_tilt,surface_azimuth,solar_zenith,solar_azimuth,expected",
-    [(0.5, 0., 180., 0., 180., 0.5),
-     (1.0, 0., 180., 0., 180., 0.0),
-     (1.0, 90., 180., 0., 180., 1.0),
-     (0.5, 45., 180., 45., 270., 1.0 - np.sqrt(2) / 4),
-     (0.5, 45., 180., 90., 180., 0.),
-     (np.sqrt(2) / 2, 45, 180, 0, 180, 0.5),
-     (np.sqrt(2) / 2, 45, 180, 45, 180, 0.0),
-     (np.sqrt(2) / 2, 45, 180, 45, 90, 0.5),
-     (np.sqrt(2) / 2, 45, 180, 45, 0, 1.0),
-     (np.sqrt(2) / 2, 45, 180, 45, 135, 0.5 * (1 - np.sqrt(2) / 2)),
+    "gcr,surface_tilt,phi,expected",
+    [(0.5, 0., 0., 0.5),
+     (1.0, 0., 0., 0.0),
+     (1.0, 90., 0., 1.0),
+     (0.5, 45., 0., 1.0 - np.sqrt(2) / 4),
+     (0.5, 45., 90., 0.),
+     (np.sqrt(2) / 2, 45, 0, 0.5),
+     (np.sqrt(2) / 2, 45, 45, 0.0),
+     (np.sqrt(2) / 2, 45, 0, 0.5),
+     (np.sqrt(2) / 2, 45, -45, 1.0),
+     (np.sqrt(2) / 2, 45, 35.264389682754654, 0.5 * (1 - np.sqrt(2) / 2)),
      ])
-def test__unshaded_ground_fraction(
-        surface_tilt, surface_azimuth, solar_zenith, solar_azimuth, gcr,
-        expected):
+def test__unshaded_ground_fraction(surface_tilt, phi, gcr, expected):
     # frontside, same for both sides
-    f_sky_beam_f = utils._unshaded_ground_fraction(
-        surface_tilt, surface_azimuth, solar_zenith, solar_azimuth, gcr)
+    f_sky_beam_f = utils._unshaded_ground_fraction(surface_tilt, phi, gcr)
     assert np.allclose(f_sky_beam_f, expected)
     # backside, should be the same as frontside
-    f_sky_beam_b = utils._unshaded_ground_fraction(
-        180. - surface_tilt, surface_azimuth - 180., solar_zenith,
-        solar_azimuth, gcr)
+    f_sky_beam_b = utils._unshaded_ground_fraction(surface_tilt - 180., phi,
+                                                   gcr)
     assert np.allclose(f_sky_beam_b, expected)
 
 
@@ -110,9 +108,11 @@ def test_vf_ground_sky_2d_integ(test_system_fixed_tilt, vectorize):
     # pass rotation here since max_rows=1 for the hand-solved case in
     # the fixture test_system, which means the ground-to-sky view factor
     # isn't summed over enough rows for symmetry to hold.
-    vf_integ = utils.vf_ground_sky_2d_integ(
-        ts['rotation'], ts['gcr'], ts['height'], ts['pitch'],
-        max_rows=1, npoints=3, vectorize=vectorize)
+    match = '`npoints` and `vectorize` parameters have no effect'
+    with pytest.warns(pvlibDeprecationWarning, match=match):
+        vf_integ = utils.vf_ground_sky_2d_integ(
+            ts['rotation'], ts['gcr'], ts['height'], ts['pitch'],
+            max_rows=1, npoints=3, vectorize=vectorize)
     expected_vf_integ = trapezoid(vfs_gnd_sky, pts, axis=0)
     assert np.isclose(vf_integ, expected_vf_integ, rtol=0.1)
 
@@ -187,7 +187,7 @@ def test_vf_row_ground_2d(test_system_fixed_tilt):
     assert np.allclose(vf, expected)
 
 
-def test_vf_ground_2d_integ(test_system_fixed_tilt):
+def test_vf_row_ground_2d_integ(test_system_fixed_tilt):
     ts, _, _ = test_system_fixed_tilt
     # with float input, check end position
     with np.errstate(invalid='ignore'):
@@ -222,7 +222,7 @@ def test_vf_ground_2d_integ(test_system_fixed_tilt):
     assert np.allclose(vf, y1, rtol=1e-2)
 
 
-def test_vf_row_ground_2d_integ():
+def test_vf_row_ground_2d_integ_upsidedown():
     # horizontal, rear-side
     inputs = {'surface_tilt': np.array([-180]),
               'gcr': 0.6, 'height': 1.5, 'pitch': 3.5,
@@ -230,5 +230,8 @@ def test_vf_row_ground_2d_integ():
               'g0': np.array([0., 0.5]),
               'g1': np.array([0.5, 1.]),
               'max_rows': 7}
+    vf_row_ground = utils.vf_row_ground_2d_integ(**inputs)
+    assert all(vf_row_ground > 1e-3)
+    inputs['surface_tilt'] = +180
     vf_row_ground = utils.vf_row_ground_2d_integ(**inputs)
     assert all(vf_row_ground > 1e-3)

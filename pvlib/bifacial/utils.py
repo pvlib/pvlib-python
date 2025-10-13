@@ -101,12 +101,19 @@ def _unshaded_ground_fraction(tracker_rotation, phi, gcr, pitch=None,
        Photovoltaic Specialists Conference (PVSC), 2019, pp. 1282-1287.
        :doi:`10.1109/PVSC40753.2019.8980572`.
     """
-    
     if np.isscalar(g0) and g0 == 0 and np.isscalar(g1) and g1 == 1:
         # height and pitch have no effect, so set to arbitrary values so
         # that they can be optional parameters
         height = 1
         pitch = 1 / gcr
+
+    # keep track of scalar inputs so that we can have output match at the end
+    squeeze = []
+    if np.isscalar(g0) and np.isscalar(g1):
+        squeeze.append(0)
+    if np.isscalar(tracker_rotation):
+        squeeze.append(1)
+
     # dimensions: k/max_rows, ground segment, time
 
     tracker_rotation = np.atleast_1d(tracker_rotation)[np.newaxis, np.newaxis, :]
@@ -155,6 +162,8 @@ def _unshaded_ground_fraction(tracker_rotation, phi, gcr, pitch=None,
     phi = phi[0, :, :]  # drop k dimension for the next line
     f_gnd_beam = np.where(np.abs(phi) > max_zenith, 0., f_gnd_beam)
 
+    # dimensions are now ground_segment, time
+    f_gnd_beam = f_gnd_beam.squeeze(axis=tuple(squeeze))
     return f_gnd_beam
 
 
@@ -295,6 +304,13 @@ def vf_ground_sky_2d_integ(tracker_rotation, gcr, height, pitch, g0=0, g1=1,
         )
         warnings.warn(msg, pvlibDeprecationWarning)
 
+    # keep track of scalar inputs so that we can have output match at the end
+    squeeze = []
+    if np.isscalar(g0) and np.isscalar(g1):
+        squeeze.append(0)
+    if np.isscalar(tracker_rotation):
+        squeeze.append(1)
+
     # dimensions: k/max_rows, ground segment, time
 
     tracker_rotation = np.atleast_1d(tracker_rotation)[np.newaxis, np.newaxis, :]
@@ -347,7 +363,10 @@ def vf_ground_sky_2d_integ(tracker_rotation, gcr, height, pitch, g0=0, g1=1,
     # crossed string formula for VF
     vf_slats = 0.5 * (1/((g1 - g0) * pitch)) * ((ac + bd) - (bc + ad))
     vf_total = np.sum(np.maximum(vf_slats, 0), axis=0)  # sum along k dimension
-    
+
+    # dimensions are now ground_segment, row_segment, time
+    vf_total = vf_total.squeeze(axis=tuple(squeeze))
+
     return vf_total
 
 
@@ -495,6 +514,7 @@ def vf_row_ground_2d(surface_tilt, gcr, x):
     return 0.5 * (1 - (1/gcr * cosd(surface_tilt) + x)/p)
 
 
+def vf_row_ground_2d_integ(surface_tilt, gcr, height=None, pitch=None,
                            x0=0, x1=1, g0=0, g1=1, max_rows=20):
     r'''
     Calculate the average view factor to the ground from a segment of the row
@@ -518,6 +538,7 @@ def vf_row_ground_2d(surface_tilt, gcr, x):
     pitch : float, optional
         Distance between two rows; must be in the same units as ``height``.
         Required if ``g0`` or ``x0` is not zero or if ``g1`` or ``x1``
+        is not one.
     x0 : numeric, default 0.
         Position on the row's slant length, as a fraction of the slant length.
         x0=0 corresponds to the bottom of the row. ``x0`` should be less than
@@ -548,6 +569,7 @@ def vf_row_ground_2d(surface_tilt, gcr, x):
         # that they can be optional parameters
         height = 1
         pitch = 1 / gcr
+
     # keep track of scalar inputs so that we can have output match at the end
     squeeze = []
     if np.isscalar(g0) and np.isscalar(g1):

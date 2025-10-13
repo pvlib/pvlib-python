@@ -4,7 +4,7 @@ Functions for the infinite sheds bifacial irradiance model.
 
 import numpy as np
 import pandas as pd
-from pvlib.tools import cosd, sind, tand
+from pvlib.tools import cosd, sind, tand, atand
 from pvlib.bifacial import utils
 from pvlib.irradiance import beam_component, aoi, haydavies
 
@@ -90,7 +90,7 @@ def _poa_sky_diffuse_pv(dhi, gcr, surface_tilt):
     poa_sky_diffuse_pv : numeric
         Total sky diffuse irradiance incident on the PV surface. [W/m^2]
     """
-    vf_integ = utils.vf_row_sky_2d_integ(surface_tilt, gcr, 0., 1.)
+    vf_integ = utils.vf_row_sky_2d_integ(surface_tilt, gcr, x0=0., x1=1.)
     return dhi * vf_integ
 
 
@@ -117,7 +117,8 @@ def _poa_ground_pv(poa_ground, gcr, surface_tilt):
     numeric
         Ground diffuse irradiance on the row plane. [W/m^2]
     """
-    vf_integ = utils.vf_row_ground_2d_integ(surface_tilt, gcr, 0., 1.)
+    vf_integ = utils.vf_row_ground_2d_integ(surface_tilt, gcr, x0=0., x1=1.,
+                                            g0=0., g1=1.)
     return poa_ground * vf_integ
 
 
@@ -321,15 +322,18 @@ def get_irradiance_poa(surface_tilt, surface_azimuth, solar_zenith,
     max_rows = np.ceil(height / (pitch * tand(5)))
     # fraction of ground between rows that is illuminated accounting for
     # shade from panels. [1], Eq. 4
-    f_gnd_beam = utils._unshaded_ground_fraction(
-        surface_tilt, surface_azimuth, solar_zenith, solar_azimuth, gcr)
+    tanphi = utils._solar_projection_tangent(solar_zenith, solar_azimuth,
+                                             surface_azimuth)
+    phi = atand(tanphi)
+    f_gnd_beam = utils._unshaded_ground_fraction(surface_tilt, phi, gcr)
+
     # integrated view factor from the ground to the sky, integrated between
     # adjacent rows interior to the array
     # method differs from [1], Eq. 7 and Eq. 8; height is defined at row
     # center rather than at row lower edge as in [1].
     vf_gnd_sky = utils.vf_ground_sky_2d_integ(
-        surface_tilt, gcr, height, pitch, max_rows, npoints,
-        vectorize)
+        surface_tilt, gcr, height, pitch, g0=0, g1=1, max_rows=max_rows,
+        npoints=npoints, vectorize=vectorize)
     # fraction of row slant height that is shaded from direct irradiance
     f_x = _shaded_fraction(solar_zenith, solar_azimuth, surface_tilt,
                            surface_azimuth, gcr)

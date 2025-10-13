@@ -608,31 +608,31 @@ def _obstructed_string_lengths(a, b, c, d, ob_left, ob_right):
     ang_b_ob_right = _angle(b, ob_right)
 
     # obstructed distances
-    ac = np.where(ang_ac - ang_a_ob_left > 1e-6,
+    ac = np.where(ang_ac - ang_a_ob_left > 1e-8,
                   dist_a_ob_left + dist_ob_left_c,
                   dist_ac)
-    ac = np.where(ang_a_ob_right - ang_ac > 1e-6,
+    ac = np.where((ang_a_ob_right - ang_ac > 1e-8),
                   dist_a_ob_right + dist_ob_right_c,
                   ac)
 
-    ad = np.where(ang_ad - ang_a_ob_left > 1e-6,
+    ad = np.where(ang_ad - ang_a_ob_left > 1e-8,
                   dist_a_ob_left + dist_ob_left_d,
                   dist_ad)
-    ad = np.where(ang_a_ob_right - ang_ad > 1e-6,
+    ad = np.where(ang_a_ob_right - ang_ad > 1e-8,
                   dist_a_ob_right + dist_ob_right_d,
                   ad)
 
-    bc = np.where(ang_bc - ang_b_ob_left > 1e-6,
+    bc = np.where(ang_bc - ang_b_ob_left > 1e-8,
                   dist_b_ob_left + dist_ob_left_c,
                   dist_bc)
-    bc = np.where(ang_b_ob_right - ang_bc > 1e-6,
+    bc = np.where(ang_b_ob_right - ang_bc > 1e-8,
                   dist_b_ob_right + dist_ob_right_c,
                   bc)
 
-    bd = np.where(ang_bd - ang_b_ob_left > 1e-6,
+    bd = np.where(ang_bd - ang_b_ob_left > 1e-8,
                   dist_b_ob_left + dist_ob_left_d,
                   dist_bd)
-    bd = np.where(ang_b_ob_right - ang_bd > 1e-6,
+    bd = np.where(ang_b_ob_right - ang_bd > 1e-8,
                   dist_b_ob_right + dist_ob_right_d,
                   bd)
 

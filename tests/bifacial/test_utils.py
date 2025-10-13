@@ -147,6 +147,19 @@ def test_vf_row_sky_2d_integ(test_system_fixed_tilt):
     assert np.allclose(vf, y1, rtol=1e-3)
 
 
+def test_vf_ground_sky_2d_integ_horizontal_large_max_rows():
+    # with large max_rows, rows far out towards the horizon are considered.
+    # obstructed string lengths are then calculated using angles very close
+    # to zero.  however, numerical roundoff requires some amount of slop being
+    # allowed in the comparison.  this case previously failed when the slop
+    # allowance was too large and prevented accurate resolution of those
+    # far-away rows.
+    inputs = dict(tracker_rotation=0, gcr=0.518, height=1.5, pitch=3.5,
+                  g0=0, g1=0.05, max_rows=1000)
+    vf_gnd_sky = utils.vf_ground_sky_2d_integ(**inputs)
+    assert np.max(vf_gnd_sky) < 1
+
+
 def test_vf_row_ground_2d(test_system_fixed_tilt):
     ts, _, _ = test_system_fixed_tilt
     # with float input, fx at bottom of row

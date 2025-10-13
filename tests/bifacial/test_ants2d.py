@@ -325,6 +325,28 @@ def ants_params_fixed():
     return inputs
 
 
+def test_get_irradiance_horizontal(ants_params_fixed):
+    # check that no issues pop up with tracker_rotation=solar_zenith=0
+    ants_params_fixed['tracker_rotation'] = 0
+    ants_params_fixed['solar_zenith'] = 0
+    ants_params_fixed['solar_azimuth'] = 180
+    zero = ants2d.get_irradiance(**ants_params_fixed)
+
+    ants_params_fixed['tracker_rotation'] = 0.0001
+    ants_params_fixed['solar_zenith'] = 0.0001
+    ants_params_fixed['solar_azimuth'] = 180.0001
+    pos_epsilon = ants2d.get_irradiance(**ants_params_fixed)
+
+    ants_params_fixed['tracker_rotation'] = -0.0001
+    ants_params_fixed['solar_zenith'] = -0.0001
+    ants_params_fixed['solar_azimuth'] = 179.9999
+    neg_epsilon = ants2d.get_irradiance(**ants_params_fixed)
+
+    for key in zero:
+        np.testing.assert_allclose(zero[key], pos_epsilon[key], atol=0.01)
+        np.testing.assert_allclose(zero[key], neg_epsilon[key], atol=0.01)
+
+
 def test_get_irradiance_direct_shading(ants_params_fixed):
     # check that direct shading increases as sun approaches horizon
     ants_params_fixed.pop('solar_zenith')
@@ -384,3 +406,26 @@ def test_get_irradiance_nonuniform_albedo():
     # divide by two because ~half the visible ground is fully shaded
     np.testing.assert_allclose(left, 0.1 * 1000 / 2, rtol=0.002)
     np.testing.assert_allclose(right, 0.5 * 1000 / 2, rtol=0.002)
+
+
+def test_get_irradiance_nonuniform_albedo_limit():
+    # nonuniform albedo averages to uniform albedo, when sufficiently far away
+    base_inputs = {
+        'tracker_rotation': 45,
+        'axis_azimuth': 180,
+        'solar_zenith': 10,
+        'solar_azimuth': 215,
+        'gcr': 0.5, 'height': 1000, 'pitch': 4,
+        'ghi': 300,
+        'dni': 0,  # set dni to zero so that shadows don't confound results
+        'dhi': 300,
+        'n_ground_segments': 2,
+        'max_rows': 100000,
+    }
+    out_uni = ants2d.get_irradiance(albedo=0.3,
+                                    **base_inputs)
+    out_non = ants2d.get_irradiance(albedo=np.array([[0.5, 0.1]]).T,
+                                    **base_inputs)
+    for key in out_non:
+        np.testing.assert_allclose(out_non[key], out_uni[key], atol=1e-6)
+

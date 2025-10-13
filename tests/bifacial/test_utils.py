@@ -79,6 +79,19 @@ def test__unshaded_ground_fraction(
     assert np.allclose(f_sky_beam_b, expected)
 
 
+def test__unshaded_ground_fraction_horizontal():
+    # test that zero angles don't mess things up. specifically, check
+    # for continuity with small positive and negative angles
+    params = dict(gcr=0.5, pitch=4, height=2.5,
+                  g0=[0, 0.25, 0.5, 0.75], g1=[0.25, 0.5, 0.75, 1])
+    zero = utils._unshaded_ground_fraction(0.0, 0.0, **params)
+    pos = utils._unshaded_ground_fraction(0.01, 0.01, **params)
+    neg = utils._unshaded_ground_fraction(-0.01, -0.01, **params)
+    np.testing.assert_allclose(pos, neg, atol=0.01)
+    np.testing.assert_allclose(pos, zero, atol=0.01)
+    np.testing.assert_allclose(neg, zero, atol=0.01)
+
+
 def test__vf_ground_sky_2d(test_system_fixed_tilt):
     # vector input
     ts, pts, vfs_gnd_sky = test_system_fixed_tilt

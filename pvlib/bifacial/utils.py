@@ -123,12 +123,11 @@ def _unshaded_ground_fraction(tracker_rotation, phi, gcr, pitch, height,
     b = g1*pitch
 
     # individual contributions from all k rows
-    # TODO bug with zenith=0, fix these < > <= >=
     fs = np.full_like(cp, 1.0)
-    # fs = np.where((dp < a) & (cp > b), 1.0, fs)  # initial value already 1.0
-    fs = np.where((dp < a) & (a < cp) & (cp < b), (cp - a) / (b - a), fs)
+    # fs = np.where((dp <= a) & (cp >= b), 1.0, fs)  # fill value already 1.0
+    fs = np.where((dp <= a) & (a <= cp) & (cp < b), (cp - a) / (b - a), fs)
     fs = np.where((dp < a) & (cp < a), 0.0, fs)
-    fs = np.where((a < dp) & (dp < b) & (cp > b), (b - dp) / (b - a), fs)
+    fs = np.where((a < dp) & (dp <= b) & (cp >= b), (b - dp) / (b - a), fs)
     fs = np.where((a < dp) & (dp < b) & (a < cp) & (cp < b),
                   (cp - dp) / (b - a), fs)
     fs = np.where((dp > b) & (cp > b), 0.0, fs)
@@ -571,7 +570,7 @@ def vf_row_ground_2d_integ(surface_tilt, gcr, height, pitch,
     # crossed string formula for VF
     vf_slats = 0.5 * (1/((x1 - x0) * collector_width)) * ((ac + bd) - (bc + ad))
     vf_total = np.sum(np.maximum(vf_slats, 0), axis=0)  # sum along k dimension
-    
+
     # dimensions are now ground_segment, row_segment, time
     vf_total = vf_total.squeeze(axis=tuple(squeeze))
 

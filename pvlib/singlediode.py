@@ -936,7 +936,7 @@ def _lambertw(photocurrent, saturation_current, resistance_series,
 
     i_mp = _lambertw_i_from_v(v_mp, **params)
 
-        # Find Ix and Ixx using Lambert W
+    # Find Ix and Ixx using Lambert W
     i_x = _lambertw_i_from_v(0.5 * v_oc, **params)
 
     i_xx = _lambertw_i_from_v(0.5 * (v_oc + v_mp), **params)

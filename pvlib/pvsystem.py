@@ -2535,13 +2535,13 @@ def singlediode(photocurrent, saturation_current, resistance_series,
 
     If the method is ``'newton'`` then the root-finding Newton-Raphson method
     is used. It should be safe for well-behaved IV curves, otherwise the
-    ``'chandralupta``` or ``'brentq'`` methods are recommended for reliability.
+    ``'chandrupatla``` or ``'brentq'`` methods are recommended for reliability.
 
     If the method is ``'brentq'`` then Brent's bisection search method is used
     that guarantees convergence by bounding the voltage between zero and
     open-circuit. ``'brentq'`` is generally slower than the other options.
 
-    If the method is ``'chandralupta'`` then Chandralupta's method is used
+    If the method is ``'chandrupatla'`` then Chandrupatla's method is used
     that guarantees convergence.
 
     References
@@ -2573,7 +2573,7 @@ def singlediode(photocurrent, saturation_current, resistance_series,
         points = out[:7]
     else:
         # Calculate points on the IV curve using Bishop's algorithm and solving
-        # with 'newton', 'brentq' or 'chandralupta' method.
+        # with 'newton', 'brentq' or 'chandrupatla' method.
         # Voltages are determined by first solving the single diode
         # equation for the diode voltage V_d then backing out voltage
         v_oc = _singlediode.bishop88_v_from_i(

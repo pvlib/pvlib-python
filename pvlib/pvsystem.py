@@ -2546,20 +2546,23 @@ def singlediode(photocurrent, saturation_current, resistance_series,
 
     References
     ----------
-    .. [1] S.R. Wenham, M.A. Green, M.E. Watt, "Applied Photovoltaics" ISBN
-       0 86758 909 4
+    .. [1] S. R. Wenham, M. A. Green, M. E. Watt, "Applied Photovoltaics",
+       Centre for Photovoltaic Devices and Systems, 1995. ISBN
+       0867589094
 
     .. [2] A. Jain, A. Kapoor, "Exact analytical solutions of the
        parameters of real solar cells using Lambert W-function", Solar
-       Energy Materials and Solar Cells, 81 (2004) 269-277.
+       Energy Materials and Solar Cells, vol. 81 no. 2, pp. 269-277, Feb. 2004.
+       :doi:`10.1016/j.solmat.2003.11.018`.
 
-    .. [3] D. King et al, "Sandia Photovoltaic Array Performance Model",
-       SAND2004-3535, Sandia National Laboratories, Albuquerque, NM
+    .. [3] D. L. King, E. E. Boyson and J. A. Kratochvil "Photovoltaic Array
+       Performance Model", Sandia National Laboratories, Albuquerque, NM, USA.
+       Report SAND2004-3535, 2004.
 
     .. [4] J.W. Bishop, "Computer simulation of the effects of electrical
-       mismatches in photovoltaic cell interconnection circuits" Solar Cell
-       (1988)
-       https://doi.org/10.1016/0379-6787(88)90059-2
+       mismatches in photovoltaic cell interconnection circuits" Solar Cells,
+       vol. 25 no. 1, pp. 73-89, Oct. 1988.
+       :doi:`doi.org/10.1016/0379-6787(88)90059-2`
     """
     args = (photocurrent, saturation_current, resistance_series,
             resistance_shunt, nNsVth)  # collect args

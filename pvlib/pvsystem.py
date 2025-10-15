@@ -2534,12 +2534,15 @@ def singlediode(photocurrent, saturation_current, resistance_series,
     explicit function of :math:`V=f(I)` and :math:`I=f(V)` as shown in [2]_.
 
     If the method is ``'newton'`` then the root-finding Newton-Raphson method
-    is used. It should be safe for well behaved IV-curves, but the ``'brentq'``
-    method is recommended for reliability.
+    is used. It should be safe for well-behaved IV curves, otherwise the
+    ``'chandralupta``` or ``'brentq'`` methods are recommended for reliability.
 
     If the method is ``'brentq'`` then Brent's bisection search method is used
     that guarantees convergence by bounding the voltage between zero and
-    open-circuit.
+    open-circuit. ``'brentq'`` is generally slower than the other options.
+
+    If the method is ``'chandralupta'`` then Chandralupta's method is used
+    that guarantees convergence.
 
     References
     ----------
@@ -2553,8 +2556,9 @@ def singlediode(photocurrent, saturation_current, resistance_series,
     .. [3] D. King et al, "Sandia Photovoltaic Array Performance Model",
        SAND2004-3535, Sandia National Laboratories, Albuquerque, NM
 
-    .. [4] "Computer simulation of the effects of electrical mismatches in
-       photovoltaic cell interconnection circuits" JW Bishop, Solar Cell (1988)
+    .. [4] J.W. Bishop, "Computer simulation of the effects of electrical
+       mismatches in photovoltaic cell interconnection circuits" Solar Cell
+       (1988)
        https://doi.org/10.1016/0379-6787(88)90059-2
     """
     args = (photocurrent, saturation_current, resistance_series,
@@ -2565,8 +2569,9 @@ def singlediode(photocurrent, saturation_current, resistance_series,
         out = _singlediode._lambertw(*args)
         points = out[:7]
     else:
-        # Calculate points on the IV curve using either 'newton' or 'brentq'
-        # methods. Voltages are determined by first solving the single diode
+        # Calculate points on the IV curve using Bishop's algorithm and solving
+        # with 'newton', 'brentq' or 'chandralupta' method.
+        # Voltages are determined by first solving the single diode
         # equation for the diode voltage V_d then backing out voltage
         v_oc = _singlediode.bishop88_v_from_i(
             0.0, *args, method=method.lower()

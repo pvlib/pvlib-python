@@ -917,7 +917,7 @@ def _lambertw(photocurrent, saturation_current, resistance_series,
     # remove try/except when scipy>=1.15, and golden mean is retired
     try:
         from scipy.optimize.elementwise import find_minimum
-        init = (0., 0.8*v_oc, v_oc)
+        init = (-1., 0.8*v_oc, v_oc)  # left negative to insure strict inequality
         res = find_minimum(_vmp_opt, init,
                            args=(params['photocurrent'],
                                  params['saturation_current'],
@@ -930,7 +930,8 @@ def _lambertw(photocurrent, saturation_current, resistance_series,
         # switch to old golden section method
         p_mp, v_mp = _golden_sect_DataFrame(params, 0., v_oc * 1.14,
                                             _pwr_optfcn)
-    i_mp = p_mp / v_mp
+    #i_mp = p_mp / v_mp
+    i_mp = _lambertw_i_from_v(v_mp, **params)
 
     # Find Ix and Ixx using Lambert W
     i_x = _lambertw_i_from_v(0.5 * v_oc, **params)

@@ -2968,8 +2968,12 @@ def pvwatts_dc(effective_irradiance, temp_cell, pdc0, gamma_pdc, temp_ref=25.,
         err_2 = k * (1000 - effective_irradiance) / (1000 - 200)
 
         if hasattr(effective_irradiance, '__len__'):
-            pdc_marion[effective_irradiance <= 200] = pdc - (pdc0 * err_1)
-            pdc_marion[effective_irradiance > 200] = pdc - (pdc0 * err_2)
+            pdc_marion[effective_irradiance <= 200] = (
+                pdc[effective_irradiance <= 200] -
+                (pdc0 * err_1[effective_irradiance <= 200]))
+            pdc_marion[effective_irradiance > 200] = (
+                pdc[effective_irradiance > 200] -
+                (pdc0 * err_2[effective_irradiance > 200]))
         else:
             if effective_irradiance <= 200:
                 pdc_marion = pdc - (pdc0 * err_1)
@@ -2979,7 +2983,8 @@ def pvwatts_dc(effective_irradiance, temp_cell, pdc0, gamma_pdc, temp_ref=25.,
         # "cap" Marion's correction at 1000 W/m^2
         if cap_adjustment:
             if hasattr(effective_irradiance, '__len__'):
-                pdc_marion[effective_irradiance >= 1000] = pdc
+                pdc_marion[effective_irradiance >= 1000] = (
+                    pdc[effective_irradiance >= 1000])
             else:
                 if effective_irradiance >= 1000:
                     pdc_marion = pdc

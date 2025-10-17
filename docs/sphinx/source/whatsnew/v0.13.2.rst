@@ -27,7 +27,8 @@ Enhancements
   :py:func:`~pvlib.singlediode.bishop88_mpp`,
   :py:func:`~pvlib.singlediode.bishop88_v_from_i`, and
   :py:func:`~pvlib.singlediode.bishop88_i_from_v`. (:issue:`2497`, :pull:`2498`)
-
+* Add :py:func:`~pvlib.iotools.get_merra2`, a function for accessing
+  MERRA-2 reanalysis data. (:pull:`2572`)
 
 
 Documentation
@@ -53,4 +54,5 @@ Maintenance
 
 Contributors
 ~~~~~~~~~~~~
+* Kevin Anderson (:ghuser:`kandersolar`)
 

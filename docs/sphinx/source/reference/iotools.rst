@@ -237,6 +237,18 @@ lower quality.
    iotools.read_crn
 
 
+MERRA-2
+^^^^^^^
+
+A global reanalysis dataset providing weather, aerosol, and solar irradiance
+data.
+
+.. autosummary::
+   :toctree: generated/
+
+   iotools.get_merra2
+
+
 Generic data file readers
 -------------------------
 

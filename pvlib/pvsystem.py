@@ -2898,8 +2898,8 @@ def pvwatts_dc(effective_irradiance, temp_cell, pdc0, gamma_pdc, temp_ref=25.,
         The temperature coefficient of power. Typically -0.002 to
         -0.005 per degree C. [1/C]
     temp_ref: numeric, default 25.0
-        Cell reference temperature. PVWatts defines it to be 25 C and
-        is included here for flexibility. [C]
+        Cell reference temperature. PVWatts defines it to be 25 °C and
+        is included here for flexibility. [°C]
     k: numeric, optional
         Irradiance correction factor, defined in [2]_. Typically positive.
         [unitless]

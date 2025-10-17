@@ -100,6 +100,7 @@ jobs:
           SOLARANYWHERE_API_KEY: ${{ secrets.SOLARANYWHERE_API_KEY }}
           BSRN_FTP_USERNAME: ${{ secrets.BSRN_FTP_USERNAME }}
           BSRN_FTP_PASSWORD: ${{ secrets.BSRN_FTP_PASSWORD }}
+          ECMWF_API_KEY: ${{ secrets.ECMWF_API_KEY }}
         run: pytest tests/iotools --cov=./ --cov-report=xml --remote-data
 
       - name: Upload coverage to Codecov

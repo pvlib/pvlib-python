@@ -2881,7 +2881,7 @@ def scale_voltage_current_power(data, voltage=1, current=1):
 def pvwatts_dc(effective_irradiance, temp_cell, pdc0, gamma_pdc, temp_ref=25.,
                k=None, cap_adjustment=False):
     r"""
-    Implement NREL's PVWatts (Version 5) DC power model. 
+    Implement NREL's PVWatts (Version 5) DC power model.
 
     Parameters
     ----------
@@ -2963,7 +2963,8 @@ def pvwatts_dc(effective_irradiance, temp_cell, pdc0, gamma_pdc, temp_ref=25.,
 
     # apply Marion's correction if k is anything but zero
     if k is not None:
-        pdc_marion = pdc
+        pdc_marion = (effective_irradiance * 0.001 * pdc0 *
+                      (1 + gamma_pdc * (temp_cell - temp_ref)))
         err_1 = k * (1 - (1 - effective_irradiance / 200)**4)
         err_2 = k * (1000 - effective_irradiance) / (1000 - 200)
 

@@ -2199,9 +2199,9 @@ def test_pvwatts_dc_arrays_with_k():
 
 
 def test_pvwatts_dc_series_with_k():
-    irrad_trans = pd.Series([np.nan, 100, 100])
-    temp_cell = pd.Series([30, np.nan, 30])
-    expected = pd.Series(np.array([   nan,    nan,  8.9125]))
+    irrad_trans = pd.Series([np.nan, 100, 100, 1200])
+    temp_cell = pd.Series([30, np.nan, 30, 30])
+    expected = pd.Series(np.array([   nan,    nan,  8.9125, 118.45]))
     out = pvsystem.pvwatts_dc(irrad_trans, temp_cell, 100, -0.003, 25, 0.01)
     assert_series_equal(expected, out)
 
@@ -2209,10 +2209,10 @@ def test_pvwatts_dc_series_with_k():
 def test_pvwatts_dc_with_k_and_cap_adjustment():
     irrad_trans = [100, 1200]
     temp_cell = 25
-    ks = [0.01, 0.02]
+    ks = [0.01, 0.15]
     cap_adjustments = [False, True]
     out = []
-    expected = [9.0625, 120.25, 8.125, 120.5, 9.0625, 120.0, 8.125, 120.0]
+    expected = [9.0625, 120.25, 0, 123.75, 9.0625, 120.0, 0, 120.0]
     for cap_adjustment in cap_adjustments:
         for k in ks:
             for irrad in irrad_trans:

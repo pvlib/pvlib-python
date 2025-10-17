@@ -37,6 +37,7 @@ def j_to_w(j):
 def m_to_cm(m):
     return m / 100
 
+
 UNITS = {
     'u100': same,
     'v100': same,
@@ -128,9 +129,10 @@ def get_era5(latitude, longitude, start, end, variables, api_key,
     response = requests.post(url + slug, json=params, headers=headers)
     submission_response = response.json()
     if not response.ok:
-        raise Exception(response.json())  # likely need to accept license
+        raise Exception(submission_response)  # likely need to accept license
+
     job_id = submission_response['jobID']
-    
+
     # Step 2: poll until the data request is ready
     slug = "jobs/" + job_id
     poll_interval = 1

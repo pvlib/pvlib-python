@@ -68,3 +68,16 @@ def test_get_merra2_error():
         pvlib.iotools.get_merra2(40, -80, '2019-12-31', '2020-01-02',
                                  username='anything', password='anything',
                                  dataset='anything', variables=[])
+
+
+@requires_earthdata_credentials
+@pytest.mark.remote_data
+@pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
+def test_get_merra2_timezones(params, expected, expected_meta):
+    # check with tz-aware start/end inputs
+    for key in ['start', 'end']:
+        dt = pd.to_datetime(params[key])
+        params[key] = dt.tz_localize('UTC').tz_convert('Etc/GMT+5')
+    df, meta = pvlib.iotools.get_merra2(**params)
+    pd.testing.assert_frame_equal(df, expected, check_freq=False)
+    assert meta == expected_meta

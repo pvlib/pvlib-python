@@ -60,7 +60,9 @@ def get_era5(latitude, longitude, start, end, variables, api_key,
     """
     Retrieve ERA5 reanalysis data from the ECMWF's Copernicus Data Store.
 
-    This API [1]_ provides a subset of the full ERA5 dataset.  See [2]_ for
+    A CDS API key is needed to access this API.  Register for one at [1]_.
+
+    This API [2]_ provides a subset of the full ERA5 dataset.  See [3]_ for
     the available variables.  Data are available on a 0.25° x 0.25° grid.
 
     Parameters
@@ -76,7 +78,7 @@ def get_era5(latitude, longitude, start, end, variables, api_key,
     variables : list of str
         List of variable names to retrieve.  See [1]_ for options.
     api_key : str
-        ECMWF API key.
+        ECMWF CDS API key.
     map_variables : bool, default True
         When true, renames columns of the DataFrame to pvlib variable names
         where applicable. See variable :const:`VARIABLE_MAP`.
@@ -100,8 +102,9 @@ def get_era5(latitude, longitude, start, end, variables, api_key,
 
     References
     ----------
-    .. [1] https://cds.climate.copernicus.eu/datasets/reanalysis-era5-single-levels-timeseries?tab=overview
-    .. [2] https://confluence.ecmwf.int/pages/viewpage.action?pageId=505390919
+    .. [1] https://cds.climate.copernicus.eu/
+    .. [2] https://cds.climate.copernicus.eu/datasets/reanalysis-era5-single-levels-timeseries?tab=overview
+    .. [3] https://confluence.ecmwf.int/pages/viewpage.action?pageId=505390919
     """  # noqa: E501
     start = pd.to_datetime(start).strftime("%Y-%m-%d")
     end = pd.to_datetime(end).strftime("%Y-%m-%d")

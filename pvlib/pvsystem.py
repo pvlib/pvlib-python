@@ -2889,14 +2889,14 @@ def pvwatts_dc(effective_irradiance, temp_cell, pdc0, gamma_pdc, temp_ref=25.,
         Irradiance transmitted to the PV cells. To be
         fully consistent with PVWatts, the user must have already
         applied angle of incidence losses, but not soiling, spectral,
-        etc. [W/m^2]
+        etc. [Wm⁻²]
     temp_cell: numeric
         Cell temperature [C].
     pdc0: numeric
-        Power of the modules at 1000 W/m^2 and cell reference temperature. [W]
+        Power of the modules at 1000 Wm⁻² and cell reference temperature. [W]
     gamma_pdc: numeric
         The temperature coefficient of power. Typically -0.002 to
-        -0.005 per degree C. [1/C]
+        -0.005 per degree C. [1/°C]
     temp_ref: numeric, default 25.0
         Cell reference temperature. PVWatts defines it to be 25 °C and
         is included here for flexibility. [°C]

@@ -126,7 +126,8 @@ def get_era5(latitude, longitude, start, end, variables, api_key,
         }
     }
     slug = "processes/reanalysis-era5-single-levels-timeseries/execution"
-    response = requests.post(url + slug, json=params, headers=headers)
+    response = requests.post(url + slug, json=params, headers=headers,
+                             timeout=timeout)
     submission_response = response.json()
     if not response.ok:
         raise Exception(submission_response)  # likely need to accept license
@@ -138,7 +139,7 @@ def get_era5(latitude, longitude, start, end, variables, api_key,
     poll_interval = 1
     num_polls = 0
     while True:
-        response = requests.get(url + slug, headers=headers)
+        response = requests.get(url + slug, headers=headers, timeout=timeout)
         poll_response = response.json()
         job_status = poll_response['status']
 
@@ -162,12 +163,12 @@ def get_era5(latitude, longitude, start, end, variables, api_key,
 
     # Step 3: get the download link for our requested dataset
     slug = "jobs/" + job_id + "/results"
-    response = requests.get(url + slug, headers=headers)
+    response = requests.get(url + slug, headers=headers, timeout=timeout)
     results_response = response.json()
     download_url = results_response['asset']['value']['href']
 
     # Step 4: finally, download our dataset.  it's a zipfile of one CSV
-    response = requests.get(download_url)
+    response = requests.get(download_url, timeout=timeout)
     zipbuffer = BytesIO(response.content)
     archive = zipfile.ZipFile(zipbuffer)
     filename = archive.filelist[0].filename

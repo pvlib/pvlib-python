@@ -139,7 +139,7 @@ except KeyError:
     has_ecmwf_credentials = False
 
 requires_ecmwf_credentials = pytest.mark.skipif(
-    not has_solaranywhere_credentials,
+    not has_ecmwf_credentials,
     reason='requires ECMWF credentials')
 
 

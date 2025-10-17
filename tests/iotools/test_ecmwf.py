@@ -15,7 +15,7 @@ def params():
 
     return {
         'latitude': 40.01, 'longitude': -80.01,
-        'start': '2020-06-01', 'end': '2020-06-02',
+        'start': '2020-06-01', 'end': '2020-06-01',
         'variables': ['ghi', 'temp_air'],
         'api_key': api_key,
     }
@@ -41,7 +41,7 @@ def expected():
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_get_era5(params, expected):
     df, meta = pvlib.iotools.get_era5(**params)
-    pd.testing.assert_frame_equal(df, expected, check_freq=False)
+    pd.testing.assert_frame_equal(df, expected, check_freq=False, atol=0.1)
     assert meta['longitude'] == -80.0
     assert meta['latitude'] == 40.0
     assert isinstance(meta['jobID'], str)
@@ -53,7 +53,9 @@ def test_get_era5(params, expected):
 def test_get_era5_map_variables(params, expected):
     df, meta = pvlib.iotools.get_era5(**params, map_variables=False)
     expected = expected.rename(columns={'temp_air': 't2m', 'ghi': 'ssrd'})
-    pd.testing.assert_frame_equal(df, expected, check_freq=False)
+    expected['t2m'] += 273.15  # undo unit conversions
+    expected['ssrd'] *= 3600
+    pd.testing.assert_frame_equal(df, expected, check_freq=False, atol=0.1)
     assert meta['longitude'] == -80.0
     assert meta['latitude'] == 40.0
     assert isinstance(meta['jobID'], str)

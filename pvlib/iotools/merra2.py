@@ -84,11 +84,10 @@ def get_merra2(latitude, longitude, start, end, username, password, dataset,
 
     def _to_utc_dt_notz(dt):
         dt = pd.to_datetime(dt)
-        if dt.tzinfo is None:  # convert everything to UTC
-            dt = dt.tz_localize("UTC")
-        else:
-            dt = dt.tz_convert("UTC")
-        return dt.tz_localize(None)  # drop tz so that isoformat() is clean
+        if dt.tzinfo is not None:
+            # convert to utc, then drop tz so that isoformat() is clean
+            dt = dt.tz_convert("UTC").tz_localize(None)
+        return dt
 
     start = _to_utc_dt_notz(start)
     end = _to_utc_dt_notz(end)

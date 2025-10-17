@@ -73,6 +73,6 @@ def test_get_era5_error(params):
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_get_era5_timeout(params):
-    match = 'Request failed. Please check the ECMWF website'
+    match = 'Request timed out. Try increasing'
     with pytest.raises(Exception, match=match):
         df, meta = pvlib.iotools.get_era5(**params, timeout=1)

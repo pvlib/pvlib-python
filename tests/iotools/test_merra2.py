@@ -14,10 +14,11 @@ def params():
     earthdata_username = os.environ["EARTHDATA_USERNAME"]
     earthdata_password = os.environ["EARTHDATA_PASSWORD"]
 
-    return {'latitude': 40.01, 'longitude': -80.01,
-            'start': '2020-06-01 15:00', 'end': '2020-06-01 20:00',
-            'dataset': 'M2T1NXRAD.5.12.4', 'variables': ['ALBEDO', 'SWGDN'],
-            'username': earthdata_username, 'password': earthdata_password,
+    return {
+        'latitude': 40.01, 'longitude': -80.01,
+        'start': '2020-06-01 15:00', 'end': '2020-06-01 20:00',
+        'dataset': 'M2T1NXRAD.5.12.4', 'variables': ['ALBEDO', 'SWGDN'],
+        'username': earthdata_username, 'password': earthdata_password,
     }
 
 
@@ -29,7 +30,7 @@ def expected():
     albedo = [0.163931, 0.1609407, 0.1601474, 0.1612476, 0.164664, 0.1711341]
     ghi = [ 930., 1002.75, 1020.25, 981.25, 886.5, 743.5]
     df = pd.DataFrame({'albedo': albedo, 'ghi': ghi}, index=index)
-    return df  
+    return df
 
 
 @pytest.fixture

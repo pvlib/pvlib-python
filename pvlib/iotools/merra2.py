@@ -13,6 +13,7 @@ VARIABLE_MAP = {
     'TOTEXTTAU': 'aod550',
 }
 
+
 def get_merra2(latitude, longitude, start, end, username, password, dataset,
                variables, map_variables=True):
     """
@@ -132,7 +133,7 @@ def get_merra2(latitude, longitude, start, end, username, password, dataset,
 
     # drop the non-data columns
     dropcols = ['time', 'station', 'latitude[unit="degrees_north"]',
-        'longitude[unit="degrees_east"]']
+                'longitude[unit="degrees_east"]']
     df = df.drop(columns=dropcols)
 
     # column names are like T2M[unit="K"] by default.  extract the unit

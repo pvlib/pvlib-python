@@ -2926,7 +2926,7 @@ def pvwatts_dc(effective_irradiance, temp_cell, pdc0, gamma_pdc, temp_ref=25.,
     on [2]_. This applies a piece-wise adjustment to power based on irradiance,
     where `k` is the reduction in actual power at 200 Wm⁻² relative to power
     calculated at 200 Wm-2 as 0.2*`pdc0`. For example, a 500 W module that
-    produces 95 W at 200 Wm-2 (a 5% relative reduction in efficiency) would
+    produces 95 W at 200 Wm⁻² (a 5% relative reduction in efficiency) would
     have a value of `k` = 0.01.
 
     .. math::

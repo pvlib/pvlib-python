@@ -53,8 +53,8 @@ def test_get_era5(params, expected):
 def test_get_era5_map_variables(params, expected):
     df, meta = pvlib.iotools.get_era5(**params, map_variables=False)
     expected = expected.rename(columns={'temp_air': 't2m', 'ghi': 'ssrd'})
-    expected['t2m'] += 273.15  # undo unit conversions
-    expected['ssrd'] *= 3600
+    expected['t2m'] -= 273.15  # apply unit conversions manually
+    expected['ssrd'] /= 3600
     pd.testing.assert_frame_equal(df, expected, check_freq=False, atol=0.1)
     assert meta['longitude'] == -80.0
     assert meta['latitude'] == 40.0

@@ -2188,12 +2188,12 @@ def test_pvwatts_dc_scalars_with_k():
 
 
 def test_pvwatts_dc_arrays_with_k():
-    irrad_trans = np.array([np.nan, 100, 100])
+    irrad_trans = np.array([np.nan, 100, 1200])
     temp_cell = np.array([30, np.nan, 30])
     irrad_trans, temp_cell = np.meshgrid(irrad_trans, temp_cell)
-    expected = np.array([[nan,  8.9125,  8.9125],
+    expected = np.array([[nan,  8.9125,  118.45],
                          [nan,    nan,    nan],
-                         [nan,  8.9125,  8.9125]])
+                         [nan,  8.9125,  118.45]])
     out = pvsystem.pvwatts_dc(irrad_trans, temp_cell, 100, -0.003, 25, 0.01)
     assert_allclose(out, expected, equal_nan=True)
 
@@ -2219,6 +2219,18 @@ def test_pvwatts_dc_with_k_and_cap_adjustment():
                 out.append(pvsystem.pvwatts_dc(irrad, temp_cell, 100, -0.003,
                                                25, k, cap_adjustment))
     assert_allclose(out, expected)
+
+
+def test_pvwatts_dc_arrays_with_k_and_cap_adjustment():
+    irrad_trans = np.array([np.nan, 100, 1200])
+    temp_cell = np.array([30, np.nan, 30])
+    irrad_trans, temp_cell = np.meshgrid(irrad_trans, temp_cell)
+    expected = np.array([[nan,  8.9125,  118.2],
+                         [nan,    nan,    nan],
+                         [nan,  8.9125,  118.2]])
+    out = pvsystem.pvwatts_dc(irrad_trans, temp_cell, 100, -0.003, 25, 0.01,
+                              True)
+    assert_allclose(out, expected, equal_nan=True)
 
 
 def test_pvwatts_losses_default():

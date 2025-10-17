@@ -2963,50 +2963,27 @@ def pvwatts_dc(effective_irradiance, temp_cell, pdc0, gamma_pdc, temp_ref=25.,
 
     # apply Marion's correction if k is anything but zero
     if k is not None:
+
+        # preserve input types
+        index = pdc.index if isinstance(pdc, pd.Series) else None
+        is_scalar = np.isscalar(pdc)
+
         # calculate error adjustments
         err_1 = k * (1 - (1 - effective_irradiance / 200)**4)
         err_2 = k * (1000 - effective_irradiance) / (1000 - 200)
+        err = np.where(effective_irradiance <= 200, err_1, err_2)
+        if cap_adjustment:
+            err = np.where(effective_irradiance >= 1000, 0, err)
 
-        # if input is Series or array
-        if hasattr(effective_irradiance, '__len__'):
-            # precalculate pdc before applying error adjustments
-            pdc_marion = (effective_irradiance * 0.001 * pdc0 *
-                          (1 + gamma_pdc * (temp_cell - temp_ref)))
+        pdc = pdc - pdc0 * err
 
-            # apply error adjustments
-            pdc_marion[effective_irradiance <= 200] = (
-                pdc[effective_irradiance <= 200] -
-                (pdc0 * err_1[effective_irradiance <= 200]))
-            pdc_marion[effective_irradiance > 200] = (
-                pdc[effective_irradiance > 200] -
-                (pdc0 * err_2[effective_irradiance > 200]))
+        # set negative power to zero
+        pdc = np.where(pdc < 0, 0, pdc)
 
-            # "cap" Marion's correction at 1000 W/m^2
-            if cap_adjustment:
-                pdc_marion[effective_irradiance >= 1000] = (
-                    pdc[effective_irradiance >= 1000])
-
-            # set negative power to zero
-            pdc_marion[pdc_marion < 0] = 0
-
-        # else (input is scalar)
-        else:
-            # apply error adjustments
-            if effective_irradiance <= 200:
-                pdc_marion = pdc - (pdc0 * err_1)
-            elif effective_irradiance > 200:
-                pdc_marion = pdc - (pdc0 * err_2)
-
-            # "cap" Marion's correction at 1000 W/m^2 if needed
-            if cap_adjustment:
-                if effective_irradiance >= 1000:
-                    pdc_marion = pdc
-
-            # set negative power to zero
-            if pdc_marion < 0:
-                pdc_marion = 0
-
-        pdc = pdc_marion
+        if index is not None:
+            pdc = pd.Series(pdc, index=index)
+        elif is_scalar:
+            pdc = float(pdc)
 
     return pdc
 

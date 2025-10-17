@@ -127,6 +127,8 @@ def get_era5(latitude, longitude, start, end, variables, api_key,
     slug = "processes/reanalysis-era5-single-levels-timeseries/execution"
     response = requests.post(url + slug, json=params, headers=headers)
     submission_response = response.json()
+    if not response.ok:
+        raise Exception(response.json())  # likely need to accept license
     job_id = submission_response['jobID']
     
     # Step 2: poll until the data request is ready

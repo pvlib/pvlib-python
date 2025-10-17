@@ -2898,13 +2898,13 @@ def pvwatts_dc(effective_irradiance, temp_cell, pdc0, gamma_pdc, temp_ref=25.,
         The temperature coefficient of power. Typically -0.002 to
         -0.005 per degree C. [1/C]
     temp_ref: numeric, default 25.0
-        Cell reference temperature. PVWatts defines it to be 25 C and
-        is included here for flexibility. [C]
+        Cell reference temperature. PVWatts defines it to be 25 °C and
+        is included here for flexibility. [°C]
     k: numeric, optional
         Irradiance correction factor, defined in [2]_. Typically positive.
         [unitless]
     cap_adjustment: Boolean, default False
-        If True, apply the optional adjustment at and below 1000 W/m^2.
+        If True, apply the optional adjustment at and below 1000 Wm⁻²
 
     Returns
     -------
@@ -2926,7 +2926,7 @@ def pvwatts_dc(effective_irradiance, temp_cell, pdc0, gamma_pdc, temp_ref=25.,
     on [2]_. This applies a piece-wise adjustment to power based on irradiance,
     where `k` is the reduction in actual power at 200 Wm⁻² relative to power
     calculated at 200 Wm-2 as 0.2*`pdc0`. For example, a 500 W module that
-    produces 95 W at 200 Wm-2 (a 5% relative reduction in efficiency) would
+    produces 95 W at 200 Wm⁻² (a 5% relative reduction in efficiency) would
     have a value of `k` = 0.01.
 
     .. math::

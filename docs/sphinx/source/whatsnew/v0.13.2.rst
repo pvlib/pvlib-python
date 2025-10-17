@@ -27,8 +27,8 @@ Enhancements
   :py:func:`~pvlib.singlediode.bishop88_mpp`,
   :py:func:`~pvlib.singlediode.bishop88_v_from_i`, and
   :py:func:`~pvlib.singlediode.bishop88_i_from_v`. (:issue:`2497`, :pull:`2498`)
-
-
+* Add Marion 2008 non-linear irradiance adjustment factor to
+  :py:func:`pvlib.pvsystem.pvwatts_dc`. (:issue:`2566`, :pull:`2569`)
 
 Documentation
 ~~~~~~~~~~~~~
@@ -52,4 +52,4 @@ Maintenance
 
 Contributors
 ~~~~~~~~~~~~
-
+* Will Hobbs (:ghuser:`williamhobbs`)

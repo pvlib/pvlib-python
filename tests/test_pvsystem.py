@@ -2183,7 +2183,7 @@ def test_pvwatts_dc_series():
 
 def test_pvwatts_dc_scalars_with_k():
     expected = 8.9125
-    out = pvsystem.pvwatts_dc(100, 30, 100, -0.003, 25, 0.01)
+    out = pvsystem.pvwatts_dc(100, 30, 100, -0.003, k=0.01)
     assert_allclose(out, expected)
 
 
@@ -2202,7 +2202,7 @@ def test_pvwatts_dc_series_with_k():
     irrad_trans = pd.Series([np.nan, 100, 100, 1200])
     temp_cell = pd.Series([30, np.nan, 30, 30])
     expected = pd.Series(np.array([   nan,    nan,  8.9125, 118.45]))
-    out = pvsystem.pvwatts_dc(irrad_trans, temp_cell, 100, -0.003, 25, k=0.01)
+    out = pvsystem.pvwatts_dc(irrad_trans, temp_cell, 100, -0.003, k=0.01)
     assert_series_equal(expected, out)
 
 

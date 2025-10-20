@@ -2230,7 +2230,7 @@ def test_pvwatts_dc_arrays_with_k_and_cap_adjustment():
                          [nan,    nan,    nan],
                          [nan,  8.9125,  118.2]])
     out = pvsystem.pvwatts_dc(irrad_trans, temp_cell, 100, -0.003, k=0.01,
-                              True)
+                              cap_adjustment=True)
     assert_allclose(out, expected, equal_nan=True)
 
 

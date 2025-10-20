@@ -45,4 +45,4 @@ from pvlib.iotools.meteonorm import get_meteonorm_observation_realtime  # noqa: 
 from pvlib.iotools.meteonorm import get_meteonorm_observation_training  # noqa: F401, E501
 from pvlib.iotools.meteonorm import get_meteonorm_tmy  # noqa: F401
 from pvlib.iotools.nasa_power import get_nasa_power  # noqa: F401
-from pvlib.iotools.ecmwf import get_era5  # noqa: F401
+from pvlib.iotools.era5 import get_era5  # noqa: F401

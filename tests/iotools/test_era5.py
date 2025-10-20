@@ -1,5 +1,5 @@
 """
-tests for pvlib/iotools/ecmwf.py
+tests for pvlib/iotools/era5.py
 """
 
 import pandas as pd

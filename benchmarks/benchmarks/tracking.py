@@ -22,7 +22,7 @@ class SingleAxis:
         with np.errstate(invalid='ignore'):
             tracking.singleaxis(self.solar_position.apparent_zenith,
                                 self.solar_position.azimuth,
-                                axis_tilt=0,
+                                axis_slope=0,
                                 axis_azimuth=0,
                                 max_angle=60,
                                 backtrack=True,

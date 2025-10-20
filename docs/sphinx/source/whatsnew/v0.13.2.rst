@@ -28,7 +28,7 @@ Enhancements
   :py:func:`~pvlib.singlediode.bishop88_v_from_i`, and
   :py:func:`~pvlib.singlediode.bishop88_i_from_v`. (:issue:`2497`, :pull:`2498`)
 * Add :py:func:`~pvlib.iotools.get_era5`, a function for accessing
-  ERA-5 reanalysis data. (:pull:`2573`)
+  ERA5 reanalysis data. (:pull:`2573`)
 
 
 Documentation

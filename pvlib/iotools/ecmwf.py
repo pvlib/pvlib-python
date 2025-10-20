@@ -82,7 +82,8 @@ def get_era5(latitude, longitude, start, end, variables, api_key,
         ECMWF CDS API key.
     map_variables : bool, default True
         When true, renames columns of the DataFrame to pvlib variable names
-        where applicable. See variable :const:`VARIABLE_MAP`.
+        where applicable. Also converts units of some variables. See variable
+        :const:`VARIABLE_MAP` and :const:`UNITS`.
     timeout : int, default 60
         Number of seconds to wait for the requested data to become available
         before timeout.
@@ -188,7 +189,7 @@ def get_era5(latitude, longitude, start, end, variables, api_key,
     if map_variables:
         # convert units and rename
         for shortname in df.columns:
-            converter = UNITS[shortname]
+            converter = UNITS.get(shortname, same)
             df[shortname] = converter(df[shortname])
         df = df.rename(columns=VARIABLE_MAP)
 

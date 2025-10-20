@@ -5,6 +5,7 @@ tests for pvlib/iotools/ecmwf.py
 import pandas as pd
 import pytest
 import pvlib
+import requests
 import os
 from tests.conftest import RERUNS, RERUNS_DELAY, requires_ecmwf_credentials
 
@@ -76,5 +77,5 @@ def test_get_era5_error(params):
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_get_era5_timeout(params):
     match = 'Request timed out. Try increasing'
-    with pytest.raises(Exception, match=match):
+    with pytest.raises(requests.exceptions.Timeout, match=match):
         df, meta = pvlib.iotools.get_era5(**params, timeout=1)

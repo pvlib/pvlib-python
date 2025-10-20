@@ -154,7 +154,7 @@ def get_era5(latitude, longitude, start, end, variables, api_key,
 
         num_polls += 1
         if num_polls * poll_interval > timeout:
-            raise Exception(
+            raise requests.exceptions.Timeout(
                 'Request timed out. Try increasing the timeout parameter or '
                 'reducing the request size.'
             )

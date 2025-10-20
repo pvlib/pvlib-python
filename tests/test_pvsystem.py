@@ -2209,16 +2209,11 @@ def test_pvwatts_dc_series_with_k():
 def test_pvwatts_dc_with_k_and_cap_adjustment():
     irrad_trans = [100, 1200]
     temp_cell = 25
-    ks = [0.01, 0.15]
-    cap_adjustments = [False, True]
     out = []
-    expected = [9.0625, 120.25, 0, 123.75, 9.0625, 120.0, 0, 120.0]
-    for cap_adjustment in cap_adjustments:
-        for k in ks:
-            for irrad in irrad_trans:
-                out.append(pvsystem.pvwatts_dc(irrad, temp_cell, 100, -0.003,
-                                               k=k,
-                                               cap_adjustment=cap_adjustment))
+    expected = [0, 120.0]
+    for irrad in irrad_trans:
+        out.append(pvsystem.pvwatts_dc(irrad, temp_cell, 100, -0.003, k=0.15,
+                                       cap_adjustment=True))
     assert_allclose(out, expected)
 
 

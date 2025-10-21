@@ -22,36 +22,36 @@ VARIABLE_MAP = {
 }
 
 
-def same(x):
+def _same(x):
     return x
 
 
-def k_to_c(temp_k):
+def _k_to_c(temp_k):
     return temp_k - 273.15
 
 
-def j_to_w(j):
+def _j_to_w(j):
     return j / 3600
 
 
-def m_to_cm(m):
+def _m_to_cm(m):
     return m / 100
 
 
 UNITS = {
-    'u100': same,
-    'v100': same,
-    'u10': same,
-    'v10': same,
-    'd2m': k_to_c,
-    't2m': k_to_c,
-    'msl': same,
-    'sst': k_to_c,
-    'skt': k_to_c,
-    'sp': same,
-    'ssrd': j_to_w,
-    'strd': j_to_w,
-    'tp': m_to_cm,
+    'u100': _same,
+    'v100': _same,
+    'u10': _same,
+    'v10': _same,
+    'd2m': _k_to_c,
+    't2m': _k_to_c,
+    'msl': _same,
+    'sst': _k_to_c,
+    'skt': _k_to_c,
+    'sp': _same,
+    'ssrd': _j_to_w,
+    'strd': _j_to_w,
+    'tp': _m_to_cm,
 }
 
 
@@ -189,7 +189,7 @@ def get_era5(latitude, longitude, start, end, variables, api_key,
     if map_variables:
         # convert units and rename
         for shortname in df.columns:
-            converter = UNITS.get(shortname, same)
+            converter = UNITS.get(shortname, _same)
             df[shortname] = converter(df[shortname])
         df = df.rename(columns=VARIABLE_MAP)
 

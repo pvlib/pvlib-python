@@ -2936,7 +2936,8 @@ def pvwatts_dc(effective_irradiance, temp_cell, pdc0, gamma_pdc, temp_ref=25.,
         k=\frac{0.2P_{dc0}-P_{200}}{P_{dc0}}
 
     For positive `k` values, and `k` is typically positive, this adjustment
-    increases relative efficiency when irradiance is above 1000 Wm⁻². This may
+    would also increase relative efficiency when irradiance is above 1000 Wm⁻².
+    This may
     not be desired, as modules with nonlinear irradiance response often have
     peak efficiency near 1000 Wm⁻², and it is either flat or declining at
     higher irradiance. An optional parameter, `cap_adjustment`, can address

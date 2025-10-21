@@ -2886,20 +2886,19 @@ def pvwatts_dc(effective_irradiance, temp_cell, pdc0, gamma_pdc, temp_ref=25.,
     Parameters
     ----------
     effective_irradiance: numeric
-        Irradiance transmitted to the PV cells. To be
-        fully consistent with PVWatts, the user must have already
-        applied angle of incidence losses, but not soiling, spectral,
-        etc. [Wm⁻²]
+        Irradiance transmitted to the PV cells. To be fully consistent with
+        PVWatts, the user must have already applied angle of incidence losses,
+        but not soiling, spectral, etc. [Wm⁻²]
     temp_cell: numeric
         Cell temperature [C].
     pdc0: numeric
         Power of the modules at 1000 Wm⁻² and cell reference temperature. [W]
     gamma_pdc: numeric
-        The temperature coefficient of power. Typically -0.002 to
-        -0.005 per degree C. [1/°C]
+        The temperature coefficient of power. Typically -0.002 to -0.005 per
+        degree C. [1/°C]
     temp_ref: numeric, default 25.0
-        Cell reference temperature. PVWatts defines it to be 25 °C and
-        is included here for flexibility. [°C]
+        Cell reference temperature. PVWatts defines it to be 25 °C and is
+        included here for flexibility. [°C]
     k: numeric, optional
         Irradiance correction factor, defined in [2]_. Typically positive.
         [unitless]
@@ -2922,14 +2921,13 @@ def pvwatts_dc(effective_irradiance, temp_cell, pdc0, gamma_pdc, temp_ref=25.,
     This model has also been referred to as the power temperature coefficient
     model.
 
-    An optional adjustment can be applied to :math:`P_{dc}` as described in [2]_.
-    The adjustment accounts for the variation in module efficiency with
+    An optional adjustment can be applied to :math:`P_{dc}` as described in
+    [2]_. The adjustment accounts for the variation in module efficiency with
     irradiance. The piece-wise adjustment to power is parameterized by `k`,
     where `k` is the reduction in actual power at 200 Wm⁻² relative to power
-    calculated at 200 Wm⁻² as 0.2*`pdc0`. For example, a module that
-    is rated at 500 W at STC but produces 95 W at 200 Wm⁻² 
-    (a 5% relative reduction in efficiency) would
-    have a value of `k` = 0.01.
+    calculated at 200 Wm⁻² as 0.2*`pdc0`. For example, a module that is rated
+    at 500 W at STC but produces 95 W at 200 Wm⁻² (a 5% relative reduction in
+    efficiency) would have a value of `k` = 0.01.
 
     .. math::
 
@@ -2937,15 +2935,15 @@ def pvwatts_dc(effective_irradiance, temp_cell, pdc0, gamma_pdc, temp_ref=25.,
 
     For positive `k` values, and `k` is typically positive, this adjustment
     would also increase relative efficiency when irradiance is above 1000 Wm⁻².
-    This may
-    not be desired, as modules with nonlinear irradiance response often have
-    peak efficiency near 1000 Wm⁻², and it is either flat or declining at
-    higher irradiance. An optional parameter, `cap_adjustment`, can address
-    this by modifying the adjustment from [2]_ to only apply below 1000 Wm⁻².
+    This may not be desired, as modules with nonlinear irradiance response
+    often have peak efficiency near 1000 Wm⁻², and it is either flat or
+    declining at higher irradiance. An optional parameter, `cap_adjustment`,
+    can address this by modifying the adjustment from [2]_ to only apply below
+    1000 Wm⁻².
 
     Note that ``pdc0`` is also used as a symbol in
-    :py:func:`pvlib.inverter.pvwatts`. ``pdc0`` in this function refers to the DC
-    power of the modules at reference conditions. ``pdc0`` in
+    :py:func:`pvlib.inverter.pvwatts`. ``pdc0`` in this function refers to the
+    DC power of the modules at reference conditions. ``pdc0`` in
     :py:func:`pvlib.inverter.pvwatts` refers to the DC power input limit of
     the inverter.
 

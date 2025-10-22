@@ -11,8 +11,8 @@ Calculation of the Average Photon Energy from SPECTRL2 output.
 # This example demonstrates how to use the
 # :py:func:`~pvlib.spectrum.average_photon_energy` function to calculate the
 # Average Photon Energy (APE, :math:`\overline{E_\gamma}`) of spectral
-# irradiance distributions. This example uses spectral irradiance simulated
-# using :py:func:`~pvlib.spectrum.spectrl2`, but the same method is
+# irradiance distributions. This example uses clearsky spectral irradiance
+# simulated using :py:func:`~pvlib.spectrum.spectrl2`, but the same method is
 # applicable to spectral irradiance from any source.
 # More information on the SPECTRL2 model can be found in [1]_.
 # The APE parameter is a useful indicator of the overall shape of the solar
@@ -35,18 +35,19 @@ from scipy.integrate import trapezoid
 from pvlib import spectrum, solarposition, irradiance, atmosphere
 
 lat, lon = 39.742, -105.18  # NREL SRRL location
-tilt = 25
-azimuth = 180  # south-facing system
+surface_tilt = 25
+surface_azimuth = 180  # south-facing system
 pressure = 81190  # at 1828 metres AMSL, roughly
-water_vapor_content = 0.5  # cm
-tau500 = 0.1
+precipitable_water = 0.5  # cm
+aerosol_turbidity_500nm = 0.1
 ozone = 0.31  # atm-cm
 albedo = 0.2
 
 times = pd.date_range('2023-01-01 08:00', freq='h', periods=9,
                       tz='America/Denver')
 solpos = solarposition.get_solarposition(times, lat, lon)
-aoi = irradiance.aoi(tilt, azimuth, solpos.apparent_zenith, solpos.azimuth)
+aoi = irradiance.aoi(surface_tilt, surface_azimuth,
+                     solpos.apparent_zenith, solpos.azimuth)
 
 relative_airmass = atmosphere.get_relative_airmass(solpos.apparent_zenith,
                                                    model='kastenyoung1989')
@@ -64,13 +65,13 @@ relative_airmass = atmosphere.get_relative_airmass(solpos.apparent_zenith,
 spectra_components = spectrum.spectrl2(
     apparent_zenith=solpos.apparent_zenith,
     aoi=aoi,
-    surface_tilt=tilt,
+    surface_tilt=surface_tilt,
     ground_albedo=albedo,
     surface_pressure=pressure,
     relative_airmass=relative_airmass,
-    precipitable_water=water_vapor_content,
+    precipitable_water=precipitable_water,
     ozone=ozone,
-    aerosol_turbidity_500nm=tau500,
+    aerosol_turbidity_500nm=aerosol_turbidity_500nm,
 )
 
 # %%

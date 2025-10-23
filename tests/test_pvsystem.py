@@ -2181,6 +2181,54 @@ def test_pvwatts_dc_series():
     assert_series_equal(expected, out)
 
 
+def test_pvwatts_dc_scalars_with_k():
+    expected = 8.9125
+    out = pvsystem.pvwatts_dc(100, 30, 100, -0.003, k=0.01)
+    assert_allclose(out, expected)
+
+
+def test_pvwatts_dc_arrays_with_k():
+    irrad_trans = np.array([np.nan, 100, 1200])
+    temp_cell = np.array([30, np.nan, 30])
+    irrad_trans, temp_cell = np.meshgrid(irrad_trans, temp_cell)
+    expected = np.array([[nan,  8.9125,  118.45],
+                         [nan,    nan,    nan],
+                         [nan,  8.9125,  118.45]])
+    out = pvsystem.pvwatts_dc(irrad_trans, temp_cell, 100, -0.003, k=0.01)
+    assert_allclose(out, expected, equal_nan=True)
+
+
+def test_pvwatts_dc_series_with_k():
+    irrad_trans = pd.Series([np.nan, 100, 100, 1200])
+    temp_cell = pd.Series([30, np.nan, 30, 30])
+    expected = pd.Series(np.array([   nan,    nan,  8.9125, 118.45]))
+    out = pvsystem.pvwatts_dc(irrad_trans, temp_cell, 100, -0.003, k=0.01)
+    assert_series_equal(expected, out)
+
+
+def test_pvwatts_dc_with_k_and_cap_adjustment():
+    irrad_trans = [100, 1200]
+    temp_cell = 25
+    out = []
+    expected = [0, 120.0]
+    for irrad in irrad_trans:
+        out.append(pvsystem.pvwatts_dc(irrad, temp_cell, 100, -0.003, k=0.15,
+                                       cap_adjustment=True))
+    assert_allclose(out, expected)
+
+
+def test_pvwatts_dc_arrays_with_k_and_cap_adjustment():
+    irrad_trans = np.array([np.nan, 100, 1200])
+    temp_cell = np.array([30, np.nan, 30])
+    irrad_trans, temp_cell = np.meshgrid(irrad_trans, temp_cell)
+    expected = np.array([[nan,  8.9125,  118.2],
+                         [nan,    nan,    nan],
+                         [nan,  8.9125,  118.2]])
+    out = pvsystem.pvwatts_dc(irrad_trans, temp_cell, 100, -0.003, k=0.01,
+                              cap_adjustment=True)
+    assert_allclose(out, expected, equal_nan=True)
+
+
 def test_pvwatts_losses_default():
     expected = 14.075660688264469
     out = pvsystem.pvwatts_losses()

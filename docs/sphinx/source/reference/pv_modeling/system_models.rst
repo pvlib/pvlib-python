@@ -55,3 +55,11 @@ PVGIS model
    :toctree: ../generated/
 
     pvarray.huld
+
+Other
+^^^^^
+
+.. autosummary::
+   :toctree: ../generated/
+
+    pvarray.batzelis

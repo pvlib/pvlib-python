@@ -237,6 +237,17 @@ lower quality.
    iotools.read_crn
 
 
+ECMWF ERA5
+^^^^^^^^^^
+
+A global reanalysis dataset providing weather and solar resource data.
+
+.. autosummary::
+   :toctree: generated/
+
+   iotools.get_era5
+
+
 Generic data file readers
 -------------------------
 

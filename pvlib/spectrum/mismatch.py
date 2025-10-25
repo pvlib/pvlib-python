@@ -723,22 +723,24 @@ def spectral_factor_polo(precipitable_water, airmass_absolute, aod500, aoi,
     precipitable_water : numeric
         atmospheric precipitable water. [cm]
     airmass_absolute : numeric
-        Absolute airmass. [unitless]
+        absolute (pressure-adjusted) airmass. See :term:`airmass_absolute`.
+        [unitless]
     aod500 : numeric
         atmospheric aerosol optical depth at 500 nm. [unitless]
     aoi : numeric
-        Angle of incidence on the vertical surface. [degrees]
+        Angle of incidence on the vertical surface.  See :term:`aoi`.
+        [degrees]
     altitude: numeric
         altitude over sea level. [m]
     module_type : str, optional
         One of the following PV technology strings from [1]_:
 
         * ``'cdte'`` - anonymous CdTe module.
-        * ``'monosi'`` - anonymous monocrystalline Si module.
+        * ``'monosi'`` - anonymous monocrystalline silicon module.
         * ``'cigs'`` - anonymous copper indium gallium selenide module.
         * ``'asi'`` - anonymous amorphous silicon module.
-    albedo
-        Ground albedo (default value 0.2). [unitless]
+    albedo : float, optional
+        Ground albedo (default value 0.2). See :term:`albedo`. [unitless]
 
     coefficients : array-like, optional
         user-defined coefficients, if not using one of the coefficient
@@ -754,9 +756,9 @@ def spectral_factor_polo(precipitable_water, airmass_absolute, aod500, aoi,
 
     References
     ----------
-    [1] J. Polo and C. Sanz-Saiz, 'Development of spectral mismatch models
-    for BIPV applications in building façades', Renewable Energy, vol. 245,
-    p. 122820, Jun. 2025,:doi:`10.1016/j.renene.2025.122820`
+    .. [1] J. Polo and C. Sanz-Saiz, 'Development of spectral mismatch models
+       for BIPV applications in building façades', Renewable Energy, vol. 245,
+       p. 122820, Jun. 2025, :doi:`10.1016/j.renene.2025.122820`
     """
     if module_type is None and coefficients is None:
         raise ValueError('Must provide either `module_type` or `coefficients`')
@@ -766,8 +768,7 @@ def spectral_factor_polo(precipitable_water, airmass_absolute, aod500, aoi,
     am_aoi = pvlib.atmosphere.get_relative_airmass(aoi)
     pressure = pvlib.atmosphere.alt2pres(altitude)
     am90 = pvlib.atmosphere.get_absolute_airmass(am_aoi, pressure)
-    Ram = am90/airmass_absolute
-    _coefficients = {}
+    Ram = am90 / airmass_absolute
     _coefficients = {
         'cdte': (-0.0009, 46.80, 49.20, -0.87, 0.00041, 0.053),
         'monosi': (0.0027, 10.34, 9.48, 0.307, 0.00077, 0.006),

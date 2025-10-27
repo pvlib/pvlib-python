@@ -308,7 +308,7 @@ def test_spectral_factor_jrc_supplied_ambiguous():
     ('cigs', np.array([1.00769,	0.959666, 0.974438, 1.02861, 1.05203, 1.03117])),
     ('asi', np.array([0.982133, 1.04674, 1.04859, 0.951109, 0.865328, 0.919515])),
 ])
-def test_spectral_factor_polo():
+def test_spectral_factor_polo(module_type,expected):
     altitude=500
 
     pws = np.array([0.96, 0.96, 1.85, 1.88, 0.66, 0.66])

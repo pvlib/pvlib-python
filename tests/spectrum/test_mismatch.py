@@ -317,6 +317,7 @@ def test_spectral_factor_polo(module_type,expected):
     aois = np.array([46.0, 76.0, 74.0, 28.0, 24.0, 55.0])
     alb=np.array([0.15, 0.2, 0.3, 0.18, 0.32, 0.26])
 
-    out=spectral_factor_polo(pws,ams,aods,aois,altitude,module_type=module_type,albedo=alb)
+    out = spectrum.spectral_factor_polo(
+        pws,ams,aods,aois,altitude,module_type=module_type,albedo=alb)
     assert np.allclose(expected, out, atol=1e-8)
     

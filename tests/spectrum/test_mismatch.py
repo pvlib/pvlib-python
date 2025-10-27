@@ -302,22 +302,27 @@ def test_spectral_factor_jrc_supplied_ambiguous():
     with pytest.raises(ValueError, match='No valid input provided'):
         spectrum.spectral_factor_jrc(1.0, 0.8, module_type=None,
                                      coefficients=None)
+
+
 @pytest.mark.parametrize("module_type,expected", [
-    ('cdte', np.array([0.991926, 0.999809, 1.01108, 0.993319, 0.956621, 0.970872])),
-    ('monosi', np.array([1.00174, 0.971769, 0.986224, 1.01661, 1.02026, 1.0106])),
-    ('cigs', np.array([1.00769,	0.959666, 0.974438, 1.02861, 1.05203, 1.03117])),
-    ('asi', np.array([0.982133, 1.04674, 1.04859, 0.951109, 0.865328, 0.919515])),
+    ('cdte',
+     np.array([0.991926, 0.999809, 1.01108, 0.993319, 0.956621, 0.970872])),
+    ('monosi',
+     np.array([1.00174, 0.971769, 0.986224, 1.01661, 1.02026, 1.0106])),
+    ('cigs',
+     np.array([1.00769,	0.959666, 0.974438, 1.02861, 1.05203, 1.03117])),
+    ('asi',
+     np.array([0.982133, 1.04674, 1.04859, 0.951109, 0.865328, 0.919515])),
 ])
-def test_spectral_factor_polo(module_type,expected):
-    altitude=500
+def test_spectral_factor_polo(module_type, expected):
+    altitude = 500
 
     pws = np.array([0.96, 0.96, 1.85, 1.88, 0.66, 0.66])
     aods = np.array([0.085, 0.085, 0.16, 0.19, 0.088, 0.088])
     ams = np.array([1.34, 1.34, 2.2, 2.2, 2.6, 2.6])
     aois = np.array([46.0, 76.0, 74.0, 28.0, 24.0, 55.0])
-    alb=np.array([0.15, 0.2, 0.3, 0.18, 0.32, 0.26])
+    alb = np.array([0.15, 0.2, 0.3, 0.18, 0.32, 0.26])
 
     out = spectrum.spectral_factor_polo(
-        pws,ams,aods,aois,altitude,module_type=module_type,albedo=alb)
+        pws, ams, aods, aois, altitude, module_type=module_type, albedo=alb)
     assert np.allclose(expected, out, atol=1e-8)
-    

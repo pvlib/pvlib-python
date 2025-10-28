@@ -73,9 +73,9 @@ def get_era5(latitude, longitude, start, end, variables, api_key,
     longitude: float
         In decimal degrees, east is positive (ISO 19115).
     start : datetime like or str
-        First day of the requested period.
+        First day of the requested period.  Assumed to be UTC if not localized.
     end : datetime like or str
-        Last day of the requested period.
+        Last day of the requested period.  Assumed to be UTC if not localized.
     variables : list of str
         List of variable names to retrieve, for example ``['ghi', 
         'temp_air']``. See [1]_ for additional options.
@@ -109,8 +109,15 @@ def get_era5(latitude, longitude, start, end, variables, api_key,
     .. [2] https://cds.climate.copernicus.eu/datasets/reanalysis-era5-single-levels-timeseries?tab=overview
     .. [3] https://confluence.ecmwf.int/pages/viewpage.action?pageId=505390919
     """  # noqa: E501
-    start = pd.to_datetime(start).strftime("%Y-%m-%d")
-    end = pd.to_datetime(end).strftime("%Y-%m-%d")
+
+    def _to_utc_dt_notz(dt):
+        dt = pd.to_datetime(dt)
+        if dt.tzinfo is not None:
+            dt = dt.tz_convert("UTC")
+        return dt
+
+    start = _to_utc_dt_notz(start).strftime("%Y-%m-%d")
+    end = _to_utc_dt_notz(end).strftime("%Y-%m-%d")
 
     headers = {'PRIVATE-TOKEN': api_key}
 

@@ -77,7 +77,8 @@ def get_era5(latitude, longitude, start, end, variables, api_key,
     end : datetime like or str
         Last day of the requested period.
     variables : list of str
-        List of variable names to retrieve.  See [1]_ for options.
+        List of variable names to retrieve, for example ``['ghi', 
+        'temp_air']``. See [1]_ for additional options.
     api_key : str
         ECMWF CDS API key.
     map_variables : bool, default True

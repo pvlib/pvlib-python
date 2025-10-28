@@ -52,8 +52,8 @@ def test_get_era5(params, expected):
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_get_era5_timezone(params, expected):
-    params['start'] = pd.to_datetime(params['start']).tz_convert('Etc/GMT+8')
-    params['end'] = pd.to_datetime(params['end']).tz_convert('Etc/GMT+8')
+    params['start'] = pd.to_datetime(params['start']).tz_localize('Etc/GMT+8')
+    params['end'] = pd.to_datetime(params['end']).tz_localize('Etc/GMT+8')
     df, meta = pvlib.iotools.get_era5(**params)
     pd.testing.assert_frame_equal(df, expected, check_freq=False, atol=0.1)
     assert meta['longitude'] == -80.0

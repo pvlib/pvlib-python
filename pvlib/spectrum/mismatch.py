@@ -769,6 +769,10 @@ def spectral_factor_polo(precipitable_water, airmass_absolute, aod500, aoi,
     pressure = pvlib.atmosphere.alt2pres(altitude)
     am90 = pvlib.atmosphere.get_absolute_airmass(am_aoi, pressure)
     Ram = am90 / airmass_absolute
+    f_aoi_rel= pvlib.atmosphere.get_relative_airmass(aoi, model='kastenyoung1989')
+    pressure = pvlib.atmosphere.alt2pres(altitude)
+    f_aoi = pvlib.atmosphere.get_absolute_airmass(f_aoi_rel, pressure)
+    Ram = f_aoi / airmass_absolute
     _coefficients = {
         'cdte': (-0.0009, 46.80, 49.20, -0.87, 0.00041, 0.053),
         'monosi': (0.0027, 10.34, 9.48, 0.307, 0.00077, 0.006),

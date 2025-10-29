@@ -140,7 +140,7 @@ def cec_dc_adr_ac_system(sam_data, cec_module_cs5p_220m,
                       module_parameters=module_parameters,
                       temperature_model_parameters=temp_model_params,
                       inverter_parameters=inverter,
-                      modules_per_string=14)
+                      modules_per_string=13)
     return system
 
 

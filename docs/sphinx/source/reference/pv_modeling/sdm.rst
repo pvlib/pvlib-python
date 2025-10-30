@@ -17,7 +17,7 @@ Functions relevant for single diode models.
    pvsystem.v_from_i
    pvsystem.max_power_point
    ivtools.sdm.pvsyst_temperature_coeff
-   singlediode.batzelis_keypoints
+   singlediode.batzelis
 
 Low-level functions for solving the single diode equation.
 

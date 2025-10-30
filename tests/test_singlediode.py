@@ -8,7 +8,7 @@ import scipy
 from pvlib import pvsystem
 from pvlib.singlediode import (bishop88_mpp, estimate_voc, VOLTAGE_BUILTIN,
                                bishop88, bishop88_i_from_v, bishop88_v_from_i,
-                               batzelis_keypoints)
+                               batzelis)
 import pytest
 from numpy.testing import assert_array_equal
 from .conftest import TESTS_DATA_DIR
@@ -626,7 +626,7 @@ def test_bishop88_init_cond(method):
     assert not bad_results.any()
 
 
-def test_batzelis_keypoints():
+def test_batzelis():
     params = {'photocurrent': 10, 'saturation_current': 1e-10,
               'resistance_series': 0.2, 'resistance_shunt': 3000,
               'nNsVth': 1.7}
@@ -640,37 +640,38 @@ def test_batzelis_keypoints():
     }
     rtol = 5e-3  # accurate to within half a percent in this case
 
-    output = batzelis_keypoints(**params)
+    output = batzelis(**params)
     for key in exact_values:
         assert output[key] == pytest.approx(exact_values[key], rel=rtol)
 
     # numpy arrays
     params2 = {k: np.array([v] * 2) for k, v in params.items()}
-    output2 = batzelis_keypoints(**params2)
+    output2 = batzelis(**params2)
     for key in exact_values:
         exp = np.array([exact_values[key]] * 2)
         np.testing.assert_allclose(output2[key], exp, rtol=rtol)
 
     # pandas
     params3 = {k: pd.Series(v) for k, v in params2.items()}
-    output3 = batzelis_keypoints(**params3)
+    output3 = batzelis(**params3)
     assert isinstance(output3, pd.DataFrame)
     for key in exact_values:
         exp = pd.Series([exact_values[key]] * 2)
         np.testing.assert_allclose(output3[key], exp, rtol=rtol)
 
 
-def test_batzelis_keypoints_night():
-    # SDMs produce photocurrent=0 and resistance_shunt=inf at night
-    out = batzelis_keypoints(photocurrent=0, saturation_current=1e-10,
-                             resistance_series=0.2, resistance_shunt=np.inf,
-                             nNsVth=1.7)
+def test_batzelis_night():
+    # The De Soto SDM produces photocurrent=0 and resistance_shunt=inf
+    # at 0 W/m2 irradiance
+    out = batzelis(photocurrent=0, saturation_current=1e-10,
+                   resistance_series=0.2, resistance_shunt=np.inf,
+                   nNsVth=1.7)
     for k, v in out.items():
         assert v == 0, k  # ensure all outputs are zero (not nan, etc)
 
     # test also when Rsh=inf but Iph > 0
-    out = batzelis_keypoints(photocurrent=0.1, saturation_current=1e-10,
-                             resistance_series=0.2, resistance_shunt=np.inf,
-                             nNsVth=1.7)
+    out = batzelis(photocurrent=0.1, saturation_current=1e-10,
+                   resistance_series=0.2, resistance_shunt=np.inf,
+                   nNsVth=1.7)
     for k, v in out.items():
         assert v > 0, k  # ensure all outputs >0 (not nan, etc)

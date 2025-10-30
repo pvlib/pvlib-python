@@ -952,8 +952,8 @@ def _pwr_optfcn(df, loc):
     return current * df[loc]
 
 
-def batzelis_keypoints(photocurrent, saturation_current, resistance_series,
-                       resistance_shunt, nNsVth):
+def batzelis(photocurrent, saturation_current, resistance_series,
+             resistance_shunt, nNsVth):
     """
     Estimate maximum power, open-circuit, and short-circuit points from
     single-diode equation parameters using Batzelis's method.

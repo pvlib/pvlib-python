@@ -6,6 +6,7 @@ import pandas as pd
 import pytest
 import pvlib
 import os
+import requests
 from tests.conftest import RERUNS, RERUNS_DELAY, requires_earthdata_credentials
 
 
@@ -81,3 +82,30 @@ def test_get_merra2_timezones(params, expected, expected_meta):
     df, meta = pvlib.iotools.get_merra2(**params)
     pd.testing.assert_frame_equal(df, expected, check_freq=False)
     assert meta == expected_meta
+
+
+@requires_earthdata_credentials
+@pytest.mark.remote_data
+@pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
+def test_get_merra2_bad_credentials(params, expected, expected_meta):
+    params['username'] = 'nonexistent'
+    with pytest.raises(requests.exceptions.HTTPError, match='Unauthorized'):
+        pvlib.iotools.get_merra2(**params)
+
+
+@requires_earthdata_credentials
+@pytest.mark.remote_data
+@pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
+def test_get_merra2_bad_dataset(params, expected, expected_meta):
+    params['dataset'] = 'nonexistent'
+    with pytest.raises(requests.exceptions.HTTPError, match='404 for url'):
+        pvlib.iotools.get_merra2(**params)
+
+
+@requires_earthdata_credentials
+@pytest.mark.remote_data
+@pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
+def test_get_merra2_bad_variables(params, expected, expected_meta):
+    params['variables'] = ['nonexistent']
+    with pytest.raises(requests.exceptions.HTTPError, match='400 for url'):
+        pvlib.iotools.get_merra2(**params)

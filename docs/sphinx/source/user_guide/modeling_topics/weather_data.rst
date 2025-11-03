@@ -112,7 +112,8 @@ online web APIs.  For example, :py:func:`~pvlib.iotools.get_pvgis_hourly`
 downloads data from PVGIS's webservers and returns it as a python variable.
 Functions that retrieve data from the internet are named ``get_``, followed
 by the name of the data source: :py:func:`~pvlib.iotools.get_bsrn`,
-:py:func:`~pvlib.iotools.get_psm3`, :py:func:`~pvlib.iotools.get_pvgis_tmy`,
+:py:func:`~pvlib.iotools.get_nsrdb_psm4_conus`,
+:py:func:`~pvlib.iotools.get_pvgis_tmy`,
 and so on.
 
 For satellite/reanalysis datasets, the location is specified by latitude and
@@ -121,7 +122,7 @@ longitude in decimal degrees:
 .. code-block:: python
 
     latitude, longitude = 33.75, -84.39  # Atlanta, Georgia, United States
-    df, metadata = pvlib.iotools.get_psm3(latitude, longitude, map_variables=True, ...)
+    df, metadata = pvlib.iotools.get_pvgis_tmy(latitude, longitude, map_variables=True, ...)
 
 
 For ground station networks, the location identifier is the station ID:

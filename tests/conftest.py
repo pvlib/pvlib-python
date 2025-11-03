@@ -131,6 +131,19 @@ requires_solaranywhere_credentials = pytest.mark.skipif(
 
 
 try:
+    # Attempt to load ECMWF API key used for testing
+    # pvlib.iotools.get_era5
+    ecwmf_api_key = os.environ["ECMWF_API_KEY"]
+    has_ecmwf_credentials = True
+except KeyError:
+    has_ecmwf_credentials = False
+
+requires_ecmwf_credentials = pytest.mark.skipif(
+    not has_ecmwf_credentials,
+    reason='requires ECMWF credentials')
+
+
+try:
     # Attempt to load NASA EarthData credentials used for testing
     # pvlib.iotools.get_merra2
     earthdata_username = os.environ["EARTHDATA_USERNAME"]

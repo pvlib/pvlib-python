@@ -50,6 +50,7 @@ Documentation
 
 Testing
 ~~~~~~~
+* Added Python 3.14 to test suite. (:pull:`2590`)
 
 
 Benchmarking

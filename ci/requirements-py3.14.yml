@@ -24,5 +24,5 @@ dependencies:
     - scipy >= 1.7.2
     - statsmodels
     - pip:
-        - nrel-pysam>=2.0
+        # - nrel-pysam>=2.0  # not available for py 3.14 as of 2025-11-03
         - solarfactors

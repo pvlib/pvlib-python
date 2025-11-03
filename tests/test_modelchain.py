@@ -140,7 +140,7 @@ def cec_dc_adr_ac_system(sam_data, cec_module_cs5p_220m,
                       module_parameters=module_parameters,
                       temperature_model_parameters=temp_model_params,
                       inverter_parameters=inverter,
-                      modules_per_string=14)
+                      modules_per_string=13)
     return system
 
 
@@ -1383,6 +1383,12 @@ def test_ac_models(sapm_dc_snl_ac_system, cec_dc_adr_ac_system,
         'adr': 'adr',
         'pvwatts': 'pvwatts',
         'pvwatts_multi': 'pvwatts'}
+    inverter_to_ac_model_param = {
+        'sandia': 'Paco',
+        'sandia_multi': 'Paco',
+        'adr': 'Pnom',
+        'pvwatts': 'pdc0',
+        'pvwatts_multi': 'pdc0'}
     ac_model = inverter_to_ac_model[inverter_model]
     system = ac_systems[inverter_model]
 
@@ -1399,7 +1405,12 @@ def test_ac_models(sapm_dc_snl_ac_system, cec_dc_adr_ac_system,
     assert m.call_count == 1
     assert isinstance(mc.results.ac, pd.Series)
     assert not mc.results.ac.empty
-    assert mc.results.ac.iloc[1] < 1
+    # irradiance 800 W/m2 at 1st timestamp
+    inv_param = mc.system.inverter_parameters[
+        inverter_to_ac_model_param[inverter_model]]
+    assert (mc.results.ac.iloc[0] > inv_param / 2.)
+    # irradiance 0 W/m2 at the 2nd timestamp
+    assert (np.isnan(mc.results.ac.iloc[1]) or (mc.results.ac.iloc[1] < 1))
 
 
 def test_ac_model_user_func(pvwatts_dc_pvwatts_ac_system, location, weather,

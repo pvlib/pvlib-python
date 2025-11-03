@@ -141,18 +141,20 @@ def bishop88(diode_voltage, photocurrent, saturation_current,
 
     References
     ----------
-    .. [1] "Computer simulation of the effects of electrical mismatches in
-       photovoltaic cell interconnection circuits" JW Bishop, Solar Cell (1988)
-       :doi:`10.1016/0379-6787(88)90059-2`
+    .. [1] J.W. Bishop, "Computer simulation of the effects of electrical
+       mismatches in photovoltaic cell interconnection circuits" Solar Cells,
+       vol. 25 no. 1, pp. 73-89, Oct. 1988.
+       :doi:`doi.org/10.1016/0379-6787(88)90059-2`
 
-    .. [2] "Improved equivalent circuit and Analytical Model for Amorphous
-       Silicon Solar Cells and Modules." J. Mertens, et al., IEEE Transactions
-       on Electron Devices, Vol 45, No 2, Feb 1998.
+    .. [2] J. Merten, J. M. Asensi, C. Voz, A. V. Shah, R. Platz and J. Andreu,
+       "Improved equivalent circuit and Analytical Model for Amorphous
+       Silicon Solar Cells and Modules." , IEEE Transactions
+       on Electron Devices, vol. 45, no. 2, pp. 423-429, Feb 1998.
        :doi:`10.1109/16.658676`
 
-    .. [3] "Performance assessment of a simulation model for PV modules of any
-       available technology", André Mermoud and Thibault Lejeune, 25th EUPVSEC,
-       2010
+    .. [3] A. Mermoud and T. Lejeune, "Performance assessment of a simulation
+       model for PV modules of any available technology", In Proc. of the 25th
+       European PVSEC, Valencia, ES, 2010.
        :doi:`10.4229/25thEUPVSEC2010-4BV.1.114`
     """
     # calculate recombination loss current where d2mutau > 0
@@ -913,10 +915,25 @@ def _lambertw(photocurrent, saturation_current, resistance_series,
             v_oc = 0.
 
     # Find the voltage, v_mp, where the power is maximized.
-    # Start the golden section search at v_oc * 1.14
-    p_mp, v_mp = _golden_sect_DataFrame(params, 0., v_oc * 1.14, _pwr_optfcn)
+    # use scipy.elementwise if available
+    # remove try/except when scipy>=1.15, and golden mean is retired
+    try:
+        from scipy.optimize.elementwise import find_minimum
+        # left negative to insure strict inequality
+        init = (-1., 0.8*v_oc, v_oc)
+        res = find_minimum(_vmp_opt, init,
+                           args=(params['photocurrent'],
+                                 params['saturation_current'],
+                                 params['resistance_series'],
+                                 params['resistance_shunt'],
+                                 params['nNsVth'],))
+        v_mp = res.x
+        p_mp = -1.*res.f_x
+    except ModuleNotFoundError:
+        # switch to old golden section method
+        p_mp, v_mp = _golden_sect_DataFrame(params, 0., v_oc * 1.14,
+                                            _pwr_optfcn)
 
-    # Find Imp using Lambert W
     i_mp = _lambertw_i_from_v(v_mp, **params)
 
     # Find Ix and Ixx using Lambert W
@@ -936,6 +953,15 @@ def _lambertw(photocurrent, saturation_current, resistance_series,
         out += (ivcurve_i, ivcurve_v)
 
     return out
+
+
+def _vmp_opt(v, iph, io, rs, rsh, nNsVth):
+    '''
+    Function to find negative of power from ``i_from_v``.
+    '''
+    current = _lambertw_i_from_v(v, iph, io, rs, rsh, nNsVth)
+
+    return -v * current
 
 
 def _pwr_optfcn(df, loc):

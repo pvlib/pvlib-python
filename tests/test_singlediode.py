@@ -7,7 +7,8 @@ import pandas as pd
 import scipy
 from pvlib import pvsystem
 from pvlib.singlediode import (bishop88_mpp, estimate_voc, VOLTAGE_BUILTIN,
-                               bishop88, bishop88_i_from_v, bishop88_v_from_i)
+                               bishop88, bishop88_i_from_v, bishop88_v_from_i,
+                               batzelis)
 import pytest
 from numpy.testing import assert_array_equal
 from .conftest import TESTS_DATA_DIR
@@ -617,9 +618,60 @@ def test_bishop88_init_cond(method):
                                      NsVbi=NsVbi))
     bad_results = np.isnan(vmp2) | (vmp2 < 0) | (err > 0.00001)
     assert not bad_results.any()
-    # test v_from_i
+    # test i_from_v
     imp2 = bishop88_i_from_v(vmp, *sde_params, d2mutau=d2mutau, NsVbi=NsVbi)
     err = np.abs(_sde_check_solution(imp2, vmp, *sde_params, d2mutau=d2mutau,
                                      NsVbi=NsVbi))
     bad_results = np.isnan(imp2) | (imp2 < 0) | (err > 0.00001)
     assert not bad_results.any()
+
+
+def test_batzelis():
+    params = {'photocurrent': 10, 'saturation_current': 1e-10,
+              'resistance_series': 0.2, 'resistance_shunt': 3000,
+              'nNsVth': 1.7}
+
+    exact_values = {  # calculated using pvlib.pvsystem.singlediode
+        'i_sc': 9.999333377550565,
+        'v_oc': 43.05589965219406,
+        'i_mp': 9.513255314772051,
+        'v_mp': 35.97259289596944,
+        'p_mp': 342.21646055371264,
+    }
+    rtol = 5e-3  # accurate to within half a percent in this case
+
+    output = batzelis(**params)
+    for key in exact_values:
+        assert output[key] == pytest.approx(exact_values[key], rel=rtol)
+
+    # numpy arrays
+    params2 = {k: np.array([v] * 2) for k, v in params.items()}
+    output2 = batzelis(**params2)
+    for key in exact_values:
+        exp = np.array([exact_values[key]] * 2)
+        np.testing.assert_allclose(output2[key], exp, rtol=rtol)
+
+    # pandas
+    params3 = {k: pd.Series(v) for k, v in params2.items()}
+    output3 = batzelis(**params3)
+    assert isinstance(output3, pd.DataFrame)
+    for key in exact_values:
+        exp = pd.Series([exact_values[key]] * 2)
+        np.testing.assert_allclose(output3[key], exp, rtol=rtol)
+
+
+def test_batzelis_night():
+    # The De Soto SDM produces photocurrent=0 and resistance_shunt=inf
+    # at 0 W/m2 irradiance
+    out = batzelis(photocurrent=0, saturation_current=1e-10,
+                   resistance_series=0.2, resistance_shunt=np.inf,
+                   nNsVth=1.7)
+    for k, v in out.items():
+        assert v == 0, k  # ensure all outputs are zero (not nan, etc)
+
+    # test also when Rsh=inf but Iph > 0
+    out = batzelis(photocurrent=0.1, saturation_current=1e-10,
+                   resistance_series=0.2, resistance_shunt=np.inf,
+                   nNsVth=1.7)
+    for k, v in out.items():
+        assert v > 0, k  # ensure all outputs >0 (not nan, etc)

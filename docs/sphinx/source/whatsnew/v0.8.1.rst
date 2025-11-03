@@ -24,7 +24,7 @@ Enhancements
   10 minutes. (:pull:`1074`)
 * Added :py:func:`pvlib.inverter.sandia_multi` and :py:func:`pvlib.inverter.pvwatts_multi`
   for modeling inverters with multiple MPPTs (:issue:`457`, :pull:`1085`, :pull:`1106`)
-* Added optional ``attributes`` parameter to :py:func:`pvlib.iotools.get_psm3`
+* Added optional ``attributes`` parameter to :py:func:`!pvlib.iotools.get_psm3`
   and added the option of fetching 5- and 15-minute PSM3 data. (:pull:`1086`)
 * Added :py:func:`pvlib.irradiance.campbell_norman` for estimating DNI, DHI and GHI
   from extraterrestrial irradiance. This function replaces ``pvlib.irradiance.liujordan``;

@@ -7,7 +7,7 @@ dependencies:
     - cython
     - ephem
     - h5py
-    - numba
+    # - numba  # not available for py 3.14 as of 2025-11-03
     - numpy >= 1.21.2
     - pandas >= 1.3.3
     - pip

@@ -13,6 +13,8 @@ Breaking Changes
 
 Deprecations
 ~~~~~~~~~~~~
+* Deprecate :py:func:`~pvlib.shading.sky_diffuse_passias` in favor of
+:py:func:`~pvlib.bifacial.utils.vf_row_sky_2d_integ`. (:pull:`2584`)
 
 
 Bug fixes
@@ -46,7 +48,7 @@ Enhancements
 Documentation
 ~~~~~~~~~~~~~
 * Provide an overview of single-diode modeling functionality in :ref:`singlediode`. (:pull:`2565`)
-
+* Update gallery example of modeling diffuse shading loss with correct usage. (:pull:`2584`)
 
 Testing
 ~~~~~~~

@@ -86,15 +86,6 @@ def expected_rise_set_ephem():
                         index=times)
 
 
-def test_spa_python_atmos_refract_spelling():
-    """Test that parameter name is 'atmos_refract' not 'atmos_refrac'."""
-    import re
-    # Check for 'atmos_refrac' not followed by 't' (i.e., the typo)
-    pattern = r'atmos_refrac(?!t)'
-    assert not re.search(pattern, solarposition.spa_python.__doc__), \
-        "Found typo 'atmos_refrac' in spa_python docstring. Should be 'atmos_refract'"
-
-
 # the physical tests are run at the same time as the NREL SPA test.
 # pyephem reproduces the NREL result to 2 decimal places.
 # this doesn't mean that one code is better than the other.

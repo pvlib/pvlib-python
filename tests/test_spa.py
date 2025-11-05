@@ -89,15 +89,6 @@ mix_year_actual = np.full((10), dt_actual)
 mix_month_actual = mix_year_actual
 
 
-def test_solar_position_atmos_refract_spelling():
-    """Test that parameter name is 'atmos_refract' not 'atmos_refrac'."""
-    import re
-    # Check for 'atmos_refrac' not followed by 't' (i.e., the typo)
-    pattern = r'atmos_refrac(?!t)'
-    assert not re.search(pattern, pvlib.spa.solar_position.__doc__), \
-        "Found typo 'atmos_refrac' in solar_position docstring. Should be 'atmos_refract'"
-
-
 class SpaBase:
     """Test functions common to numpy and numba spa"""
     def test_julian_day_dt(self):

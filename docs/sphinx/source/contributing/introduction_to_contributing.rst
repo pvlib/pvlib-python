@@ -52,4 +52,4 @@ contributing.html>`_ for inspiration.
 Code of Conduct
 ~~~~~~~~~~~~~~~
 All contributors are expected to adhere to the `Contributor Code of Conduct
-<https://github.com/pvlib/pvlib-python/blob/main/CODE_OF_CONDUCT.md#contributor-covenant-code-of-conduct>`_.
+<https://github.com/pvlib/pvlib-python/blob/main/CODE_OF_CONDUCT.md>`_.

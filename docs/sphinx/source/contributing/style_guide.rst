@@ -29,7 +29,7 @@ Remove any ``logging`` calls and ``print`` statements that you added
 during development. ``warning`` is ok.
 
 We typically use GitHub's
-"`squash and merge <https://help.github.com/articles/about-pull-request-merges/#squash-and-merge-your-pull-request-commits>`_"
+"`squash and merge <https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/incorporating-changes-from-a-pull-request/about-pull-request-merges#squash-and-merge-your-commits>`_"
 feature to merge your pull request into pvlib. GitHub will condense the
 commit history of your branch into a single commit when merging into
 pvlib-python/main (the commit history on your branch remains

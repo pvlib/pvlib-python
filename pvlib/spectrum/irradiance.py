@@ -47,8 +47,8 @@ def get_reference_spectra(wavelengths=None, standard="ASTM G173-03"):
     For global spectra, it is about 1000.37 W/m².
 
     The values of the ASTM G173-03 provided with pvlib-python are copied from
-    an Excel file distributed by NREL, which is found here [2]_:
-    https://www.nrel.gov/grid/solar-resource/assets/data/astmg173.xls
+    an Excel file that was previously distributed by NREL [2]_. The data is
+    included in pvlib's data directory.
 
     Examples
     --------

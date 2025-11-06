@@ -124,8 +124,7 @@ def get_pvgis_hourly(latitude, longitude, start=None, end=None,
         documentation [2]_ for more info.
     url: str, default: :const:`pvlib.iotools.pvgis.URL`
         Base url of PVGIS API. ``seriescalc`` is appended to get hourly data
-        endpoint. Note, a specific PVGIS version can be specified, e.g.,
-        https://re.jrc.ec.europa.eu/api/v5_2/
+        endpoint. Note, a specific PVGIS version can be specified if needed.
     map_variables: bool, default: True
         When true, renames columns of the Dataframe to pvlib variable names
         where applicable. See variable :const:`VARIABLE_MAP`.

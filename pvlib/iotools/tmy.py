@@ -183,8 +183,7 @@ def read_tmy3(filename, coerce_year=None, map_variables=True, encoding=None):
     .. [2] Wilcox, S. (2007). National Solar Radiation Database 1991 2005
        Update: Users Manual. 472 pp.; NREL Report No. TP-581-41364.
        :doi:`10.2172/901864`
-    .. [3] `SolarAnywhere file formats
-       <https://www.solaranywhere.com/support/historical-data/file-formats/>`_
+    .. [3] SolarAnywhere file formats documentation
     """  # noqa: E501
     head = ['USAF', 'Name', 'State', 'TZ', 'latitude', 'longitude', 'altitude']
 

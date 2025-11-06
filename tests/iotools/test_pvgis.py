@@ -233,9 +233,9 @@ args_pv_json = {
     'start': pd.Timestamp(2013, 1, 1), 'end': pd.Timestamp(2014, 5, 1),
     'pvcalculation': True, 'peakpower': 10, 'pvtechchoice': 'CIS', 'loss': 5,
     'trackingtype': 2, 'optimalangles': True, 'components': False,
-    'url': 'https://re.jrc.ec.europa.eu/api/v5_2/'}
+    'url': 'https://re.jrc.ec.europa.eu/api/'}
 
-url_pv_json = 'https://re.jrc.ec.europa.eu/api/v5_2/seriescalc?lat=45&lon=8&outputformat=json&angle=30&aspect=0&pvtechchoice=CIS&mountingplace=free&trackingtype=2&components=0&usehorizon=1&raddatabase=PVGIS-SARAH2&startyear=2013&endyear=2014&pvcalculation=1&peakpower=10&loss=5&optimalangles=1'  # noqa: E501
+url_pv_json = 'https://re.jrc.ec.europa.eu/api/seriescalc?lat=45&lon=8&outputformat=json&angle=30&aspect=0&pvtechchoice=CIS&mountingplace=free&trackingtype=2&components=0&usehorizon=1&raddatabase=PVGIS-SARAH2&startyear=2013&endyear=2014&pvcalculation=1&peakpower=10&loss=5&optimalangles=1'  # noqa: E501
 
 
 @pytest.mark.parametrize('testfile,expected_name,args,map_variables,url_test', [  # noqa: E501

@@ -15,7 +15,7 @@ The source code for pvlib python is hosted on `GitHub
 Please see the :ref:`installation` page for installation help.
 
 For examples of how to use pvlib python, please see
-:ref:`package_overview` and the :ref:`example_gallery`.
+:ref:`package_overview` and the :ref:`example-gallery`.
 The documentation assumes general familiarity with
 Python, NumPy, and Pandas. Google searches will yield many
 excellent tutorials for these packages.

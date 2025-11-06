@@ -14,7 +14,7 @@ the electrical performance of solar photovoltaic (PV) systems.  It provides
 implementations of scientific models for many topics relevant for PV modeling.
 
 For additional details about the project, see :ref:`package_overview`.
-For examples of using pvlib, see :ref:`example_gallery`.
+For examples of using pvlib, see :ref:`example-gallery`.
 
 
 How does pvlib compare to other PV modeling tools like PVsyst or SAM?

@@ -41,7 +41,7 @@ change something about pvlib, then please make an issue on our
 
 How do I contribute?
 --------------------
-We're so glad you asked! Please see :ref:`Contributing` for information and
+We're so glad you asked! Please see :ref:`contributing` for information and
 instructions on how to contribute. We really appreciate it!
 
 

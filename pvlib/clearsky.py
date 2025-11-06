@@ -993,10 +993,9 @@ def bird(zenith, airmass_relative, aod380, aod500, precipitable_water,
 
     References
     ----------
-    .. [1] R. E. Bird and R. L Hulstrom, "A Simplified Clear Sky model for
-       Direct and Diffuse Insolation on Horizontal Surfaces" SERI Technical
-       Report SERI/TR-642-761, Feb 1981. Solar Energy Research Institute,
-       Golden, CO.
+    .. [1] R. E. Bird and R. L. Hulstrom, "A Simplified Clear Sky model for
+       Direct and Diffuse Insolation on Horizontal Surfaces", SERI, Golden,
+       CO, USA, Rep. SERI/TR-642-761, Feb 1981, :doi:`10.2172/6510849`.
 
     .. [2] Daryl R. Myers, "Solar Radiation: Practical Modeling for Renewable
        Energy Applications", pp. 46-51 CRC Press (2013)
@@ -1004,9 +1003,7 @@ def bird(zenith, airmass_relative, aod380, aod500, precipitable_water,
     .. [3] `NREL Bird Clear Sky Model <http://rredc.nrel.gov/solar/models/
        clearsky/>`_
 
-    .. [4] SERI/TR-642-761 :doi:`10.2172/6510849`
-
-    .. [5] `Error Reports <http://rredc.nrel.gov/solar/models/clearsky/
+    .. [4] `Error Reports <http://rredc.nrel.gov/solar/models/clearsky/
        error_reports.html>`_
     """
     etr = dni_extra  # extraradiation

@@ -76,7 +76,8 @@ Requirements
 
 Contributors
 ~~~~~~~~~~~~
-* Kevin Anderson * Will Holmgren (:ghuser:`wholmgren`)
+* Kevin Anderson (:ghuser:`kandersolar`)
+* Will Holmgren (:ghuser:`wholmgren`)
 * Cliff Hansen (:ghuser:`cwhanse`)
 * Adam R. Jensen (:ghuser:`adamrjensen`)
 * Pratham Chauhan (:ghuser:`ooprathamm`)
@@ -85,7 +86,7 @@ Contributors
 * Anton Driesse (:ghuser:`adriesse`)
 * Michael Deceglie (:ghuser:`mdeceglie`)
 * Saurabh Aneja (:ghuser:`spaneja`)
-* John Moseley
+* John Moseley (:ghuser:`johnMoseleyArray`)
 * Areeba Turabi (:ghuser:`aturabi`)
 * Mark Campanelli (:ghuser:`markcampanelli`)
 * Taos Transue (:ghuser:`reepoi`)

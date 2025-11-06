@@ -96,7 +96,7 @@ Contributors
 * Will Holmgren (:ghuser:`wholmgren`)
 * Leland Boeman (:ghuser:`lboeman`)
 * Cedric Leroy (:ghuser:`cedricleroy`)
-* Ben Ellis
+* Ben Ellis (:ghuser:`benbenboben`)
 * Cliff Hansen (:ghuser:`cwhanse`)
 * Mark Mikofski (:ghuser:`mikofski`)
 * Anton Driesse (:ghuser:`adriesse`)

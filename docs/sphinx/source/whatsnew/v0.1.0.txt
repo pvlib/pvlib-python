@@ -82,7 +82,7 @@ Contributors
 
 This list includes all (I hope) contributors to
 `pvlib/pvlib-python <https://github.com/pvlib/pvlib-python>`_,
-Sandia-Labs/PVLIB_Python (archived),
+`sandialabs/MATLAB_PV_LIB <https://github.com/sandialabs/MATLAB_PV_LIB>`_,
 and
 `UARENForecasting/PVLIB_Python <https://github.com/UARENForecasting/PVLIB_Python>`_.
 

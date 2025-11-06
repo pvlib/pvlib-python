@@ -657,8 +657,8 @@ def spectral_factor_jrc(airmass, clearsky_index, module_type=None,
     .. [1] Huld, T., Sample, T., and Dunlop, E., 2009. A simple model
        for estimating the influence of spectrum variations on PV performance.
        In Proceedings of the 24th European Photovoltaic Solar Energy
-       Conference, Hamburg, Germany pp. 3385-3389. 2009. Accessed at:
-       ResearchGate publication 256080247
+       Conference, Hamburg, Germany pp. 3385-3389. 2009.
+       :doi:`10.4229/24thEUPVSEC2009-5BV.1.99`
     .. [2] Rigollier, C., Bauer, O., and Wald, L., 2000. On the clear sky model
        of the ESRA—European Solar Radiation Atlas—with respect to the Heliosat
        method. Solar energy, 68(1), pp.33-48.

@@ -160,7 +160,7 @@ html_theme = "pydata_sphinx_theme"
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
-# https://pydata-sphinx-theme.rtfd.io/en/latest/user_guide/configuring.html
+# https://pydata-sphinx-theme.readthedocs.io/en/stable/user_guide/layout.html
 html_theme_options = {
     "github_url": "https://github.com/pvlib/pvlib-python",
     "icon_links": [

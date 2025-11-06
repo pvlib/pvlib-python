@@ -1004,7 +1004,7 @@ def bird(zenith, airmass_relative, aod380, aod500, precipitable_water,
     .. [3] `NREL Bird Clear Sky Model <http://rredc.nrel.gov/solar/models/
        clearsky/>`_
 
-    .. [4] SERI/TR-642-761 (1984) - archived NREL technical report
+    .. [4] SERI/TR-642-761 :doi:`10.2172/6510849`
 
     .. [5] `Error Reports <http://rredc.nrel.gov/solar/models/clearsky/
        error_reports.html>`_

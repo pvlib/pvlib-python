@@ -24,10 +24,10 @@ process. Here's an outline of the process:
    request.
 
 The Pandas project maintains an excellent `contributing page
-<http://pandas.pydata.org/pandas-docs/stable/contributing.html>`_ that goes
+<https://pandas.pydata.org/docs/dev/development/contributing.html>`_ that goes
 into detail on each of these steps. Also see GitHub's `Set Up Git
-<https://help.github.com/articles/set-up-git/>`_ and `Using Pull
-Requests <https://help.github.com/articles/using-pull-requests/>`_.
+<https://docs.github.com/en/get-started/getting-started-with-git/set-up-git>`_ and `Using Pull
+Requests <https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/about-pull-requests>`_.
 
 You must include documentation and unit tests for any new or improved
 code. We can provide help and advice on this after you start the pull

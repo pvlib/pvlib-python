@@ -3,6 +3,7 @@ Low-level functions for solving the single diode equation.
 """
 
 import numpy as np
+import pandas as pd
 from pvlib.tools import _golden_sect_DataFrame
 
 from scipy.optimize import brentq, newton
@@ -141,18 +142,20 @@ def bishop88(diode_voltage, photocurrent, saturation_current,
 
     References
     ----------
-    .. [1] "Computer simulation of the effects of electrical mismatches in
-       photovoltaic cell interconnection circuits" JW Bishop, Solar Cell (1988)
-       :doi:`10.1016/0379-6787(88)90059-2`
+    .. [1] J.W. Bishop, "Computer simulation of the effects of electrical
+       mismatches in photovoltaic cell interconnection circuits" Solar Cells,
+       vol. 25 no. 1, pp. 73-89, Oct. 1988.
+       :doi:`doi.org/10.1016/0379-6787(88)90059-2`
 
-    .. [2] "Improved equivalent circuit and Analytical Model for Amorphous
-       Silicon Solar Cells and Modules." J. Mertens, et al., IEEE Transactions
-       on Electron Devices, Vol 45, No 2, Feb 1998.
+    .. [2] J. Merten, J. M. Asensi, C. Voz, A. V. Shah, R. Platz and J. Andreu,
+       "Improved equivalent circuit and Analytical Model for Amorphous
+       Silicon Solar Cells and Modules." , IEEE Transactions
+       on Electron Devices, vol. 45, no. 2, pp. 423-429, Feb 1998.
        :doi:`10.1109/16.658676`
 
-    .. [3] "Performance assessment of a simulation model for PV modules of any
-       available technology", André Mermoud and Thibault Lejeune, 25th EUPVSEC,
-       2010
+    .. [3] A. Mermoud and T. Lejeune, "Performance assessment of a simulation
+       model for PV modules of any available technology", In Proc. of the 25th
+       European PVSEC, Valencia, ES, 2010.
        :doi:`10.4229/25thEUPVSEC2010-4BV.1.114`
     """
     # calculate recombination loss current where d2mutau > 0
@@ -913,10 +916,25 @@ def _lambertw(photocurrent, saturation_current, resistance_series,
             v_oc = 0.
 
     # Find the voltage, v_mp, where the power is maximized.
-    # Start the golden section search at v_oc * 1.14
-    p_mp, v_mp = _golden_sect_DataFrame(params, 0., v_oc * 1.14, _pwr_optfcn)
+    # use scipy.elementwise if available
+    # remove try/except when scipy>=1.15, and golden mean is retired
+    try:
+        from scipy.optimize.elementwise import find_minimum
+        # left negative to insure strict inequality
+        init = (-1., 0.8*v_oc, v_oc)
+        res = find_minimum(_vmp_opt, init,
+                           args=(params['photocurrent'],
+                                 params['saturation_current'],
+                                 params['resistance_series'],
+                                 params['resistance_shunt'],
+                                 params['nNsVth'],))
+        v_mp = res.x
+        p_mp = -1.*res.f_x
+    except ModuleNotFoundError:
+        # switch to old golden section method
+        p_mp, v_mp = _golden_sect_DataFrame(params, 0., v_oc * 1.14,
+                                            _pwr_optfcn)
 
-    # Find Imp using Lambert W
     i_mp = _lambertw_i_from_v(v_mp, **params)
 
     # Find Ix and Ixx using Lambert W
@@ -938,6 +956,15 @@ def _lambertw(photocurrent, saturation_current, resistance_series,
     return out
 
 
+def _vmp_opt(v, iph, io, rs, rsh, nNsVth):
+    '''
+    Function to find negative of power from ``i_from_v``.
+    '''
+    current = _lambertw_i_from_v(v, iph, io, rs, rsh, nNsVth)
+
+    return -v * current
+
+
 def _pwr_optfcn(df, loc):
     '''
     Function to find power from ``i_from_v``.
@@ -949,3 +976,85 @@ def _pwr_optfcn(df, loc):
                                  df['resistance_shunt'], df['nNsVth'])
 
     return current * df[loc]
+
+
+def batzelis(photocurrent, saturation_current, resistance_series,
+             resistance_shunt, nNsVth):
+    """
+    Estimate maximum power, open-circuit, and short-circuit points from
+    single-diode equation parameters using Batzelis's method.
+
+    This method is described in Section II.B of [1]_.
+
+    Parameters
+    ----------
+    photocurrent : numeric
+        Light-generated current. [A]
+    saturation_current : numeric
+        Diode saturation current. [A]
+    resistance_series : numeric
+        Series resistance. [Ohm]
+    resistance_shunt : numeric
+        Shunt resistance. [Ohm]
+    nNsVth : numeric
+        The product of the usual diode ideality factor (n, unitless),
+        number of cells in series (Ns), and cell thermal voltage at
+        specified effective irradiance and cell temperature. [V]
+
+    Returns
+    -------
+    dict
+        The returned dict-like object contains the keys/columns:
+
+        * ``p_mp`` - power at maximum power point. [W]
+        * ``i_mp`` - current at maximum power point. [A]
+        * ``v_mp`` - voltage at maximum power point. [V]
+        * ``i_sc`` - short circuit current. [A]
+        * ``v_oc`` - open circuit voltage. [V]
+
+    References
+    ----------
+    .. [1] E. I. Batzelis, "Simple PV Performance Equations Theoretically Well
+       Founded on the Single-Diode Model," Journal of Photovoltaics vol. 7,
+       no. 5, pp. 1400-1409, Sep 2017, :doi:`10.1109/JPHOTOV.2017.2711431`
+    """
+    # convenience variables
+    Iph = photocurrent
+    Is = saturation_current
+    Rsh = resistance_shunt
+    Rs = resistance_series
+    a = nNsVth
+
+    # Eqs 3-4
+    isc = Iph / (Rs / Rsh + 1)  # manipulated to handle Rsh=np.inf correctly
+    with np.errstate(divide='ignore'):  # zero Iph
+        voc = a * np.log(Iph / Is)
+
+    # Eqs 5-8
+    w = np.real(lambertw(np.e * Iph / Is))
+    # vmp = (1 + Rs/Rsh) * a * (w - 1) - Rs * Iph * (1 - 1/w)  # not needed
+    with np.errstate(divide='ignore', invalid='ignore'):  # zero Iph -> zero w
+        imp = Iph * (1 - 1/w) - a * (w - 1) / Rsh
+
+    vmp = a * (w - 1) - Rs * imp
+
+    vmp = np.where(Iph > 0, vmp, 0)
+    voc = np.where(Iph > 0, voc, 0)
+    imp = np.where(Iph > 0, imp, 0)
+    isc = np.where(Iph > 0, isc, 0)
+
+    out = {
+        'p_mp': imp * vmp,
+        'i_mp': imp,
+        'v_mp': vmp,
+        'i_sc': isc,
+        'v_oc': voc,
+    }
+
+    # if pandas in, ensure pandas out
+    pandas_inputs = [
+        x for x in [Iph, Is, Rsh, Rs, a] if isinstance(x, pd.Series)]
+    if pandas_inputs:
+        out = pd.DataFrame(out, index=pandas_inputs[0].index)
+
+    return out

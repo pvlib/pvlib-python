@@ -143,10 +143,12 @@ email = 'your_email@domain.com'
 
 keys = ['ghi', 'dni', 'dhi', 'temp_air', 'wind_speed',
         'albedo', 'precipitable_water']
-psm3, psm3_metadata = pvlib.iotools.get_psm3(latitude, longitude, api_key,
-                                             email, interval=5, names=2019,
-                                             map_variables=True, leap_day=True,
-                                             attributes=keys)
+psm3, psm3_metadata = pvlib.iotools.get_nsrdb_psm4_conus(latitude, longitude,
+                                                         api_key, email,
+                                                         year=2019, interval=5,
+                                                         parameters=keys,
+                                                         map_variables=True,
+                                                         leap_day=True)
 
 # %%
 # Pre-generate some model inputs

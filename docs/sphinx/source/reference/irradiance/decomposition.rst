@@ -2,8 +2,8 @@
 
 .. _dniestmodels:
 
-DNI estimation models
----------------------
+Decomposition models
+--------------------
 
 .. autosummary::
    :toctree: ../generated/

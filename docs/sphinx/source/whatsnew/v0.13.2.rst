@@ -6,6 +6,9 @@ v0.13.2 (Anticipated December, 2025)
 
 Breaking Changes
 ~~~~~~~~~~~~~~~~
+* Following the removal of the NSRDB PSM3 API, the :func:`!pvlib.iotools.get_psm3`,
+  :func:`!pvlib.iotools.read_psm3`, and :func:`!pvlib.iotools.parse_psm3`
+  functions are removed. (:issue:`2581`, :pull:`2582`)
 
 
 Deprecations
@@ -18,6 +21,13 @@ Bug fixes
 
 Enhancements
 ~~~~~~~~~~~~
+* Add :py:func:`~pvlib.ivtools.sdm.fit_desoto_batzelis`, a function to estimate
+  parameters for the De Soto single-diode model from datasheet values. (:pull:`2563`)
+* Add :py:func:`~pvlib.singlediode.batzelis`, a function to estimate
+  maximum power, open circuit, and short circuit points using parameters for
+  the single-diode equation. (:pull:`2563`)
+* Add :py:func:`~pvlib.pvarray.batzelis`, a function to estimate maximum power
+  open circuit, and short circuit points from datasheet values. (:pull:`2563`)
 * Add ``method='chandrupatla'`` (faster than ``brentq`` and slower than ``newton``,
   but convergence is guaranteed) as an option for
   :py:func:`pvlib.pvsystem.singlediode`,
@@ -29,9 +39,14 @@ Enhancements
   :py:func:`~pvlib.singlediode.bishop88_i_from_v`. (:issue:`2497`, :pull:`2498`)
 * Add Marion 2008 non-linear irradiance adjustment factor to
   :py:func:`pvlib.pvsystem.pvwatts_dc`. (:issue:`2566`, :pull:`2569`)
+* Accelerate :py:func:`~pvlib.pvsystem.singlediode` when scipy>=1.15 is
+  installed. (:issue:`2497`, :pull:`2571`)
+* Add :py:func:`~pvlib.iotools.get_era5`, a function for accessing
+  ERA5 reanalysis data. (:pull:`2573`)
 
 Documentation
 ~~~~~~~~~~~~~
+* Provide an overview of single-diode modeling functionality in :ref:`singlediode`. (:pull:`2565`)
 
 
 Testing
@@ -53,3 +68,4 @@ Maintenance
 Contributors
 ~~~~~~~~~~~~
 * Will Hobbs (:ghuser:`williamhobbs`)
+* Cliff Hansen (:ghuser:`cwhanse`)

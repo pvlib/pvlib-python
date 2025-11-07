@@ -92,3 +92,27 @@ def test_fit_desoto_sandia(cec_params_cansol_cs5p_220p):
     assert_allclose(result['dEgdT'], -0.0002677)
     assert_allclose(result['EgRef'], 1.3112547292120638)
     assert_allclose(result['cells_in_series'], specs['cells_in_series'])
+
+
+def test_fit_desoto_batzelis():
+    params = {'i_sc': 15.98, 'v_oc': 50.26, 'i_mp': 15.27, 'v_mp': 42.57,
+              'alpha_sc': 0.007351, 'beta_voc': -0.120624}
+    expected = {  # calculated with the function itself
+        'alpha_sc': 0.007351,
+        'a_ref': 1.7257632483733483,
+        'I_L_ref': 15.985408866796396,
+        'I_o_ref': 3.594308384705643e-12,
+        'R_sh_ref': 389.4379947026243,
+        'R_s': 0.13181590981241956,
+    }
+    out = sdm.fit_desoto_batzelis(**params)
+    for k in expected:
+        assert out[k] == pytest.approx(expected[k])
+
+    # ensure the STC values are reproduced
+    iv = pvsystem.singlediode(out['I_L_ref'], out['I_o_ref'], out['R_s'],
+                              out['R_sh_ref'], out['a_ref'])
+    assert iv['i_sc'] == pytest.approx(params['i_sc'])
+    assert iv['i_mp'] == pytest.approx(params['i_mp'], rel=3e-3)
+    assert iv['v_oc'] == pytest.approx(params['v_oc'], rel=3e-4)
+    assert iv['v_mp'] == pytest.approx(params['v_mp'], rel=4e-3)

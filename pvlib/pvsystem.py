@@ -2957,14 +2957,13 @@ def pvwatts_dc(effective_irradiance, temp_cell, pdc0, gamma_pdc, temp_ref=25.,
 
     References
     ----------
-    .. [1] A. P. Dobos, "PVWatts Version 5 Manual"
-           http://pvwatts.nrel.gov/downloads/pvwattsv5.pdf
-           (2014).
-    .. [2] B. Marion, "Comparison of Predictive Models for
-           Photovoltaic Module Performance,"
-           :doi:`10.1109/PVSC.2008.4922586`,
-           https://docs.nrel.gov/docs/fy08osti/42511.pdf
-           (2008).
+    .. [1] A. P. Dobos, "PVWatts Version 5 Manual", NREL, Golden, CO, USA,
+       Technical Report NREL/TP-6A20-62641, 2014, :doi:`10.2172/1158421`.
+    .. [2] B. Marion, "Comparison of Predictive Models for Photovoltaic
+       Module Performance," In Proc. 33rd IEEE Photovoltaic Specialists
+       Conference (PVSC), San Diego, CA, USA, 2008, pp. 1-6,
+       :doi:`10.1109/PVSC.2008.4922586`.
+       Pre-print: https://docs.nrel.gov/docs/fy08osti/42511.pdf
     """  # noqa: E501
 
     pdc = (effective_irradiance * 0.001 * pdc0 *
@@ -3036,9 +3035,8 @@ def pvwatts_losses(soiling=2, shading=3, snow=0, mismatch=2, wiring=2,
 
     References
     ----------
-    .. [1] A. P. Dobos, "PVWatts Version 5 Manual"
-           http://pvwatts.nrel.gov/downloads/pvwattsv5.pdf
-           (2014).
+    .. [1] A. P. Dobos, "PVWatts Version 5 Manual", NREL, Golden, CO, USA,
+       Technical Report NREL/TP-6A20-62641, 2014, :doi:`10.2172/1158421`.
     """
 
     params = [soiling, shading, snow, mismatch, wiring, connections, lid,

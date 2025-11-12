@@ -388,8 +388,8 @@ def pvwatts(pdc, pdc0, eta_inv_nom=0.96, eta_inv_ref=0.9637):
 
     References
     ----------
-    .. [1] A. P. Dobos, "PVWatts Version 5 Manual,"
-       http://pvwatts.nrel.gov/downloads/pvwattsv5.pdf (2014).
+    .. [1] A. P. Dobos, "PVWatts Version 5 Manual", NREL, Golden, CO, USA,
+       Technical Report NREL/TP-6A20-62641, 2014, :doi:`10.2172/1158421`.
     """
 
     pac0 = eta_inv_nom * pdc0

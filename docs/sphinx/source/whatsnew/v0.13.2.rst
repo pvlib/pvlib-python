@@ -53,6 +53,8 @@ Documentation
 
 Testing
 ~~~~~~~
+* Update pytest configuration in ``pyproject.toml`` to work with pytest 9.0.
+  (:pull:`2596`)
 
 
 Benchmarking

@@ -47,6 +47,8 @@ Enhancements
 Documentation
 ~~~~~~~~~~~~~
 * Provide an overview of single-diode modeling functionality in :ref:`singlediode`. (:pull:`2565`)
+* Fix typo in parameter name ``atmos_refract`` in :py:func:`pvlib.solarposition.spa_python`
+  and :py:func:`pvlib.spa.solar_position`. (:issue:`2532`, :pull:`2592`)
 
 
 Testing
@@ -69,3 +71,4 @@ Contributors
 ~~~~~~~~~~~~
 * Will Hobbs (:ghuser:`williamhobbs`)
 * Cliff Hansen (:ghuser:`cwhanse`)
+* Joseph Radford (:ghuser:`josephradford`)

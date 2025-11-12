@@ -314,7 +314,7 @@ def spa_python(time, latitude, longitude,
         using time.year and time.month from pandas.DatetimeIndex.
         For most simulations the default delta_t is sufficient.
         The USNO has historical and forecasted delta_t [3]_.
-    atmos_refrac : float, optional
+    atmos_refract : float, optional
         The approximate atmospheric refraction (in degrees)
         at sunrise and sunset.
     how : str, optional, default 'numpy'

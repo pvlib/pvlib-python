@@ -1057,7 +1057,7 @@ def solar_position(unixtime, lat, lon, elev, pressure, temp, delta_t,
         degrees C; used for atmospheric correction
     delta_t : float or array
         Difference between terrestrial time and UT1.
-    atmos_refrac : float
+    atmos_refract : float
         The approximate atmospheric refraction (in degrees)
         at sunrise and sunset.
     numthreads: int, optional, default 8

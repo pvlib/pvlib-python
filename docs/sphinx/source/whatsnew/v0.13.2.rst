@@ -37,20 +37,25 @@ Enhancements
   :py:func:`~pvlib.singlediode.bishop88_mpp`,
   :py:func:`~pvlib.singlediode.bishop88_v_from_i`, and
   :py:func:`~pvlib.singlediode.bishop88_i_from_v`. (:issue:`2497`, :pull:`2498`)
+* Add Marion 2008 non-linear irradiance adjustment factor to
+  :py:func:`pvlib.pvsystem.pvwatts_dc`. (:issue:`2566`, :pull:`2569`)
 * Accelerate :py:func:`~pvlib.pvsystem.singlediode` when scipy>=1.15 is
   installed. (:issue:`2497`, :pull:`2571`)
 * Add :py:func:`~pvlib.iotools.get_era5`, a function for accessing
   ERA5 reanalysis data. (:pull:`2573`)
 
-
 Documentation
 ~~~~~~~~~~~~~
 * Provide an overview of single-diode modeling functionality in :ref:`singlediode`. (:pull:`2565`)
+* Fix typo in parameter name ``atmos_refract`` in :py:func:`pvlib.solarposition.spa_python`
+  and :py:func:`pvlib.spa.solar_position`. (:issue:`2532`, :pull:`2592`)
 
 
 Testing
 ~~~~~~~
-* Added Python 3.14 to test suite. (:pull:`2590`)
+* Add Python 3.14 to test suite. (:pull:`2590`)
+* Update pytest configuration in ``pyproject.toml`` to work with pytest 9.0.
+  (:pull:`2596`)
 
 
 Benchmarking
@@ -67,4 +72,6 @@ Maintenance
 
 Contributors
 ~~~~~~~~~~~~
+* Will Hobbs (:ghuser:`williamhobbs`)
 * Cliff Hansen (:ghuser:`cwhanse`)
+* Joseph Radford (:ghuser:`josephradford`)

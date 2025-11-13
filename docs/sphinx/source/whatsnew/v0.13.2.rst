@@ -53,6 +53,7 @@ Documentation
 
 Testing
 ~~~~~~~
+* Add Python 3.14 to test suite. (:pull:`2590`)
 * Update pytest configuration in ``pyproject.toml`` to work with pytest 9.0.
   (:pull:`2596`)
 

@@ -3,9 +3,10 @@ from pvlib.spectrum.mismatch import (  # noqa: F401
     calc_spectral_mismatch_field,
     spectral_factor_caballero,
     spectral_factor_firstsolar,
-    spectral_factor_sapm,
-    spectral_factor_pvspec,
     spectral_factor_jrc,
+    spectral_factor_polo,
+    spectral_factor_pvspec,
+    spectral_factor_sapm,
 )
 from pvlib.spectrum.irradiance import (  # noqa: F401
     get_reference_spectra,

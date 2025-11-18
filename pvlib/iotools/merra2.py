@@ -68,8 +68,8 @@ def get_merra2(latitude, longitude, start, end, username, password, dataset,
     The following datasets provide quantities useful for PV modeling:
 
     - M2T1NXRAD.5.12.4: SWGDN, SWGDNCLR, ALBEDO
-    - M2T1NXSLV.5.12.4: T2M, U10M, V10M, T2MDEW, PS
-    - M2T1NXAER.5.12.4: TOTEXTTAU
+    - M2T1NXSLV.5.12.4: T2M, U10M, V10M, T2MDEW, PS, TO3, TQV
+    - M2T1NXAER.5.12.4: TOTEXTTAU, TOTSCATAU, TOTANGSTR
 
     Note that MERRA2 does not currently provide DNI or DHI.
 

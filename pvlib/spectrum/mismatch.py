@@ -742,7 +742,7 @@ def spectral_factor_polo(precipitable_water, airmass_absolute, aod500, aoi,
     coefficients : array-like, optional
         user-defined coefficients, if not using one of the coefficient
         sets via the ``module_type`` parameter.
-    albedo : float, optional
+    albedo : numeric, optional
         Ground albedo (default value 0.2). See :term:`albedo`. [unitless]
 
     Returns

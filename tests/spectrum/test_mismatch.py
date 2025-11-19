@@ -324,3 +324,66 @@ def test_spectral_factor_polo(module_type, expected):
     out = spectrum.spectral_factor_polo(
         pws, ams, aods, aois, pressure, module_type=module_type, albedo=alb)
     np.testing.assert_allclose(out, expected, atol=1e-6)
+
+
+@pytest.fixture
+def polo_inputs():
+    return {'precipitable_water': 0.96,
+            'airmass_absolute': 1.34,
+            'aod500': 0.085,
+            'aoi': 76,
+            'pressure': 101400,
+            'albedo': 0.2}
+
+
+def test_spectral_factor_polo_coefficients(polo_inputs):
+    # test that supplying custom coefficients works as expected
+    coefficients = (
+        (0.0027, 10.34, 9.48, 0.31, 0.00077, 0.006)  # base Si coeffs
+        + (0, -0.003, 1.0)  # Si albedo correction coeffs
+    )
+    out = spectrum.spectral_factor_polo(**polo_inputs,
+                                        coefficients=coefficients)
+    np.testing.assert_allclose(out, 0.969588, atol=1e-6)
+
+
+def test_spectral_factor_polo_errors(polo_inputs):
+    with pytest.raises(ValueError, match='Must provide either'):
+        spectrum.spectral_factor_polo(**polo_inputs)
+    with pytest.raises(ValueError, match='Only one of'):
+        spectrum.spectral_factor_polo(**polo_inputs, module_type='CdTe',
+                                      coefficients=(1, 1, 1, 1, 1, 1))
+
+
+def test_spectral_factor_polo_types(polo_inputs):
+    # float:
+    out = spectrum.spectral_factor_polo(**polo_inputs, module_type='monosi')
+    assert isinstance(out, float)
+    np.testing.assert_allclose(out, 0.969588, atol=1e-6)
+
+    # array:
+    arrays = {k: np.array([v, v]) for k, v in polo_inputs.items()}
+    out = spectrum.spectral_factor_polo(**arrays, module_type='monosi')
+    assert isinstance(out, np.ndarray)
+    np.testing.assert_allclose(out, [0.969588]*2, atol=1e-6)
+
+    # series:
+    series = {k: pd.Series(v) for k, v in arrays.items()}
+    out = spectrum.spectral_factor_polo(**series, module_type='monosi')
+    assert isinstance(out, pd.Series)
+    pd.testing.assert_series_equal(out, pd.Series([0.969588]*2), atol=1e-6)
+
+
+def test_spectral_factor_polo_NaN(polo_inputs):
+    # nan in -> nan out
+    for key in polo_inputs:
+        inputs = polo_inputs.copy()
+        inputs[key] = np.nan
+        out = spectrum.spectral_factor_polo(**inputs, module_type='monosi')
+        assert np.isnan(out)
+
+
+def test_spectral_factor_polo_aoi_gt_90(polo_inputs):
+    polo_inputs['aoi'] = 95
+    out = spectrum.spectral_factor_polo(**polo_inputs, module_type='monosi')
+    assert np.isnan(out)

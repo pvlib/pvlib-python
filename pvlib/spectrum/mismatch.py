@@ -723,7 +723,7 @@ def spectral_factor_polo(precipitable_water, airmass_absolute, aod500, aoi,
         Angle of incidence on the vertical surface.  See :term:`aoi`.
         [degrees]
     pressure : numeric
-        Atmospheric pressure. See :term`pressure`. [Pa]
+        Atmospheric pressure. See :term:`pressure`. [Pa]
     module_type : str, optional
         One of the following PV technology strings from [1]_:
 

@@ -8,9 +8,6 @@ from pvlib.iotools.midc import read_midc_raw_data_from_nrel  # noqa: F401
 from pvlib.iotools.crn import read_crn  # noqa: F401
 from pvlib.iotools.solrad import read_solrad  # noqa: F401
 from pvlib.iotools.solrad import get_solrad  # noqa: F401
-from pvlib.iotools.psm3 import get_psm3  # noqa: F401
-from pvlib.iotools.psm3 import read_psm3  # noqa: F401
-from pvlib.iotools.psm3 import parse_psm3  # noqa: F401
 from pvlib.iotools.psm4 import get_nsrdb_psm4_aggregated  # noqa: F401
 from pvlib.iotools.psm4 import get_nsrdb_psm4_tmy  # noqa: F401
 from pvlib.iotools.psm4 import get_nsrdb_psm4_conus  # noqa: F401
@@ -39,3 +36,10 @@ from pvlib.iotools.solcast import get_solcast_live  # noqa: F401
 from pvlib.iotools.solcast import get_solcast_historic  # noqa: F401
 from pvlib.iotools.solcast import get_solcast_tmy  # noqa: F401
 from pvlib.iotools.solargis import get_solargis  # noqa: F401
+from pvlib.iotools.meteonorm import get_meteonorm_forecast_basic  # noqa: F401
+from pvlib.iotools.meteonorm import get_meteonorm_forecast_precision  # noqa: F401, E501
+from pvlib.iotools.meteonorm import get_meteonorm_observation_realtime  # noqa: F401, E501
+from pvlib.iotools.meteonorm import get_meteonorm_observation_training  # noqa: F401, E501
+from pvlib.iotools.meteonorm import get_meteonorm_tmy  # noqa: F401
+from pvlib.iotools.nasa_power import get_nasa_power  # noqa: F401
+from pvlib.iotools.era5 import get_era5  # noqa: F401

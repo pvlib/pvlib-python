@@ -7,9 +7,9 @@ dependencies:
     - cython
     - ephem
     - h5py
-    - numba
-    - numpy >= 1.17.3
-    - pandas >= 1.3.0
+    # - numba  # not available for py 3.14 as of 2025-11-03
+    - numpy >= 1.21.2
+    - pandas >= 1.3.3
     - pip
     - pytest
     - pytest-cov
@@ -18,11 +18,11 @@ dependencies:
     - pytest-timeout
     - pytest-rerunfailures
     - conda-forge::pytest-remotedata  # version in default channel is old
-    - python=3.9
+    - python=3.14
     - pytz
     - requests
-    - scipy >= 1.6.0
+    - scipy >= 1.7.2
     - statsmodels
     - pip:
-        - nrel-pysam>=2.0
+        # - nrel-pysam>=2.0  # not available for py 3.14 as of 2025-11-03
         - solarfactors

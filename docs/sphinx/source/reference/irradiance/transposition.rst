@@ -8,6 +8,9 @@ Transposition models
 
    irradiance.get_total_irradiance
    irradiance.get_sky_diffuse
+   irradiance.get_ground_diffuse
+   irradiance.beam_component
+   irradiance.poa_components
    irradiance.isotropic
    irradiance.perez
    irradiance.perez_driesse
@@ -15,4 +18,3 @@ Transposition models
    irradiance.klucher
    irradiance.reindl
    irradiance.king
-   irradiance.ghi_from_poa_driesse_2023

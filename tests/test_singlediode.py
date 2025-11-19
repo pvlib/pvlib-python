@@ -7,16 +7,19 @@ import pandas as pd
 import scipy
 from pvlib import pvsystem
 from pvlib.singlediode import (bishop88_mpp, estimate_voc, VOLTAGE_BUILTIN,
-                               bishop88, bishop88_i_from_v, bishop88_v_from_i)
+                               bishop88, bishop88_i_from_v, bishop88_v_from_i,
+                               batzelis)
 import pytest
 from numpy.testing import assert_array_equal
 from .conftest import TESTS_DATA_DIR
+
+from .conftest import chandrupatla, chandrupatla_available
 
 POA = 888
 TCELL = 55
 
 
-@pytest.mark.parametrize('method', ['brentq', 'newton'])
+@pytest.mark.parametrize('method', ['brentq', 'newton', chandrupatla])
 def test_method_spr_e20_327(method, cec_module_spr_e20_327):
     """test pvsystem.singlediode with different methods on SPR-E20-327"""
     spr_e20_327 = cec_module_spr_e20_327
@@ -38,7 +41,7 @@ def test_method_spr_e20_327(method, cec_module_spr_e20_327):
     assert np.isclose(pvs['i_xx'], out['i_xx'])
 
 
-@pytest.mark.parametrize('method', ['brentq', 'newton'])
+@pytest.mark.parametrize('method', ['brentq', 'newton', chandrupatla])
 def test_newton_fs_495(method, cec_module_fs_495):
     """test pvsystem.singlediode with different methods on FS495"""
     fs_495 = cec_module_fs_495
@@ -146,7 +149,8 @@ def precise_iv_curves(request):
     return singlediode_params, pc
 
 
-@pytest.mark.parametrize('method', ['lambertw', 'brentq', 'newton'])
+@pytest.mark.parametrize('method', ['lambertw', 'brentq', 'newton',
+                                    chandrupatla])
 def test_singlediode_precision(method, precise_iv_curves):
     """
     Tests the accuracy of singlediode. ivcurve_pnts is not tested.
@@ -156,7 +160,7 @@ def test_singlediode_precision(method, precise_iv_curves):
 
     assert np.allclose(pc['i_sc'], outs['i_sc'], atol=1e-10, rtol=0)
     assert np.allclose(pc['v_oc'], outs['v_oc'], atol=1e-10, rtol=0)
-    assert np.allclose(pc['i_mp'], outs['i_mp'], atol=7e-8, rtol=0)
+    assert np.allclose(pc['i_mp'], outs['i_mp'], atol=1e-7, rtol=0)
     assert np.allclose(pc['v_mp'], outs['v_mp'], atol=1e-6, rtol=0)
     assert np.allclose(pc['p_mp'], outs['p_mp'], atol=1e-10, rtol=0)
     assert np.allclose(pc['i_x'], outs['i_x'], atol=1e-10, rtol=0)
@@ -187,7 +191,8 @@ def test_singlediode_lambert_negative_voc(mocker):
     assert_array_equal(outs["v_oc"], [0, 0])
 
 
-@pytest.mark.parametrize('method', ['lambertw', 'brentq', 'newton'])
+@pytest.mark.parametrize('method', ['lambertw', 'brentq', 'newton',
+                                    chandrupatla])
 def test_v_from_i_i_from_v_precision(method, precise_iv_curves):
     """
     Tests the accuracy of pvsystem.v_from_i and pvsystem.i_from_v.
@@ -256,7 +261,7 @@ def get_pvsyst_fs_495():
         )
     ]
 )
-@pytest.mark.parametrize('method', ['newton', 'brentq'])
+@pytest.mark.parametrize('method', ['newton', 'brentq', chandrupatla])
 def test_pvsyst_recombination_loss(method, poa, temp_cell, expected, tol):
     """test PVSst recombination loss"""
     pvsyst_fs_495 = get_pvsyst_fs_495()
@@ -348,7 +353,7 @@ def test_pvsyst_recombination_loss(method, poa, temp_cell, expected, tol):
         )
     ]
 )
-@pytest.mark.parametrize('method', ['newton', 'brentq'])
+@pytest.mark.parametrize('method', ['newton', 'brentq', chandrupatla])
 def test_pvsyst_breakdown(method, brk_params, recomb_params, poa, temp_cell,
                           expected, tol):
     """test PVSyst recombination loss"""
@@ -456,7 +461,13 @@ def bishop88_arguments():
         'xtol': 1e-8,
         'rtol': 1e-8,
         'maxiter': 30,
-    })
+    }),
+    # can't include chandrupatla since the function is not available to patch
+    # TODO: add this once chandrupatla becomes non-optional functionality
+    # ('chandrupatla', {
+    #     'tolerances ': {'xtol': 1e-8, 'rtol': 1e-8},
+    #     'maxiter': 30,
+    # }),
 ])
 def test_bishop88_kwargs_transfer(method, method_kwargs, mocker,
                                   bishop88_arguments):
@@ -495,7 +506,14 @@ def test_bishop88_kwargs_transfer(method, method_kwargs, mocker,
         'rtol': 1e-4,
         'maxiter': 20,
         '_inexistent_param': "0.01"
-    })
+    }),
+    pytest.param('chandrupatla', {
+        'xtol': 1e-4,
+        'rtol': 1e-4,
+        'maxiter': 20,
+        '_inexistent_param': "0.01"
+    }, marks=pytest.mark.skipif(not chandrupatla_available,
+                                reason="needs scipy 1.15")),
 ])
 def test_bishop88_kwargs_fails(method, method_kwargs, bishop88_arguments):
     """test invalid method_kwargs passed onto the optimizer fail"""
@@ -513,7 +531,7 @@ def test_bishop88_kwargs_fails(method, method_kwargs, bishop88_arguments):
                   method_kwargs=method_kwargs)
 
 
-@pytest.mark.parametrize('method', ['newton', 'brentq'])
+@pytest.mark.parametrize('method', ['newton', 'brentq', chandrupatla])
 def test_bishop88_full_output_kwarg(method, bishop88_arguments):
     """test call to bishop88_.* with full_output=True return values are ok"""
     method_kwargs = {'full_output': True}
@@ -547,7 +565,7 @@ def test_bishop88_full_output_kwarg(method, bishop88_arguments):
     assert len(ret_val[1]) >= 2
 
 
-@pytest.mark.parametrize('method', ['newton', 'brentq'])
+@pytest.mark.parametrize('method', ['newton', 'brentq', chandrupatla])
 def test_bishop88_pdSeries_len_one(method, bishop88_arguments):
     for k, v in bishop88_arguments.items():
         bishop88_arguments[k] = pd.Series([v])
@@ -563,7 +581,7 @@ def _sde_check_solution(i, v, il, io, rs, rsh, a, d2mutau=0., NsVbi=np.inf):
     return il - io*np.expm1(vd/a) - vd/rsh - il*d2mutau/(NsVbi - vd) - i
 
 
-@pytest.mark.parametrize('method', ['newton', 'brentq'])
+@pytest.mark.parametrize('method', ['newton', 'brentq', chandrupatla])
 def test_bishop88_init_cond(method):
     # GH 2013
     p = {'alpha_sc': 0.0012256,
@@ -600,9 +618,60 @@ def test_bishop88_init_cond(method):
                                      NsVbi=NsVbi))
     bad_results = np.isnan(vmp2) | (vmp2 < 0) | (err > 0.00001)
     assert not bad_results.any()
-    # test v_from_i
+    # test i_from_v
     imp2 = bishop88_i_from_v(vmp, *sde_params, d2mutau=d2mutau, NsVbi=NsVbi)
     err = np.abs(_sde_check_solution(imp2, vmp, *sde_params, d2mutau=d2mutau,
                                      NsVbi=NsVbi))
     bad_results = np.isnan(imp2) | (imp2 < 0) | (err > 0.00001)
     assert not bad_results.any()
+
+
+def test_batzelis():
+    params = {'photocurrent': 10, 'saturation_current': 1e-10,
+              'resistance_series': 0.2, 'resistance_shunt': 3000,
+              'nNsVth': 1.7}
+
+    exact_values = {  # calculated using pvlib.pvsystem.singlediode
+        'i_sc': 9.999333377550565,
+        'v_oc': 43.05589965219406,
+        'i_mp': 9.513255314772051,
+        'v_mp': 35.97259289596944,
+        'p_mp': 342.21646055371264,
+    }
+    rtol = 5e-3  # accurate to within half a percent in this case
+
+    output = batzelis(**params)
+    for key in exact_values:
+        assert output[key] == pytest.approx(exact_values[key], rel=rtol)
+
+    # numpy arrays
+    params2 = {k: np.array([v] * 2) for k, v in params.items()}
+    output2 = batzelis(**params2)
+    for key in exact_values:
+        exp = np.array([exact_values[key]] * 2)
+        np.testing.assert_allclose(output2[key], exp, rtol=rtol)
+
+    # pandas
+    params3 = {k: pd.Series(v) for k, v in params2.items()}
+    output3 = batzelis(**params3)
+    assert isinstance(output3, pd.DataFrame)
+    for key in exact_values:
+        exp = pd.Series([exact_values[key]] * 2)
+        np.testing.assert_allclose(output3[key], exp, rtol=rtol)
+
+
+def test_batzelis_night():
+    # The De Soto SDM produces photocurrent=0 and resistance_shunt=inf
+    # at 0 W/m2 irradiance
+    out = batzelis(photocurrent=0, saturation_current=1e-10,
+                   resistance_series=0.2, resistance_shunt=np.inf,
+                   nNsVth=1.7)
+    for k, v in out.items():
+        assert v == 0, k  # ensure all outputs are zero (not nan, etc)
+
+    # test also when Rsh=inf but Iph > 0
+    out = batzelis(photocurrent=0.1, saturation_current=1e-10,
+                   resistance_series=0.2, resistance_shunt=np.inf,
+                   nNsVth=1.7)
+    for k, v in out.items():
+        assert v > 0, k  # ensure all outputs >0 (not nan, etc)

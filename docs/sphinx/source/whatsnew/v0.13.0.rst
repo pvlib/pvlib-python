@@ -28,7 +28,7 @@ Deprecations
   :pull:`2467`, :pull:`2466`)
 
   - :py:func:`~pvlib.iotools.parse_epw`
-  - :py:func:`~pvlib.iotools.parse_psm3`
+  - :py:func:`!pvlib.iotools.parse_psm3`
   - :py:func:`~pvlib.iotools.parse_cams`
   - :py:func:`~pvlib.iotools.parse_bsrn`
 

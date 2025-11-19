@@ -114,9 +114,9 @@ def sandia(v_dc, p_dc, inverter):
     References
     ----------
     .. [1] D. King, S. Gonzalez, G. Galbraith, W. Boyson, "Performance Model
-       for Grid-Connected Photovoltaic Inverters", SAND2007-5036, Sandia
-       National Laboratories.
-
+       for Grid-Connected Photovoltaic Inverters", Sandia National
+       Laboratories, Albuquerque, N.M., USA, SAND2007-5036, Sept. 2007.
+       :doi:`10.2172/920449`
     .. [2] System Advisor Model web page. https://sam.nrel.gov.
 
     See also
@@ -176,11 +176,13 @@ def sandia_multi(v_dc, p_dc, inverter):
     References
     ----------
     .. [1] D. King, S. Gonzalez, G. Galbraith, W. Boyson, "Performance Model
-       for Grid-Connected Photovoltaic Inverters", SAND2007-5036, Sandia
-       National Laboratories.
+       for Grid-Connected Photovoltaic Inverters", Sandia National
+       Laboratories, Albuquerque, N.M., USA, SAND2007-5036, Sept. 2007.
+       :doi:`10.2172/920449`
     .. [2] C. Hansen, J. Johnson, R. Darbali-Zamora, N. Gurule. "Modeling
        Efficiency Of Inverters With Multiple Inputs", 49th IEEE Photovoltaic
        Specialist Conference, Philadelphia, PA, USA. June 2022.
+       :doi:`10.1109/PVSC48317.2022.9938490`
 
     See also
     --------
@@ -272,6 +274,7 @@ def adr(v_dc, p_dc, inverter, vtol=0.10):
     .. [1] A. Driesse, "Beyond the Curves: Modeling the Electrical Efficiency
        of Photovoltaic Inverters", 33rd IEEE Photovoltaic Specialist
        Conference (PVSC), June 2008
+       :doi:`10.1109/PVSC.2008.4922827`
 
     See also
     --------
@@ -385,8 +388,8 @@ def pvwatts(pdc, pdc0, eta_inv_nom=0.96, eta_inv_ref=0.9637):
 
     References
     ----------
-    .. [1] A. P. Dobos, "PVWatts Version 5 Manual,"
-       http://pvwatts.nrel.gov/downloads/pvwattsv5.pdf (2014).
+    .. [1] A. P. Dobos, "PVWatts Version 5 Manual", NREL, Golden, CO, USA,
+       Technical Report NREL/TP-6A20-62641, 2014, :doi:`10.2172/1158421`.
     """
 
     pac0 = eta_inv_nom * pdc0
@@ -487,8 +490,9 @@ def fit_sandia(ac_power, dc_power, dc_voltage, dc_voltage_level, p_ac_0, p_nt):
     References
     ----------
     .. [1] D. King, S. Gonzalez, G. Galbraith, W. Boyson, "Performance Model
-       for Grid-Connected Photovoltaic Inverters", SAND2007-5036, Sandia
-       National Laboratories.
+       for Grid-Connected Photovoltaic Inverters", Sandia National
+       Laboratories, Albuquerque, N.M., USA, SAND2007-5036, Sept. 2007.
+       :doi:`10.2172/920449`
     .. [2] Sandia Inverter Model page, PV Performance Modeling Collaborative
        https://pvpmc.sandia.gov/modeling-steps/dc-to-ac-conversion/sandia-inverter-model/
     .. [3] W. Bower, et al., "Performance Test Protocol for Evaluating

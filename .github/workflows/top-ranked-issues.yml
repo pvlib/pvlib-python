@@ -31,4 +31,4 @@ jobs:
 
       - name: Run update_top_ranking_issues.py
         run: |
-          python ./scripts/update_top_ranking_issues.py
+          python .github/workflows/update_top_ranking_issues.py

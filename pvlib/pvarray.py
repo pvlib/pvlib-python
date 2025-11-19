@@ -9,8 +9,9 @@ Supporting functions and parameter fitting functions may also be found here.
 """
 
 import numpy as np
+import pandas as pd
 from scipy.optimize import curve_fit
-from scipy.special import exp10
+from scipy.special import exp10, lambertw
 
 
 def pvefficiency_adr(effective_irradiance, temp_cell,
@@ -37,7 +38,7 @@ def pvefficiency_adr(effective_irradiance, temp_cell,
         the reference conditions. [unitless]
 
     k_d : numeric, negative
-        “Dark irradiance” or diode coefficient which influences the voltage
+        "Dark irradiance" or diode coefficient which influences the voltage
         increase with irradiance. [unitless]
 
     tc_d : numeric
@@ -225,24 +226,55 @@ def fit_pvefficiency_adr(effective_irradiance, temp_cell, eta,
         return popt
 
 
-def _infer_k_huld(cell_type, pdc0):
+def _infer_k_huld(cell_type, pdc0, k_version):
+    r"""
+    Get the EU JRC updated coefficients for the Huld model.
+
+    Parameters
+    ----------
+    cell_type : str
+        Must be one of 'csi', 'cis', or 'cdte'
+    pdc0 : numeric
+        Power of the modules at reference conditions [W]
+    k_version : str
+        Either 'pvgis5' or 'pvgis6'.
+
+    Returns
+    -------
+    tuple
+        The six coefficients (k1-k6) for the Huld model, scaled by pdc0
+    """
     # from PVGIS documentation, "PVGIS data sources & calculation methods",
     # Section 5.2.3, accessed 12/22/2023
     # The parameters in PVGIS' documentation are for a version of Huld's
     # equation that has factored Pdc0 out of the polynomial:
     #  P = G/1000 * Pdc0 * (1 + k1 log(Geff) + ...) so these parameters are
     # multiplied by pdc0
-    huld_params = {'csi': (-0.017237, -0.040465, -0.004702, 0.000149,
-                           0.000170, 0.000005),
-                   'cis': (-0.005554, -0.038724, -0.003723, -0.000905,
-                           -0.001256, 0.000001),
-                   'cdte': (-0.046689, -0.072844, -0.002262, 0.000276,
-                            0.000159, -0.000006)}
+    if k_version.lower() == 'pvgis5':
+        # coefficients from PVGIS webpage
+        huld_params = {'csi': (-0.017237, -0.040465, -0.004702, 0.000149,
+                               0.000170, 0.000005),
+                       'cis': (-0.005554, -0.038724, -0.003723, -0.000905,
+                               -0.001256, 0.000001),
+                       'cdte': (-0.046689, -0.072844, -0.002262, 0.000276,
+                                0.000159, -0.000006)}
+    elif k_version.lower() == 'pvgis6':
+        # Coefficients from EU JRC paper
+        huld_params = {'csi': (-0.0067560, -0.016444, -0.003015, -0.000045,
+                               -0.000043, 0.0),
+                       'cis': (-0.011001, -0.029734, -0.002887, 0.000217,
+                               -0.000163, 0.0),
+                       'cdte': (-0.020644, -0.035136, -0.003406, 0.000073,
+                                -0.000141, 0.000002)}
+    else:
+        raise ValueError(f'Invalid k_version={k_version}: must be either '
+                         '"pvgis5" or "pvgis6"')
     k = tuple([x*pdc0 for x in huld_params[cell_type.lower()]])
     return k
 
 
-def huld(effective_irradiance, temp_mod, pdc0, k=None, cell_type=None):
+def huld(effective_irradiance, temp_mod, pdc0, k=None, cell_type=None,
+         k_version='pvgis5'):
     r"""
     Power (DC) using the Huld model.
 
@@ -274,6 +306,11 @@ def huld(effective_irradiance, temp_mod, pdc0, k=None, cell_type=None):
     cell_type : str, optional
         If provided, must be one of ``'cSi'``, ``'CIS'``, or ``'CdTe'``.
         Used to look up default values for ``k`` if ``k`` is not specified.
+    k_version : str, optional
+        Either ``'pvgis5'`` (default) or ``'pvgis6'``. Selects values
+        for ``k`` if ``k`` is not specified. If ``'pvgis5'``, values are
+        from PVGIS documentation and are labeled in [2]_ as "current".
+        If ``'pvgis6'`` values are from [2]_ labeled as "updated".
 
     Returns
     -------
@@ -328,14 +365,19 @@ def huld(effective_irradiance, temp_mod, pdc0, k=None, cell_type=None):
 
     References
     ----------
-    .. [1] T. Huld, G. Friesen, A. Skoczek, R. Kenny, T. Sample, M. Field,
-           E. Dunlop. A power-rating model for crystalline silicon PV modules.
-           Solar Energy Materials and Solar Cells 95, (2011), pp. 3359-3369.
-           :doi:`10.1016/j.solmat.2011.07.026`.
+    .. [1] T. Huld, G. Friesen, A. Skoczek, R. Kenny, T. Sample, M. Field, and
+           E. Dunlop, "A power-rating model for crystalline silicon PV
+           modules," Solar Energy Materials and Solar Cells 95, (2011),
+           pp. 3359-3369. :doi:`10.1016/j.solmat.2011.07.026`.
+    .. [2] A. Chatzipanagi, N. Taylor, I. Suarez, A. Martinez, T. Lyubenova,
+           and E. Dunlop, "An Updated Simplified Energy Yield Model for Recent
+           Photovoltaic Module Technologies,"
+           Progress in Photovoltaics: Research and Applications 33,
+           no. 8 (2025): 905–917, :doi:`10.1002/pip.3926`.
     """
     if k is None:
         if cell_type is not None:
-            k = _infer_k_huld(cell_type, pdc0)
+            k = _infer_k_huld(cell_type, pdc0, k_version)
         else:
             raise ValueError('Either k or cell_type must be specified')
 
@@ -346,7 +388,138 @@ def huld(effective_irradiance, temp_mod, pdc0, k=None, cell_type=None):
         logGprime = np.log(gprime, out=np.zeros_like(gprime),
                            where=np.array(gprime > 0))
     # Eq. 1 in [1]
-    pdc = gprime * (pdc0 + k[0] * logGprime + k[1] * logGprime**2 +
-                    k[2] * tprime + k[3] * tprime * logGprime +
-                    k[4] * tprime * logGprime**2 + k[5] * tprime**2)
+    pdc = gprime * (
+        pdc0 + k[0] * logGprime + k[1] * logGprime**2 +
+        k[2] * tprime + k[3] * tprime * logGprime +
+        k[4] * tprime * logGprime**2 +
+        k[5] * tprime**2
+    )
     return pdc
+
+
+def batzelis(effective_irradiance, temp_cell,
+             v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc):
+    """
+    Compute maximum power point, open circuit, and short circuit
+    values using Batzelis's method.
+
+    Batzelis's method (described in Section III of [1]_) is a fast method
+    of computing the maximum power current and voltage.  The calculations
+    are rooted in the De Soto single-diode model, but require only typical
+    datasheet information.
+
+    Parameters
+    ----------
+    effective_irradiance : numeric, non-negative
+        Effective irradiance incident on the PV module. [Wm⁻²]
+    temp_cell : numeric
+        PV module operating temperature. [°C]
+    v_mp : float
+        Maximum power point voltage at STC. [V]
+    i_mp : float
+        Maximum power point current at STC. [A]
+    v_oc : float
+        Open-circuit voltage at STC. [V]
+    i_sc : float
+        Short-circuit current at STC. [A]
+    alpha_sc : float
+        Short-circuit current temperature coefficient at STC. [A/K]
+    beta_voc : float
+        Open-circuit voltage temperature coefficient at STC. [V/K]
+
+    Returns
+    -------
+    dict
+        The returned dict-like object contains the keys/columns:
+
+        * ``p_mp`` - power at maximum power point. [W]
+        * ``i_mp`` - current at maximum power point. [A]
+        * ``v_mp`` - voltage at maximum power point. [V]
+        * ``i_sc`` - short circuit current. [A]
+        * ``v_oc`` - open circuit voltage. [V]
+
+    Notes
+    -----
+    This method is the combination of three sub-methods for:
+
+    1. estimating single-diode model parameters from datasheet information
+    2. translating SDM parameters from STC to operating conditions
+       (taken from the De Soto model)
+    3. estimating the MPP, OC, and SC points on the resulting I-V curve.
+
+    At extremely low irradiance (e.g. 1e-10 Wm⁻²), this model can produce
+    negative voltages.  This function clips any negative voltages to zero.
+
+    References
+    ----------
+    .. [1] E. I. Batzelis, "Simple PV Performance Equations Theoretically Well
+       Founded on the Single-Diode Model," Journal of Photovoltaics vol. 7,
+       no. 5, pp. 1400-1409, Sep 2017, :doi:`10.1109/JPHOTOV.2017.2711431`
+
+    Examples
+    --------
+    >>> params = {'i_sc': 15.98, 'v_oc': 50.26, 'i_mp': 15.27, 'v_mp': 42.57,
+    ...           'alpha_sc': 0.007351, 'beta_voc': -0.120624}
+    >>> batzelis(np.array([1000, 800]), np.array([25, 30]), **params)
+    {'p_mp': array([650.0439    , 512.99199048]),
+     'i_mp': array([15.27      , 12.23049303]),
+     'v_mp': array([42.57      , 41.94368856]),
+     'i_sc': array([15.98    , 12.813404]),
+     'v_oc': array([50.26      , 49.26532902])}
+    """
+    # convert temp coeffs from A/K and V/K to 1/K
+    alpha_sc = alpha_sc / i_sc
+    beta_voc = beta_voc / v_oc
+
+    t0 = 298.15
+    delT = temp_cell - (t0 - 273.15)
+    lamT = (temp_cell + 273.15) / t0
+    g = effective_irradiance / 1000
+    # for zero/negative irradiance, use lnG=large negative number so that
+    # computed voltages are negative and then clipped to zero
+    with np.errstate(divide='ignore'):  # needed for pandas for some reason
+        lnG = np.log(g, out=np.full_like(g, -9e9), where=(g > 0))
+        lnG = np.where(np.isfinite(g), lnG, np.nan)  # also preserve nans
+
+    # Eq 9-10
+    del0 = (1 - beta_voc * t0) / (50.1 - alpha_sc * t0)
+    w0 = np.real(lambertw(np.exp(1/del0 + 1)))
+
+    # Eqs 27-28
+    alpha_imp = alpha_sc + (beta_voc - 1/t0) / (w0 - 1)
+    beta_vmp = (v_oc / v_mp) * (
+        beta_voc / (1 + del0) +
+        (del0 * (w0 - 1) - 1/(1 + del0)) / t0
+    )
+
+    # Eq 26
+    eps0 = (del0 / (1 + del0)) * (v_oc / v_mp)
+    eps1 = del0 * (w0 - 1) * (v_oc / v_mp) - 1
+
+    # Eqs 22-25
+    isc = g * i_sc * (1 + alpha_sc * delT)
+    voc = v_oc * (1 + del0 * lamT * lnG + beta_voc * delT)
+    imp = g * i_mp * (1 + alpha_imp * delT)
+    vmp = v_mp * (1 + eps0 * lamT * lnG + eps1 * (1 - g) + beta_vmp * delT)
+
+    # handle negative voltages from zero and extremely small irradiance
+    vmp = np.clip(vmp, a_min=0, a_max=None)
+    voc = np.clip(voc, a_min=0, a_max=None)
+
+    out = {
+        'p_mp': vmp * imp,
+        'i_mp': imp,
+        'v_mp': vmp,
+        'i_sc': isc,
+        'v_oc': voc,
+    }
+
+    # if pandas in, ensure pandas out
+    pandas_inputs = [
+        x for x in [effective_irradiance, temp_cell]
+        if isinstance(x, pd.Series)
+    ]
+    if pandas_inputs:
+        out = pd.DataFrame(out, index=pandas_inputs[0].index)
+
+    return out

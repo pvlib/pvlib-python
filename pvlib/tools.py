@@ -562,7 +562,7 @@ def normalize_max2one(a):
     return res
 
 
-def _file_context_manager(filename_or_object, mode='r'):
+def _file_context_manager(filename_or_object, mode='r', encoding=None):
     """
     Open a filename/path for reading, or pass a file-like object
     through unchanged.
@@ -584,5 +584,5 @@ def _file_context_manager(filename_or_object, mode='r'):
         context = contextlib.nullcontext(filename_or_object)
     else:
         # otherwise, assume a filename or path
-        context = open(str(filename_or_object), mode=mode)
+        context = open(str(filename_or_object), mode=mode, encoding=encoding)
     return context

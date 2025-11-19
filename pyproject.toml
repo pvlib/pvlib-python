@@ -9,13 +9,13 @@ description = "A set of functions and classes for simulating the performance of 
 authors = [
     { name = "pvlib python Developers", email = "pvlib-admin@googlegroups.com" },
 ]
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 dependencies = [
-    'numpy >= 1.19.3',
-    'pandas >= 1.3.0',
+    'numpy >= 1.21.2',
+    'pandas >= 1.3.3',
     'pytz',
     'requests',
-    'scipy >= 1.6.0',
+    'scipy >= 1.7.2',
     'h5py',
 ]
 license = "BSD-3-Clause"
@@ -99,7 +99,9 @@ pvlib = ["data/*"]
 
 [tool.pytest]
 junit_family = "xunit2"
-testpaths = "tests"
+testpaths = [
+    "tests"
+]
 # warning messages to suppress from pytest output.  useful in cases
 # where a dependency hasn't addressed a deprecation yet, and there's
 # nothing we can do to fix it ourselves.
@@ -108,8 +110,4 @@ testpaths = "tests"
 # https://docs.python.org/3/library/warnings.html#the-warnings-filter
 filterwarnings = [
     "ignore:Using or importing the ABCs:DeprecationWarning:.*patsy:",
-    # deprecation warnings from numpy 1.20
-    "ignore:`np.long` is a deprecated alias:DeprecationWarning:.*numba:",
-    "ignore:`np.int` is a deprecated alias:DeprecationWarning:.*(numba|scipy):",
-    "ignore:`np.bool` is a deprecated alias:DeprecationWarning:.*numba:",
 ]

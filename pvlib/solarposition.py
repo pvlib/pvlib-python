@@ -285,7 +285,7 @@ def spa_python(time, latitude, longitude,
     Calculate the solar position using a python implementation of the
     NREL SPA algorithm.
 
-    The details of the NREL SPA algorithm are described in [1]_.
+    The details of the NREL SPA algorithm are described in [1]_, [2]_.
 
     If numba is installed, the functions can be compiled to
     machine code and the function can be multithreaded.
@@ -314,7 +314,7 @@ def spa_python(time, latitude, longitude,
         using time.year and time.month from pandas.DatetimeIndex.
         For most simulations the default delta_t is sufficient.
         The USNO has historical and forecasted delta_t [3]_.
-    atmos_refrac : float, optional
+    atmos_refract : float, optional
         The approximate atmospheric refraction (in degrees)
         at sunrise and sunset.
     how : str, optional, default 'numpy'
@@ -328,25 +328,26 @@ def spa_python(time, latitude, longitude,
     -------
     DataFrame
         The DataFrame will have the following columns:
-        apparent_zenith (degrees),
-        zenith (degrees),
-        apparent_elevation (degrees),
-        elevation (degrees),
-        azimuth (degrees),
-        equation_of_time (minutes).
 
+        - apparent_zenith (degrees),
+        - zenith (degrees),
+        - apparent_elevation (degrees),
+        - elevation (degrees),
+        - azimuth (degrees),
+        - equation_of_time (minutes).
 
     References
     ----------
     .. [1] I. Reda and A. Andreas, Solar position algorithm for solar
        radiation applications. Solar Energy, vol. 76, no. 5, pp. 577-589, 2004.
+       :doi:`10.1016/j.solener.2003.12.003`.
 
     .. [2] I. Reda and A. Andreas, Corrigendum to Solar position algorithm for
        solar radiation applications. Solar Energy, vol. 81, no. 6, p. 838,
-       2007.
+       2007. :doi:`10.1016/j.solener.2007.01.003`.
 
-    .. [3] USNO delta T:
-       https://maia.usno.navy.mil/products/deltaT
+    .. [3] `U.S. Naval Observatory, delta T
+       <https://maia.usno.navy.mil/products/deltaT>`_
 
     See also
     --------

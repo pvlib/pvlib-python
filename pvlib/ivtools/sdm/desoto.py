@@ -2,6 +2,7 @@ import numpy as np
 
 from scipy import constants
 from scipy import optimize
+from scipy.special import lambertw
 
 from pvlib.ivtools.utils import rectify_iv_curve
 from pvlib.ivtools.sde import _fit_sandia_cocontent
@@ -58,7 +59,7 @@ def fit_desoto(v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc, cells_in_series,
     dEgdT: float, default -0.0002677 - value for silicon
         Variation of bandgap according to temperature. [1/K]
     temp_ref: float, default 25
-        Reference temperature condition. [C]
+        Reference temperature condition. [°C]
     irrad_ref: float, default 1000
         Reference irradiance condition. [Wm⁻²]
     init_guess: dict, optional
@@ -93,7 +94,7 @@ def fit_desoto(v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc, cells_in_series,
         irrad_ref: float
             Reference irradiance condition. [Wm⁻²]
         temp_ref: float
-            Reference temperature condition. [C]
+            Reference temperature condition. [°C]
 
     scipy.optimize.OptimizeResult
         Optimization result of scipy.optimize.root().
@@ -110,7 +111,7 @@ def fit_desoto(v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc, cells_in_series,
     """
 
     # Constants
-    k = constants.value('Boltzmann constant in eV/K')  # in eV/K
+    k = constants.value('Boltzmann constant in eV/K')
     Tref = temp_ref + 273.15  # [K]
 
     # initial guesses of variables for computing convergence:
@@ -234,7 +235,7 @@ def fit_desoto_sandia(ivcurves, specs, const=None, maxiter=5, eps1=1.e-3):
             effective irradiance for each IV curve, i.e., POA broadband
             irradiance adjusted by solar spectrum modifier [W / m^2]
         tc : array
-            cell temperature for each IV curve [C]
+            cell temperature for each IV curve. [°C]
         i_sc : array
             short circuit current for each IV curve [A]
         v_oc : array
@@ -254,9 +255,9 @@ def fit_desoto_sandia(ivcurves, specs, const=None, maxiter=5, eps1=1.e-3):
 
     const : dict
         E0 : float
-            effective irradiance at STC, default 1000 [W/m^2]
+            effective irradiance at STC, default 1000 [Wm⁻²]
         T0 : float
-            cell temperature at STC, default 25 [C]
+            cell temperature at STC, default 25°C. [°C]
         k : float
             Boltzmann's constant [J/K]
         q : float
@@ -399,3 +400,74 @@ def _fit_desoto_sandia_diode(ee, voc, vth, tc, specs, const):
     new_x = sm.add_constant(x)
     res = sm.RLM(y, new_x).fit()
     return np.array(res.params)[1]
+
+
+def fit_desoto_batzelis(v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc):
+    """
+    Determine De Soto single-diode model parameters from datasheet values
+    using Batzelis's method.
+
+    This method is described in Section II.C of [1]_ and fully documented
+    in [2]_.
+
+    Parameters
+    ----------
+    v_mp : float
+        Maximum power point voltage at STC. [V]
+    i_mp : float
+        Maximum power point current at STC. [A]
+    v_oc : float
+        Open-circuit voltage at STC. [V]
+    i_sc : float
+        Short-circuit current at STC. [A]
+    alpha_sc : float
+        Short-circuit current temperature coefficient at STC. [A/K]
+    beta_voc : float
+        Open-circuit voltage temperature coefficient at STC. [V/K]
+
+    Returns
+    -------
+    dict
+        The returned dict contains the keys:
+
+        * ``alpha_sc`` [A/K]
+        * ``a_ref`` [V]
+        * ``I_L_ref`` [A]
+        * ``I_o_ref`` [A]
+        * ``R_sh_ref`` [Ohm]
+        * ``R_s`` [Ohm]
+
+    References
+    ----------
+    .. [1] E. I. Batzelis, "Simple PV Performance Equations Theoretically Well
+       Founded on the Single-Diode Model," Journal of Photovoltaics vol. 7,
+       no. 5, pp. 1400-1409, Sep 2017, :doi:`10.1109/JPHOTOV.2017.2711431`
+    .. [2] E. I. Batzelis and S. A. Papathanassiou, "A method for the
+       analytical extraction of the single-diode PV model parameters,"
+       IEEE Trans. Sustain. Energy, vol. 7, no. 2, pp. 504-512, Apr 2016.
+       :doi:`10.1109/TSTE.2015.2503435`
+    """
+    # convert temp coeffs from A/K and V/K to 1/K
+    alpha_sc = alpha_sc / i_sc
+    beta_voc = beta_voc / v_oc
+
+    # Equation numbers refer to [1]
+    t0 = 298.15  # K
+    del0 = (1 - beta_voc * t0) / (50.1 - alpha_sc * t0)  # Eq 9
+    w0 = np.real(lambertw(np.exp(1/del0 + 1)))
+
+    # Eqs 11-15
+    a0 = del0 * v_oc
+    Rs0 = (a0 * (w0 - 1) - v_mp) / i_mp
+    Rsh0 = a0 * (w0 - 1) / (i_sc * (1 - 1/w0) - i_mp)
+    Iph0 = (1 + Rs0 / Rsh0) * i_sc
+    Isat0 = Iph0 * np.exp(-1/del0)
+
+    return {
+        'alpha_sc': alpha_sc * i_sc,  # convert 1/K to A/K
+        'a_ref': a0,
+        'I_L_ref': Iph0,
+        'I_o_ref': Isat0,
+        'R_sh_ref': Rsh0,
+        'R_s': Rs0,
+    }

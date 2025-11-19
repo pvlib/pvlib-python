@@ -38,7 +38,7 @@ def fit_pvsyst_sandia(ivcurves, specs, const=None, maxiter=5, eps1=1.e-3):
             effective irradiance for each IV curve, i.e., POA broadband
             irradiance adjusted by solar spectrum modifier [W / m^2]
         tc : array
-            cell temperature for each IV curve [C]
+            cell temperature for each IV curve [°C]
         i_sc : array
             short circuit current for each IV curve [A]
         v_oc : array
@@ -56,9 +56,9 @@ def fit_pvsyst_sandia(ivcurves, specs, const=None, maxiter=5, eps1=1.e-3):
 
     const : dict
         E0 : float
-            effective irradiance at STC, default 1000 [W/m^2]
+            effective irradiance at STC, default 1000 [Wm⁻²]
         T0 : float
-            cell temperature at STC, default 25 [C]
+            cell temperature at STC, default 25°C. [°C]
         k : float
             Boltzmann's constant [J/K]
         q : float
@@ -272,10 +272,10 @@ def pvsyst_temperature_coeff(alpha_sc, gamma_ref, mu_gamma, I_L_ref, I_o_ref,
         Default of 1.121 eV is for crystalline silicon. Must be positive. [eV]
 
     irrad_ref : float, default 1000
-        Reference irradiance. [W/m^2].
+        Reference irradiance. [Wm⁻²].
 
     temp_ref : float, default 25
-        Reference cell temperature. [C]
+        Reference cell temperature. [°C]
 
 
     Returns
@@ -327,7 +327,7 @@ def fit_pvsyst_iec61853_sandia_2025(effective_irradiance, temp_cell,
     effective_irradiance : array
         Effective irradiance for each test condition [W/m²]
     temp_cell : array
-        Cell temperature for each test condition [C]
+        Cell temperature for each test condition. [°C]
     i_sc : array
         Short circuit current for each test condition [A]
     v_oc : array
@@ -366,7 +366,7 @@ def fit_pvsyst_iec61853_sandia_2025(effective_irradiance, temp_cell,
     temperature_tolerance : float, default 1
         Tolerance for temperature variation around the STC value.
         The default value corresponds to a +/- 1 degree interval around the STC
-        value of 25 degrees. [C]
+        value of 25°C. [°C]
 
     Returns
     -------

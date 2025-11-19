@@ -44,7 +44,7 @@ solpos.index = greensboro.index  # reset index to end of the hour
 # %%
 # pvlib Decomposition Functions
 # -----------------------------
-# Methods for separating DHI into diffuse and direct components include:
+# Methods for separating GHI into diffuse and direct components include:
 # `DISC`_, `DIRINT`_, `Erbs`_, and `Boland`_.
 
 # %%
@@ -112,7 +112,7 @@ out_boland = out_boland.rename(
 # ----------------
 # In the plots below we compare the four decomposition models to the TMY3 file
 # for Greensboro, North Carolina. We also compare the clearness index, kt, with
-# GHI normalized by a reference irradiance, E0 = 1000 [W/m^2], to highlight
+# GHI normalized by a reference irradiance, E0 = 1000 [Wm⁻²], to highlight
 # spikes caused when cosine of zenith approaches zero, particularly at sunset.
 #
 # First we combine the dataframes for the decomposition models and the TMY3

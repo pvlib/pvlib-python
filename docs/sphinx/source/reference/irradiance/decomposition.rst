@@ -2,8 +2,8 @@
 
 .. _dniestmodels:
 
-DNI estimation models
----------------------
+Decomposition models
+--------------------
 
 .. autosummary::
    :toctree: ../generated/
@@ -16,6 +16,4 @@ DNI estimation models
    irradiance.orgill_hollands
    irradiance.boland
    irradiance.campbell_norman
-   irradiance.gti_dirint
    irradiance.louche
-

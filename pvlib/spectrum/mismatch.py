@@ -739,12 +739,11 @@ def spectral_factor_polo(precipitable_water, airmass_absolute, aod500, aoi,
         * ``'monosi'`` - anonymous monocrystalline silicon module.
         * ``'cigs'`` - anonymous copper indium gallium selenide module.
         * ``'asi'`` - anonymous amorphous silicon module.
-    albedo : float, optional
-        Ground albedo (default value 0.2). See :term:`albedo`. [unitless]
-
     coefficients : array-like, optional
         user-defined coefficients, if not using one of the coefficient
         sets via the ``module_type`` parameter.
+    albedo : float, optional
+        Ground albedo (default value 0.2). See :term:`albedo`. [unitless]
 
     Returns
     -------
@@ -765,15 +764,15 @@ def spectral_factor_polo(precipitable_water, airmass_absolute, aod500, aoi,
     if module_type is not None and coefficients is not None:
         raise ValueError('Only one of `module_type` and `coefficients` should '
                          'be provided')
-    am_aoi = pvlib.atmosphere.get_relative_airmass(aoi)
     pressure = pvlib.atmosphere.alt2pres(altitude)
-    f_aoi_rel= pvlib.atmosphere.get_relative_airmass(aoi, model='kastenyoung1989')
+    f_aoi_rel = pvlib.atmosphere.get_relative_airmass(aoi,
+                                                      model='kastenyoung1989')
     f_aoi = pvlib.atmosphere.get_absolute_airmass(f_aoi_rel, pressure)
     Ram = f_aoi / airmass_absolute
     _coefficients = {
         'cdte': (-0.0009, 46.80, 49.20, -0.87, 0.00041, 0.053),
-        'monosi': (0.0027, 10.34, 9.48, 0.307, 0.00077, 0.006),
-        'cigs': (0.0017, 2.33, 1.30, 0.11, 0.00098, -0.0177),
+        'monosi': (0.0027, 10.34, 9.48, 0.31, 0.00077, 0.006),
+        'cigs': (0.0017, 2.33, 1.30, 0.11, 0.00098, -0.018),
         'asi': (0.0024, 7.32, 7.09, -0.72, -0.0013, 0.089),
     }
     c = {

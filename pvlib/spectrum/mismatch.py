@@ -740,8 +740,11 @@ def spectral_factor_polo(precipitable_water, airmass_absolute, aod500, aoi,
         * ``'cigs'`` - anonymous copper indium gallium selenide module.
         * ``'asi'`` - anonymous amorphous silicon module.
     coefficients : array-like, optional
-        user-defined coefficients, if not using one of the coefficient
-        sets via the ``module_type`` parameter.
+        User-defined coefficients, if not using one of the coefficient
+        sets via the ``module_type`` parameter.  Must have nine elements.
+        The first six elements correspond to the [p1, p2, p3, p4, b, c]
+        parameters of the SMM model.  The last three elements corresponds
+        to the [c1, c2, c3] parameters of the albedo correction factor.
     albedo : numeric, optional
         Ground albedo (default value 0.2). See :term:`albedo`. [unitless]
 
@@ -784,8 +787,8 @@ def spectral_factor_polo(precipitable_water, airmass_absolute, aod500, aoi,
         coeff = _coefficients[module_type]
         c_albedo = c[module_type]
     else:
-        coeff = coefficients
-        c_albedo = (0.0, 0.0, 1.0)  # 0.2 albedo assumed
+        coeff = coefficients[:6]
+        c_albedo = coefficients[6:]
     smm = coeff[0] * Ram + coeff[1] / (coeff[2] + Ram**coeff[3]) \
         + coeff[4] / aod500 + coeff[5]*np.sqrt(precipitable_water)
     # Ground albedo correction

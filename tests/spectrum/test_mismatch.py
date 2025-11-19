@@ -292,7 +292,7 @@ def test_spectral_factor_jrc_supplied_ambiguous():
 
 @pytest.mark.parametrize("module_type,expected", [
     ('cdte', np.array(
-        [0.992801, 1.00004 , 1.011576, 0.995003, 0.950156, 0.975665])),
+        [0.992801, 1.00004, 1.011576, 0.995003, 0.950156, 0.975665])),
     ('monosi', np.array(
         [1.000152, 0.969588, 0.984636, 1.015405, 1.024238, 1.005061])),
     ('cigs', np.array(

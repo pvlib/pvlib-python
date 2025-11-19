@@ -713,7 +713,7 @@ def spectral_factor_jrc(airmass, clearsky_index, module_type=None,
 
 
 def spectral_factor_polo(precipitable_water, airmass_absolute, aod500, aoi,
-                         altitude, module_type=None, coefficients=None,
+                         pressure, module_type=None, coefficients=None,
                          albedo=0.2):
     """
     Estimate the spectral mismatch for BIPV application in vertical facades.
@@ -730,8 +730,8 @@ def spectral_factor_polo(precipitable_water, airmass_absolute, aod500, aoi,
     aoi : numeric
         Angle of incidence on the vertical surface.  See :term:`aoi`.
         [degrees]
-    altitude: numeric
-        altitude over sea level. [m]
+    pressure : numeric
+        Atmospheric pressure. See :term`pressure`. [Pa]
     module_type : str, optional
         One of the following PV technology strings from [1]_:
 
@@ -764,7 +764,6 @@ def spectral_factor_polo(precipitable_water, airmass_absolute, aod500, aoi,
     if module_type is not None and coefficients is not None:
         raise ValueError('Only one of `module_type` and `coefficients` should '
                          'be provided')
-    pressure = pvlib.atmosphere.alt2pres(altitude)
     f_aoi_rel = pvlib.atmosphere.get_relative_airmass(aoi,
                                                       model='kastenyoung1989')
     f_aoi = pvlib.atmosphere.get_absolute_airmass(f_aoi_rel, pressure)

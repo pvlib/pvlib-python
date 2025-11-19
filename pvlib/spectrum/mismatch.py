@@ -718,15 +718,19 @@ def spectral_factor_polo(precipitable_water, airmass_absolute, aod500, aoi,
     """
     Estimate the spectral mismatch for BIPV application in vertical facades.
 
+    The model's authors note that this model could also be applied to
+    vertical bifacial ground-mount systems [1]_, although it has not been
+    validated in that context.
+
     Parameters
     ----------
     precipitable_water : numeric
-        atmospheric precipitable water. [cm]
+        Atmospheric precipitable water. [cm]
     airmass_absolute : numeric
-        absolute (pressure-adjusted) airmass. See :term:`airmass_absolute`.
+        Absolute (pressure-adjusted) airmass. See :term:`airmass_absolute`.
         [unitless]
     aod500 : numeric
-        atmospheric aerosol optical depth at 500 nm. [unitless]
+        Atmospheric aerosol optical depth at 500 nm. [unitless]
     aoi : numeric
         Angle of incidence on the vertical surface.  See :term:`aoi`.
         [degrees]
@@ -745,8 +749,8 @@ def spectral_factor_polo(precipitable_water, airmass_absolute, aod500, aoi,
         The first six elements correspond to the [p1, p2, p3, p4, b, c]
         parameters of the SMM model.  The last three elements corresponds
         to the [c1, c2, c3] parameters of the albedo correction factor.
-    albedo : numeric, optional
-        Ground albedo (default value 0.2). See :term:`albedo`. [unitless]
+    albedo : numeric, default 0.2
+        Ground albedo. See :term:`albedo`. [unitless]
 
     Returns
     -------

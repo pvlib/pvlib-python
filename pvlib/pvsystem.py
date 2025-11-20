@@ -2886,52 +2886,116 @@ def scale_voltage_current_power(data, voltage=1, current=1):
 
 @renamed_kwarg_warning(
     "0.13.0", "g_poa_effective", "effective_irradiance")
-def pvwatts_dc(effective_irradiance, temp_cell, pdc0, gamma_pdc, temp_ref=25.):
+def pvwatts_dc(effective_irradiance, temp_cell, pdc0, gamma_pdc, temp_ref=25.,
+               k=None, cap_adjustment=False):
     r"""
-    Implements NREL's PVWatts DC power model. The PVWatts DC model [1]_ is:
-
-    .. math::
-
-        P_{dc} = \frac{G_{poa eff}}{1000} P_{dc0} ( 1 + \gamma_{pdc} (T_{cell} - T_{ref}))
-
-    Note that ``pdc0`` is also used as a symbol in
-    :py:func:`pvlib.inverter.pvwatts`. ``pdc0`` in this function refers to the DC
-    power of the modules at reference conditions. ``pdc0`` in
-    :py:func:`pvlib.inverter.pvwatts` refers to the DC power input limit of
-    the inverter.
+    Implement NREL's PVWatts (Version 5) DC power model.
 
     Parameters
     ----------
     effective_irradiance: numeric
-        Irradiance transmitted to the PV cells. To be
-        fully consistent with PVWatts, the user must have already
-        applied angle of incidence losses, but not soiling, spectral,
-        etc. [W/m^2]
+        Irradiance transmitted to the PV cells. To be fully consistent with
+        PVWatts, the user must have already applied angle of incidence losses,
+        but not soiling, spectral, etc. [Wm⁻²]
     temp_cell: numeric
         Cell temperature [C].
     pdc0: numeric
-        Power of the modules at 1000 W/m^2 and cell reference temperature. [W]
+        Power of the modules at 1000 Wm⁻² and cell reference temperature. [W]
     gamma_pdc: numeric
-        The temperature coefficient of power. Typically -0.002 to
-        -0.005 per degree C. [1/C]
+        The temperature coefficient of power. Typically -0.002 to -0.005 per
+        degree C. [1/°C]
     temp_ref: numeric, default 25.0
-        Cell reference temperature. PVWatts defines it to be 25 C and
-        is included here for flexibility. [C]
+        Cell reference temperature. PVWatts defines it to be 25 °C and is
+        included here for flexibility. [°C]
+    k: numeric, optional
+        Irradiance correction factor, defined in [2]_. Typically positive.
+        [unitless]
+    cap_adjustment: Boolean, default False
+        If True, only apply the optional adjustment at and below 1000 Wm⁻²
 
     Returns
     -------
     pdc: numeric
         DC power. [W]
 
+    Notes
+    -----
+    The PVWatts Version 5 DC model [1]_ is:
+
+    .. math::
+
+        P_{dc} = \frac{G_{poa eff}}{1000} P_{dc0} ( 1 + \gamma_{pdc} (T_{cell} - T_{ref}))
+
+    This model has also been referred to as the power temperature coefficient
+    model.
+
+    An optional adjustment can be applied to :math:`P_{dc}` as described in
+    [2]_. The adjustment accounts for the variation in module efficiency with
+    irradiance. The piece-wise adjustment to power is parameterized by `k`,
+    where `k` is the reduction in actual power at 200 Wm⁻² relative to power
+    calculated at 200 Wm⁻² as 0.2*`pdc0`. For example, a module that is rated
+    at 500 W at STC but produces 95 W at 200 Wm⁻² (a 5% relative reduction in
+    efficiency) would have a value of `k` = 0.01.
+
+    .. math::
+
+        k=\frac{0.2P_{dc0}-P_{200}}{P_{dc0}}
+
+    For positive `k` values, and `k` is typically positive, this adjustment
+    would also increase relative efficiency when irradiance is above 1000 Wm⁻².
+    This may not be desired, as modules with nonlinear irradiance response
+    often have peak efficiency near 1000 Wm⁻², and it is either flat or
+    declining at higher irradiance. An optional parameter, `cap_adjustment`,
+    can address this by modifying the adjustment from [2]_ to only apply below
+    1000 Wm⁻².
+
+    Note that ``pdc0`` is also used as a symbol in
+    :py:func:`pvlib.inverter.pvwatts`. ``pdc0`` in this function refers to the
+    DC power of the modules at reference conditions. ``pdc0`` in
+    :py:func:`pvlib.inverter.pvwatts` refers to the DC power input limit of
+    the inverter.
+
     References
     ----------
-    .. [1] A. P. Dobos, "PVWatts Version 5 Manual"
-           http://pvwatts.nrel.gov/downloads/pvwattsv5.pdf
-           (2014).
+    .. [1] A. P. Dobos, "PVWatts Version 5 Manual", NREL, Golden, CO, USA,
+       Technical Report NREL/TP-6A20-62641, 2014, :doi:`10.2172/1158421`.
+    .. [2] B. Marion, "Comparison of Predictive Models for Photovoltaic
+       Module Performance," In Proc. 33rd IEEE Photovoltaic Specialists
+       Conference (PVSC), San Diego, CA, USA, 2008, pp. 1-6,
+       :doi:`10.1109/PVSC.2008.4922586`.
+       Pre-print: https://docs.nrel.gov/docs/fy08osti/42511.pdf
     """  # noqa: E501
 
     pdc = (effective_irradiance * 0.001 * pdc0 *
            (1 + gamma_pdc * (temp_cell - temp_ref)))
+
+    # apply Marion's correction if k is provided
+    if k is not None:
+
+        # preserve input types
+        index = pdc.index if isinstance(pdc, pd.Series) else None
+        is_scalar = np.isscalar(pdc)
+
+        # calculate error adjustments
+        err_1 = k * (1 - (1 - effective_irradiance / 200)**4)
+        err_2 = k * (1000 - effective_irradiance) / (1000 - 200)
+        err = np.where(effective_irradiance <= 200, err_1, err_2)
+
+        # cap adjustment, if needed
+        if cap_adjustment:
+            err = np.where(effective_irradiance >= 1000, 0, err)
+
+        # make error adjustment
+        pdc = pdc - pdc0 * err
+
+        # set negative power to zero
+        pdc = np.where(pdc < 0, 0, pdc)
+
+        # preserve input types
+        if index is not None:
+            pdc = pd.Series(pdc, index=index)
+        elif is_scalar:
+            pdc = float(pdc)
 
     return pdc
 
@@ -2971,9 +3035,8 @@ def pvwatts_losses(soiling=2, shading=3, snow=0, mismatch=2, wiring=2,
 
     References
     ----------
-    .. [1] A. P. Dobos, "PVWatts Version 5 Manual"
-           http://pvwatts.nrel.gov/downloads/pvwattsv5.pdf
-           (2014).
+    .. [1] A. P. Dobos, "PVWatts Version 5 Manual", NREL, Golden, CO, USA,
+       Technical Report NREL/TP-6A20-62641, 2014, :doi:`10.2172/1158421`.
     """
 
     params = [soiling, shading, snow, mismatch, wiring, connections, lid,

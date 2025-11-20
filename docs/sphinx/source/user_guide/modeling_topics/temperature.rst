@@ -65,6 +65,17 @@ following table:
 .. [#f1] Downwelling infrared radiation.
 
 
+In addition to the core models above, pvlib provides several other functions
+for temperature modeling:
+
+- :py:func:`~pvlib.temperature.prilliman`: an "add-on" model that reprocesses
+  the output of a steady-state model to apply transient effects.
+- :py:func:`~pvlib.temperature.sapm_cell_from_module`: a model for
+  estimating cell temperature from module temperature.
+- :py:func:`~pvlib.temperature.generic_linear`: a generic linear model form,
+  equivalent to several conventional temperature models.
+
+
 Model parameters
 ----------------
 
@@ -83,16 +94,3 @@ using :py:class:`~pvlib.temperature.GeneralLinearModel`.
 
 Currently, pvlib provides no functionality for fitting parameter values
 using measured temperature.
-
-
-Other functions
----------------
-
-pvlib also provides a few other functions for temperature modeling:
-
-- :py:func:`~pvlib.temperature.prilliman`: an "add-on" model that reprocesses
-  the output of a steady-state model to apply transient effects.
-- :py:func:`~pvlib.temperature.sapm_cell_from_module`: a model for
-  estimating cell temperature from module temperature.
-- :py:func:`~pvlib.temperature.generic_linear`: a generic linear model form,
-  equivalent to several conventional temperature models.

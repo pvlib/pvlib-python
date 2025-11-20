@@ -77,6 +77,10 @@ configurations.
 Module-specific values can be obtained via testing, for example following
 the IEC 61853-2 standard.
 
+Parameter values for one model (e.g. ``u0``, ``u1`` for :py:func:`~pvlib.temperature.faiman`)
+can be converted to another model (e.g. ``u_c``, ``u_v`` for :py:func:`~pvlib.temperature.pvsyst_cell`)
+using :py:class:`~pvlib.temperature.GeneralLinearModel`.
+
 Currently, pvlib provides no functionality for fitting parameter values
 using measured temperature.
 

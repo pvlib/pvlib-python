@@ -14,13 +14,11 @@ Types of models
 Temperature models predict one of two quantities:
 
 - *module temperature*: the temperature as measured at the back surface
-  of a PV module.  Easy to measure, but usually a few degrees less
+  of a PV module.  Easy to measure, but usually less
   than the cell temperature which determines efficiency.
 - *cell temperature*: the temperature of the PV cell itself.  The relevant
   temperature for PV modeling, but almost never measured directly.
 
-Cell temperature is typically thought to be slightly higher than module
-temperature.
 Temperature models estimate these quantities using inputs like incident
 irradiance, ambient temperature, and wind speed.  Each model also takes
 a set of parameter values that represent how a PV module responds to

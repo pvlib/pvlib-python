@@ -786,4 +786,8 @@ def spectral_factor_polo(precipitable_water, airmass_absolute, aod500, aoi,
     # Ground albedo correction
     g = c_albedo[0] * (albedo/0.2)**2 \
         + c_albedo[1] * (albedo/0.2) + c_albedo[2]
+    # if aoi > 90 no ilumination, no spectral correction
+    if aoi > 90:
+       g=1
+       smm=1       
     return g*smm

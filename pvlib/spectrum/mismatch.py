@@ -759,6 +759,9 @@ def spectral_factor_polo(precipitable_water, airmass_absolute, aod500, aoi,
     if module_type is not None and coefficients is not None:
         raise ValueError('Only one of `module_type` and `coefficients` should '
                          'be provided')
+    # prevent nan for aoi greater than 90
+    if aoi > 90:
+        aoi = 90
     f_aoi_rel = pvlib.atmosphere.get_relative_airmass(aoi,
                                                       model='kastenyoung1989')
     f_aoi = pvlib.atmosphere.get_absolute_airmass(f_aoi_rel, pressure)
@@ -786,8 +789,4 @@ def spectral_factor_polo(precipitable_water, airmass_absolute, aod500, aoi,
     # Ground albedo correction
     g = c_albedo[0] * (albedo/0.2)**2 \
         + c_albedo[1] * (albedo/0.2) + c_albedo[2]
-    # if aoi > 90 no ilumination, no spectral correction
-    if aoi > 90:
-       g=1
-       smm=1       
     return g*smm

@@ -22,20 +22,35 @@ from pvlib._deprecation import deprecated
 
 # keys that are used to detect input data and assign data to appropriate
 # ModelChain attribute
-# for ModelChain.weather
-WEATHER_KEYS = ('ghi', 'dhi', 'dni', 'wind_speed', 'temp_air',
-                'precipitable_water')
 
-# for ModelChain.total_irrad
-POA_KEYS = ('poa_global', 'poa_direct', 'poa_diffuse')
+# For ModelChain.weather:  
+# Maps weather-related input columns to the weather DataFrame.
+#: list[str]: Required or optional weather input columns.
+WEATHER_KEYS = (
+    'ghi',               # Global Horizontal Irradiance (W/m^2)
+    'dhi',               # Diffuse Horizontal Irradiance (W/m^2)
+    'dni',               # Direct Normal Irradiance (W/m^2)
+    'wind_speed',        # Wind speed (m/s)
+    'temp_air',          # Ambient air temperature (°C)
+    'precipitable_water' # Column precipitable water (cm)
+)
 
-# Optional keys to communicate temperature data. If provided,
-# 'cell_temperature' overrides ModelChain.temperature_model and sets
-# ModelChain.cell_temperature to the data. If 'module_temperature' is provided,
-# overrides ModelChain.temperature_model with
-# pvlib.temperature.sapm_cell_from_module
-TEMPERATURE_KEYS = ('module_temperature', 'cell_temperature')
+# For ModelChain.total_irrad:
+# Plane-of-array irradiance components.
+#: list[str]: Required POA irradiance input columns.
+POA_KEYS = (
+    'poa_global',   # Total plane-of-array irradiance (W/m^2)
+    'poa_direct',   # Direct normal POA irradiance (W/m^2)
+    'poa_diffuse'   # Diffuse POA irradiance (W/m^2)
+)
 
+# Optional keys for temperature-specific inputs.
+# These override or supplement temperature models.
+#: list[str]: Temperature-related input columns.
+TEMPERATURE_KEYS = (
+    'module_temperature', # Back-surface module temperature (°C)
+    'cell_temperature',   # Direct cell temperature input (°C)
+)
 DATA_KEYS = WEATHER_KEYS + POA_KEYS + TEMPERATURE_KEYS
 
 # these dictionaries contain the default configuration for following

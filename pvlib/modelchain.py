@@ -19,13 +19,13 @@ from pvlib.pvsystem import _DC_MODEL_PARAMS
 from pvlib.tools import _build_kwargs
 
 from pvlib._deprecation import deprecated
+# Keys used to detect input data and assign values to the appropriate
+# ModelChain attributes.
 
-# keys that are used to detect input data and assign data to appropriate
-# ModelChain attribute
-
-# For ModelChain.weather:  
-# Maps weather-related input columns to the weather DataFrame.
-#: list[str]: Required or optional weather input columns.
+#: tuple[str]
+#: Weather-related input columns used by :class:`ModelChain` to populate
+#: ``ModelChain.weather``. Missing ``temp_air`` or ``wind_speed`` are
+#: automatically filled (20 °C and 0 m/s).
 WEATHER_KEYS = (
     'ghi',               # Global Horizontal Irradiance (W/m^2)
     'dhi',               # Diffuse Horizontal Irradiance (W/m^2)
@@ -35,24 +35,26 @@ WEATHER_KEYS = (
     'precipitable_water' # Column precipitable water (cm)
 )
 
-# For ModelChain.total_irrad:
-# Plane-of-array irradiance components.
-#: list[str]: Required POA irradiance input columns.
+#: tuple[str]
+#: Plane-of-array irradiance components used to populate
+#: ``ModelChain.total_irrad`` when running from POA input.
 POA_KEYS = (
     'poa_global',   # Total plane-of-array irradiance (W/m^2)
-    'poa_direct',   # Direct normal POA irradiance (W/m^2)
+    'poa_direct',   # Direct POA irradiance (W/m^2)
     'poa_diffuse'   # Diffuse POA irradiance (W/m^2)
 )
 
-# Optional keys for temperature-specific inputs.
-# These override or supplement temperature models.
-#: list[str]: Temperature-related input columns.
+#: tuple[str]
+#: Temperature-related input columns that override or supplement the
+#: ModelChain temperature model. If ``cell_temperature`` is provided,
+#: the temperature model is skipped.
 TEMPERATURE_KEYS = (
     'module_temperature', # Back-surface module temperature (°C)
     'cell_temperature',   # Direct cell temperature input (°C)
 )
+#: tuple[str]
+#: All supported input keys recognized by ModelChain.
 DATA_KEYS = WEATHER_KEYS + POA_KEYS + TEMPERATURE_KEYS
-
 # these dictionaries contain the default configuration for following
 # established modeling sequences. They can be used in combination with
 # ModelChain, particularly they are used by the methods

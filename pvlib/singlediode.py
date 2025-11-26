@@ -3,6 +3,7 @@ Low-level functions for solving the single diode equation.
 """
 
 import numpy as np
+import pandas as pd
 from pvlib.tools import _golden_sect_DataFrame
 
 from scipy.optimize import brentq, newton
@@ -109,13 +110,13 @@ def bishop88(diode_voltage, photocurrent, saturation_current,
         (a-Si) modules that is the product of the PV module number of series
         cells :math:`N_{s}` and the builtin voltage :math:`V_{bi}` of the
         intrinsic layer. [V].
-    breakdown_factor : float, default 0
+    breakdown_factor : numeric, default 0
         fraction of ohmic current involved in avalanche breakdown :math:`a`.
         Default of 0 excludes the reverse bias term from the model. [unitless]
-    breakdown_voltage : float, default -5.5
+    breakdown_voltage : numeric, default -5.5
         reverse breakdown voltage of the photovoltaic junction :math:`V_{br}`
         [V]
-    breakdown_exp : float, default 3.28
+    breakdown_exp : numeric, default 3.28
         avalanche breakdown exponent :math:`m` [unitless]
     gradients : bool
         False returns only I, V, and P. True also returns gradients
@@ -141,18 +142,20 @@ def bishop88(diode_voltage, photocurrent, saturation_current,
 
     References
     ----------
-    .. [1] "Computer simulation of the effects of electrical mismatches in
-       photovoltaic cell interconnection circuits" JW Bishop, Solar Cell (1988)
-       :doi:`10.1016/0379-6787(88)90059-2`
+    .. [1] J.W. Bishop, "Computer simulation of the effects of electrical
+       mismatches in photovoltaic cell interconnection circuits" Solar Cells,
+       vol. 25 no. 1, pp. 73-89, Oct. 1988.
+       :doi:`doi.org/10.1016/0379-6787(88)90059-2`
 
-    .. [2] "Improved equivalent circuit and Analytical Model for Amorphous
-       Silicon Solar Cells and Modules." J. Mertens, et al., IEEE Transactions
-       on Electron Devices, Vol 45, No 2, Feb 1998.
+    .. [2] J. Merten, J. M. Asensi, C. Voz, A. V. Shah, R. Platz and J. Andreu,
+       "Improved equivalent circuit and Analytical Model for Amorphous
+       Silicon Solar Cells and Modules." , IEEE Transactions
+       on Electron Devices, vol. 45, no. 2, pp. 423-429, Feb 1998.
        :doi:`10.1109/16.658676`
 
-    .. [3] "Performance assessment of a simulation model for PV modules of any
-       available technology", André Mermoud and Thibault Lejeune, 25th EUPVSEC,
-       2010
+    .. [3] A. Mermoud and T. Lejeune, "Performance assessment of a simulation
+       model for PV modules of any available technology", In Proc. of the 25th
+       European PVSEC, Valencia, ES, 2010.
        :doi:`10.4229/25thEUPVSEC2010-4BV.1.114`
     """
     # calculate recombination loss current where d2mutau > 0
@@ -162,12 +165,11 @@ def bishop88(diode_voltage, photocurrent, saturation_current,
     # calculate temporary values to simplify calculations
     v_star = diode_voltage / nNsVth  # non-dimensional diode voltage
     g_sh = 1.0 / resistance_shunt  # conductance
-    if breakdown_factor > 0:  # reverse bias is considered
-        brk_term = 1 - diode_voltage / breakdown_voltage
-        brk_pwr = np.power(brk_term, -breakdown_exp)
-        i_breakdown = breakdown_factor * diode_voltage * g_sh * brk_pwr
-    else:
-        i_breakdown = 0.
+
+    brk_term = 1 - diode_voltage / breakdown_voltage
+    brk_pwr = np.power(brk_term, -breakdown_exp)
+    i_breakdown = breakdown_factor * diode_voltage * g_sh * brk_pwr
+
     i = (photocurrent - saturation_current * np.expm1(v_star)  # noqa: W503
          - diode_voltage * g_sh - i_recomb - i_breakdown)   # noqa: W503
     v = diode_voltage - i * resistance_series
@@ -177,18 +179,14 @@ def bishop88(diode_voltage, photocurrent, saturation_current,
         grad_i_recomb = np.where(is_recomb, i_recomb / v_recomb, 0)
         grad_2i_recomb = np.where(is_recomb, 2 * grad_i_recomb / v_recomb, 0)
         g_diode = saturation_current * np.exp(v_star) / nNsVth  # conductance
-        if breakdown_factor > 0:  # reverse bias is considered
-            brk_pwr_1 = np.power(brk_term, -breakdown_exp - 1)
-            brk_pwr_2 = np.power(brk_term, -breakdown_exp - 2)
-            brk_fctr = breakdown_factor * g_sh
-            grad_i_brk = brk_fctr * (brk_pwr + diode_voltage *
-                                     -breakdown_exp * brk_pwr_1)
-            grad2i_brk = (brk_fctr * -breakdown_exp        # noqa: W503
-                          * (2 * brk_pwr_1 + diode_voltage   # noqa: W503
-                             * (-breakdown_exp - 1) * brk_pwr_2))  # noqa: W503
-        else:
-            grad_i_brk = 0.
-            grad2i_brk = 0.
+        brk_pwr_1 = np.power(brk_term, -breakdown_exp - 1)
+        brk_pwr_2 = np.power(brk_term, -breakdown_exp - 2)
+        brk_fctr = breakdown_factor * g_sh
+        grad_i_brk = brk_fctr * (brk_pwr + diode_voltage *
+                                 -breakdown_exp * brk_pwr_1)
+        grad2i_brk = (brk_fctr * -breakdown_exp        # noqa: W503
+                      * (2 * brk_pwr_1 + diode_voltage   # noqa: W503
+                         * (-breakdown_exp - 1) * brk_pwr_2))  # noqa: W503
         grad_i = -g_diode - g_sh - grad_i_recomb - grad_i_brk  # di/dvd
         grad_v = 1.0 - grad_i * resistance_series  # dv/dvd
         # dp/dv = d(iv)/dv = v * di/dv + i
@@ -247,12 +245,19 @@ def bishop88_i_from_v(voltage, photocurrent, saturation_current,
     breakdown_exp : float, default 3.28
         avalanche breakdown exponent :math:`m` [unitless]
     method : str, default 'newton'
-       Either ``'newton'`` or ``'brentq'``. ''method'' must be ``'newton'``
-       if ``breakdown_factor`` is not 0.
+        Either ``'newton'``, ``'brentq'``, or ``'chandrupatla'``.
+        ''method'' must be ``'newton'`` if ``breakdown_factor`` is not 0.
+
+        .. note::
+           ``'chandrupatla'`` requires scipy 1.15 or greater.
+
     method_kwargs : dict, optional
-        Keyword arguments passed to root finder method. See
-        :py:func:`scipy:scipy.optimize.brentq` and
-        :py:func:`scipy:scipy.optimize.newton` parameters.
+        Keyword arguments passed to the root finder. For options, see:
+
+        * ``method='brentq'``: :py:func:`scipy:scipy.optimize.brentq`
+        * ``method='newton'``: :py:func:`scipy:scipy.optimize.newton`
+        * ``method='chandrupatla'``: :py:func:`scipy:scipy.optimize.elementwise.find_root`
+
         ``'full_output': True`` is allowed, and ``optimizer_output`` would be
         returned. See examples section.
 
@@ -291,7 +296,7 @@ def bishop88_i_from_v(voltage, photocurrent, saturation_current,
     .. [1] "Computer simulation of the effects of electrical mismatches in
        photovoltaic cell interconnection circuits" JW Bishop, Solar Cell (1988)
        :doi:`10.1016/0379-6787(88)90059-2`
-    """
+    """  # noqa: E501
     # collect args
     args = (photocurrent, saturation_current,
             resistance_series, resistance_shunt, nNsVth, d2mutau, NsVbi,
@@ -333,6 +338,30 @@ def bishop88_i_from_v(voltage, photocurrent, saturation_current,
         vd = newton(func=lambda x, *a: fv(x, voltage, *a), x0=x0,
                     fprime=lambda x, *a: bishop88(x, *a, gradients=True)[4],
                     args=args, **method_kwargs)
+    elif method == 'chandrupatla':
+        try:
+            from scipy.optimize.elementwise import find_root
+        except ModuleNotFoundError as e:
+            # TODO remove this when our minimum scipy version is >=1.15
+            msg = (
+                "method='chandrupatla' requires scipy v1.15 or greater "
+                "(available for Python 3.10+). "
+                "Select another method, or update your version of scipy."
+            )
+            raise ImportError(msg) from e
+
+        voc_est = estimate_voc(photocurrent, saturation_current, nNsVth)
+        shape = _shape_of_max_size(voltage, voc_est)
+        vlo = np.zeros(shape)
+        vhi = np.full(shape, voc_est)
+        bounds = (vlo, vhi)
+        kwargs_trimmed = method_kwargs.copy()
+        kwargs_trimmed.pop("full_output", None)  # not valid for find_root
+
+        result = find_root(fv, bounds, args=(voltage, *args), **kwargs_trimmed)
+        vd = result.x
+        if method_kwargs.get('full_output'):
+            vd = (vd, result)  # mimic the other methods
     else:
         raise NotImplementedError("Method '%s' isn't implemented" % method)
 
@@ -388,12 +417,19 @@ def bishop88_v_from_i(current, photocurrent, saturation_current,
     breakdown_exp : float, default 3.28
         avalanche breakdown exponent :math:`m` [unitless]
     method : str, default 'newton'
-       Either ``'newton'`` or ``'brentq'``. ''method'' must be ``'newton'``
-       if ``breakdown_factor`` is not 0.
+        Either ``'newton'``, ``'brentq'``, or ``'chandrupatla'``.
+        ''method'' must be ``'newton'`` if ``breakdown_factor`` is not 0.
+
+        .. note::
+           ``'chandrupatla'`` requires scipy 1.15 or greater.
+
     method_kwargs : dict, optional
-        Keyword arguments passed to root finder method. See
-        :py:func:`scipy:scipy.optimize.brentq` and
-        :py:func:`scipy:scipy.optimize.newton` parameters.
+        Keyword arguments passed to the root finder. For options, see:
+
+        * ``method='brentq'``: :py:func:`scipy:scipy.optimize.brentq`
+        * ``method='newton'``: :py:func:`scipy:scipy.optimize.newton`
+        * ``method='chandrupatla'``: :py:func:`scipy:scipy.optimize.elementwise.find_root`
+
         ``'full_output': True`` is allowed, and ``optimizer_output`` would be
         returned. See examples section.
 
@@ -432,7 +468,7 @@ def bishop88_v_from_i(current, photocurrent, saturation_current,
     .. [1] "Computer simulation of the effects of electrical mismatches in
        photovoltaic cell interconnection circuits" JW Bishop, Solar Cell (1988)
        :doi:`10.1016/0379-6787(88)90059-2`
-    """
+    """  # noqa: E501
     # collect args
     args = (photocurrent, saturation_current,
             resistance_series, resistance_shunt, nNsVth, d2mutau, NsVbi,
@@ -474,6 +510,29 @@ def bishop88_v_from_i(current, photocurrent, saturation_current,
         vd = newton(func=lambda x, *a: fi(x, current, *a), x0=x0,
                     fprime=lambda x, *a: bishop88(x, *a, gradients=True)[3],
                     args=args, **method_kwargs)
+    elif method == 'chandrupatla':
+        try:
+            from scipy.optimize.elementwise import find_root
+        except ModuleNotFoundError as e:
+            # TODO remove this when our minimum scipy version is >=1.15
+            msg = (
+                "method='chandrupatla' requires scipy v1.15 or greater "
+                "(available for Python 3.10+). "
+                "Select another method, or update your version of scipy."
+            )
+            raise ImportError(msg) from e
+
+        shape = _shape_of_max_size(current, voc_est)
+        vlo = np.zeros(shape)
+        vhi = np.full(shape, voc_est)
+        bounds = (vlo, vhi)
+        kwargs_trimmed = method_kwargs.copy()
+        kwargs_trimmed.pop("full_output", None)  # not valid for find_root
+
+        result = find_root(fi, bounds, args=(current, *args), **kwargs_trimmed)
+        vd = result.x
+        if method_kwargs.get('full_output'):
+            vd = (vd, result)  # mimic the other methods
     else:
         raise NotImplementedError("Method '%s' isn't implemented" % method)
 
@@ -526,12 +585,19 @@ def bishop88_mpp(photocurrent, saturation_current, resistance_series,
     breakdown_exp : numeric, default 3.28
         avalanche breakdown exponent :math:`m` [unitless]
     method : str, default 'newton'
-       Either ``'newton'`` or ``'brentq'``. ''method'' must be ``'newton'``
-       if ``breakdown_factor`` is not 0.
+        Either ``'newton'``, ``'brentq'``, or ``'chandrupatla'``.
+        ''method'' must be ``'newton'`` if ``breakdown_factor`` is not 0.
+
+        .. note::
+           ``'chandrupatla'`` requires scipy 1.15 or greater.
+
     method_kwargs : dict, optional
-        Keyword arguments passed to root finder method. See
-        :py:func:`scipy:scipy.optimize.brentq` and
-        :py:func:`scipy:scipy.optimize.newton` parameters.
+        Keyword arguments passed to the root finder. For options, see:
+
+        * ``method='brentq'``: :py:func:`scipy:scipy.optimize.brentq`
+        * ``method='newton'``: :py:func:`scipy:scipy.optimize.newton`
+        * ``method='chandrupatla'``: :py:func:`scipy:scipy.optimize.elementwise.find_root`
+
         ``'full_output': True`` is allowed, and ``optimizer_output`` would be
         returned. See examples section.
 
@@ -571,7 +637,7 @@ def bishop88_mpp(photocurrent, saturation_current, resistance_series,
     .. [1] "Computer simulation of the effects of electrical mismatches in
        photovoltaic cell interconnection circuits" JW Bishop, Solar Cell (1988)
        :doi:`10.1016/0379-6787(88)90059-2`
-    """
+    """  # noqa: E501
     # collect args
     args = (photocurrent, saturation_current,
             resistance_series, resistance_shunt, nNsVth, d2mutau, NsVbi,
@@ -611,6 +677,31 @@ def bishop88_mpp(photocurrent, saturation_current, resistance_series,
         vd = newton(func=fmpp, x0=x0,
                     fprime=lambda x, *a: bishop88(x, *a, gradients=True)[7],
                     args=args, **method_kwargs)
+    elif method == 'chandrupatla':
+        try:
+            from scipy.optimize.elementwise import find_root
+        except ModuleNotFoundError as e:
+            # TODO remove this when our minimum scipy version is >=1.15
+            msg = (
+                "method='chandrupatla' requires scipy v1.15 or greater "
+                "(available for Python 3.10+). "
+                "Select another method, or update your version of scipy."
+            )
+            raise ImportError(msg) from e
+
+        vlo = np.zeros_like(photocurrent)
+        vhi = np.full_like(photocurrent, voc_est)
+        kwargs_trimmed = method_kwargs.copy()
+        kwargs_trimmed.pop("full_output", None)  # not valid for find_root
+
+        result = find_root(fmpp,
+                           (vlo, vhi),
+                           args=args,
+                           **kwargs_trimmed)
+        vd = result.x
+        if method_kwargs.get('full_output'):
+            vd = (vd, result)  # mimic the other methods
+
     else:
         raise NotImplementedError("Method '%s' isn't implemented" % method)
 
@@ -825,10 +916,25 @@ def _lambertw(photocurrent, saturation_current, resistance_series,
             v_oc = 0.
 
     # Find the voltage, v_mp, where the power is maximized.
-    # Start the golden section search at v_oc * 1.14
-    p_mp, v_mp = _golden_sect_DataFrame(params, 0., v_oc * 1.14, _pwr_optfcn)
+    # use scipy.elementwise if available
+    # remove try/except when scipy>=1.15, and golden mean is retired
+    try:
+        from scipy.optimize.elementwise import find_minimum
+        # left negative to insure strict inequality
+        init = (-1., 0.8*v_oc, v_oc)
+        res = find_minimum(_vmp_opt, init,
+                           args=(params['photocurrent'],
+                                 params['saturation_current'],
+                                 params['resistance_series'],
+                                 params['resistance_shunt'],
+                                 params['nNsVth'],))
+        v_mp = res.x
+        p_mp = -1.*res.f_x
+    except ModuleNotFoundError:
+        # switch to old golden section method
+        p_mp, v_mp = _golden_sect_DataFrame(params, 0., v_oc * 1.14,
+                                            _pwr_optfcn)
 
-    # Find Imp using Lambert W
     i_mp = _lambertw_i_from_v(v_mp, **params)
 
     # Find Ix and Ixx using Lambert W
@@ -850,6 +956,15 @@ def _lambertw(photocurrent, saturation_current, resistance_series,
     return out
 
 
+def _vmp_opt(v, iph, io, rs, rsh, nNsVth):
+    '''
+    Function to find negative of power from ``i_from_v``.
+    '''
+    current = _lambertw_i_from_v(v, iph, io, rs, rsh, nNsVth)
+
+    return -v * current
+
+
 def _pwr_optfcn(df, loc):
     '''
     Function to find power from ``i_from_v``.
@@ -861,3 +976,85 @@ def _pwr_optfcn(df, loc):
                                  df['resistance_shunt'], df['nNsVth'])
 
     return current * df[loc]
+
+
+def batzelis(photocurrent, saturation_current, resistance_series,
+             resistance_shunt, nNsVth):
+    """
+    Estimate maximum power, open-circuit, and short-circuit points from
+    single-diode equation parameters using Batzelis's method.
+
+    This method is described in Section II.B of [1]_.
+
+    Parameters
+    ----------
+    photocurrent : numeric
+        Light-generated current. [A]
+    saturation_current : numeric
+        Diode saturation current. [A]
+    resistance_series : numeric
+        Series resistance. [Ohm]
+    resistance_shunt : numeric
+        Shunt resistance. [Ohm]
+    nNsVth : numeric
+        The product of the usual diode ideality factor (n, unitless),
+        number of cells in series (Ns), and cell thermal voltage at
+        specified effective irradiance and cell temperature. [V]
+
+    Returns
+    -------
+    dict
+        The returned dict-like object contains the keys/columns:
+
+        * ``p_mp`` - power at maximum power point. [W]
+        * ``i_mp`` - current at maximum power point. [A]
+        * ``v_mp`` - voltage at maximum power point. [V]
+        * ``i_sc`` - short circuit current. [A]
+        * ``v_oc`` - open circuit voltage. [V]
+
+    References
+    ----------
+    .. [1] E. I. Batzelis, "Simple PV Performance Equations Theoretically Well
+       Founded on the Single-Diode Model," Journal of Photovoltaics vol. 7,
+       no. 5, pp. 1400-1409, Sep 2017, :doi:`10.1109/JPHOTOV.2017.2711431`
+    """
+    # convenience variables
+    Iph = photocurrent
+    Is = saturation_current
+    Rsh = resistance_shunt
+    Rs = resistance_series
+    a = nNsVth
+
+    # Eqs 3-4
+    isc = Iph / (Rs / Rsh + 1)  # manipulated to handle Rsh=np.inf correctly
+    with np.errstate(divide='ignore'):  # zero Iph
+        voc = a * np.log(Iph / Is)
+
+    # Eqs 5-8
+    w = np.real(lambertw(np.e * Iph / Is))
+    # vmp = (1 + Rs/Rsh) * a * (w - 1) - Rs * Iph * (1 - 1/w)  # not needed
+    with np.errstate(divide='ignore', invalid='ignore'):  # zero Iph -> zero w
+        imp = Iph * (1 - 1/w) - a * (w - 1) / Rsh
+
+    vmp = a * (w - 1) - Rs * imp
+
+    vmp = np.where(Iph > 0, vmp, 0)
+    voc = np.where(Iph > 0, voc, 0)
+    imp = np.where(Iph > 0, imp, 0)
+    isc = np.where(Iph > 0, isc, 0)
+
+    out = {
+        'p_mp': imp * vmp,
+        'i_mp': imp,
+        'v_mp': vmp,
+        'i_sc': isc,
+        'v_oc': voc,
+    }
+
+    # if pandas in, ensure pandas out
+    pandas_inputs = [
+        x for x in [Iph, Is, Rsh, Rs, a] if isinstance(x, pd.Series)]
+    if pandas_inputs:
+        out = pd.DataFrame(out, index=pandas_inputs[0].index)
+
+    return out

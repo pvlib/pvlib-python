@@ -23,6 +23,8 @@ from pvlib.singlediode import VOLTAGE_BUILTIN
 
 from tests.test_singlediode import get_pvsyst_fs_495
 
+from .conftest import chandrupatla, chandrupatla_available
+
 
 @pytest.mark.parametrize('iam_model,model_params', [
     ('ashrae', {'b': 0.05}),
@@ -1372,7 +1374,12 @@ def fixture_i_from_v(request):
 
 
 @pytest.mark.parametrize(
-    'method, atol', [('lambertw', 1e-11), ('brentq', 1e-11), ('newton', 1e-11)]
+    'method, atol', [
+        ('lambertw', 1e-11), ('brentq', 1e-11), ('newton', 1e-11),
+        pytest.param("chandrupatla", 1e-11,
+                     marks=pytest.mark.skipif(not chandrupatla_available,
+                                              reason="needs scipy 1.15")),
+    ]
 )
 def test_i_from_v(fixture_i_from_v, method, atol):
     # Solution set loaded from fixture
@@ -1401,44 +1408,43 @@ def test_PVSystem_i_from_v(mocker):
     m.assert_called_once_with(*args)
 
 
-def test_i_from_v_size():
+@pytest.mark.parametrize('method', ['lambertw', 'brentq', 'newton',
+                                    chandrupatla])
+def test_i_from_v_size(method):
+    if method == 'newton':
+        args = ([7.5] * 3, np.array([7., 7.]), 6e-7, 0.1, 20, 0.5)
+    else:
+        args = ([7.5] * 3, 7., 6e-7, [0.1] * 2, 20, 0.5)
     with pytest.raises(ValueError):
-        pvsystem.i_from_v([7.5] * 3, 7., 6e-7, [0.1] * 2, 20, 0.5)
-    with pytest.raises(ValueError):
-        pvsystem.i_from_v([7.5] * 3, 7., 6e-7, [0.1] * 2, 20, 0.5,
-                          method='brentq')
-    with pytest.raises(ValueError):
-        pvsystem.i_from_v([7.5] * 3, np.array([7., 7.]), 6e-7, 0.1, 20, 0.5,
-                          method='newton')
+        pvsystem.i_from_v(*args, method=method)
 
 
-def test_v_from_i_size():
+@pytest.mark.parametrize('method', ['lambertw', 'brentq', 'newton',
+                                    chandrupatla])
+def test_v_from_i_size(method):
+    if method == 'newton':
+        args = ([3.] * 3, np.array([7., 7.]), 6e-7, [0.1], 20, 0.5)
+    else:
+        args = ([3.] * 3, 7., 6e-7, [0.1] * 2, 20, 0.5)
     with pytest.raises(ValueError):
-        pvsystem.v_from_i([3.] * 3, 7., 6e-7, [0.1] * 2, 20, 0.5)
-    with pytest.raises(ValueError):
-        pvsystem.v_from_i([3.] * 3, 7., 6e-7, [0.1] * 2, 20, 0.5,
-                          method='brentq')
-    with pytest.raises(ValueError):
-        pvsystem.v_from_i([3.] * 3, np.array([7., 7.]), 6e-7, [0.1], 20, 0.5,
-                          method='newton')
+        pvsystem.v_from_i(*args, method=method)
 
 
-def test_mpp_floats():
+@pytest.mark.parametrize('method', ['brentq', 'newton', chandrupatla])
+def test_mpp_floats(method):
     """test max_power_point"""
     IL, I0, Rs, Rsh, nNsVth = (7, 6e-7, .1, 20, .5)
-    out = pvsystem.max_power_point(IL, I0, Rs, Rsh, nNsVth, method='brentq')
+    out = pvsystem.max_power_point(IL, I0, Rs, Rsh, nNsVth, method=method)
     expected = {'i_mp': 6.1362673597376753,  # 6.1390251797935704, lambertw
                 'v_mp': 6.2243393757884284,  # 6.221535886625464, lambertw
                 'p_mp': 38.194210547580511}  # 38.194165464983037} lambertw
     assert isinstance(out, dict)
     for k, v in out.items():
         assert np.isclose(v, expected[k])
-    out = pvsystem.max_power_point(IL, I0, Rs, Rsh, nNsVth, method='newton')
-    for k, v in out.items():
-        assert np.isclose(v, expected[k])
 
 
-def test_mpp_recombination():
+@pytest.mark.parametrize('method', ['brentq', 'newton', chandrupatla])
+def test_mpp_recombination(method):
     """test max_power_point"""
     pvsyst_fs_495 = get_pvsyst_fs_495()
     IL, I0, Rs, Rsh, nNsVth = pvsystem.calcparams_pvsyst(
@@ -1456,7 +1462,7 @@ def test_mpp_recombination():
         IL, I0, Rs, Rsh, nNsVth,
         d2mutau=pvsyst_fs_495['d2mutau'],
         NsVbi=VOLTAGE_BUILTIN*pvsyst_fs_495['cells_in_series'],
-        method='brentq')
+        method=method)
     expected_imp = pvsyst_fs_495['I_mp_ref']
     expected_vmp = pvsyst_fs_495['V_mp_ref']
     expected_pmp = expected_imp*expected_vmp
@@ -1466,44 +1472,33 @@ def test_mpp_recombination():
     assert isinstance(out, dict)
     for k, v in out.items():
         assert np.isclose(v, expected[k], 0.01)
-    out = pvsystem.max_power_point(
-        IL, I0, Rs, Rsh, nNsVth,
-        d2mutau=pvsyst_fs_495['d2mutau'],
-        NsVbi=VOLTAGE_BUILTIN*pvsyst_fs_495['cells_in_series'],
-        method='newton')
-    for k, v in out.items():
-        assert np.isclose(v, expected[k], 0.01)
 
 
-def test_mpp_array():
+@pytest.mark.parametrize('method', ['brentq', 'newton', chandrupatla])
+def test_mpp_array(method):
     """test max_power_point"""
     IL, I0, Rs, Rsh, nNsVth = (np.array([7, 7]), 6e-7, .1, 20, .5)
-    out = pvsystem.max_power_point(IL, I0, Rs, Rsh, nNsVth, method='brentq')
+    out = pvsystem.max_power_point(IL, I0, Rs, Rsh, nNsVth, method=method)
     expected = {'i_mp': [6.1362673597376753] * 2,
                 'v_mp': [6.2243393757884284] * 2,
                 'p_mp': [38.194210547580511] * 2}
     assert isinstance(out, dict)
     for k, v in out.items():
         assert np.allclose(v, expected[k])
-    out = pvsystem.max_power_point(IL, I0, Rs, Rsh, nNsVth, method='newton')
-    for k, v in out.items():
-        assert np.allclose(v, expected[k])
 
 
-def test_mpp_series():
+@pytest.mark.parametrize('method', ['brentq', 'newton', chandrupatla])
+def test_mpp_series(method):
     """test max_power_point"""
     idx = ['2008-02-17T11:30:00-0800', '2008-02-17T12:30:00-0800']
     IL, I0, Rs, Rsh, nNsVth = (np.array([7, 7]), 6e-7, .1, 20, .5)
     IL = pd.Series(IL, index=idx)
-    out = pvsystem.max_power_point(IL, I0, Rs, Rsh, nNsVth, method='brentq')
+    out = pvsystem.max_power_point(IL, I0, Rs, Rsh, nNsVth, method=method)
     expected = pd.DataFrame({'i_mp': [6.1362673597376753] * 2,
                              'v_mp': [6.2243393757884284] * 2,
                              'p_mp': [38.194210547580511] * 2},
                             index=idx)
     assert isinstance(out, pd.DataFrame)
-    for k, v in out.items():
-        assert np.allclose(v, expected[k])
-    out = pvsystem.max_power_point(IL, I0, Rs, Rsh, nNsVth, method='newton')
     for k, v in out.items():
         assert np.allclose(v, expected[k])
 
@@ -2185,6 +2180,54 @@ def test_pvwatts_dc_series():
     expected = pd.Series(np.array([   nan,    nan,  88.65]))
     out = pvsystem.pvwatts_dc(irrad_trans, temp_cell, 100, -0.003)
     assert_series_equal(expected, out)
+
+
+def test_pvwatts_dc_scalars_with_k():
+    expected = 8.9125
+    out = pvsystem.pvwatts_dc(100, 30, 100, -0.003, k=0.01)
+    assert_allclose(out, expected)
+
+
+def test_pvwatts_dc_arrays_with_k():
+    irrad_trans = np.array([np.nan, 100, 1200])
+    temp_cell = np.array([30, np.nan, 30])
+    irrad_trans, temp_cell = np.meshgrid(irrad_trans, temp_cell)
+    expected = np.array([[nan,  8.9125,  118.45],
+                         [nan,    nan,    nan],
+                         [nan,  8.9125,  118.45]])
+    out = pvsystem.pvwatts_dc(irrad_trans, temp_cell, 100, -0.003, k=0.01)
+    assert_allclose(out, expected, equal_nan=True)
+
+
+def test_pvwatts_dc_series_with_k():
+    irrad_trans = pd.Series([np.nan, 100, 100, 1200])
+    temp_cell = pd.Series([30, np.nan, 30, 30])
+    expected = pd.Series(np.array([   nan,    nan,  8.9125, 118.45]))
+    out = pvsystem.pvwatts_dc(irrad_trans, temp_cell, 100, -0.003, k=0.01)
+    assert_series_equal(expected, out)
+
+
+def test_pvwatts_dc_with_k_and_cap_adjustment():
+    irrad_trans = [100, 1200]
+    temp_cell = 25
+    out = []
+    expected = [0, 120.0]
+    for irrad in irrad_trans:
+        out.append(pvsystem.pvwatts_dc(irrad, temp_cell, 100, -0.003, k=0.15,
+                                       cap_adjustment=True))
+    assert_allclose(out, expected)
+
+
+def test_pvwatts_dc_arrays_with_k_and_cap_adjustment():
+    irrad_trans = np.array([np.nan, 100, 1200])
+    temp_cell = np.array([30, np.nan, 30])
+    irrad_trans, temp_cell = np.meshgrid(irrad_trans, temp_cell)
+    expected = np.array([[nan,  8.9125,  118.2],
+                         [nan,    nan,    nan],
+                         [nan,  8.9125,  118.2]])
+    out = pvsystem.pvwatts_dc(irrad_trans, temp_cell, 100, -0.003, k=0.01,
+                              cap_adjustment=True)
+    assert_allclose(out, expected, equal_nan=True)
 
 
 def test_pvwatts_losses_default():

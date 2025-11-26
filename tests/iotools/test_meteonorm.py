@@ -72,9 +72,9 @@ def expected_meteonorm_data():
         [0.0, 0.0],
         [0.0, 0.0],
         [2.5, 2.68],
-        [77.5, 77.47],
-        [165.0, 164.98],
-        [210.75, 210.74],
+        [77.5, 77.48],
+        [165.0, 164.99],
+        [210.75, 210.75],
         [221.0, 220.99],
     ]
     index = pd.date_range('2023-01-01 00:30', periods=12, freq='1h', tz='UTC')
@@ -207,7 +207,7 @@ def test_get_meteonorm_custom_horizon(demo_api_key, demo_url):
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_get_meteonorm_forecast_HTTPError(demo_api_key, demo_url):
     with pytest.raises(
-            HTTPError, match="unknown parameter: not_a_real_parameter"):
+            HTTPError, match='invalid parameter "not_a_real_parameter"'):
         _ = pvlib.iotools.get_meteonorm_forecast_basic(
             latitude=50, longitude=10,
             start=pd.Timestamp.now(tz='UTC'),
@@ -265,9 +265,9 @@ def expected_meteonorm_tmy_data():
         [0.],
         [0.],
         [0.],
-        [9.06],
-        [8.43],
-        [86.63],
+        [9.07],
+        [8.44],
+        [86.64],
         [110.44],
     ]
     index = pd.date_range(

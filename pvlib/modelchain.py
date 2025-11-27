@@ -43,6 +43,8 @@ DATA_KEYS = WEATHER_KEYS + POA_KEYS + TEMPERATURE_KEYS
 # ModelChain, particularly they are used by the methods
 # ModelChain.with_pvwatts, ModelChain.with_sapm, etc.
 
+
+
 # pvwatts documentation states that it uses the following reference for
 # a temperature model: Fuentes, M. K. (1987). A Simplified Thermal Model
 # for Flat-Plate Photovoltaic Arrays. SAND85-0330. Albuquerque, NM:
@@ -1713,6 +1715,48 @@ class ModelChain:
             of Arrays in the PVSystem.
         ValueError
             If the DataFrames in `data` have different indexes.
+        Examples
+        --------
+        Single-array system:
+        >>> import pandas as pd
+        >>> from pvlib.pvsystem import PVSystem
+        >>> from pvlib.location import Location
+        >>> from pvlib.modelchain import ModelChain
+        >>>
+        >>> system = PVSystem(module_parameters={'pdc0': 300})
+        >>> location = Location(35, -110)
+        >>> mc = ModelChain(system, location)
+        >>>
+        >>> poa = pd.DataFrame({
+        ...     'poa_global': [900, 850],
+        ...     'poa_direct': [600, 560],
+        ...     'poa_diffuse': [300, 290],
+        ... }, 
+        ... index=pd.date_range("2021-06-01", periods=2, freq="H"))
+        >>>
+        >>> mc.run_model_from_poa(poa)
+        <pvlib.modelchain.ModelChain ...>
+
+        Multi-array system:
+        >>> array1 = Array(tilt=30, azimuth=180)
+        >>> array2 = Array(tilt=10, azimuth=90)
+        >>> system = PVSystem(arrays=[array1, array2],
+        ...                   module_parameters={'pdc0': 300})
+        >>> mc = ModelChain(system, location)
+        >>> poa1 = pd.DataFrame({
+        ...     'poa_global': [900, 880],
+        ...     'poa_direct': [600, 580],
+        ...     'poa_diffuse': [300, 300],
+        ... },
+        ... index=pd.date_range("2021-06-01", periods=2, freq="H"))
+        >>> poa2 = pd.DataFrame({
+        ...     'poa_global': [700, 720],
+        ...     'poa_direct': [400, 420],
+        ...     'poa_diffuse': [300, 300],
+        ... },
+        ... index=poa1.index)
+        >>> mc.run_model_from_poa([poa1, poa2])
+        <pvlib.modelchain.ModelChain ...>
 
         Notes
         -----
@@ -1738,7 +1782,6 @@ class ModelChain:
         self._run_from_effective_irrad(data)
 
         return self
-
     def _run_from_effective_irrad(self, data):
         """
         Executes the temperature, DC, losses and AC models.
@@ -1757,7 +1800,7 @@ class ModelChain:
 
         Notes
         -----
-        Assigns attributes:``cell_temperature``, ``dc``, ``ac``, ``losses``,
+        Assigns attributes:``cell_temperature, 'dc', ``ac', ``losses``,
         ``diode_params`` (if dc_model is a single diode model).
         """
         self._prepare_temperature(data)
@@ -1798,7 +1841,6 @@ class ModelChain:
             of Arrays in the PVSystem.
         ValueError
             If the DataFrames in `data` have different indexes.
-
         Notes
         -----
         Optional ``data`` columns ``'cell_temperature'``,
@@ -1834,6 +1876,7 @@ class ModelChain:
         self._run_from_effective_irrad(data)
 
         return self
+
 
 
 def _irrad_for_celltemp(total_irrad, effective_irradiance):

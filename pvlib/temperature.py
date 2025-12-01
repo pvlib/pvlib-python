@@ -713,8 +713,7 @@ def ross(poa_global, temp_air, noct=None, k=None):
         return temp_air + k * poa_global
 
 
-def _fuentes_hconv(tave, windmod, tinoct, temp_delta, xlen, tilt,
-                   check_reynold):
+def _fuentes_hconv(tave, windmod, temp_delta, xlen, tilt, check_reynold):
     # Calculate the convective coefficient as in Fuentes 1987 -- a mixture of
     # free, laminar, and turbulent convection.
     densair = 0.003484 * 101325.0 / tave  # density
@@ -836,7 +835,7 @@ def fuentes(poa_global, temp_air, wind_speed, noct_installed, module_height=5,
     # convective coefficient of top surface of module at NOCT
     windmod = 1.0
     tave = (tinoct + 293.15) / 2
-    hconv = _fuentes_hconv(tave, windmod, tinoct, tinoct - 293.15, xlen,
+    hconv = _fuentes_hconv(tave, windmod, tinoct - 293.15, xlen,
                            surface_tilt, False)
 
     # determine the ground temperature ratio and the ratio of the total
@@ -896,7 +895,7 @@ def fuentes(poa_global, temp_air, wind_speed, noct_installed, module_height=5,
         for j in range(10):
             # overall convective coefficient
             tave = (tmod + tamb) / 2
-            hconv = convrat * _fuentes_hconv(tave, windmod, tinoct,
+            hconv = convrat * _fuentes_hconv(tave, windmod,
                                              abs(tmod-tamb), xlen,
                                              surface_tilt, True)
             # sky radiation coefficient (Equation 3)

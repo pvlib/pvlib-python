@@ -499,8 +499,8 @@ def test_scalar_surface_angles(ants_params):
         assert out[key].shape == (2,), key
 
 
-@pytest.fixture
-def ground_base_params():
+def test_ground_components():
+    # test ground incident irradiance values
     inputs = {
         'solar_zenith': 60,
         'solar_azimuth': 90,
@@ -509,27 +509,42 @@ def ground_base_params():
         'dni': 1000,
         'dhi': 300,
         'albedo': 0.2,
-        'n_ground_segments': 2,
+        'n_ground_segments': 1,
         'model': 'isotropic',
     }
-    return inputs
 
-
-def test_ground_components(ground_base_params):
-    # test ground incident irradiance values
     # sun is edge-on to modules; ground is fully illuminated
-    _, out = ants2d.get_irradiance(tracker_rotation=60, axis_azimuth=180,
-                                   **ground_base_params,
+    _, out = ants2d.get_irradiance(tracker_rotation=30, axis_azimuth=180,
+                                   **inputs,
                                    return_ground_components=True)
-    assert_allclose(out['ground_direct_irradiance'], 500)  # dni * cos(zenith)
-    assert out['ground_diffuse_irradiance'] < 300  # some dhi blocked by rows
+    assert_allclose(out['ground_direct'], 500)  # dni * cos(zenith)
+    assert out['ground_diffuse'] < 300  # some dhi blocked by rows
 
     # sun is normal to modules; ground is fully shaded
     _, out = ants2d.get_irradiance(tracker_rotation=-60, axis_azimuth=180,
-                                   **ground_base_params,
+                                   **inputs,
                                    return_ground_components=True)
-    assert_allclose(out['ground_direct_irradiance'], 0)
-    assert out['ground_diffuse_irradiance'] < 300
+    assert_allclose(out['ground_direct'], 0, atol=1e-10)
+    assert out['ground_diffuse'] < 300
+
+    # flat array
+    _, out = ants2d.get_irradiance(tracker_rotation=0, axis_azimuth=180,
+                                   **inputs,
+                                   return_ground_components=True,
+                                   max_rows=500)
+    assert_allclose(out['ground_direct'], 250)  # gcr of 0.5
+    assert_allclose(out['ground_diffuse'], 150, atol=1e-3)
+
+    # flat array, four segments
+    inputs['n_ground_segments'] = 4
+    inputs['solar_zenith'] = 0
+    _, out = ants2d.get_irradiance(tracker_rotation=0, axis_azimuth=180,
+                                   **inputs,
+                                   return_ground_components=True)
+    assert_allclose(out['ground_direct'], [0, 500, 500, 0])
+    diffuse = out['ground_diffuse']
+    assert_allclose(diffuse[0], diffuse[3], atol=0.1)
+    assert_allclose(diffuse[1], diffuse[2], atol=0.1)
 
 
 def test_ground_components_types(ants_params, ants_params_fixed):

@@ -513,21 +513,21 @@ def test_ground_components():
         'model': 'isotropic',
     }
 
-    # sun is edge-on to modules; ground is fully illuminated
+    # sun is edge-on to modules: ground is fully illuminated
     _, out = ants2d.get_irradiance(tracker_rotation=30, axis_azimuth=180,
                                    **inputs,
                                    return_ground_components=True)
     assert_allclose(out['ground_direct'], 500)  # dni * cos(zenith)
     assert out['ground_diffuse'] < 300  # some dhi blocked by rows
 
-    # sun is normal to modules; ground is fully shaded
+    # sun is normal to modules: ground is fully shaded
     _, out = ants2d.get_irradiance(tracker_rotation=-60, axis_azimuth=180,
                                    **inputs,
                                    return_ground_components=True)
     assert_allclose(out['ground_direct'], 0, atol=1e-10)
     assert out['ground_diffuse'] < 300
 
-    # flat array
+    # flat array: ground_direct -> dni * cos(zenith) * gcr
     _, out = ants2d.get_irradiance(tracker_rotation=0, axis_azimuth=180,
                                    **inputs,
                                    return_ground_components=True,
@@ -535,7 +535,7 @@ def test_ground_components():
     assert_allclose(out['ground_direct'], 250)  # gcr of 0.5
     assert_allclose(out['ground_diffuse'], 150, atol=1e-3)
 
-    # flat array, four segments
+    # flat array, four segments: perfect direct shading, diffuse symmetry
     inputs['n_ground_segments'] = 4
     inputs['solar_zenith'] = 0
     _, out = ants2d.get_irradiance(tracker_rotation=0, axis_azimuth=180,
@@ -545,6 +545,15 @@ def test_ground_components():
     diffuse = out['ground_diffuse']
     assert_allclose(diffuse[0], diffuse[3], atol=0.1)
     assert_allclose(diffuse[1], diffuse[2], atol=0.1)
+
+    # flat array, many rows, very high: ground_diffuse -> dhi * gcr
+    inputs['height'] = 200
+    inputs['n_ground_segments'] = 4
+    _, out = ants2d.get_irradiance(tracker_rotation=0, axis_azimuth=180,
+                                   **inputs,
+                                   max_rows=5000,
+                                   return_ground_components=True)
+    assert_allclose(out['ground_diffuse'], 150, atol=0.01)
 
 
 def test_ground_components_types(ants_params, ants_params_fixed):

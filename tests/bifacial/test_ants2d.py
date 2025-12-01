@@ -485,5 +485,85 @@ def test_scalar_surface_angles(ants_params):
     ants_params['axis_azimuth'] = 90
     out = ants2d.get_irradiance(**ants_params)
     for key in out:
-        assert isinstance(out[key], np.ndarray)
-        assert out[key].shape == (2,)
+        assert isinstance(out[key], pd.Series), key
+        assert len(out[key]) == 2, key
+
+    # array inputs
+    ants_params = {
+        k: (v.values if isinstance(v, pd.Series) else v)
+        for k, v in ants_params.items()
+    }
+    out = ants2d.get_irradiance(**ants_params)
+    for key in out:
+        assert isinstance(out[key], np.ndarray), key
+        assert out[key].shape == (2,), key
+
+
+@pytest.fixture
+def ground_base_params():
+    inputs = {
+        'solar_zenith': 60,
+        'solar_azimuth': 90,
+        'gcr': 0.5, 'height': 2.5, 'pitch': 4,
+        'ghi': 800,
+        'dni': 1000,
+        'dhi': 300,
+        'albedo': 0.2,
+        'n_ground_segments': 2,
+        'model': 'isotropic',
+    }
+    return inputs
+
+
+def test_ground_components(ground_base_params):
+    # test ground incident irradiance values
+    # sun is edge-on to modules; ground is fully illuminated
+    _, out = ants2d.get_irradiance(tracker_rotation=60, axis_azimuth=180,
+                                   **ground_base_params,
+                                   return_ground_components=True)
+    assert_allclose(out['ground_direct_irradiance'], 500)  # dni * cos(zenith)
+    assert out['ground_diffuse_irradiance'] < 300  # some dhi blocked by rows
+
+    # sun is normal to modules; ground is fully shaded
+    _, out = ants2d.get_irradiance(tracker_rotation=-60, axis_azimuth=180,
+                                   **ground_base_params,
+                                   return_ground_components=True)
+    assert_allclose(out['ground_direct_irradiance'], 0)
+    assert out['ground_diffuse_irradiance'] < 300
+
+
+def test_ground_components_types(ants_params, ants_params_fixed):
+    # test second return value type/shape when return_ground_components=True
+
+    # scalar inputs, single ground segment
+    _, out = ants2d.get_irradiance(**ants_params_fixed, n_ground_segments=1,
+                                   return_ground_components=True)
+    assert isinstance(out, dict)
+    assert set(out.keys()) == {'ground_direct', 'ground_diffuse'}
+    for key, value in out.items():
+        assert isinstance(value, float), key
+
+    # scalar inputs, multiple ground segments
+    _, out = ants2d.get_irradiance(**ants_params_fixed, n_ground_segments=10,
+                                   return_ground_components=True)
+    assert isinstance(out, dict)
+    assert set(out.keys()) == {'ground_direct', 'ground_diffuse'}
+    for key, value in out.items():
+        assert isinstance(value, np.ndarray), key
+        assert value.shape == (10,), key
+
+    # series inputs, single ground segment
+    _, out = ants2d.get_irradiance(**ants_params, n_ground_segments=1,
+                                   return_ground_components=True)
+    assert isinstance(out, pd.DataFrame)
+    assert set(out.columns) == {'ground_direct', 'ground_diffuse'}
+    assert len(out) == 2
+
+    # series inputs, multiple ground segments
+    _, out = ants2d.get_irradiance(**ants_params, n_ground_segments=10,
+                                   return_ground_components=True)
+    assert isinstance(out, dict)
+    assert set(out.keys()) == {'ground_direct', 'ground_diffuse'}
+    for key, value in out.items():
+        assert isinstance(value, np.ndarray), key
+        assert value.shape == (10, 2), key

@@ -80,9 +80,9 @@ def _shaded_fraction(tracker_rotation, phi, gcr, x0=0, x1=1):
     return f_s
 
 
-def _ants2d_singleside(tracker_rotation, cos_aoi, phi, vf_gnd_sky,
-                       gcr, height, pitch, ghi, dhi, dni,
-                       albedo, x0, x1, g0, g1, max_rows):
+def _ants2d_singleside(tracker_rotation, cos_aoi, phi, gcr, height, pitch,
+                       dni, dhi, ground_irradiance, albedo, x0, x1, g0, g1,
+                       max_rows):
     r"""
     Calculate plane-of-array irradiance components on one side of a row
     of modules.
@@ -101,9 +101,6 @@ def _ants2d_singleside(tracker_rotation, cos_aoi, phi, vf_gnd_sky,
     phi : numeric
         Project solar zenith angle; calculate with
         :py:func:`pvlib.shading.projected_solar_zenith_angle`. [degree]
-    vf_gnd_sky : numeric
-        View factors from the ground surface to the sky. Dimensions are
-        (ground segment, row segment, timestamp). [unitless]
     gcr : float
         Ground coverage ratio, ratio of row slant length to row spacing.
         [unitless]
@@ -112,12 +109,13 @@ def _ants2d_singleside(tracker_rotation, cos_aoi, phi, vf_gnd_sky,
         same units as ``pitch``.
     pitch : float
         Distance between two rows; must be in the same units as ``height``.
-    ghi : numeric
-        Global horizontal irradiance. [Wm⁻²]
-    dhi : numeric
-        Diffuse horizontal irradiance. [Wm⁻²]
     dni : numeric
         Direct normal irradiance. [Wm⁻²]
+    dhi : numeric
+        Diffuse horizontal irradiance. [Wm⁻²]
+    ground_irradiance : numeric
+        Irradiance incident on the ground surface, partitioned according
+        to ``x0`` and ``x1``. Sum of direct and diffuse components. [Wm⁻²]
     albedo : numeric
         Surface albedo. If a scalar, it is applied to all ground segments and
         timestamps.  Otherwise, must be specified as an array with shape
@@ -184,22 +182,12 @@ def _ants2d_singleside(tracker_rotation, cos_aoi, phi, vf_gnd_sky,
 
 
     # in-plane ground-reflected component
-    ground_unshaded_fraction = utils._unshaded_ground_fraction(
-        tracker_rotation, phi, gcr,
-        pitch=pitch, height=height, g0=g0, g1=g1, max_rows=max_rows)
-
-    ground_shaded_fraction = 1 - ground_unshaded_fraction
-    ground_shaded_fraction = ground_shaded_fraction[:, np.newaxis, :]
-
     vf_row_ground = utils.vf_row_ground_2d_integ(surface_tilt=tracker_rotation,
                                                  gcr=gcr, height=height,
                                                  pitch=pitch,
                                                  x0=x0, x1=x1, g0=g0, g1=g1,
                                                  max_rows=max_rows)
-    poa_ground_diffuse = vf_row_ground * albedo * (
-        (1-ground_shaded_fraction) * (ghi - dhi)  # reflected beam
-        + vf_gnd_sky * dhi  # reflected diffuse
-    )
+    poa_ground_diffuse = vf_row_ground * albedo * ground_irradiance
     # sum over ground segments
     poa_ground_diffuse = np.sum(poa_ground_diffuse, axis=0)
 
@@ -298,7 +286,8 @@ def get_irradiance(tracker_rotation, axis_azimuth, solar_zenith, solar_azimuth,
                    gcr, height, pitch, ghi, dhi, dni,
                    albedo, model='perez', dni_extra=None, airmass=None,
                    n_row_segments=1, n_ground_segments=10, axis_tilt=0,
-                   cross_axis_slope=0, max_rows=None):
+                   cross_axis_slope=0, max_rows=None,
+                   return_ground_components=False):
     """
     Get front and rear irradiance using the ANTS-2D bifacial irradiance model.
 
@@ -379,13 +368,16 @@ def get_irradiance(tracker_rotation, axis_azimuth, solar_zenith, solar_azimuth,
         Number of array units (sky wedges, ground segments, etc) to consider.
         If not specified, units will be considered to within 4 degrees of the
         horizon. [unitless]
+    return_ground_components : bool, default False
+        If True, also return the direct and diffuse irradiance incident on the
+        ground.  These values are returned in a second dict.
 
     Returns
     -------
     output : dict or DataFrame
-        ``output`` is a DataFrame when input ``tracker_rotation`` is a Series
-        and ``n_row_segments=1``, a dict of scalars when ``tracker_rotation``
-        is a scalar and ``n_row_segments=1``, and a dict of ``np.ndarray``
+        ``output`` is a DataFrame when inputs are Series
+        and ``n_row_segments=1``, a dict of scalars when inputs are scalars
+        and ``n_row_segments=1``, and a dict of ``np.ndarray``
         otherwise.  The following quantities are included:
 
         - ``poa_global``: sum of front- and back-side incident irradiance.
@@ -415,6 +407,18 @@ def get_irradiance(tracker_rotation, axis_azimuth, solar_zenith, solar_azimuth,
           shaded from direct irradiance on the back surface by adjacent
           rows. [unitless]
 
+    ground_irradiance : dict or DataFrame
+        ``ground_irradiance`` is a DataFrame when inputs are Series
+        and ``n_ground_segments=1``, a dict of scalars when inputs are scalars
+        and ``n_ground_segments=1``, and a dict of ``np.ndarray``
+        otherwise.  Only returned when ``return_ground_components=True``.
+        The following quantities are included:
+
+        - ``ground_direct``: direct irradiance incident on the ground surface.
+          [Wm⁻²]
+        - ``ground_diffuse``: diffuse irradiance incident on the ground
+          surface. [Wm⁻²]
+
     References
     ----------
     .. [1] TODO
@@ -428,6 +432,12 @@ def get_irradiance(tracker_rotation, axis_azimuth, solar_zenith, solar_azimuth,
     all_scalar_inputs = all([
         np.isscalar(x) or x is None for x in maybe_array_inputs
     ])
+    try:
+        pd_index = next(
+            x.index for x in maybe_array_inputs if isinstance(x, pd.Series)
+        )
+    except StopIteration:
+        pd_index = None  # no pandas inputs
 
     # preparation steps
 
@@ -475,15 +485,30 @@ def get_irradiance(tracker_rotation, axis_azimuth, solar_zenith, solar_azimuth,
         tracker_rotation, gcr, height, pitch, g0=g0, g1=g1, max_rows=max_rows)
     vf_gnd_sky = vf_gnd_sky[:, np.newaxis, :]
 
+    # irradiance components incident on ground surface
+    ground_unshaded_fraction = utils._unshaded_ground_fraction(
+        tracker_rotation, phi, gcr,
+        pitch=pitch, height=height, g0=g0, g1=g1, max_rows=max_rows)
+
+    ground_shaded_fraction = 1 - ground_unshaded_fraction
+    ground_shaded_fraction = ground_shaded_fraction[:, np.newaxis, :]
+
+    ground_direct = (1-ground_shaded_fraction) * (ghi - dhi)
+    ground_diffuse = vf_gnd_sky * dhi
+    ground_total = ground_direct + ground_diffuse
+
+    # inputs shared between front and back calculations
+    params = dict(phi=phi, gcr=gcr, height=height, pitch=pitch, dni=dni,
+                  dhi=dhi, ground_irradiance=ground_total, albedo=albedo,
+                  x0=x0, x1=x1, g0=g0, g1=g1, max_rows=max_rows)
+
     # front
     front_orientation = calc_surface_orientation(true_tracker_rotation,
                                                  axis_tilt, axis_azimuth)
     cos_aoi_front = aoi_projection(**front_orientation,
                                    solar_zenith=solar_zenith,
                                    solar_azimuth=solar_azimuth)
-    poa_front = _ants2d_singleside(tracker_rotation, cos_aoi_front, phi,
-                                   vf_gnd_sky, gcr, height, pitch, ghi, dhi,
-                                   dni, albedo, x0, x1, g0, g1, max_rows)
+    poa_front = _ants2d_singleside(tracker_rotation, cos_aoi_front, **params)
 
     # back
     tracker_rotation_back = true_tracker_rotation + 180
@@ -495,9 +520,8 @@ def get_irradiance(tracker_rotation, axis_azimuth, solar_zenith, solar_azimuth,
                                   solar_azimuth=solar_azimuth)
     tracker_rotation_back = tracker_rotation + 180
     tracker_rotation_back = ((tracker_rotation_back + 180) % 360) - 180
-    poa_back = _ants2d_singleside(tracker_rotation_back, cos_aoi_back, phi,
-                                  vf_gnd_sky, gcr, height, pitch, ghi, dhi,
-                                  dni, albedo, x0, x1, g0, g1, max_rows)
+    poa_back = _ants2d_singleside(tracker_rotation_back, cos_aoi_back,
+                                  **params)
 
     for key, value in poa_back.items():
         poa_back[key] = value[::-1, :]  # invert x0/x1 dimension
@@ -517,19 +541,39 @@ def get_irradiance(tracker_rotation, axis_azimuth, solar_zenith, solar_azimuth,
         poa_front[new_key] = poa_front.pop(old_key)
     for old_key, new_key in colmap_back.items():
         poa_back[new_key] = poa_back.pop(old_key)
-    poa_front.update(poa_back)
+    out = {**poa_front, **poa_back}
 
-    if n_row_segments == 1:
-        for k, v in poa_front.items():
-            poa_front[k] = v[0]  # drop row segment dimension
+    if n_row_segments == 1 :
+        for k, v in out.items():
+            out[k] = v[0]  # drop row segment dimension
 
         if all_scalar_inputs:
             # drop the second dimension too, so scalars are returned
-            for k, v in poa_front.items():
-                poa_front[k] = float(v[0])
+            for k, v in out.items():
+                out[k] = float(v[0])
 
-        elif isinstance(true_tracker_rotation, pd.Series):
-            poa_front = pd.DataFrame(poa_front,
-                                     index=true_tracker_rotation.index)
+        elif pd_index is not None:
+            out = pd.DataFrame(out, index=pd_index)
 
-    return poa_front
+    if return_ground_components:
+        squeeze = []
+        if n_ground_segments == 1:
+            squeeze.append(0)  # drop ground segment dimension
+        squeeze.append(1)  # always drop the row segment dimension
+        if all_scalar_inputs:
+            squeeze.append(2)  # drop time dimension
+        squeeze = tuple(squeeze)
+        out_ground = {
+            'ground_direct': ground_direct.squeeze(axis=squeeze),
+            'ground_diffuse': ground_diffuse.squeeze(axis=squeeze),
+        }
+        if squeeze == (0, 1, 2):
+            for k, v in out_ground.items():
+                out_ground[k] = float(v)
+
+        if pd_index is not None and squeeze == (0, 1):
+            out_ground = pd.DataFrame(out_ground, index=pd_index)
+
+        return out, out_ground
+
+    return out

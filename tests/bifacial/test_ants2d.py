@@ -8,6 +8,7 @@ import pvlib
 from pvlib.bifacial import ants2d
 
 import pytest
+from numpy.testing import assert_allclose
 
 
 def test__shaded_fraction():
@@ -18,9 +19,9 @@ def test__shaded_fraction():
     gcr = np.array([1, 0.75, 2/3, 0.5])
     expected = np.array([0.5, 1/3, 0.25, 0])
     fs = ants2d._shaded_fraction(tracker_rotation, phi, gcr)
-    np.testing.assert_allclose(fs, expected)
+    assert_allclose(fs, expected)
     fs = ants2d._shaded_fraction(-tracker_rotation, -phi, gcr)
-    np.testing.assert_allclose(fs, expected)
+    assert_allclose(fs, expected)
 
     # sun too high for shade
     assert 0 == ants2d._shaded_fraction(10, 20, 0.5)
@@ -38,13 +39,13 @@ def test__shaded_fraction():
     # (some of these are debatable as well)
     expected = np.array([0, 0, 0, 0, 1, 1, 0, 1, 1])
     fs = ants2d._shaded_fraction(tracker_rotation, phi, gcr)
-    np.testing.assert_allclose(fs, expected)
+    assert_allclose(fs, expected)
 
 
 def test__shaded_fraction_x0x1():
     fs = ants2d._shaded_fraction(np.array([60, -60]), np.array([60, -60]),
                                  2/3, x0=[0, 0.5], x1=[0.5, 1])
-    np.testing.assert_allclose(fs, np.array([[0.5, 0.0], [0.0, 0.5]]))
+    assert_allclose(fs, np.array([[0.5, 0.0], [0.0, 0.5]]))
 
 
 @pytest.mark.parametrize('model', ['perez', 'haydavies'])
@@ -341,8 +342,8 @@ def test_get_irradiance_horizontal(ants_params_fixed):
     neg_epsilon = ants2d.get_irradiance(**ants_params_fixed)
 
     for key in zero:
-        np.testing.assert_allclose(zero[key], pos_epsilon[key], atol=0.01)
-        np.testing.assert_allclose(zero[key], neg_epsilon[key], atol=0.01)
+        assert_allclose(zero[key], pos_epsilon[key], atol=0.01)
+        assert_allclose(zero[key], neg_epsilon[key], atol=0.01)
 
 
 def test_get_irradiance_direct_shading(ants_params_fixed):
@@ -405,8 +406,8 @@ def test_get_irradiance_nonuniform_albedo():
     # need a large n_row_segments so that these segments are very thin
     left, right = out['poa_back_ground_diffuse'][[0, -1], 0]
     # divide by two because ~half the visible ground is fully shaded
-    np.testing.assert_allclose(left, 0.1 * 1000 / 2, rtol=0.002)
-    np.testing.assert_allclose(right, 0.5 * 1000 / 2, rtol=0.002)
+    assert_allclose(left, 0.1 * 1000 / 2, rtol=0.002)
+    assert_allclose(right, 0.5 * 1000 / 2, rtol=0.002)
 
 
 def test_get_irradiance_nonuniform_albedo_limit():
@@ -423,13 +424,13 @@ def test_get_irradiance_nonuniform_albedo_limit():
         'n_ground_segments': 2,
         'max_rows': 10000,
         'model': 'isotropic',
-   }
+    }
     out_uni = ants2d.get_irradiance(albedo=0.3,
                                     **base_inputs)
     out_non = ants2d.get_irradiance(albedo=np.array([[0.5, 0.1]]).T,
                                     **base_inputs)
     for key in out_non:
-        np.testing.assert_allclose(out_non[key], out_uni[key], atol=1e-6)
+        assert_allclose(out_non[key], out_uni[key], atol=1e-6)
 
 
 @pytest.mark.parametrize('model,expected', [
@@ -475,11 +476,11 @@ def test_get_irradiance_regression(model, expected, ants_params_fixed):
     # is stable over time
     out = ants2d.get_irradiance(**ants_params_fixed, model=model)
     for key in expected:
-        np.testing.assert_allclose(out[key], expected[key], atol=1e-10)
+        assert_allclose(out[key], expected[key], atol=1e-10)
 
 
 def test_scalar_surface_angles(ants_params):
-    # scalar surface angles but array irradiance inputs
+    # scalar surface angles but Series irradiance inputs
     ants_params['tracker_rotation'] = 30
     ants_params['axis_azimuth'] = 90
     out = ants2d.get_irradiance(**ants_params)

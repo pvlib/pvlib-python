@@ -476,3 +476,13 @@ def test_get_irradiance_regression(model, expected, ants_params_fixed):
     out = ants2d.get_irradiance(**ants_params_fixed, model=model)
     for key in expected:
         np.testing.assert_allclose(out[key], expected[key], atol=1e-10)
+
+
+def test_scalar_surface_angles(ants_params):
+    # scalar surface angles but array irradiance inputs
+    ants_params['tracker_rotation'] = 30
+    ants_params['axis_azimuth'] = 90
+    out = ants2d.get_irradiance(**ants_params)
+    for key in out:
+        assert isinstance(out[key], np.ndarray)
+        assert out[key].shape == (2,)

@@ -420,6 +420,15 @@ def get_irradiance(tracker_rotation, axis_azimuth, solar_zenith, solar_azimuth,
     .. [1] TODO
     """
 
+    # so we can return scalars out if needed
+    maybe_array_inputs = [
+        tracker_rotation, axis_azimuth, solar_zenith, solar_azimuth,
+        gcr, height, pitch, ghi, dhi, dni,
+        albedo, dni_extra, airmass, axis_tilt, cross_axis_slope]
+    all_scalar_inputs = all([
+        np.isscalar(x) or x is None for x in maybe_array_inputs
+    ])
+
     # preparation steps
 
     dni, dhi = _apply_sky_diffuse_model(dni, dhi, model, solar_zenith,
@@ -514,7 +523,7 @@ def get_irradiance(tracker_rotation, axis_azimuth, solar_zenith, solar_azimuth,
         for k, v in poa_front.items():
             poa_front[k] = v[0]  # drop row segment dimension
 
-        if np.isscalar(true_tracker_rotation):
+        if all_scalar_inputs:
             # drop the second dimension too, so scalars are returned
             for k, v in poa_front.items():
                 poa_front[k] = float(v[0])

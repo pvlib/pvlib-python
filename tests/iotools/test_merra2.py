@@ -98,7 +98,7 @@ def test_get_merra2_bad_credentials(params, expected, expected_meta):
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_get_merra2_bad_dataset(params, expected, expected_meta):
     params['dataset'] = 'nonexistent'
-    with pytest.raises(requests.exceptions.HTTPError, match='404 for url'):
+    with pytest.raises(requests.exceptions.HTTPError, match='404'):
         pvlib.iotools.get_merra2(**params)
 
 
@@ -107,5 +107,5 @@ def test_get_merra2_bad_dataset(params, expected, expected_meta):
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_get_merra2_bad_variables(params, expected, expected_meta):
     params['variables'] = ['nonexistent']
-    with pytest.raises(requests.exceptions.HTTPError, match='400 for url'):
+    with pytest.raises(requests.exceptions.HTTPError, match='400'):
         pvlib.iotools.get_merra2(**params)

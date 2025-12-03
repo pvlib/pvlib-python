@@ -7,6 +7,8 @@ VARIABLE_MAP = {
     'SWGDN': 'ghi',
     'SWGDNCLR': 'ghi_clear',
     'ALBEDO': 'albedo',
+    'LWGNT': 'lwn',
+    'LWGEM': 'lwu',
     'T2M': 'temp_air',
     'T2MDEW': 'temp_dew',
     'PS': 'pressure',
@@ -75,6 +77,10 @@ def get_merra2(latitude, longitude, start, end, username, password, dataset,
     |                                    | SWGDNCLR  | ghi_clear  |
     |                                    +-----------+------------+
     |                                    | ALBEDO    | albedo     |
+    |                                    +-----------+------------+
+    |                                    | LWGNT     | lwn        |
+    |                                    +-----------+------------+
+    |                                    | LWGEM     | lwu        |
     +------------------------------------+-----------+------------+
     | `M2T1NXSLV.5.12.4 <M2T1NXSLV_>`_   | T2M       | temp_air   |
     |                                    +-----------+------------+

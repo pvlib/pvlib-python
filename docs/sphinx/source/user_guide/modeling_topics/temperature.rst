@@ -14,7 +14,7 @@ Types of models
 Temperature models predict one of two quantities:
 
 - *module temperature*: the temperature as measured at the back surface
-  of a PV module.  Easy to measure, but usually less
+  of a PV module.  Easy to measure, but usually marginally less
   than the cell temperature which determines efficiency.
 - *cell temperature*: the temperature of the PV cell itself.  The relevant
   temperature for PV modeling, but almost never measured directly.
@@ -23,9 +23,10 @@ Temperature models estimate these quantities using inputs like incident
 irradiance, ambient temperature, and wind speed.  Each model also takes
 a set of parameter values that represent how a PV module responds to
 those inputs.  Parameter values generally depend on both the PV
-module technologies and the mounting conditions of the module.
+module technologies, the mounting conditions of the module
+and on any weather parameters that are not included in the model.
 
-Another way to classify temperature models is whether they account for
+Another aspect of temperature models is whether they account for
 the thermal inertia of a PV module.  Temperature models are either:
 
 - *steady-state*: the module is assumed to have been at the specified operating
@@ -83,10 +84,16 @@ Some temperature model functions provide default values for their parameters,
 and several additional sets of temperature model parameter values are
 available in :py:data:`pvlib.temperature.TEMPERATURE_MODEL_PARAMETERS`.
 However, these generic values may not be suitable for all modules and mounting
-configurations.
+configurations. It should be noted that using the default parameter values for each 
+model generally leads to different modules temperature predictions. This alone
+does not mean one model is better than another; it's just evidence that the measurements
+used to derive the default parameter values were taken on different PV systems in different
+locations under different conditions.
+
 
 Module-specific values can be obtained via testing, for example following
-the IEC 61853-2 standard.
+the IEC 61853-2 standard for the Faiman model; however, such values still do not capture 
+the dependency of temperature on system design and other variables.
 
 Parameter values for one model (e.g. ``u0``, ``u1`` for :py:func:`~pvlib.temperature.faiman`)
 can be converted to another model (e.g. ``u_c``, ``u_v`` for :py:func:`~pvlib.temperature.pvsyst_cell`)

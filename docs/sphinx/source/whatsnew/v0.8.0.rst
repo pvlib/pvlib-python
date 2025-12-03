@@ -110,14 +110,14 @@ Enhancements
 * Added ``racking_model``, ``module_type``, and ``temperature_model_parameters`` to
   :py:class:`~pvlib.pvsystem.PVSystem` and :py:class:`~pvlib.tracking.SingleAxisTracker`
   repr methods. (:issue:`1027`)
-* Added :py:func:`~pvlib.tracking.calc_axis_tilt` to calculate the
-  tracker axes tilt and :py:func:`~pvlib.tracking.calc_cross_axis_tilt` to
+* Added :py:func:`!pvlib.tracking.calc_axis_tilt` to calculate the
+  tracker axes tilt and :py:func:`!pvlib.tracking.calc_cross_axis_tilt` to
   calculate the cross-axis tilt, which is the angle, relative to horizontal, of
   the line formed by the intersection between the slope containing the tracker
   axes and a plane perpendicular to the tracker axes. (:pull:`823`)
 * Added ``cross_axis_tilt`` argument to :py:func:`~pvlib.tracking.singleaxis`
   and :py:func:`~pvlib.tracking.SingleAxisTracker` which defaults to zero. Use
-  :py:func:`~pvlib.tracking.calc_cross_axis_tilt` to calculate the cross-axis
+  :py:func:`!pvlib.tracking.calc_cross_axis_tilt` to calculate the cross-axis
   tilt angle if necessary. (:pull:`823`)
 * Added ability for :py:func:`pvlib.soiling.hsu` to accept arbitrary time intervals. (:pull:`980`)
 * Added :py:func:`pvlib.temperature.fuentes` for cell temperature modeling. (:pull:`1037`)

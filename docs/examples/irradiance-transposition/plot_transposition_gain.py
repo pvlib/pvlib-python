@@ -85,7 +85,7 @@ for tilt in range(0, 50, 10):
 # single-axis tracking:
 orientation = tracking.singleaxis(solar_position['apparent_zenith'],
                                   solar_position['azimuth'],
-                                  axis_tilt=0,  # flat array
+                                  axis_slope=0,  # flat array
                                   axis_azimuth=180,  # south-facing azimuth
                                   max_angle=60,  # a common maximum rotation
                                   backtrack=True,  # backtrack for a c-Si array

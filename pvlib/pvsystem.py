@@ -8,6 +8,7 @@ import functools
 import io
 import itertools
 from pathlib import Path
+from warnings import warn
 import inspect
 from urllib.request import urlopen
 import numpy as np
@@ -16,7 +17,7 @@ import pandas as pd
 from dataclasses import dataclass
 from abc import ABC, abstractmethod
 from typing import Optional, Union
-from pvlib._deprecation import renamed_kwarg_warning
+from pvlib._deprecation import renamed_kwarg_warning, pvlibDeprecationWarning
 import pvlib  # used to avoid albedo name collision in the Array class
 from pvlib import (atmosphere, iam, inverter, irradiance,
                    singlediode as _singlediode, spectrum, temperature)
@@ -1431,9 +1432,12 @@ class SingleAxisTrackerMount(AbstractMount):
 
     Parameters
     ----------
-    axis_tilt : float, default 0
+    axis_slope : float, default 0
         The tilt of the axis of rotation (i.e, the y-axis defined by
         axis_azimuth) with respect to horizontal. [degrees]
+
+        .. versionchanged:: 0.13.1
+            Renamed from ``axis_tilt`` to ``axis_slope``.
 
     axis_azimuth : float, default 180
         A value denoting the compass direction along which the axis of
@@ -1442,7 +1446,7 @@ class SingleAxisTrackerMount(AbstractMount):
     max_angle : float or tuple, default 90
         A value denoting the maximum rotation angle, in decimal degrees,
         of the one-axis tracker from its horizontal position (horizontal
-        if axis_tilt = 0). If a float is provided, it represents the maximum
+        if axis_slope = 0). If a float is provided, it represents the maximum
         rotation angle, and the minimum rotation angle is assumed to be the
         opposite of the maximum angle. If a tuple of (min_angle, max_angle) is
         provided, it represents both the minimum and maximum rotation angles.
@@ -1468,7 +1472,7 @@ class SingleAxisTrackerMount(AbstractMount):
         between the tracking axes has a gcr of 2/6=0.333. If gcr is not
         provided, a gcr of 2/7 is default. gcr must be <=1. [unitless]
 
-    cross_axis_tilt : float, default 0.0
+    cross_axis_slope : float, default 0.0
         The angle, relative to horizontal, of the line formed by the
         intersection between the slope containing the tracker axes and a plane
         perpendicular to the tracker axes. Cross-axis tilt should be specified
@@ -1476,8 +1480,11 @@ class SingleAxisTrackerMount(AbstractMount):
         azimuth of 180 degrees (heading south) will have a negative cross-axis
         tilt if the tracker axes plane slopes down to the east and positive
         cross-axis tilt if the tracker axes plane slopes up to the east. Use
-        :func:`~pvlib.tracking.calc_cross_axis_tilt` to calculate
-        `cross_axis_tilt`. [degrees]
+        :func:`~pvlib.tracking.calc_cross_axis_slope` to calculate
+        `cross_axis_slope`. [degrees]
+
+        .. versionchanged:: 0.13.1
+            Renamed from ``cross_axis_tilt`` to ``cross_axis_slope``.
 
     racking_model : str, optional
         Valid strings are ``'open_rack'``, ``'close_mount'``,
@@ -1493,23 +1500,89 @@ class SingleAxisTrackerMount(AbstractMount):
        The height above ground of the center of the module [m]. Used for
        the Fuentes cell temperature model.
     """
-    axis_tilt: float = 0.0
+    axis_slope: float = 0.0
     axis_azimuth: float = 0.0
     max_angle: Union[float, tuple] = 90.0
     backtrack: bool = True
     gcr: float = 2.0/7.0
-    cross_axis_tilt: float = 0.0
+    cross_axis_slope: float = 0.0
     racking_model: Optional[str] = None
     module_height: Optional[float] = None
+
+    # __init__, and properties getters and setters are explicit to deprecate
+    # field axis_tilt, renamed to axis_slope; and
+    # field cross_axis_tilt, renamed to cross_axis_slope; GH#2334 & GH#2543
+    @renamed_kwarg_warning(
+        since="0.13.1",
+        old_param_name="axis_tilt",
+        new_param_name="axis_slope",
+    )
+    @renamed_kwarg_warning(
+        since="0.13.1",
+        old_param_name="cross_axis_tilt",
+        new_param_name="cross_axis_slope",
+    )
+    def __init__(self, axis_slope=0.0, axis_azimuth=0.0, max_angle=90.0,
+                 backtrack=True, gcr=2.0/7.0, cross_axis_slope=0.0,
+                 racking_model: Optional[str] = None,
+                 module_height: Optional[float] = None):
+        self.axis_slope = axis_slope
+        self.axis_azimuth = axis_azimuth
+        self.max_angle = max_angle
+        self.backtrack = backtrack
+        self.gcr = gcr
+        self.cross_axis_slope = cross_axis_slope
+        self.racking_model = racking_model
+        self.module_height = module_height
+
+    @property
+    def axis_tilt(self):
+        warn(
+            "'axis_tilt' is deprecated since v0.13.1. "
+            "Use 'axis_slope' instead.",
+            pvlibDeprecationWarning,
+            stacklevel=2,
+        )
+        return self.axis_slope
+
+    @axis_tilt.setter
+    def axis_tilt(self, new_value):
+        warn(
+            "'axis_tilt' is deprecated since v0.13.1. "
+            "Use 'axis_slope' instead.",
+            pvlibDeprecationWarning,
+            stacklevel=2,
+        )
+        self.axis_slope = new_value
+
+    @property
+    def cross_axis_tilt(self):
+        warn(
+            "'cross_axis_tilt' is deprecated since v0.13.1. "
+            "Use 'cross_axis_slope' instead.",
+            pvlibDeprecationWarning,
+            stacklevel=2,
+        )
+        return self.cross_axis_slope
+
+    @cross_axis_tilt.setter
+    def cross_axis_tilt(self, new_value):
+        warn(
+            "'cross_axis_tilt' is deprecated since v0.13.1. "
+            "Use 'cross_axis_slope' instead.",
+            pvlibDeprecationWarning,
+            stacklevel=2,
+        )
+        self.cross_axis_slope = new_value
 
     def get_orientation(self, solar_zenith, solar_azimuth):
         # note -- docstring is automatically inherited from AbstractMount
         from pvlib import tracking  # avoid circular import issue
         tracking_data = tracking.singleaxis(
             solar_zenith, solar_azimuth,
-            self.axis_tilt, self.axis_azimuth,
+            self.axis_slope, self.axis_azimuth,
             self.max_angle, self.backtrack,
-            self.gcr, self.cross_axis_tilt
+            self.gcr, self.cross_axis_slope
         )
         return tracking_data
 

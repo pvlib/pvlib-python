@@ -67,9 +67,41 @@ def get_merra2(latitude, longitude, start, end, username, password, dataset,
     -----
     The following datasets provide quantities useful for PV modeling:
 
-    - M2T1NXRAD.5.12.4: SWGDN, SWGDNCLR, ALBEDO
-    - M2T1NXSLV.5.12.4: T2M, U10M, V10M, T2MDEW, PS, TO3, TQV
-    - M2T1NXAER.5.12.4: TOTEXTTAU, TOTSCATAU, TOTANGSTR
+    +------------------------------------+-----------+------------+
+    | Dataset                            | Variable  | pvlib name |
+    +====================================+===========+============+
+    | `M2T1NXRAD.5.12.4 <M2T1NXRAD_>`_   | SWGDN     | ghi        |
+    |                                    +-----------+------------+
+    |                                    | SWGDNCLR  | ghi_clear  |
+    |                                    +-----------+------------+
+    |                                    | ALBEDO    | albedo     |
+    +------------------------------------+-----------+------------+
+    | `M2T1NXSLV.5.12.4 <M2T1NXSLV_>`_   | T2M       | temp_air   |
+    |                                    +-----------+------------+
+    |                                    | U10       | n/a        |
+    |                                    +-----------+------------+
+    |                                    | V10       | n/a        |
+    |                                    +-----------+------------+
+    |                                    | T2MDEW    | temp_dew   |
+    |                                    +-----------+------------+
+    |                                    | PS        | pressure   |
+    |                                    +-----------+------------+
+    |                                    | TO3       | n/a        |
+    |                                    +-----------+------------+
+    |                                    | TQV       | n/a        |
+    +------------------------------------+-----------+------------+
+    | `M2T1NXAER.5.12.4 <M2T1NXAER_>`_   | TOTEXTTAU | aod550     |
+    |                                    +-----------+------------+
+    |                                    | TOTSCATAU | n/a        |
+    |                                    +-----------+------------+
+    |                                    | TOTANGSTR | n/a        |
+    +------------------------------------+-----------+------------+
+
+    .. _M2T1NXRAD: https://disc.gsfc.nasa.gov/datasets/M2T1NXRAD_5.12.4/summary
+    .. _M2T1NXSLV: https://disc.gsfc.nasa.gov/datasets/M2T1NXSLV_5.12.4/summary
+    .. _M2T1NXAER: https://disc.gsfc.nasa.gov/datasets/M2T1NXAER_5.12.4/summary
+
+    A complete list of datasets and their documentation is available at [3]_.
 
     Note that MERRA2 does not currently provide DNI or DHI.
 
@@ -77,6 +109,7 @@ def get_merra2(latitude, longitude, start, end, username, password, dataset,
     ----------
     .. [1] https://gmao.gsfc.nasa.gov/gmao-products/merra-2/
     .. [2] https://disc.gsfc.nasa.gov/earthdata-login
+    .. [3] https://disc.gsfc.nasa.gov/datasets?project=MERRA-2
     """
 
     # general API info here:

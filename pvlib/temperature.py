@@ -456,14 +456,14 @@ def faiman(poa_global, temp_air, wind_speed=1.0, u0=25.0, u1=6.84):
         speed at module height used to determine NOCT. [m/s]
 
     u0 : numeric, default 25.0
-        Combined heat loss factor coefficient. The default value is one
-        determined by Faiman for 7 silicon modules
+        Combined heat loss factor coefficient. The default value is for module
+        temperature determined by Faiman for 7 silicon modules
         in the Negev desert on an open rack at 30.9° tilt.
         :math:`\left[\frac{\text{W}/{\text{m}^2}}{\text{C}}\right]`
 
     u1 : numeric, default 6.84
-        Combined heat loss factor influenced by wind. The default value is one
-        determined by Faiman for 7 silicon modules
+        Combined heat loss factor influenced by wind. The default value is
+        for module temperature determined by Faiman for 7 silicon modules
         in the Negev desert on an open rack at 30.9° tilt.
         :math:`\left[ \frac{\text{W}/\text{m}^2}{\text{C}\ \left( \text{m/s} \right)} \right]`
 
@@ -539,14 +539,14 @@ def faiman_rad(poa_global, temp_air, wind_speed=1.0, ir_down=None,
         surface. [W/m^2]
 
     u0 : numeric, default 25.0
-        Combined heat loss factor coefficient. The default value is one
-        determined by Faiman for 7 silicon modules
+        Combined heat loss factor coefficient. The default value is for module
+        temperature determined by Faiman for 7 silicon modules
         in the Negev desert on an open rack at 30.9° tilt.
         :math:`\left[\frac{\text{W}/{\text{m}^2}}{\text{C}}\right]`
 
     u1 : numeric, default 6.84
-        Combined heat loss factor influenced by wind. The default value is one
-        determined by Faiman for 7 silicon modules
+        Combined heat loss factor influenced by wind. The default value is for
+        module temperature determined by Faiman for 7 silicon modules
         in the Negev desert on an open rack at 30.9° tilt.
         :math:`\left[ \frac{\text{W}/\text{m}^2}{\text{C}\ \left( \text{m/s} \right)} \right]`
 

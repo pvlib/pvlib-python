@@ -25,6 +25,10 @@ a set of parameter values that represent how a PV module responds to
 those inputs.  Parameter values generally depend on both the PV
 module technologies, the mounting configuration of the module,
 and on any weather parameters that are not included in the model.
+Note that, despite models conventionally being associated with either
+cell or module temperature, it is actually the parameter values that determine
+which of the two temperatures are predicted, as they will produce the same
+type of temperature from which they were originally derived.
 
 Another aspect of temperature models is whether they account for
 the thermal inertia of a PV module.  Temperature models are either:
@@ -41,30 +45,31 @@ photoconversion efficiency and radiative cooling.
 The temperature models currently available in pvlib are summarized in the
 following table:
 
-+-------------------------------------------+--------+------------+---------------------------------------------------------------------------+
-| Model                                     | Type   | Transient? | Inputs                                                                    |
-|                                           |        |            +----------------+---------------------+------------+-----------------------+
-|                                           |        |            | POA irradiance | Ambient temperature | Wind speed | Downwelling IR [#f1]_ |
-+===========================================+========+============+================+=====================+============+=======================+
-| :py:func:`~pvlib.temperature.faiman`      | either |            | ✓              | ✓                   | ✓          |                       |
-+-------------------------------------------+--------+------------+----------------+---------------------+------------+-----------------------+
-| :py:func:`~pvlib.temperature.faiman_rad`  | either |            | ✓              | ✓                   | ✓          | ✓                     |
-+-------------------------------------------+--------+------------+----------------+---------------------+------------+-----------------------+
-| :py:func:`~pvlib.temperature.fuentes`     | cell   | ✓          | ✓              | ✓                   | ✓          |                       |
-+-------------------------------------------+--------+------------+----------------+---------------------+------------+-----------------------+
-| :py:func:`~pvlib.temperature.noct_sam`    | cell   |            | ✓              | ✓                   | ✓          |                       |
-+-------------------------------------------+--------+------------+----------------+---------------------+------------+-----------------------+
-| :py:func:`~pvlib.temperature.pvsyst_cell` | cell   |            | ✓              | ✓                   | ✓          |                       |
-+-------------------------------------------+--------+------------+----------------+---------------------+------------+-----------------------+
-| :py:func:`~pvlib.temperature.ross`        | cell   |            | ✓              | ✓                   |            |                       |
-+-------------------------------------------+--------+------------+----------------+---------------------+------------+-----------------------+
-| :py:func:`~pvlib.temperature.sapm_cell`   | cell   |            | ✓              | ✓                   | ✓          |                       |
-+-------------------------------------------+--------+------------+----------------+---------------------+------------+-----------------------+
-| :py:func:`~pvlib.temperature.sapm_module` | module |            | ✓              | ✓                   | ✓          |                       |
-+-------------------------------------------+--------+------------+----------------+---------------------+------------+-----------------------+
++----------------------------------------------+--------+------------+---------------------------------------------------------------------------+
+| Model                                        | Type   | Transient? | Inputs                                                                    |
+|                                              |        |            +----------------+---------------------+------------+-----------------------+
+|                                              |        |            | POA irradiance | Ambient temperature | Wind speed | Downwelling IR [#f1]_ |
++==============================================+========+============+================+=====================+============+=======================+
+| :py:func:`~pvlib.temperature.faiman`         | either |            | ✓              | ✓                   | ✓          |                       |
++----------------------------------------------+--------+------------+----------------+---------------------+------------+-----------------------+
+| :py:func:`~pvlib.temperature.faiman_rad`     | either |            | ✓              | ✓                   | ✓          | ✓                     |
++----------------------------------------------+--------+------------+----------------+---------------------+------------+-----------------------+
+| :py:func:`~pvlib.temperature.fuentes`        | either | ✓          | ✓              | ✓                   | ✓          |                       |
++----------------------------------------------+--------+------------+----------------+---------------------+------------+-----------------------+
+| :py:func:`~pvlib.temperature.generic_linear` | cell   |            | ✓              | ✓                   | ✓          |                       |
++----------------------------------------------+--------+------------+----------------+---------------------+------------+-----------------------+
+| :py:func:`~pvlib.temperature.noct_sam`       | cell   |            | ✓              | ✓                   | ✓          |                       |
++----------------------------------------------+--------+------------+----------------+---------------------+------------+-----------------------+
+| :py:func:`~pvlib.temperature.pvsyst_cell`    | cell   |            | ✓              | ✓                   | ✓          |                       |
++----------------------------------------------+--------+------------+----------------+---------------------+------------+-----------------------+
+| :py:func:`~pvlib.temperature.ross`           | cell   |            | ✓              | ✓                   |            |                       |
++----------------------------------------------+--------+------------+----------------+---------------------+------------+-----------------------+
+| :py:func:`~pvlib.temperature.sapm_cell`      | cell   |            | ✓              | ✓                   | ✓          |                       |
++----------------------------------------------+--------+------------+----------------+---------------------+------------+-----------------------+
+| :py:func:`~pvlib.temperature.sapm_module`    | module |            | ✓              | ✓                   | ✓          |                       |
++----------------------------------------------+--------+------------+----------------+---------------------+------------+-----------------------+
 
 .. [#f1] Downwelling infrared radiation.
-
 
 In addition to the core models above, pvlib provides several other functions
 for temperature modeling:
@@ -73,8 +78,6 @@ for temperature modeling:
   the output of a steady-state model to apply transient effects.
 - :py:func:`~pvlib.temperature.sapm_cell_from_module`: a model for
   estimating cell temperature from module temperature.
-- :py:func:`~pvlib.temperature.generic_linear`: a generic linear model form,
-  equivalent to several conventional temperature models.
 
 
 Model parameters
@@ -90,14 +93,13 @@ does not mean one model is better than another; it's just evidence that the meas
 used to derive the default parameter values were taken on different PV systems in different
 locations under different conditions.
 
+Parameter values for one model (e.g. ``u0``, ``u1`` for :py:func:`~pvlib.temperature.faiman`)
+can be converted to another model (e.g. ``u_c``, ``u_v`` for :py:func:`~pvlib.temperature.pvsyst_cell`)
+using :py:class:`~pvlib.temperature.GenericLinearModel`.
 
 Module-specific values can be obtained via testing, for example following
 the IEC 61853-2 standard for the Faiman model; however, such values still do not capture 
 the dependency of temperature on system design and other variables.
-
-Parameter values for one model (e.g. ``u0``, ``u1`` for :py:func:`~pvlib.temperature.faiman`)
-can be converted to another model (e.g. ``u_c``, ``u_v`` for :py:func:`~pvlib.temperature.pvsyst_cell`)
-using :py:class:`~pvlib.temperature.GenericLinearModel`.
 
 Currently, pvlib provides no functionality for fitting parameter values
 using measured temperature.

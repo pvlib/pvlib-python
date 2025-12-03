@@ -17,8 +17,8 @@ VARIABLE_MAP = {
 def get_merra2(latitude, longitude, start, end, username, password, dataset,
                variables, map_variables=True):
     """
-    Retrieve MERRA-2 time-series irradiance and meteorological data from
-    NASA's GESDISC data archive.
+    Retrieve MERRA-2 time-series irradiance and meteorological reanalysis data
+    from NASA's GESDISC data archive.
 
     MERRA-2 [1]_ offers modeled data for many atmospheric quantities at hourly
     resolution on a 0.5° x 0.625° global grid.
@@ -37,7 +37,7 @@ def get_merra2(latitude, longitude, start, end, username, password, dataset,
         specified, UTC is assumed.
     end : datetime like or str
         Last timestamp of the requested period. If a timezone is not
-        specified, UTC is assumed.
+        specified, UTC is assumed. Must be in the same year as ``start``.
     username : str
         NASA EarthData username.
     password : str

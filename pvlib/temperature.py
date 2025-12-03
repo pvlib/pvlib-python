@@ -713,7 +713,8 @@ def ross(poa_global, temp_air, noct=None, k=None):
         return temp_air + k * poa_global
 
 
-def _fuentes_hconv(tave, windmod, temp_delta, xlen, tilt, check_reynold):
+def _fuentes_hconv(tave, windmod, tinoct, temp_delta, xlen, tilt,
+                   check_reynold):
     # Calculate the convective coefficient as in Fuentes 1987 -- a mixture of
     # free, laminar, and turbulent convection.
     densair = 0.003484 * 101325.0 / tave  # density
@@ -835,7 +836,7 @@ def fuentes(poa_global, temp_air, wind_speed, noct_installed, module_height=5,
     # convective coefficient of top surface of module at NOCT
     windmod = 1.0
     tave = (tinoct + 293.15) / 2
-    hconv = _fuentes_hconv(tave, windmod, tinoct - 293.15, xlen,
+    hconv = _fuentes_hconv(tave, windmod, tinoct, tinoct - 293.15, xlen,
                            surface_tilt, False)
 
     # determine the ground temperature ratio and the ratio of the total
@@ -895,7 +896,7 @@ def fuentes(poa_global, temp_air, wind_speed, noct_installed, module_height=5,
         for j in range(10):
             # overall convective coefficient
             tave = (tmod + tamb) / 2
-            hconv = convrat * _fuentes_hconv(tave, windmod,
+            hconv = convrat * _fuentes_hconv(tave, windmod, tinoct,
                                              abs(tmod-tamb), xlen,
                                              surface_tilt, True)
             # sky radiation coefficient (Equation 3)
@@ -1011,10 +1012,9 @@ def noct_sam(poa_global, temp_air, wind_speed, noct, module_efficiency,
     #  - Geff_total (SAM) is POA irradiance after reflections and
     #    adjustment for spectrum. Equivalent to effective_irradiance
     if effective_irradiance is None:
-        irr_ratio = 1.
+       irr = poa_global
     else:
-        irr_ratio = effective_irradiance / poa_global
-
+       irr = np.maximum(effective_irradiance, 0)
     if array_height == 1:
         wind_adj = 0.51 * wind_speed
     elif array_height == 2:
@@ -1022,13 +1022,11 @@ def noct_sam(poa_global, temp_air, wind_speed, noct, module_efficiency,
     else:
         raise ValueError(
             f'array_height must be 1 or 2, {array_height} was given')
-
     noct_adj = noct + _adj_for_mounting_standoff(mount_standoff)
-    tau_alpha = transmittance_absorptance * irr_ratio
-
     # [1] Eq. 10.37 isn't clear on exactly what "G" is. SAM SSC code uses
     # poa_global where G appears
-    cell_temp_init = poa_global / 800. * (noct_adj - 20.)
+    cell_temp_init = irr / 800. * (noct_adj - 20.)
+    tau_alpha = transmittance_absorptance
     heat_loss = 1 - module_efficiency / tau_alpha
     wind_loss = 9.5 / (5.7 + 3.8 * wind_adj)
     return temp_air + cell_temp_init * heat_loss * wind_loss

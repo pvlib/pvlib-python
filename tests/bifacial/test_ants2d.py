@@ -250,8 +250,10 @@ def test_get_irradiance_vertical(ants_params, solar_zenith, tracker_rotation):
        'shaded_fraction_front']
     for front_key in front_keys:
         back_key = front_key.replace("front", "back")
-        assert np.isclose(out.iloc[0][front_key], out.iloc[1][back_key])
-        assert np.isclose(out.iloc[1][front_key], out.iloc[0][back_key])
+        np.testing.assert_allclose(out.iloc[0][front_key],
+                                   out.iloc[1][back_key])
+        np.testing.assert_allclose(out.iloc[1][front_key],
+                                   out.iloc[0][back_key])
 
     # now with >1 row segment
     out = ants2d.get_irradiance(**ants_params, n_row_segments=2)
@@ -261,14 +263,14 @@ def test_get_irradiance_vertical(ants_params, solar_zenith, tracker_rotation):
     afternoon = 1
     for front_key in front_keys:
         back_key = front_key.replace("front", "back")
-        assert np.isclose(out[front_key][lower_half, morning],
-                          out[back_key][lower_half, afternoon])
-        assert np.isclose(out[front_key][upper_half, morning],
-                          out[back_key][upper_half, afternoon])
-        assert np.isclose(out[back_key][lower_half, morning],
-                          out[front_key][lower_half, afternoon])
-        assert np.isclose(out[back_key][upper_half, morning],
-                          out[front_key][upper_half, afternoon])
+        np.testing.assert_allclose(out[front_key][lower_half, morning],
+                                   out[back_key][lower_half, afternoon])
+        np.testing.assert_allclose(out[front_key][upper_half, morning],
+                                   out[back_key][upper_half, afternoon])
+        np.testing.assert_allclose(out[back_key][lower_half, morning],
+                                   out[front_key][lower_half, afternoon])
+        np.testing.assert_allclose(out[back_key][upper_half, morning],
+                                   out[front_key][upper_half, afternoon])
 
 
 def test_get_irradiance_limit(ants_params):
@@ -363,11 +365,11 @@ def test_get_irradiance_multiple_row_segments(ants_params_fixed):
     for k in out4:
         # check two bottom quarters average to the bottom half, and top
         # two quarters average to the top half
-        assert np.isclose(np.mean(out4[k][0:2, 0]), out2[k][0, 0])
-        assert np.isclose(np.mean(out4[k][2:4, 0]), out2[k][1, 0])
+        np.testing.assert_allclose(np.mean(out4[k][0:2, 0]), out2[k][0, 0])
+        np.testing.assert_allclose(np.mean(out4[k][2:4, 0]), out2[k][1, 0])
 
         # check that two halves average to the whole
-        assert np.isclose(np.mean(out2[k][:, 0]), out1[k])
+        np.testing.assert_allclose(np.mean(out2[k][:, 0]), out1[k])
 
 
 def test_get_irradiance_slope(ants_params_fixed):

@@ -32,7 +32,7 @@ Contributors
 * Nicolas Martinez (:ghuser:`nicomt`)
 * Anton Driesse (:ghuser:`adriesse`)
 * Cliff Hansen (:ghuser:`cwhanse`)
-* Kevin Anderson (:ghuser:`kanderso-nrel`)
+* Kevin Anderson
 * Mark Mikofski (:ghuser:`mikofski`)
 * Will Holmgren (:ghuser:`wholmgren`)
 * Mark Campanelli (:ghuser:`markcampanelli`)

@@ -94,7 +94,7 @@ Contributors
 * Adam R. Jensen (:ghuser:`AdamRJensen`)
 * Ioannis Sifnaios (:ghuser:`IoannisSifnaios`)
 * Will Holmgren (:ghuser:`wholmgren`)
-* Sophie Pelland (:ghuser:`solphie-pelland`)
+* Sophie Pelland 
 * Will Hobbs (:ghuser:`williamhobbs`)
 * Karel De Brabandere (:ghuser:`kdebrab`)
 * Kenneth J. Sauer (:ghuser:`kjsauer`)

@@ -212,7 +212,7 @@ Contributors
 * Alan Mathew (:ghuser:`alamathe1`)
 * Xavier Rene-Corail (:ghuser:`xcorail`)
 * Anton Driesse (:ghuser:`adriesse`)
-* Mark Campanelli (:ghuser:`thunderfish24`)
+* Mark Campanelli
 * Cedric Leroy (:ghuser:`cedricleroy`)
 * Jessica Forbess (:ghuser:`jforbess`)
 * Jeff Newmiller (:ghuser:`jdnewmil`)

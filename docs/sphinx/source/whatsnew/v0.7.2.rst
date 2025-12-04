@@ -102,7 +102,7 @@ Contributors
 * Cliff Hansen (:ghuser:`cwhanse`)
 * Cameron T. Stark (:ghuser:`camerontstark`)
 * Will Holmgren (:ghuser:`wholmgren`)
-* Kevin Anderson (:ghuser:`kanderso-nrel`)
+* Kevin Anderson
 * Karthikeyan Singaravelan (:ghuser:`tirkarthi`)
 * Siyan (Veronica) Guo (:ghuser:`veronicaguo`)
 * Eric Fitch (:ghuser:`ericf900`)

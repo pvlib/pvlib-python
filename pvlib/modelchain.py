@@ -5,44 +5,45 @@ get started with pvlib and demonstrate standard ways to use the
 library. With great power comes great responsibility: users should take
 the time to read the source code for the module.
 """
-
 from functools import partial
 import itertools
 import warnings
 import pandas as pd
 from dataclasses import dataclass, field
 from typing import Union, Tuple, Optional, TypeVar
-
 from pvlib import pvsystem, iam
 import pvlib.irradiance  # avoid name conflict with full import
 from pvlib.pvsystem import _DC_MODEL_PARAMS
 from pvlib.tools import _build_kwargs
-
 from pvlib._deprecation import deprecated
-
-# keys that are used to detect input data and assign data to appropriate
-# ModelChain attribute
-# for ModelChain.weather
-WEATHER_KEYS = ('ghi', 'dhi', 'dni', 'wind_speed', 'temp_air',
-                'precipitable_water')
-
-# for ModelChain.total_irrad
-POA_KEYS = ('poa_global', 'poa_direct', 'poa_diffuse')
-
-# Optional keys to communicate temperature data. If provided,
-# 'cell_temperature' overrides ModelChain.temperature_model and sets
-# ModelChain.cell_temperature to the data. If 'module_temperature' is provided,
-# overrides ModelChain.temperature_model with
-# pvlib.temperature.sapm_cell_from_module
-TEMPERATURE_KEYS = ('module_temperature', 'cell_temperature')
-
+# Keys used to detect input data and assign values to the appropriate
+# ModelChain attributes.
+# Weather-related input columns for ModelChain.weather
+WEATHER_KEYS = (
+    'ghi',               # Global Horizontal Irradiance (W/m^2)
+    'dhi',               # Diffuse Horizontal Irradiance (W/m^2)
+    'dni',               # Direct Normal Irradiance (W/m^2)
+    'wind_speed',        # Wind speed (m/s)
+    'temp_air',          # Ambient air temperature (°C)
+    'precipitable_water' # Column precipitable water (cm)
+)
+# Plane-of-array irradiance input columns for ModelChain.total_irrad
+POA_KEYS = (
+    'poa_global',   # Total plane-of-array irradiance (W/m^2)
+    'poa_direct',   # Direct POA irradiance (W/m^2)
+    'poa_diffuse'   # Diffuse POA irradiance (W/m^2)
+)
+# Temperature-related optional input columns for ModelChain
+TEMPERATURE_KEYS = (
+    'module_temperature', # Back-surface module temperature (°C)
+    'cell_temperature',   # Direct cell temperature input (°C)
+)
+# All supported input keys combined
 DATA_KEYS = WEATHER_KEYS + POA_KEYS + TEMPERATURE_KEYS
-
 # these dictionaries contain the default configuration for following
 # established modeling sequences. They can be used in combination with
 # ModelChain, particularly they are used by the methods
 # ModelChain.with_pvwatts, ModelChain.with_sapm, etc.
-
 # pvwatts documentation states that it uses the following reference for
 # a temperature model: Fuentes, M. K. (1987). A Simplified Thermal Model
 # for Flat-Plate Photovoltaic Arrays. SAND85-0330. Albuquerque, NM:

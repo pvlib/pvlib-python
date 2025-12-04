@@ -61,11 +61,21 @@ Reference [2]_.
 |                                                     +-----------------------------+         |    ✓    |  ✓   |      |      |            +   [4]_    |
 |                                                     | clearsky_index              |         |         |      |      |      |            |           |
 +-----------------------------------------------------+-----------------------------+---------+---------+------+------+------+------------+-----------+
+| :py:func:`Polo <spectral_factor_polo>`              | :term:`precipitable_water`, |         |         |      |      |      |            |           |
+|                                                     +-----------------------------+   ✓     |         |  ✓   |  ✓   |  ✓   |            +   [5]_    |
+|                                                     | :term:`airmass_absolute`,   |         |         |      |      |      |            |           |
+|                                                     +-----------------------------+         |         |      |      |      |            |           |
+|                                                     | aod500,                     |         |         |      |      |      |            |           |
+|                                                     +-----------------------------+         |         |      |      |      |            |           |
+|                                                     | :term:`aoi`,                |         |         |      |      |      |            |           |
+|                                                     +-----------------------------+         |         |      |      |      |            |           |
+|                                                     | :term:`pressure`            |         |         |      |      |      |            |           |
++-----------------------------------------------------+-----------------------------+---------+---------+------+------+------+------------+-----------+
 | :py:func:`PVSPEC <spectral_factor_pvspec>`          | :term:`airmass_absolute`,   |         |         |      |      |      |            |           |
-|                                                     +-----------------------------+   ✓     |    ✓    |  ✓   |  ✓   |  ✓   |            |   [5]_    |
+|                                                     +-----------------------------+   ✓     |    ✓    |  ✓   |  ✓   |  ✓   |            |   [6]_    |
 |                                                     | clearsky_index              |         |         |      |      |      |            |           |
 +-----------------------------------------------------+-----------------------------+---------+---------+------+------+------+------------+-----------+
-| :py:func:`SAPM <spectral_factor_sapm>`              | :term:`airmass_absolute`    |         |         |      |      |      |            |   [6]_    |
+| :py:func:`SAPM <spectral_factor_sapm>`              | :term:`airmass_absolute`    |         |         |      |      |      |            |   [7]_    |
 +-----------------------------------------------------+-----------------------------+---------+---------+------+------+------+------------+-----------+
 
 
@@ -88,16 +98,19 @@ References
        PVSPEC Model of Photovoltaic Spectral Mismatch Factor," in Proc. 2020
        IEEE 47th Photovoltaic Specialists Conference (PVSC), Calgary, AB,
        Canada, 2020, pp. 1–6. :doi:`10.1109/PVSC45281.2020.9300932`
-.. [5] D. L. King, W. E. Boyson, and J. A. Kratochvil, Photovoltaic Array
+.. [5] J. Polo and C. Sanz-Saiz, 'Development of spectral mismatch models
+       for BIPV applications in building façades', Renewable Energy, vol. 245,
+       p. 122820, Jun. 2025, :doi:`10.1016/j.renene.2025.122820`
+.. [6] D. L. King, W. E. Boyson, and J. A. Kratochvil, Photovoltaic Array
        Performance Model, Sandia National Laboratories, Albuquerque, NM, USA,
        Tech. Rep. SAND2004-3535, Aug. 2004. :doi:`10.2172/919131`
-.. [6] M. Lee and A. Panchula, "Spectral Correction for Photovoltaic Module
+.. [7] M. Lee and A. Panchula, "Spectral Correction for Photovoltaic Module
        Performance Based on Air Mass and Precipitable Water," 2016 IEEE 43rd
        Photovoltaic Specialists Conference (PVSC), Portland, OR, USA, 2016,
        pp. 3696-3699. :doi:`10.1109/PVSC.2016.7749836`
-.. [7] H. Thomas, S. Tony, and D. Ewan, “A Simple Model for Estimating the
-       Influence of Spectrum Variations on PV Performance,” pp. 3385–3389, Nov.
+.. [8] T. Huld, T. Sample, and E. Dunlop, "A Simple Model for Estimating the
+       Influence of Spectrum Variations on PV Performance," pp. 3385–3389, Nov.
        2009, :doi:`10.4229/24THEUPVSEC2009-4AV.3.27`
-.. [8] IEC 60904-7:2019, Photovoltaic devices — Part 7: Computation of the
+.. [9] IEC 60904-7:2019, Photovoltaic devices — Part 7: Computation of the
        spectral mismatch correction for measurements of photovoltaic devices, 
        International Electrotechnical Commission, Geneva, Switzerland, 2019.

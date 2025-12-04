@@ -124,7 +124,10 @@ def test_get_meteonorm_training(
 
     assert meta == expected_meta
     pd.testing.assert_index_equal(data.index, expected_meteonorm_index)
-    pd.testing.assert_frame_equal(data.iloc[:12], expected_meteonorm_data)
+    # meteonorm API only guarantees similar, not identical, results between
+    # calls.  so we allow a small amount of variation with atol.
+    pd.testing.assert_frame_equal(data.iloc[:12], expected_meteonorm_data,
+                                  check_exact=False, atol=1)
 
 
 @pytest.mark.remote_data
@@ -304,4 +307,7 @@ def test_get_meteonorm_tmy(
         map_variables=False,
         url=demo_url)
     assert meta == expected_meteonorm_tmy_meta
-    pd.testing.assert_frame_equal(data.iloc[:12], expected_meteonorm_tmy_data)
+    # meteonorm API only guarantees similar, not identical, results between
+    # calls.  so we allow a small amount of variation with atol.
+    pd.testing.assert_frame_equal(data.iloc[:12], expected_meteonorm_tmy_data,
+                                  check_exact=False, atol=1)

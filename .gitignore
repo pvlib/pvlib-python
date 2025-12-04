@@ -99,3 +99,4 @@ coverage.xml
 env
 results
 
+docs/sphinx/_build/

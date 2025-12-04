@@ -285,7 +285,7 @@ def _apply_ground_slope(height, pitch, gcr, tracker_rotation, ghi, dni, dhi,
 def get_irradiance(tracker_rotation, axis_azimuth, solar_zenith, solar_azimuth,
                    gcr, height, pitch, ghi, dhi, dni,
                    albedo, model='perez', dni_extra=None, airmass=None,
-                   n_row_segments=1, n_ground_segments=10, axis_tilt=0,
+                   row_segments=1, ground_segments=10, axis_tilt=0,
                    cross_axis_slope=0, max_rows=None,
                    return_ground_components=False):
     """
@@ -346,12 +346,19 @@ def get_irradiance(tracker_rotation, axis_azimuth, solar_zenith, solar_azimuth,
         ``model='haydavies'`` or ``model='perez'``. [Wm⁻²]
     airmass : numeric, optional
         Relative airmass. Required when ``model='perez'``. [unitless]
-    n_row_segments : int, default 1
-        Number of segments to partition the row surface into. Irradiance
-        will be computed and returned for each segment.
-    n_ground_segments : int, default 10
-        Number of segments to partition the ground surface into. ``albedo``
-        can be specified for each segment.
+    row_segments : int or list of pairs, default 1
+        If ``row_segments`` is an int, it defines the number of equal-length
+        segments the row width is divided into.  Otherwise, it must be a list
+        of pairs ``(x0, x1)`` where ``x0`` and ``x1`` are fractions of the
+        row width and ``x0 < x1``.  Irradiance will be computed and returned
+        for each segment.
+    ground_segments : int or list of pairs, default 10
+        If ``ground_segments`` is an int, it defines the number of equal-length
+        segments the ground surface is divided into.  Otherwise, it must be
+        a list of pairs ``(g0, g1)`` where ``g0`` and ``g1`` are fractions of
+        the pitch and ``g0 < g1``.  The pairs must be non-overlapping and must
+        cover the entire ground surface.  ``albedo`` can be specified for
+        each segment.
     axis_tilt : numeric, default 0
         Tilt of the axis of rotation with respect to horizontal. [degree]
     cross_axis_slope : numeric, default 0
@@ -376,8 +383,8 @@ def get_irradiance(tracker_rotation, axis_azimuth, solar_zenith, solar_azimuth,
     -------
     output : dict or DataFrame
         ``output`` is a DataFrame when inputs are Series
-        and ``n_row_segments=1``, a dict of scalars when inputs are scalars
-        and ``n_row_segments=1``, and a dict of ``np.ndarray``
+        and ``row_segments=1``, a dict of scalars when inputs are scalars
+        and ``row_segments=1``, and a dict of ``np.ndarray``
         otherwise.  The following quantities are included:
 
         - ``poa_global``: sum of front- and back-side incident irradiance.
@@ -433,6 +440,7 @@ def get_irradiance(tracker_rotation, axis_azimuth, solar_zenith, solar_azimuth,
         np.isscalar(x) or x is None for x in maybe_array_inputs
     ])
     try:
+        # get the index of the first pandas input, if there is one
         pd_index = next(
             x.index for x in maybe_array_inputs if isinstance(x, pd.Series)
         )
@@ -453,13 +461,19 @@ def get_irradiance(tracker_rotation, axis_azimuth, solar_zenith, solar_azimuth,
             cross_axis_slope
         )
 
-    x_row = np.linspace(0, 1, n_row_segments+1)
-    x0 = x_row[:-1]
-    x1 = x_row[1:]
+    if np.isscalar(row_segments):
+        x_row = np.linspace(0, 1, row_segments+1)
+        x0, x1 = x_row[:-1], x_row[1:]
+    else:
+        x0 = np.array([pair[0] for pair in row_segments])
+        x1 = np.array([pair[1] for pair in row_segments])
 
-    x_ground = np.linspace(0, 1, n_ground_segments+1)
-    g0 = x_ground[:-1]
-    g1 = x_ground[1:]
+    if np.isscalar(ground_segments):
+        x_ground = np.linspace(0, 1, ground_segments+1)
+        g0, g1 = x_ground[:-1], x_ground[1:]
+    else:
+        g0 = np.array([pair[0] for pair in ground_segments])
+        g1 = np.array([pair[1] for pair in ground_segments])
 
     # dimensions: ground segment, row segment, time
     albedo = np.atleast_2d(albedo)[:, np.newaxis, :]
@@ -500,7 +514,7 @@ def get_irradiance(tracker_rotation, axis_azimuth, solar_zenith, solar_azimuth,
     # inputs shared between front and back calculations
     params = dict(phi=phi, gcr=gcr, height=height, pitch=pitch, dni=dni,
                   dhi=dhi, ground_irradiance=ground_total, albedo=albedo,
-                  x0=x0, x1=x1, g0=g0, g1=g1, max_rows=max_rows)
+                  g0=g0, g1=g1, max_rows=max_rows)
 
     # front
     front_orientation = calc_surface_orientation(true_tracker_rotation,
@@ -508,7 +522,8 @@ def get_irradiance(tracker_rotation, axis_azimuth, solar_zenith, solar_azimuth,
     cos_aoi_front = aoi_projection(**front_orientation,
                                    solar_zenith=solar_zenith,
                                    solar_azimuth=solar_azimuth)
-    poa_front = _ants2d_singleside(tracker_rotation, cos_aoi_front, **params)
+    poa_front = _ants2d_singleside(tracker_rotation, cos_aoi_front,
+                                   x0=x0, x1=x1, **params)
 
     # back
     tracker_rotation_back = true_tracker_rotation + 180
@@ -521,10 +536,7 @@ def get_irradiance(tracker_rotation, axis_azimuth, solar_zenith, solar_azimuth,
     tracker_rotation_back = tracker_rotation + 180
     tracker_rotation_back = ((tracker_rotation_back + 180) % 360) - 180
     poa_back = _ants2d_singleside(tracker_rotation_back, cos_aoi_back,
-                                  **params)
-
-    for key, value in poa_back.items():
-        poa_back[key] = value[::-1, :]  # invert x0/x1 dimension
+                                  x0=1-x1, x1=1-x0, **params)
 
     colmap_front = {
         'poa_global': 'poa_front',
@@ -543,7 +555,7 @@ def get_irradiance(tracker_rotation, axis_azimuth, solar_zenith, solar_azimuth,
         poa_back[new_key] = poa_back.pop(old_key)
     out = {**poa_front, **poa_back}
 
-    if n_row_segments == 1 :
+    if row_segments == 1:
         for k, v in out.items():
             out[k] = v[0]  # drop row segment dimension
 
@@ -557,7 +569,7 @@ def get_irradiance(tracker_rotation, axis_azimuth, solar_zenith, solar_azimuth,
 
     if return_ground_components:
         squeeze = []
-        if n_ground_segments == 1:
+        if ground_segments == 1:
             squeeze.append(0)  # drop ground segment dimension
         squeeze.append(1)  # always drop the row segment dimension
         if all_scalar_inputs:

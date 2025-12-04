@@ -206,7 +206,7 @@ def ants_params():
 
 def test_get_irradiance_return_type(ants_params):
     # verify pandas in -> pandas out, and shapes of numpy outputs
-    out = ants2d.get_irradiance(**ants_params, n_row_segments=1)
+    out = ants2d.get_irradiance(**ants_params, row_segments=1)
     assert isinstance(out, pd.DataFrame)  # DataFrame, since n_row_segments=1
     expected_keys = ['poa_front', 'poa_front_direct', 'poa_front_diffuse',
        'poa_front_sky_diffuse', 'poa_front_ground_diffuse',
@@ -216,8 +216,8 @@ def test_get_irradiance_return_type(ants_params):
     assert set(out.columns) == set(expected_keys)
     assert len(out) == 2  # 2 timestamps
 
-    out = ants2d.get_irradiance(**ants_params, n_row_segments=3)
-    assert isinstance(out, dict)  # dict, since n_row_segments>1
+    out = ants2d.get_irradiance(**ants_params, row_segments=3)
+    assert isinstance(out, dict)  # dict, since row_segments>1
     assert set(out.keys()) == set(expected_keys)
     for k, v in out.items():
         assert v.shape == (3, 2), k  # 3 row segments, 2 timestamps
@@ -225,7 +225,7 @@ def test_get_irradiance_return_type(ants_params):
 
 def test_get_irradiance_symmetry(ants_params):
     # check symmetries for normal tracker
-    out = ants2d.get_irradiance(**ants_params, n_row_segments=1)
+    out = ants2d.get_irradiance(**ants_params, row_segments=1)
     # symmetrical/mirrored inputs should produce equal outputs
     pd.testing.assert_series_equal(out.iloc[0, :], out.iloc[1, :],
                                    check_names=False)
@@ -242,7 +242,7 @@ def test_get_irradiance_vertical(ants_params, solar_zenith, tracker_rotation):
                                             index=ants_params['ghi'].index)
     ants_params['tracker_rotation'] = pd.Series(tracker_rotation,
                                                 index=ants_params['ghi'].index)
-    out = ants2d.get_irradiance(**ants_params, n_row_segments=1)
+    out = ants2d.get_irradiance(**ants_params, row_segments=1)
     # inputs are symmetrical morning/afternoon, so morning front should equal
     # afternoon back, and vice versa
     front_keys = ['poa_front', 'poa_front_direct', 'poa_front_diffuse',
@@ -256,7 +256,7 @@ def test_get_irradiance_vertical(ants_params, solar_zenith, tracker_rotation):
                                    out.iloc[0][back_key])
 
     # now with >1 row segment
-    out = ants2d.get_irradiance(**ants_params, n_row_segments=2)
+    out = ants2d.get_irradiance(**ants_params, row_segments=2)
     lower_half = 0
     upper_half = 1
     morning = 0
@@ -284,7 +284,7 @@ def test_get_irradiance_limit(ants_params):
         ants_params['dni'], ants_params['ghi'], ants_params['dhi'],
         albedo=ants_params['albedo'], model='isotropic')
 
-    ants = ants2d.get_irradiance(**ants_params, n_row_segments=1,
+    ants = ants2d.get_irradiance(**ants_params, row_segments=1,
                                  model='isotropic')
     # 15 W/m2 happens to be just below the difference (determined empirically)
     diff_sky = irrad['poa_sky_diffuse'] - ants['poa_front_sky_diffuse']
@@ -296,7 +296,7 @@ def test_get_irradiance_limit(ants_params):
     # output of get_total_irradiance
     ants_params['pitch'] *= 1000
     ants_params['gcr'] /= 1000
-    ants = ants2d.get_irradiance(**ants_params, n_row_segments=1,
+    ants = ants2d.get_irradiance(**ants_params, row_segments=1,
                                  model='isotropic')
 
     colmap = {'poa_front': 'poa_global', 'poa_front_direct': 'poa_direct',
@@ -357,10 +357,10 @@ def test_get_irradiance_direct_shading(ants_params_fixed):
 
 
 def test_get_irradiance_multiple_row_segments(ants_params_fixed):
-    # check that granular sims average to the same value as n_row_segments=1
-    out4 = ants2d.get_irradiance(**ants_params_fixed, n_row_segments=4)
-    out2 = ants2d.get_irradiance(**ants_params_fixed, n_row_segments=2)
-    out1 = ants2d.get_irradiance(**ants_params_fixed, n_row_segments=1)
+    # check that granular sims average to the same value as row_segments=1
+    out4 = ants2d.get_irradiance(**ants_params_fixed, row_segments=4)
+    out2 = ants2d.get_irradiance(**ants_params_fixed, row_segments=2)
+    out1 = ants2d.get_irradiance(**ants_params_fixed, row_segments=1)
 
     for k in out4:
         # check two bottom quarters average to the bottom half, and top
@@ -370,6 +370,22 @@ def test_get_irradiance_multiple_row_segments(ants_params_fixed):
 
         # check that two halves average to the whole
         np.testing.assert_allclose(np.mean(out2[k][:, 0]), out1[k])
+
+
+def test_get_irradiance_custom_x0x1(ants_params_fixed):
+    # different ways of specifying the lower and upper halves
+    expected = ants2d.get_irradiance(**ants_params_fixed, row_segments=2)
+    actual = ants2d.get_irradiance(**ants_params_fixed,
+                                   row_segments=[(0.0, 0.5), (0.5, 1.0)])
+    for key in expected:
+        np.testing.assert_allclose(expected[key], actual[key])
+
+    # specify only one part of the module
+    expected = ants2d.get_irradiance(**ants_params_fixed, row_segments=4)
+    actual = ants2d.get_irradiance(**ants_params_fixed,
+                                   row_segments=[(0.25, 0.5)])
+    for key in expected:
+        np.testing.assert_allclose(expected[key][1], actual[key][0])
 
 
 def test_get_irradiance_slope(ants_params_fixed):
@@ -400,12 +416,12 @@ def test_get_irradiance_nonuniform_albedo():
         'albedo': np.array([[0.5]*10 + [0.1]*10]).T,
         'model': 'isotropic'
     }
-    out = ants2d.get_irradiance(n_ground_segments=20,
-                                n_row_segments=10000,
+    out = ants2d.get_irradiance(ground_segments=20,
+                                row_segments=10000,
                                 max_rows=2,
                                 **inputs)
     # check far left and right segments, on the edge of the module.
-    # need a large n_row_segments so that these segments are very thin
+    # need a large row_segments so that these segments are very thin
     left, right = out['poa_back_ground_diffuse'][[0, -1], 0]
     # divide by two because ~half the visible ground is fully shaded
     assert_allclose(left, 0.1 * 1000 / 2, rtol=0.002)
@@ -423,7 +439,7 @@ def test_get_irradiance_nonuniform_albedo_limit():
         'ghi': 300,
         'dni': 0,  # set dni to zero so that shadows don't confound results
         'dhi': 300,
-        'n_ground_segments': 2,
+        'ground_segments': 2,
         'max_rows': 10000,
         'model': 'isotropic',
     }
@@ -511,7 +527,7 @@ def test_ground_components():
         'dni': 1000,
         'dhi': 300,
         'albedo': 0.2,
-        'n_ground_segments': 1,
+        'ground_segments': 1,
         'model': 'isotropic',
     }
 
@@ -538,7 +554,7 @@ def test_ground_components():
     assert_allclose(out['ground_diffuse'], 150, atol=1e-3)
 
     # flat array, four segments: perfect direct shading, diffuse symmetry
-    inputs['n_ground_segments'] = 4
+    inputs['ground_segments'] = 4
     inputs['solar_zenith'] = 0
     _, out = ants2d.get_irradiance(tracker_rotation=0, axis_azimuth=180,
                                    **inputs,
@@ -550,7 +566,7 @@ def test_ground_components():
 
     # flat array, many rows, very high: ground_diffuse -> dhi * gcr
     inputs['height'] = 200
-    inputs['n_ground_segments'] = 4
+    inputs['ground_segments'] = 4
     _, out = ants2d.get_irradiance(tracker_rotation=0, axis_azimuth=180,
                                    **inputs,
                                    max_rows=5000,
@@ -562,7 +578,7 @@ def test_ground_components_types(ants_params, ants_params_fixed):
     # test second return value type/shape when return_ground_components=True
 
     # scalar inputs, single ground segment
-    _, out = ants2d.get_irradiance(**ants_params_fixed, n_ground_segments=1,
+    _, out = ants2d.get_irradiance(**ants_params_fixed, ground_segments=1,
                                    return_ground_components=True)
     assert isinstance(out, dict)
     assert set(out.keys()) == {'ground_direct', 'ground_diffuse'}
@@ -570,7 +586,7 @@ def test_ground_components_types(ants_params, ants_params_fixed):
         assert isinstance(value, float), key
 
     # scalar inputs, multiple ground segments
-    _, out = ants2d.get_irradiance(**ants_params_fixed, n_ground_segments=10,
+    _, out = ants2d.get_irradiance(**ants_params_fixed, ground_segments=10,
                                    return_ground_components=True)
     assert isinstance(out, dict)
     assert set(out.keys()) == {'ground_direct', 'ground_diffuse'}
@@ -579,14 +595,14 @@ def test_ground_components_types(ants_params, ants_params_fixed):
         assert value.shape == (10,), key
 
     # series inputs, single ground segment
-    _, out = ants2d.get_irradiance(**ants_params, n_ground_segments=1,
+    _, out = ants2d.get_irradiance(**ants_params, ground_segments=1,
                                    return_ground_components=True)
     assert isinstance(out, pd.DataFrame)
     assert set(out.columns) == {'ground_direct', 'ground_diffuse'}
     assert len(out) == 2
 
     # series inputs, multiple ground segments
-    _, out = ants2d.get_irradiance(**ants_params, n_ground_segments=10,
+    _, out = ants2d.get_irradiance(**ants_params, ground_segments=10,
                                    return_ground_components=True)
     assert isinstance(out, dict)
     assert set(out.keys()) == {'ground_direct', 'ground_diffuse'}

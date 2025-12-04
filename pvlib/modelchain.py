@@ -5,44 +5,45 @@ get started with pvlib and demonstrate standard ways to use the
 library. With great power comes great responsibility: users should take
 the time to read the source code for the module.
 """
-
 from functools import partial
 import itertools
 import warnings
 import pandas as pd
 from dataclasses import dataclass, field
 from typing import Union, Tuple, Optional, TypeVar
-
 from pvlib import pvsystem, iam
 import pvlib.irradiance  # avoid name conflict with full import
 from pvlib.pvsystem import _DC_MODEL_PARAMS
 from pvlib.tools import _build_kwargs
-
 from pvlib._deprecation import deprecated
-
-# keys that are used to detect input data and assign data to appropriate
-# ModelChain attribute
-# for ModelChain.weather
-WEATHER_KEYS = ('ghi', 'dhi', 'dni', 'wind_speed', 'temp_air',
-                'precipitable_water')
-
-# for ModelChain.total_irrad
-POA_KEYS = ('poa_global', 'poa_direct', 'poa_diffuse')
-
-# Optional keys to communicate temperature data. If provided,
-# 'cell_temperature' overrides ModelChain.temperature_model and sets
-# ModelChain.cell_temperature to the data. If 'module_temperature' is provided,
-# overrides ModelChain.temperature_model with
-# pvlib.temperature.sapm_cell_from_module
-TEMPERATURE_KEYS = ('module_temperature', 'cell_temperature')
-
+# Keys used to detect input data and assign values to the appropriate
+# ModelChain attributes.
+# Weather-related input columns for ModelChain.weather
+WEATHER_KEYS = (
+    'ghi',               # Global Horizontal Irradiance (W/m^2)
+    'dhi',               # Diffuse Horizontal Irradiance (W/m^2)
+    'dni',               # Direct Normal Irradiance (W/m^2)
+    'wind_speed',        # Wind speed (m/s)
+    'temp_air',          # Ambient air temperature (°C)
+    'precipitable_water' # Column precipitable water (cm)
+)
+# Plane-of-array irradiance input columns for ModelChain.total_irrad
+POA_KEYS = (
+    'poa_global',   # Total plane-of-array irradiance (W/m^2)
+    'poa_direct',   # Direct POA irradiance (W/m^2)
+    'poa_diffuse'   # Diffuse POA irradiance (W/m^2)
+)
+# Temperature-related optional input columns for ModelChain
+TEMPERATURE_KEYS = (
+    'module_temperature', # Back-surface module temperature (°C)
+    'cell_temperature',   # Direct cell temperature input (°C)
+)
+# All supported input keys combined
 DATA_KEYS = WEATHER_KEYS + POA_KEYS + TEMPERATURE_KEYS
-
 # these dictionaries contain the default configuration for following
 # established modeling sequences. They can be used in combination with
 # ModelChain, particularly they are used by the methods
 # ModelChain.with_pvwatts, ModelChain.with_sapm, etc.
-
 # pvwatts documentation states that it uses the following reference for
 # a temperature model: Fuentes, M. K. (1987). A Simplified Thermal Model
 # for Flat-Plate Photovoltaic Arrays. SAND85-0330. Albuquerque, NM:
@@ -1713,6 +1714,27 @@ class ModelChain:
             of Arrays in the PVSystem.
         ValueError
             If the DataFrames in `data` have different indexes.
+        Examples
+        --------
+        Single-array system:
+
+        >>> import pandas as pd
+        >>> from pvlib.pvsystem import PVSystem
+        >>> from pvlib.location import Location
+        >>> from pvlib.modelchain import ModelChain
+        >>>
+        >>> system = PVSystem(module_parameters={'pdc0': 300})
+        >>> location = Location(35, -110)
+        >>> mc = ModelChain(system, location)
+        >>>
+        >>> poa = pd.DataFrame({
+        ...     'poa_global': [900, 850],
+        ...     'poa_direct': [600, 560],
+        ...     'poa_diffuse': [300, 290],
+        ... }, index=pd.date_range("2021-06-01", periods=2, freq="H"))
+        >>>
+        >>> mc.run_model_from_poa(poa)
+        <pvlib.modelchain.ModelChain ...>
 
         Notes
         -----
@@ -1738,7 +1760,6 @@ class ModelChain:
         self._run_from_effective_irrad(data)
 
         return self
-
     def _run_from_effective_irrad(self, data):
         """
         Executes the temperature, DC, losses and AC models.
@@ -1757,7 +1778,7 @@ class ModelChain:
 
         Notes
         -----
-        Assigns attributes:``cell_temperature``, ``dc``, ``ac``, ``losses``,
+        Assigns attributes:``cell_temperature, 'dc', ``ac', ``losses``,
         ``diode_params`` (if dc_model is a single diode model).
         """
         self._prepare_temperature(data)
@@ -1798,6 +1819,25 @@ class ModelChain:
             of Arrays in the PVSystem.
         ValueError
             If the DataFrames in `data` have different indexes.
+        Examples
+        --------
+        >>> import pandas as pd
+        >>> from pvlib.pvsystem import PVSystem
+        >>> from pvlib.location import Location
+        >>> from pvlib.modelchain import ModelChain
+        >>>
+        >>> system = PVSystem(module_parameters={'pdc0': 300})
+        >>> location = Location(35, -110)
+        >>> mc = ModelChain(system, location)
+        >>>
+        >>> eff = pd.DataFrame({
+        ...     'effective_irradiance': [900, 920],
+        ...     'temp_air': [25, 24],
+        ...     'wind_speed': [2.0, 1.5],
+        ... })
+        >>>
+        >>> mc.run_model_from_effective_irradiance(eff)
+        <pvlib.modelchain.ModelChain ...>
 
         Notes
         -----
@@ -1834,6 +1874,7 @@ class ModelChain:
         self._run_from_effective_irrad(data)
 
         return self
+
 
 
 def _irrad_for_celltemp(total_irrad, effective_irradiance):

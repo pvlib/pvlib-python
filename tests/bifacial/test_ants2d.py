@@ -12,7 +12,6 @@ from numpy.testing import assert_allclose
 
 
 def test__shaded_fraction():
-    
     # special angles
     tracker_rotation = np.array([60, 60, 60, 60])
     phi = np.array([60, 60, 60, 60])
@@ -82,7 +81,6 @@ def test__apply_sky_diffuse_model(model):
     # sum of components, ignoring horizon brightening per ANTS-2D assumption
     assert adj['poa_global'] == pytest.approx(
         poa_direct + poa_sky_diffuse + poa_ground, abs=1e-10)
-
 
 
 def test__apply_sky_diffuse_model_errors():
@@ -208,11 +206,12 @@ def test_get_irradiance_return_type(ants_params):
     # verify pandas in -> pandas out, and shapes of numpy outputs
     out = ants2d.get_irradiance(**ants_params, row_segments=1)
     assert isinstance(out, pd.DataFrame)  # DataFrame, since n_row_segments=1
-    expected_keys = ['poa_front', 'poa_front_direct', 'poa_front_diffuse',
-       'poa_front_sky_diffuse', 'poa_front_ground_diffuse',
-       'shaded_fraction_front', 'poa_back', 'poa_back_direct',
-       'poa_back_diffuse', 'poa_back_sky_diffuse', 'poa_back_ground_diffuse',
-       'shaded_fraction_back']
+    expected_keys = [
+        'poa_front', 'poa_front_direct', 'poa_front_diffuse',
+        'poa_front_sky_diffuse', 'poa_front_ground_diffuse',
+        'shaded_fraction_front', 'poa_back', 'poa_back_direct',
+        'poa_back_diffuse', 'poa_back_sky_diffuse', 'poa_back_ground_diffuse',
+        'shaded_fraction_back']
     assert set(out.columns) == set(expected_keys)
     assert len(out) == 2  # 2 timestamps
 
@@ -245,9 +244,10 @@ def test_get_irradiance_vertical(ants_params, solar_zenith, tracker_rotation):
     out = ants2d.get_irradiance(**ants_params, row_segments=1)
     # inputs are symmetrical morning/afternoon, so morning front should equal
     # afternoon back, and vice versa
-    front_keys = ['poa_front', 'poa_front_direct', 'poa_front_diffuse',
-       'poa_front_sky_diffuse', 'poa_front_ground_diffuse',
-       'shaded_fraction_front']
+    front_keys = [
+        'poa_front', 'poa_front_direct', 'poa_front_diffuse',
+        'poa_front_sky_diffuse', 'poa_front_ground_diffuse',
+        'shaded_fraction_front']
     for front_key in front_keys:
         back_key = front_key.replace("front", "back")
         np.testing.assert_allclose(out.iloc[0][front_key],
@@ -288,9 +288,9 @@ def test_get_irradiance_limit(ants_params):
                                  model='isotropic')
     # 15 W/m2 happens to be just below the difference (determined empirically)
     diff_sky = irrad['poa_sky_diffuse'] - ants['poa_front_sky_diffuse']
-    diff_ground = irrad['poa_ground_diffuse'] - ants['poa_front_ground_diffuse']
+    diff_grd = irrad['poa_ground_diffuse'] - ants['poa_front_ground_diffuse']
     assert all(diff_sky > 15)
-    assert all(diff_ground > 15)
+    assert all(diff_grd > 15)
 
     # but as pitch->infinity, front-side irradiance converges to
     # output of get_total_irradiance
@@ -305,7 +305,7 @@ def test_get_irradiance_limit(ants_params):
               'poa_front_ground_diffuse': 'poa_ground_diffuse'}
     ants_front = ants[list(colmap)].rename(columns=colmap)
     pd.testing.assert_frame_equal(ants_front, irrad, atol=0.1)
-    
+
 
 @pytest.fixture
 def ants_params_fixed():
@@ -452,43 +452,46 @@ def test_get_irradiance_nonuniform_albedo_limit():
 
 
 @pytest.mark.parametrize('model,expected', [
-    ('isotropic', {'poa_front': 1006.3548761345762,
-         'poa_front_direct': 833.3333333333335,
-         'poa_front_diffuse': 173.0215428012428,
-         'poa_front_sky_diffuse': 172.27247024391784,
-         'poa_front_ground_diffuse': 0.7490725573249604,
-         'shaded_fraction_front': 0.035915234551783914,
-         'poa_back': 23.626216052516494,
-         'poa_back_direct': 0.0,
-         'poa_back_diffuse': 23.626216052516494,
-         'poa_back_sky_diffuse': 8.509173579096064,
-         'poa_back_ground_diffuse': 15.11704247342043,
-         'shaded_fraction_back': 0.035915234551784025}),
-    ('haydavies', {'poa_front': 1124.2311927022897,
-         'poa_front_direct': 1078.4313725490197,
-         'poa_front_diffuse': 45.79982015327015,
-         'poa_front_sky_diffuse': 45.60153624103707,
-         'poa_front_ground_diffuse': 0.19828391223307773,
-         'shaded_fraction_front': 0.035915234551783914,
-         'poa_back': 6.2539983668426,
-         'poa_back_direct': 0.0,
-         'poa_back_diffuse': 6.2539983668426,
-         'poa_back_sky_diffuse': 2.252428300348958,
-         'poa_back_ground_diffuse': 4.001570066493642,
-         'shaded_fraction_back': 0.035915234551784025}),
-    ('perez', {'poa_front': 1060.3368384162613,
-               'poa_front_direct': 945.5770264984124,
-               'poa_front_diffuse': 114.75981191784896,
-               'poa_front_sky_diffuse': 114.26297537137229,
-               'poa_front_ground_diffuse': 0.4968365464766687,
-               'shaded_fraction_front': 0.035915234551783914,
-               'poa_back': 15.670534816764919,
-               'poa_back_direct': 0.0,
-               'poa_back_diffuse': 15.670534816764919,
-               'poa_back_sky_diffuse': 5.643870374194696,
-               'poa_back_ground_diffuse': 10.026664442570222,
-               'shaded_fraction_back': 0.035915234551784025})
-    ])
+    ('isotropic', {
+        'poa_front': 1006.3548761345762,
+        'poa_front_direct': 833.3333333333335,
+        'poa_front_diffuse': 173.0215428012428,
+        'poa_front_sky_diffuse': 172.27247024391784,
+        'poa_front_ground_diffuse': 0.7490725573249604,
+        'shaded_fraction_front': 0.035915234551783914,
+        'poa_back': 23.626216052516494,
+        'poa_back_direct': 0.0,
+        'poa_back_diffuse': 23.626216052516494,
+        'poa_back_sky_diffuse': 8.509173579096064,
+        'poa_back_ground_diffuse': 15.11704247342043,
+        'shaded_fraction_back': 0.035915234551784025}),
+    ('haydavies', {
+        'poa_front': 1124.2311927022897,
+        'poa_front_direct': 1078.4313725490197,
+        'poa_front_diffuse': 45.79982015327015,
+        'poa_front_sky_diffuse': 45.60153624103707,
+        'poa_front_ground_diffuse': 0.19828391223307773,
+        'shaded_fraction_front': 0.035915234551783914,
+        'poa_back': 6.2539983668426,
+        'poa_back_direct': 0.0,
+        'poa_back_diffuse': 6.2539983668426,
+        'poa_back_sky_diffuse': 2.252428300348958,
+        'poa_back_ground_diffuse': 4.001570066493642,
+        'shaded_fraction_back': 0.035915234551784025}),
+    ('perez', {
+        'poa_front': 1060.3368384162613,
+        'poa_front_direct': 945.5770264984124,
+        'poa_front_diffuse': 114.75981191784896,
+        'poa_front_sky_diffuse': 114.26297537137229,
+        'poa_front_ground_diffuse': 0.4968365464766687,
+        'shaded_fraction_front': 0.035915234551783914,
+        'poa_back': 15.670534816764919,
+        'poa_back_direct': 0.0,
+        'poa_back_diffuse': 15.670534816764919,
+        'poa_back_sky_diffuse': 5.643870374194696,
+        'poa_back_ground_diffuse': 10.026664442570222,
+        'shaded_fraction_back': 0.035915234551784025})
+])
 def test_get_irradiance_regression(model, expected, ants_params_fixed):
     # values computed for typical but arbitrary inputs, to verify that output
     # is stable over time

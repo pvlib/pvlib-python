@@ -110,7 +110,7 @@ def _unshaded_ground_fraction(surface_tilt, phi, gcr, height=None,
 
     g0 = np.atleast_1d(g0)[np.newaxis, :, np.newaxis]
     g1 = np.atleast_1d(g1)[np.newaxis, :, np.newaxis]
-    
+
     # TODO seems like this should be np.arange(-max_rows, max_rows+1)?
     # see GH #1867
     k = np.arange(-max_rows, max_rows)[:, np.newaxis, np.newaxis]
@@ -124,12 +124,12 @@ def _unshaded_ground_fraction(surface_tilt, phi, gcr, height=None,
     # d, c: left/right shading module edges
     c = (k*pitch + 0.5 * Lcostheta, height + 0.5 * Lsintheta)
     d = (k*pitch - 0.5 * Lcostheta, height - 0.5 * Lsintheta)
-    
+
     cp = c[0] + c[1] * tanphi
     dp = d[0] + d[1] * tanphi
     swap = dp > cp
     cp, dp = np.where(swap, dp, cp), np.where(swap, cp, dp)
-    
+
     a = g0*pitch
     b = g1*pitch
 
@@ -142,11 +142,11 @@ def _unshaded_ground_fraction(surface_tilt, phi, gcr, height=None,
     fs = np.where((a < dp) & (dp < b) & (a < cp) & (cp < b),
                   (cp - dp) / (b - a), fs)
     fs = np.where((dp > b) & (cp > b), 0.0, fs)
-    
+
     # total shaded fraction is sum of individuals; note that shadows
     # never overlap in this model, except when shaded fraction is 100% anyway
     f_gnd_beam = 1 - np.clip(np.sum(fs, axis=0), 0, 1)  # sum along k dimension
-    
+
     # using phi is more convenient, and I think better, than using zenith
     phi = phi[0, :, :]  # drop k dimension for the next line
     f_gnd_beam = np.where(np.abs(phi) > max_zenith, 0., f_gnd_beam)
@@ -302,11 +302,12 @@ def vf_ground_sky_2d_integ(tracker_rotation, gcr, height, pitch, g0=0, g1=1,
 
     # dimensions: k/max_rows, ground segment, time
 
-    tracker_rotation = np.atleast_1d(tracker_rotation)[np.newaxis, np.newaxis, :]
-    
+    tracker_rotation = \
+        np.atleast_1d(tracker_rotation)[np.newaxis, np.newaxis, :]
+
     g0 = np.atleast_1d(g0)[np.newaxis, :, np.newaxis]
     g1 = np.atleast_1d(g1)[np.newaxis, :, np.newaxis]
-    
+
     # TODO seems like this should be np.arange(-max_rows, max_rows+1)?
     # see GH #1867
     k = np.arange(-max_rows, max_rows)[:, np.newaxis, np.newaxis]
@@ -325,7 +326,7 @@ def vf_ground_sky_2d_integ(tracker_rotation, gcr, height, pitch, g0=0, g1=1,
     d = (c[0] - pitch, c[1])
 
     # view obstruction points (module edges, but need to figure out which ones)
-    
+
     # first decide whether the left obstruction is the left or right mod edge
     left = (k*pitch - 0.5 * Lcostheta, height - 0.5 * Lsintheta)
     right = (k*pitch + 0.5 * Lcostheta, height + 0.5 * Lsintheta)
@@ -335,7 +336,7 @@ def vf_ground_sky_2d_integ(tracker_rotation, gcr, height, pitch, g0=0, g1=1,
         np.where(angle_left > angle_right, right[0], left[0]),
         np.where(angle_left > angle_right, right[1], left[1])
     )
-    
+
     # now for the right obstruction
     left = (left[0] + pitch, left[1])
     right = (right[0] + pitch, right[1])
@@ -432,8 +433,8 @@ def vf_row_sky_2d_integ(surface_tilt, gcr, x0=0, x1=1):
         Ratio of the row slant length to the row spacing (pitch). [unitless]
     x0 : numeric, default 0
         Position on the row's slant length, as a fraction of the slant length.
-        ``x0=0`` corresponds to the bottom of the row. ``x0`` should be less than
-        ``x1``. [unitless]
+        ``x0=0`` corresponds to the bottom of the row. ``x0`` should be less
+        than ``x1``. [unitless]
     x1 : numeric, default 1
         Position on the row's slant length, as a fraction of the slant length.
         ``x1`` should be greater than ``x0``. [unitless]
@@ -453,9 +454,9 @@ def vf_row_sky_2d_integ(surface_tilt, gcr, x0=0, x1=1):
         squeeze.append(1)
 
     # dimensions: row segment, time
-    
+
     surface_tilt = np.atleast_1d(surface_tilt)[np.newaxis, :]
-    
+
     x0 = np.atleast_1d(x0)[:, np.newaxis]
     x1 = np.atleast_1d(x1)[:, np.newaxis]
 
@@ -574,19 +575,20 @@ def vf_row_ground_2d_integ(surface_tilt, gcr, height=None, pitch=None,
     # cheat a little to prevent numerical issues with surface_tilt==180, -180
     surface_tilt = np.where(surface_tilt == 180, 179.9999, surface_tilt)
     surface_tilt = np.where(surface_tilt == -180, -179.9999, surface_tilt)
-    
-    surface_tilt = np.atleast_1d(surface_tilt)[np.newaxis, np.newaxis, np.newaxis, :]
-    
+
+    surface_tilt = \
+        np.atleast_1d(surface_tilt)[np.newaxis, np.newaxis, np.newaxis, :]
+
     x0 = np.atleast_1d(x0)[np.newaxis, np.newaxis, :, np.newaxis]
     x1 = np.atleast_1d(x1)[np.newaxis, np.newaxis, :, np.newaxis]
     g0 = np.atleast_1d(g0)[np.newaxis, :, np.newaxis, np.newaxis]
     g1 = np.atleast_1d(g1)[np.newaxis, :, np.newaxis, np.newaxis]
-    
+
     # TODO seems like this should be np.arange(-max_rows, max_rows+1)?
     # see GH #1867
     k = np.arange(-max_rows, max_rows)[:, np.newaxis, np.newaxis, np.newaxis]
-    
-    collector_width = pitch * gcr   
+
+    collector_width = pitch * gcr
     Lcostheta = collector_width * cosd(surface_tilt)
     Lsintheta = collector_width * sind(surface_tilt)
 
@@ -595,7 +597,7 @@ def vf_row_ground_2d_integ(surface_tilt, gcr, height=None, pitch=None,
     # be a nonzero distance from all points the VF could be calculated from
     ob_right = (-pitch - 0.5001 * Lcostheta, height - 0.5001 * abs(Lsintheta))
     ob_left = (ob_right[0] + pitch, ob_right[1])
-    
+
     invert = surface_tilt < 0
     temp = ob_right[0]
     ob_right = (np.where(invert, -ob_left[0], ob_right[0]), ob_right[1])
@@ -614,7 +616,7 @@ def vf_row_ground_2d_integ(surface_tilt, gcr, height=None, pitch=None,
     ac, ad, bc, bd = _obstructed_string_lengths(a, b, c, d, ob_left, ob_right)
 
     # crossed string formula for VF
-    vf_slats = 0.5 * (1/((x1 - x0) * collector_width)) * ((ac + bd) - (bc + ad))
+    vf_slats = 1 / (2 * (x1 - x0) * collector_width) * ((ac + bd) - (bc + ad))
     vf_total = np.sum(np.maximum(vf_slats, 0), axis=0)  # sum along k dimension
 
     # dimensions are now ground_segment, row_segment, time

@@ -60,7 +60,7 @@ def _shaded_fraction(tracker_rotation, phi, gcr, x0=0, x1=1):
     # apply it here.
     # also, we have PSZA instead of solar position, so use fake azimuths to
     # trick shaded_fraction1d into accepting it as-is.
-    # direction of positive phi by right-hand rule: 
+    # direction of positive phi by right-hand rule:
     f_s = shaded_fraction1d(phi, solar_azimuth=90,
                             axis_azimuth=0,
                             shaded_row_rotation=tracker_rotation,
@@ -129,17 +129,17 @@ def _ants2d_singleside(tracker_rotation, cos_aoi, phi, gcr, height, pitch,
         Position on the row's slant length, as a fraction of the slant length.
         ``x1=1`` corresponds to the right side of the row.
         ``x1`` should be greater than ``x0``. If specified as array, it
-        must have the same length as ``x0``.[unitless]
+        must have the same length as ``x0``. [unitless]
     g0 : numeric
         Position on the ground surface, as a fraction of the row-to-row
         spacing. ``g0=0`` corresponds to ground underneath the middle of the
         left row. ``g0`` should be less than ``g1``. If specified as array, it
-        must have the same length as ``g1``.[unitless]
+        must have the same length as ``g1``. [unitless]
     g1 : numeric
         Position on the ground surface, as a fraction of the row-to-row
         spacing. ``g1=1`` corresponds to ground underneath the middle of the
-        right row. ``g1`` should be greater than ``g0``. If specified as array, it
-        must have the same length as ``g0``.[unitless]
+        right row. ``g1`` should be greater than ``g0``. If specified as
+        array, it must have the same length as ``g0``. [unitless]
     max_rows : int
         Number of array units (sky wedges, ground segments, etc) to consider.
         [unitless]
@@ -174,12 +174,10 @@ def _ants2d_singleside(tracker_rotation, cos_aoi, phi, gcr, height, pitch,
     poa_direct = dni * projection * (1 - row_shaded_fraction)
     poa_direct = poa_direct[0]  # drop ground segment dimension
 
-
     # in-plane sky diffuse component
     vf_row_sky = utils.vf_row_sky_2d_integ(tracker_rotation, gcr, x0, x1)
     poa_sky_diffuse = vf_row_sky * dhi
     poa_sky_diffuse = poa_sky_diffuse[0]  # drop ground segment dimension
-
 
     # in-plane ground-reflected component
     vf_row_ground = utils.vf_row_ground_2d_integ(surface_tilt=tracker_rotation,
@@ -190,7 +188,6 @@ def _ants2d_singleside(tracker_rotation, cos_aoi, phi, gcr, height, pitch,
     poa_ground_diffuse = vf_row_ground * albedo * ground_irradiance
     # sum over ground segments
     poa_ground_diffuse = np.sum(poa_ground_diffuse, axis=0)
-
 
     # add sky and ground-reflected irradiance on the row by irradiance
     # component
@@ -268,7 +265,8 @@ def _apply_ground_slope(height, pitch, gcr, tracker_rotation, ghi, dni, dhi,
     pitch = pitch / cosd(cross_axis_slope)
     gcr = gcr * cosd(cross_axis_slope)
     tracker_rotation = tracker_rotation - cross_axis_slope
-    tracker_rotation = ((tracker_rotation + 180) % 360) - 180  # put back to [-180, 180]
+    # put back to [-180, 180]:
+    tracker_rotation = ((tracker_rotation + 180) % 360) - 180
 
     ghi = dhi + dni * np.maximum(
         aoi_projection(slope_tilt, slope_azimuth,
@@ -277,8 +275,6 @@ def _apply_ground_slope(height, pitch, gcr, tracker_rotation, ghi, dni, dhi,
     # dhi: no need to adjust; the blocked view is only near the
     #      the horizon, and that part of the sky is blocked by rows anyway
     # dni: no adjustment needed; the measurement plane is not affected
-    #dhi = dhi
-    #dni = dni
     return height, pitch, gcr, tracker_rotation, ghi
 
 

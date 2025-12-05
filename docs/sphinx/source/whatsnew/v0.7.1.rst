@@ -39,7 +39,7 @@ Documentation
 
 Contributors
 ~~~~~~~~~~~~
-* Kevin Anderson
+* Kevin Anderson (:ghuser:`kevinsa5`)
 * Mark Mikofski (:ghuser:`mikofski`)
 * :ghuser:`dzimmanck`
 * Will Holmgren (:ghuser:`wholmgren`)

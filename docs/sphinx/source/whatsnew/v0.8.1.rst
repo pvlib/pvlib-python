@@ -61,7 +61,7 @@ Documentation
 
 Contributors
 ~~~~~~~~~~~~
-* Kevin Anderson
+* Kevin Anderson (:ghuser:`kevinsa5`)
 * Siyan (Veronica) Guo (:ghuser:`veronicaguo`)
 * Will Holmgren (:ghuser:`wholmgren`)
 * Cliff Hansen (:ghuser:`cwhanse`)

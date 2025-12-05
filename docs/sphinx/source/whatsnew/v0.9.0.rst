@@ -243,8 +243,8 @@ Contributors
 * Will Vining (:ghuser:`wfvining`)
 * Anton Driesse (:ghuser:`adriesse`)
 * Mark Mikofski (:ghuser:`mikofski`)
-* Nate Croft
-* Kevin Anderson
+* Nate Croft (:ghuser:`nate-croft`)`
+* Kevin Anderson (:ghuser:`kevinsa5`)
 * Adam R. Jensen (:ghuser:`AdamRJensen`)
 * Joshua Stein (:ghuser:`jsstein`)
 * Tony Lorenzo (:ghuser:`alorenzo175`)

@@ -86,9 +86,9 @@ Contributors
 * Anton Driesse (:ghuser:`adriesse`)
 * Michael Deceglie (:ghuser:`mdeceglie`)
 * Saurabh Aneja (:ghuser:`spaneja`)
-* John Moseley
+* John Moseley 
 * Areeba Turabi (:ghuser:`aturabi`)
 * Mark Campanelli (:ghuser:`markcampanelli`)
 * Taos Transue (:ghuser:`reepoi`)
-* Tim Townsend
+* Tim Townsend 
 * Tom Arjannikov (:ghuser:`Arjannikov`)

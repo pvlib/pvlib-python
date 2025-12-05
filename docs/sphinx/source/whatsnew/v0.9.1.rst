@@ -76,7 +76,7 @@ Contributors
 * :ghuser:`Antoine-0`
 * :ghuser:`Carlosbogo`
 * Christian Weickhmann (:ghuser:`cweickhmann`)
-* Kevin Anderson (:ghuser:`kevinsa5`)
+* Kevin Anderson (:ghuser:`kandersolar`)
 * Adam R. Jensen (:ghuser:`AdamRJensen`)
 * Johann Loux (:ghuser:`JoLo90`)
 * Saurabh Aneja (:ghuser:`spaneja`)

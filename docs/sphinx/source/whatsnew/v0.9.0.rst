@@ -244,7 +244,7 @@ Contributors
 * Anton Driesse (:ghuser:`adriesse`)
 * Mark Mikofski (:ghuser:`mikofski`)
 * Nate Croft (:ghuser:`nate-croft`)`
-* Kevin Anderson (:ghuser:`kevinsa5`)
+* Kevin Anderson (:ghuser:`kandersolar`)
 * Adam R. Jensen (:ghuser:`AdamRJensen`)
 * Joshua Stein (:ghuser:`jsstein`)
 * Tony Lorenzo (:ghuser:`alorenzo175`)

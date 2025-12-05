@@ -60,7 +60,7 @@ Contributors
 * Anton Driesse (:ghuser:`adriesse`)
 * Abigail Jones (:ghuser:`ajonesr`)
 * Cliff Hansen (:ghuser:`cwhanse`)
-* Gilles Fischer 
+* Gilles Fischer
 * Adam R. Jensen (:ghuser:`AdamRJensen`)
 * :ghuser:`matsuobasho`
 * Harry Jack (:ghuser:`harry-solcast`)

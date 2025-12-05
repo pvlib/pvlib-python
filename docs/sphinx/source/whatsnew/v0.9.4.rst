@@ -60,7 +60,7 @@ Contributors
 * Yu Xie (:ghuser:`xieyupku`)
 * Anton Driesse (:ghuser:`adriesse`)
 * Cliff Hansen (:ghuser:`cwhanse`)
-* Kevin Anderson (:ghuser:`kevinsa5`)
+* Kevin Anderson (:ghuser:`kandersolar`)
 * Karel De Brabandere (:ghuser:`kdebrab`)
 * Naman Priyadarshi (:ghuser:`Naman-Priyadarshi`)
 * Adam R. Jensen (:ghuser:`AdamRJensen`)

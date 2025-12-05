@@ -71,7 +71,7 @@ Contributors
 * Chencheng Luo (:ghuser:`roger-lcc`)
 * Prajwal Borkar (:ghuser:`PrajwalBorkar`) 
 * Cliff Hansen (:ghuser:`cwhanse`)
-* Kevin Anderson (:ghuser:`kanderso-nrel`)
+* Kevin Anderson (:ghuser:`kandersolar`)
 * Cliff Hansen (:ghuser:`cwhanse`)
 * Jules Chéron (:ghuser:`jules-ch`)
 * Kurt Rhee (:ghuser:`kurt-rhee`)

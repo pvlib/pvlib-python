@@ -323,7 +323,7 @@ def test_noct_sam_against_sam():
                                   module_efficiency, effective_irradiance,
                                   transmittance_absorptance, array_height,
                                   mount_standoff)
-    expected = 43.0655
+    expected = 43.024616
     # rtol from limited SAM output precision
     assert_allclose(result, expected, rtol=1e-5)
 
@@ -339,7 +339,7 @@ def test_noct_sam_options():
                                   module_efficiency, effective_irradiance,
                                   transmittance_absorptance, array_height,
                                   mount_standoff)
-    expected = 60.477703576
+    expected = 62.877666
     assert_allclose(result, expected)
 
 

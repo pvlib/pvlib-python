@@ -1012,9 +1012,9 @@ def noct_sam(poa_global, temp_air, wind_speed, noct, module_efficiency,
     #  - Geff_total (SAM) is POA irradiance after reflections and
     #    adjustment for spectrum. Equivalent to effective_irradiance
     if effective_irradiance is None:
-       irr = poa_global
+       Geff = poa_global
     else:
-       irr = np.maximum(effective_irradiance, 0)
+       Geff= np.maximum(effective_irradiance, 0)
     if array_height == 1:
         wind_adj = 0.51 * wind_speed
     elif array_height == 2:
@@ -1025,7 +1025,8 @@ def noct_sam(poa_global, temp_air, wind_speed, noct, module_efficiency,
     noct_adj = noct + _adj_for_mounting_standoff(mount_standoff)
     # [1] Eq. 10.37 isn't clear on exactly what "G" is. SAM SSC code uses
     # poa_global where G appears
-    cell_temp_init = irr / 800. * (noct_adj - 20.)
+    irr_ratio = Geff / poa_global
+    cell_temp_init = (poa_global / 800.0) * (noct_adj - 20.0) * irr_ratio
     tau_alpha = transmittance_absorptance
     heat_loss = 1 - module_efficiency / tau_alpha
     wind_loss = 9.5 / (5.7 + 3.8 * wind_adj)

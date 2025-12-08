@@ -17,7 +17,8 @@ Deprecations
 
 Bug fixes
 ~~~~~~~~~
-
+* Corrected argument and value order in :py:func:`~pvlib.tests.ivtools.test_sde`,
+  in tests of :py:func:`~pvlib.ivtools.sde._fit_sandia_cocontent`. (:issue:`2613`, :pull:`2615`)
 
 Enhancements
 ~~~~~~~~~~~~

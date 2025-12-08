@@ -60,8 +60,8 @@ def singleaxis(apparent_zenith, solar_azimuth,
             Renamed from ``axis_tilt`` to ``axis_slope``.
 
     axis_azimuth : float, default 0
-        A value denoting the compass direction along which the axis of
-        rotation lies. Measured in decimal degrees east of north.
+        The compass direction along which the axis of rotation lies.
+        Measured in decimal degrees east of north.
 
     max_angle : float or tuple, default 90
         A value denoting the maximum rotation angle, in decimal degrees,

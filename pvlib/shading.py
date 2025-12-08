@@ -423,9 +423,8 @@ def shaded_fraction1d(
         Distance between the rotating axis and the collector surface.
         May be used to account for a torque tube offset.
     cross_axis_slope : numeric, default 0
-        Angle of the plane containing the rows' axes relative to
-        horizontal. Right-handed rotation with respect to the rows axes.
-        See :term:`cross_axis_slope`. In degrees :math:`^{\circ}`.
+        In degrees :math:`^{\circ}`.
+        See :term:`cross_axis_slope`.
 
         .. versionchanged:: 0.13.1
             Renamed from ``cross_axis_tilt`` to ``cross_axis_slope``

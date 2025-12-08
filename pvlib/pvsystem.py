@@ -1473,17 +1473,10 @@ class SingleAxisTrackerMount(AbstractMount):
         provided, a gcr of 2/7 is default. gcr must be <=1. [unitless]
 
     cross_axis_slope : float, default 0.0
-        The angle, relative to horizontal, of the line formed by the
-        intersection between the slope containing the tracker axes and a plane
-        perpendicular to the tracker axes. Cross-axis tilt should be specified
-        using a right-handed convention. For example, trackers with axis
-        azimuth of 180 degrees (heading south) will have a negative cross-axis
-        tilt if the tracker axes plane slopes down to the east and positive
-        cross-axis tilt if the tracker axes plane slopes up to the east. Use
-        :func:`~pvlib.tracking.calc_cross_axis_slope` to calculate
-        `cross_axis_slope`. [degrees]
+        In degrees :math:`^{\circ}`.
+        See :term:`cross_axis_slope`.
 
-        .. versionchanged:: 0.13.1
+        .. versionchanged:: 0.13.2
             Renamed from ``cross_axis_tilt`` to ``cross_axis_slope``.
 
     racking_model : str, optional

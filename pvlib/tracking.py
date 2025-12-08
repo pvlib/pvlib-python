@@ -93,9 +93,8 @@ def singleaxis(apparent_zenith, solar_azimuth,
         2/7 is default. ``gcr`` must be <=1.
 
     cross_axis_slope : float, default 0.0
-        Angle of the plane containing the rows' axes relative to
-        horizontal. Right-handed rotation with respect to the rows axes.
-        See :term:`cross_axis_slope`. In degrees :math:`^{\circ}`.
+        In degrees :math:`^{\circ}`.
+        See :term:`cross_axis_slope`.
 
         .. versionchanged:: 0.13.1
             Renamed from ``cross_axis_tilt`` to ``cross_axis_slope``.

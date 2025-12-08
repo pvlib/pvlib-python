@@ -45,18 +45,26 @@ There is a convention on consistent variable names throughout the library:
         Beam/direct horizontal irradiance
 
     cross_axis_slope
-        Cross-axis tilt angle. [°]
-        Consider two parallel rows of modules at different height;
-        ``cross_axis_slope`` is the angle formed the line formed by the
+        Cross-axis slope angle. [°]
+        The angle, relative to horizontal, of the line formed by the
         intersection between the slope containing the tracker axes and a plane
-        perpendicular to the tracker axes, and the horizontal plane.
-        Cross-axis tilt is measured by using a right-handed convention.
-        For example, trackers with axis azimuth of 180° (heading south)
-        will have a negative cross-axis tilt if the tracker axes plane slopes
-        down to the east and positive cross-axis tilt if the tracker axes plane
+        perpendicular to the tracker axes. Cross-axis slope should be specified
+        using a right-handed convention.
+
+        For example, trackers with axis azimuth of 180° (N-S rotation axis)
+        will have a negative cross-axis slope if the tracker axes plane slopes
+        down to the east and positive cross-axis slope if the tracker axes plane
         slopes up to the east.
-        Use :func:`~pvlib.tracking.calc_cross_axis_slope` to calculate
-        ``cross_axis_slope``
+
+        .. figure:: ../../_images/Anderson_Mikofski_2020_Fig4.png
+            :alt: Two rows of modules, tracker coordinate system and cross-axis slope of the second row w.r.t. the leftmost.
+            :align: center
+            :scale: 50 %
+
+        Fig. 4, [Anderson2020]_: Cross-axis slope angle :math:`\beta_C` relative to the tracker coordinate system.
+
+        Use :py::func:`pvlib.tracking.calc_cross_axis_slope` to calculate
+        ``cross_axis_slope``.
 
     dhi
         Diffuse horizontal irradiance
@@ -229,3 +237,9 @@ units, refer to the following sources from `SoDa Service <http://www.soda-pro.co
 
 .. note:: These further references might not use the same terminology as
           *pvlib*. But the physical process referred to is the same.
+
+References
+----------
+.. [Anderson2020] K. Anderson and M. Mikofski, 'Slope-Aware Backtracking for
+    Single-Axis Trackers', National Renewable Energy Lab. (NREL), Golden, CO (United States);
+    NREL/TP-5K00-76626, Jul. 2020. :doi:`10.2172/1660126`.

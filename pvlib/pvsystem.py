@@ -1440,8 +1440,8 @@ class SingleAxisTrackerMount(AbstractMount):
             Renamed from ``axis_tilt`` to ``axis_slope``.
 
     axis_azimuth : float, default 180
-        A value denoting the compass direction along which the axis of
-        rotation lies, measured east of north. [degrees]
+        The compass direction along which the axis of rotation lies.
+        Measured in decimal degrees east of north. [degrees]
 
     max_angle : float or tuple, default 90
         A value denoting the maximum rotation angle, in decimal degrees,

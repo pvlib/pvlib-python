@@ -6,7 +6,14 @@ v0.13.2 (Anticipated December, 2025)
 
 Breaking Changes
 ~~~~~~~~~~~~~~~~
-* Rename ``axis_tilt`` and ``cross_axis_tilt`` to ``axis_slope`` and ``cross_axis_slope`` all through the project. Affects:
+* Following the removal of the NSRDB PSM3 API, the :func:`!pvlib.iotools.get_psm3`,
+  :func:`!pvlib.iotools.read_psm3`, and :func:`!pvlib.iotools.parse_psm3`
+  functions are removed. (:issue:`2581`, :pull:`2582`)
+
+
+Deprecations
+~~~~~~~~~~~~
+* Rename ``axis_tilt`` and ``cross_axis_tilt`` to ``axis_slope`` and ``cross_axis_slope`` all through the project, while keeping backwards-compatibility. Affects:
 
   - :py:func:`pvlib.shading.shaded_fraction1d` parameters ``cross_axis_tilt`` and ``axis_tilt``
   - :py:func:`pvlib.shading.projected_solar_zenith_angle` parameter ``axis_tilt``
@@ -17,14 +24,6 @@ Breaking Changes
   - :py:class:`pvlib.pvsystem.SingleAxisTrackerMount` dataclass fields ``axis_tilt`` and ``cross_axis_tilt``
 
   (:issue:`2334`, :pull:`2543`)
-* Following the removal of the NSRDB PSM3 API, the :func:`!pvlib.iotools.get_psm3`,
-  :func:`!pvlib.iotools.read_psm3`, and :func:`!pvlib.iotools.parse_psm3`
-  functions are removed. (:issue:`2581`, :pull:`2582`)
-
-
-Deprecations
-~~~~~~~~~~~~
-
 
 Bug fixes
 ~~~~~~~~~

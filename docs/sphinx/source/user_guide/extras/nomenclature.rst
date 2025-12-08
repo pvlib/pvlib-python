@@ -41,6 +41,11 @@ There is a convention on consistent variable names throughout the library:
         Refraction-corrected solar elevation angle. This is the complement of
         :term:`apparent_zenith` (90 - apparent_zenith). [°]
 
+    axis_slope
+        Angle of a tracker axis with respect to horizontal.
+        This is, left-hand rotation angle of :math:`t_y` around :math:`t_x` in Fig. [4] of [Anderson2020]_.
+        See figure in :term:`cross_axis_slope`.
+
     bhi
         Beam/direct horizontal irradiance
 
@@ -65,6 +70,8 @@ There is a convention on consistent variable names throughout the library:
 
         Use :py::func:`pvlib.tracking.calc_cross_axis_slope` to calculate
         ``cross_axis_slope``.
+
+        See also :term:`axis_slope`.
 
     dhi
         Diffuse horizontal irradiance

@@ -1427,7 +1427,7 @@ class FixedMount(AbstractMount):
 
 @dataclass
 class SingleAxisTrackerMount(AbstractMount):
-    """
+    r"""
     Single-axis tracker racking for dynamic solar tracking.
 
     Parameters

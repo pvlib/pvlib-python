@@ -3,7 +3,6 @@ The ``sedes2`` module implements the SEDES2 all-sky spectral irradiance model.
 """
 
 import numpy as np
-from scipy.interpolate import make_interp_spline
 from pvlib.tools import cosd
 
 SEDES2_COEFFS = np.array([
@@ -161,9 +160,10 @@ def sedes2(spectra_direct_clear, spectra_diffuse_clear, wavelengths,
     cos_aoi = np.clip(cosd(aoi), a_min=0, a_max=None)
     cos_aoi = np.atleast_1d(cos_aoi)[np.newaxis, :]
 
-    # interpolate coefficients to match input wavelengths
-    interp = make_interp_spline(SEDES2_COEFFS[:, 0], SEDES2_COEFFS[:, 1:], k=1)
-    coef = interp(wavelengths).T
+    # interpolate coefficients to match input wavelengths.
+    # note that np.interp does nearest-neighbor extrapolation, as desired.
+    coef = [np.interp(wavelengths, SEDES2_COEFFS[:, 0], SEDES2_COEFFS[:, i])
+            for i in range(1, 7)]
     coef = [x[:, np.newaxis] for x in coef]  # add dimension for time
     A1, A2, B1, B2, C1, C2 = coef
 

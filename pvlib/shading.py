@@ -237,7 +237,7 @@ def sky_diffuse_passias(masking_angle):
 
 
 @renamed_kwarg_warning(
-    since="0.13.1",
+    since="0.13.2",
     old_param_name="axis_tilt",
     new_param_name="axis_slope",
 )
@@ -267,7 +267,7 @@ def projected_solar_zenith_angle(solar_zenith, solar_azimuth,
     axis_slope : numeric
         Axis tilt angle in degrees. From horizontal plane to array plane.
 
-        .. versionchanged:: 0.13.1
+        .. versionchanged:: 0.13.2
             Renamed from ``axis_tilt`` to ``axis_slope``
 
     axis_azimuth : numeric
@@ -356,12 +356,12 @@ def projected_solar_zenith_angle(solar_zenith, solar_azimuth,
 
 
 @renamed_kwarg_warning(
-    since="0.13.1",
+    since="0.13.2",
     old_param_name="axis_tilt",
     new_param_name="axis_slope",
 )
 @renamed_kwarg_warning(
-    since="0.13.1",
+    since="0.13.2",
     old_param_name="cross_axis_tilt",
     new_param_name="cross_axis_slope",
 )
@@ -416,7 +416,7 @@ def shaded_fraction1d(
     axis_slope : numeric, default 0
         Tilt of the rows axis from horizontal. In degrees :math:`^{\circ}`.
 
-        .. versionchanged:: 0.13.1
+        .. versionchanged:: 0.13.2
             Renamed from ``axis_tilt`` to ``axis_slope``
 
     surface_to_axis_offset : numeric, default 0
@@ -426,7 +426,7 @@ def shaded_fraction1d(
         In degrees :math:`^{\circ}`.
         See :term:`cross_axis_slope`.
 
-        .. versionchanged:: 0.13.1
+        .. versionchanged:: 0.13.2
             Renamed from ``cross_axis_tilt`` to ``cross_axis_slope``
 
     shading_row_rotation : numeric, optional

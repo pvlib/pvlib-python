@@ -8,12 +8,12 @@ from pvlib._deprecation import renamed_kwarg_warning, deprecated
 
 
 @renamed_kwarg_warning(
-    since="0.13.1",
+    since="0.13.2",
     old_param_name="axis_tilt",
     new_param_name="axis_slope",
 )
 @renamed_kwarg_warning(
-    since="0.13.1",
+    since="0.13.2",
     old_param_name="cross_axis_tilt",
     new_param_name="cross_axis_slope",
 )
@@ -56,7 +56,7 @@ def singleaxis(apparent_zenith, solar_azimuth,
         ``axis_azimuth``) with respect to horizontal.
         ``axis_slope`` must be >= 0 and <= 90. [degrees]
 
-        .. versionchanged:: 0.13.1
+        .. versionchanged:: 0.13.2
             Renamed from ``axis_tilt`` to ``axis_slope``.
 
     axis_azimuth : float, default 0
@@ -96,7 +96,7 @@ def singleaxis(apparent_zenith, solar_azimuth,
         In degrees :math:`^{\circ}`.
         See :term:`cross_axis_slope`.
 
-        .. versionchanged:: 0.13.1
+        .. versionchanged:: 0.13.2
             Renamed from ``cross_axis_tilt`` to ``cross_axis_slope``.
 
     Returns
@@ -220,7 +220,7 @@ def singleaxis(apparent_zenith, solar_azimuth,
 
 
 @renamed_kwarg_warning(
-    since="0.13.1",
+    since="0.13.2",
     old_param_name="axis_tilt",
     new_param_name="axis_slope",
 )
@@ -240,7 +240,7 @@ def calc_surface_orientation(tracker_theta, axis_slope=0, axis_azimuth=0):
         The tilt of the axis of rotation with respect to horizontal.
         ``axis_slope`` must be >= 0 and <= 90.  [degree]
 
-        .. versionchanged:: 0.13.1
+        .. versionchanged:: 0.13.2
             Renamed from ``axis_tilt`` to ``axis_slope``.
 
     axis_azimuth : float, default 0
@@ -290,7 +290,7 @@ def calc_axis_slope(slope_azimuth, slope_tilt, axis_azimuth):
     respect to horizontal, ranging from 0 degrees (horizontal axis) to 90
     degrees (vertical axis).
 
-    .. versionchanged:: 0.13.1
+    .. versionchanged:: 0.13.2
         Renamed function ``calc_axis_tilt`` to ``calc_axis_slope``.
 
     Parameters
@@ -382,7 +382,7 @@ def _calc_beta_c(v, dg, ba):
 
 
 @renamed_kwarg_warning(
-    since="0.13.1",
+    since="0.13.2",
     old_param_name="axis_tilt",
     new_param_name="axis_slope",
 )
@@ -400,7 +400,7 @@ def calc_cross_axis_slope(
     if the tracker axes plane slopes down to the east and positive cross-axis
     tilt if the tracker axes plane slopes down to the west.
 
-    .. versionchanged:: 0.13.1
+    .. versionchanged:: 0.13.2
         Renamed function ``calc_cross_axis_tilt`` to ``calc_cross_axis_slope``.
 
     Parameters
@@ -417,7 +417,7 @@ def calc_cross_axis_slope(
         tilt of trackers relative to horizontal.  ``axis_slope`` must be >= 0
         and <= 90. [degree]
 
-        .. versionchanged:: 0.13.1
+        .. versionchanged:: 0.13.2
             Renamed from ``axis_tilt`` to ``axis_slope``.
 
     Returns
@@ -453,13 +453,13 @@ def calc_cross_axis_slope(
 
 # allow deprecated names of calc_cross_axis_slope and calc_axis_slope
 calc_axis_tilt = deprecated(
-    since="0.13.1",
+    since="0.13.2",
     name="calc_axis_tilt",  # else it uses calc_axis_slope by introspection
     alternative="pvlib.tracking.calc_axis_slope"
 )(calc_axis_slope)
 
 calc_cross_axis_tilt = deprecated(
-    since="0.13.1",
+    since="0.13.2",
     name="calc_cross_axis_tilt",  # else it uses calc_cross_axis_slope
     alternative="pvlib.tracking.calc_cross_axis_slope"
 )(calc_cross_axis_slope)

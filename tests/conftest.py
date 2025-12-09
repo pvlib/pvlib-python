@@ -144,6 +144,20 @@ requires_ecmwf_credentials = pytest.mark.skipif(
 
 
 try:
+    # Attempt to load NASA EarthData credentials used for testing
+    # pvlib.iotools.get_merra2
+    earthdata_username = os.environ["EARTHDATA_USERNAME"]
+    earthdata_password = os.environ["EARTHDATA_PASSWORD"]
+    has_earthdata_credentials = True
+except KeyError:
+    has_earthdata_credentials = False
+
+requires_earthdata_credentials = pytest.mark.skipif(
+    not has_earthdata_credentials,
+    reason='requires EarthData credentials')
+
+
+try:
     import statsmodels  # noqa: F401
     has_statsmodels = True
 except ImportError:

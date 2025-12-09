@@ -42,6 +42,8 @@ Enhancements
   installed. (:issue:`2497`, :pull:`2571`)
 * Add :py:func:`~pvlib.iotools.get_era5`, a function for accessing
   ERA5 reanalysis data. (:pull:`2573`)
+* Add :py:func:`~pvlib.iotools.get_merra2`, a function for accessing
+  MERRA-2 reanalysis data. (:pull:`2572`)
 
 Documentation
 ~~~~~~~~~~~~~
@@ -77,3 +79,4 @@ Contributors
 * Will Hobbs (:ghuser:`williamhobbs`)
 * Cliff Hansen (:ghuser:`cwhanse`)
 * Joseph Radford (:ghuser:`josephradford`)
+* Kevin Anderson (:ghuser:`kandersolar`)

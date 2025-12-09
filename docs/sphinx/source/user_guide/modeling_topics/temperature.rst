@@ -46,7 +46,7 @@ The temperature models currently available in pvlib are summarized in the
 following table:
 
 +----------------------------------------------+--------+------------+---------------------------------------------------------------------------+
-| Model                                        | Type   | Transient? | Inputs                                                                    |
+| Model                                        | Type   | Transient? | Weather inputs                                                            |
 |                                              |        |            +----------------+---------------------+------------+-----------------------+
 |                                              |        |            | POA irradiance | Ambient temperature | Wind speed | Downwelling IR [#f1]_ |
 +==============================================+========+============+================+=====================+============+=======================+

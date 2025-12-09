@@ -18,7 +18,6 @@ Deprecations
 Bug fixes
 ~~~~~~~~~
 
-
 Enhancements
 ~~~~~~~~~~~~
 * Add :py:func:`~pvlib.ivtools.sdm.fit_desoto_batzelis`, a function to estimate
@@ -56,6 +55,8 @@ Testing
 * Add Python 3.14 to test suite. (:pull:`2590`)
 * Update pytest configuration in ``pyproject.toml`` to work with pytest 9.0.
   (:pull:`2596`)
+* Correct argument and value order in :py:func:`~pvlib.tests.ivtools.test_sde`,
+  in tests of :py:func:`~pvlib.ivtools.sde._fit_sandia_cocontent`. (:issue:`2613`, :pull:`2615`)
 
 
 Benchmarking

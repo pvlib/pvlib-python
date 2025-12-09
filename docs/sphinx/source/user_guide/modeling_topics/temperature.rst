@@ -22,7 +22,9 @@ Temperature models predict one of two quantities:
 Temperature models estimate these quantities using inputs like incident
 irradiance, ambient temperature, and wind speed.  Each model also takes
 a set of parameter values that represent how a PV module responds to
-those inputs.  Parameter values generally depend on both the PV
+those inputs.
+
+Parameter values generally depend on both the PV
 module technologies, the mounting configuration of the module,
 and on any weather parameters that are not included in the model.
 Note that, despite models conventionally being associated with either

@@ -51,8 +51,8 @@ There is a convention on consistent variable names throughout the library:
 
     cross_axis_slope
         Cross-axis slope angle. [°]
-        The angle, relative to tracker coordinate system horizontal, of the line between
-        the axes of two adjacent trackers, in the plane perpendicular to the tracker axes.
+        The angle, relative to horizontal, of the line between the axes of two
+        adjacent trackers, in the plane perpendicular to the tracker axes.
         Cross-axis slope should be specified using a right-handed convention.
 
         For example, trackers with axis azimuth of 180° (N-S rotation axis)

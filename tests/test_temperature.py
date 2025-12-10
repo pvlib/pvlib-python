@@ -260,6 +260,21 @@ def test_fuentes(filename, inoct):
     assert night_difference.max() < 6
     assert night_difference.min() > 0
 
+def test_fuentes_int_float_consistency():
+    """Test that int and float inputs give identical results after dtype fix."""
+    index = pd.date_range('2020-01-01', periods=3, freq='h')
+    
+    poa_int = pd.Series([800, 800, 800], index=index, dtype=int)
+    poa_float = pd.Series([800.0, 800.0, 800.0], index=index)
+    temp_air = pd.Series([25.0, 25.0, 25.0], index=index)
+    wind_speed = pd.Series([1.0, 1.0, 1.0], index=index)
+    
+    out_int = temperature.fuentes(poa_int, temp_air, wind_speed, noct_installed=45)
+    out_float = temperature.fuentes(poa_float, temp_air, wind_speed, noct_installed=45)
+    
+    # Check outputs are identical within floating-point tolerance
+    pd.testing.assert_series_equal(out_int, out_float, check_exact=False, rtol=1e-10)
+
 
 @pytest.mark.parametrize('tz', [None, 'Etc/GMT+5'])
 def test_fuentes_timezone(tz):

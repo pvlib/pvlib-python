@@ -883,7 +883,9 @@ def fuentes(poa_global, temp_air, wind_speed, noct_installed, module_height=5,
     windmod_array = wind_speed * (module_height/wind_height)**0.2 + 1e-4
 
     tmod0 = 293.15
-    tmod_array = np.zeros_like(poa_global)
+    # ensure floating dtype so intermediate values aren't truncated when the
+    # inputs are integer-typed (see GH-2608)
+    tmod_array = np.zeros_like(poa_global, dtype=float)
 
     iterator = zip(tamb_array, sun_array, windmod_array, tsky_array,
                    timedelta_hours)

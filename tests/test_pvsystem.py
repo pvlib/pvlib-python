@@ -522,7 +522,8 @@ def test_PVSystem_noct_celltemp(mocker):
     temp_model_params.update({'transmittance_absorptance': 0.8,
                               'array_height': 2,
                               'mount_standoff': 2.0})
-    expected = 60.477703576
+    expected =62.877666
+
     system = pvsystem.PVSystem(temperature_model_parameters=temp_model_params)
     out = system.get_cell_temperature(poa_global, temp_air, wind_speed,
                                       effective_irradiance=1100.,

@@ -1713,6 +1713,50 @@ class ModelChain:
             of Arrays in the PVSystem.
         ValueError
             If the DataFrames in `data` have different indexes.
+        Examples
+        --------
+        Single-array system:
+
+        >>> import pandas as pd
+        >>> from pvlib.pvsystem import PVSystem
+        >>> from pvlib.location import Location
+        >>> from pvlib.modelchain import ModelChain
+        >>>
+        >>> system = PVSystem(module_parameters={'pdc0': 300})
+        >>> location = Location(35, -110)
+        >>> mc = ModelChain(system, location)
+        >>>
+        >>> poa = pd.DataFrame({
+        ...     'poa_global': [900, 850],
+        ...     'poa_direct': [600, 560],
+        ...     'poa_diffuse': [300, 290],
+        ... }, 
+        ... index=pd.date_range("2021-06-01", periods=2, freq="H"))
+        >>>
+        >>> mc.run_model_from_poa(poa)
+        <pvlib.modelchain.ModelChain ...>
+
+        Multi-array system:
+
+        >>> array1 = Array(tilt=30, azimuth=180)
+        >>> array2 = Array(tilt=10, azimuth=90)
+        >>> system = PVSystem(arrays=[array1, array2],
+        ...                   module_parameters={'pdc0': 300})
+        >>> mc = ModelChain(system, location)
+        >>> poa1 = pd.DataFrame({
+        ...     'poa_global': [900, 880],
+        ...     'poa_direct': [600, 580],
+        ...     'poa_diffuse': [300, 300],
+        ... },
+        ... index=pd.date_range("2021-06-01", periods=2, freq="H"))
+        >>> poa2 = pd.DataFrame({
+        ...     'poa_global': [700, 720],
+        ...     'poa_direct': [400, 420],
+        ...     'poa_diffuse': [300, 300],
+        ... },
+        ... index=poa1.index)
+        >>> mc.run_model_from_poa([poa1, poa2])
+        <pvlib.modelchain.ModelChain ...>
 
         Notes
         -----
@@ -1798,6 +1842,50 @@ class ModelChain:
             of Arrays in the PVSystem.
         ValueError
             If the DataFrames in `data` have different indexes.
+         Examples
+        --------
+        Single-array system:
+
+        >>> import pandas as pd
+        >>> from pvlib.pvsystem import PVSystem
+        >>> from pvlib.location import Location
+        >>> from pvlib.modelchain import ModelChain
+        >>>
+        >>> system = PVSystem(module_parameters={'pdc0': 300})
+        >>> location = Location(35, -110)
+        >>> mc = ModelChain(system, location)
+        >>>
+        >>> eff = pd.DataFrame({
+        ...     'effective_irradiance': [900, 920],
+        ...     'temp_air': [25, 24],
+        ...     'wind_speed': [2.0, 1.5],
+        ... },
+        ... index=pd.date_range("2021-06-01", periods=2, freq="H"))
+        >>>
+        >>> mc.run_model_from_effective_irradiance(eff)
+        <pvlib.modelchain.ModelChain ...>
+
+        Multi-array system:
+
+        >>> array1 = Array(tilt=30, azimuth=180)
+        >>> array2 = Array(tilt=10, azimuth=90)
+        >>> system = PVSystem(arrays=[array1, array2],
+        ...                   module_parameters={'pdc0': 300})
+        >>> mc = ModelChain(system, location)
+        >>> eff1 = pd.DataFrame({
+        ...     'effective_irradiance': [900, 920],
+        ...     'temp_air': [25, 24],
+        ...     'wind_speed': [2.0, 1.5],
+        ... },
+        ... index=pd.date_range("2021-06-01", periods=2, freq="H"))
+        >>> eff2 = pd.DataFrame({
+        ...     'effective_irradiance': [600, 630],
+        ...     'temp_air': [26, 25],
+        ...     'wind_speed': [1.8, 1.2],
+        ... },
+        ... index=eff1.index)
+        >>> mc.run_model_from_effective_irradiance([eff1, eff2])
+        <pvlib.modelchain.ModelChain ...>
 
         Notes
         -----

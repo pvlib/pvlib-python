@@ -1842,7 +1842,8 @@ class ModelChain:
             of Arrays in the PVSystem.
         ValueError
             If the DataFrames in `data` have different indexes.
-         Examples
+
+        Examples
         --------
         Single-array system:
 

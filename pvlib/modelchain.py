@@ -1718,7 +1718,7 @@ class ModelChain:
         Single-array system:
 
         >>> import pandas as pd
-        >>> from pvlib.pvsystem import PVSystem
+        >>> from pvlib.pvsystem import PVSystem, Array, FixedMount
         >>> from pvlib.location import Location
         >>> from pvlib.modelchain import ModelChain
         >>>
@@ -1730,16 +1730,17 @@ class ModelChain:
         ...     'poa_global': [900, 850],
         ...     'poa_direct': [600, 560],
         ...     'poa_diffuse': [300, 290],
-        ... }, 
+        ... },
         ... index=pd.date_range("2021-06-01", periods=2, freq="H"))
         >>>
         >>> mc.run_model_from_poa(poa)
         <pvlib.modelchain.ModelChain ...>
 
         Multi-array system:
-
-        >>> array1 = Array(tilt=30, azimuth=180)
-        >>> array2 = Array(tilt=10, azimuth=90)
+        >>> mount1 = FixedMount(surface_tilt=30, surface_azimuth=180)
+        >>> mount2 = FixedMount(surface_tilt=10, surface_azimuth=90)
+        >>> array1 = Array(mount=mount1)
+        >>> array2 = Array(mount=mount2)
         >>> system = PVSystem(arrays=[array1, array2],
         ...                   module_parameters={'pdc0': 300})
         >>> mc = ModelChain(system, location)
@@ -1845,9 +1846,8 @@ class ModelChain:
         Examples
         --------
         Single-array system:
-
         >>> import pandas as pd
-        >>> from pvlib.pvsystem import PVSystem
+        >>> from pvlib.pvsystem import PVSystem, Array, FixedMount
         >>> from pvlib.location import Location
         >>> from pvlib.modelchain import ModelChain
         >>>
@@ -1866,9 +1866,10 @@ class ModelChain:
         <pvlib.modelchain.ModelChain ...>
 
         Multi-array system:
-        
-        >>> array1 = Array(tilt=30, azimuth=180)
-        >>> array2 = Array(tilt=10, azimuth=90)
+        >>> mount1 = FixedMount(surface_tilt=30, surface_azimuth=180)
+        >>> mount2 = FixedMount(surface_tilt=10, surface_azimuth=90)
+        >>> array1 = Array(mount=mount1)
+        >>> array2 = Array(mount=mount2)
         >>> system = PVSystem(arrays=[array1, array2],
         ...                   module_parameters={'pdc0': 300})
         >>> mc = ModelChain(system, location)

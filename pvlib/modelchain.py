@@ -1842,7 +1842,6 @@ class ModelChain:
             of Arrays in the PVSystem.
         ValueError
             If the DataFrames in `data` have different indexes.
-
         Examples
         --------
         Single-array system:
@@ -1867,7 +1866,7 @@ class ModelChain:
         <pvlib.modelchain.ModelChain ...>
 
         Multi-array system:
-
+        
         >>> array1 = Array(tilt=30, azimuth=180)
         >>> array2 = Array(tilt=10, azimuth=90)
         >>> system = PVSystem(arrays=[array1, array2],

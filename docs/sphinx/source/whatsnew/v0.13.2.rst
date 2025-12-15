@@ -18,7 +18,6 @@ Deprecations
 Bug fixes
 ~~~~~~~~~
 
-
 Enhancements
 ~~~~~~~~~~~~
 * Add :py:func:`~pvlib.ivtools.sdm.fit_desoto_batzelis`, a function to estimate
@@ -43,12 +42,15 @@ Enhancements
   installed. (:issue:`2497`, :pull:`2571`)
 * Add :py:func:`~pvlib.iotools.get_era5`, a function for accessing
   ERA5 reanalysis data. (:pull:`2573`)
+* Add :py:func:`~pvlib.iotools.get_merra2`, a function for accessing
+  MERRA-2 reanalysis data. (:pull:`2572`)
 * Add :py:func:`~pvlib.spectrum.spectral_factor_polo`, a function for estimating
   spectral mismatch factors for vertical PV façades. (:issue:`2406`, :pull:`2491`)
 
 Documentation
 ~~~~~~~~~~~~~
 * Provide an overview of single-diode modeling functionality in :ref:`singlediode`. (:pull:`2565`)
+* Provide an overview of temperature modeling functionality in :ref:`temperature`. (:pull:`2591`)
 * Fix typo in parameter name ``atmos_refract`` in :py:func:`pvlib.solarposition.spa_python`
   and :py:func:`pvlib.spa.solar_position`. (:issue:`2532`, :pull:`2592`)
 
@@ -58,6 +60,8 @@ Testing
 * Add Python 3.14 to test suite. (:pull:`2590`)
 * Update pytest configuration in ``pyproject.toml`` to work with pytest 9.0.
   (:pull:`2596`)
+* Correct argument and value order in :py:func:`~pvlib.tests.ivtools.test_sde`,
+  in tests of :py:func:`~pvlib.ivtools.sde._fit_sandia_cocontent`. (:issue:`2613`, :pull:`2615`)
 
 
 Benchmarking

@@ -308,7 +308,9 @@ def test_get_meteonorm_tmy(
         interval_index=True,
         map_variables=False,
         url=demo_url)
-    assert meta == expected_meteonorm_tmy_meta
+    assert meta.items() >= expected_meteonorm_tmy_meta.items()
+    for key in ['version', 'commit']:
+        assert key in meta  # value changes, so only check presence
     # meteonorm API only guarantees similar, not identical, results between
     # calls.  so we allow a small amount of variation with atol.
     pd.testing.assert_frame_equal(data.iloc[:12], expected_meteonorm_tmy_data,

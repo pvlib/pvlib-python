@@ -371,5 +371,7 @@ def test_spectral_factor_polo_NaN(polo_inputs):
 
 def test_spectral_factor_polo_aoi_gt_90(polo_inputs):
     polo_inputs['aoi'] = 95
-    out = spectrum.spectral_factor_polo(**polo_inputs, module_type='monosi')
-    assert np.isnan(out)
+    out95 = spectrum.spectral_factor_polo(**polo_inputs, module_type='monosi')
+    polo_inputs['aoi'] = 90
+    out90 = spectrum.spectral_factor_polo(**polo_inputs, module_type='monosi')
+    assert out95 == out90

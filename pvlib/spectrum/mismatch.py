@@ -748,6 +748,16 @@ def spectral_factor_polo(precipitable_water, airmass_absolute, aod500, aoi,
         effective irradiance, i.e., the irradiance that is converted to
         electrical current.
 
+    Notes
+    -----
+    The Polo model was developed using only SMM values computed for scenarios
+    when the sun is visible from the module's surface (i.e., for ``aoi<90``),
+    and no provision was made in [1]_ for the case of ``aoi>90``. This would
+    create issues in the air mass calculation internal to the model.
+    Following discussion with the model's author, the pvlib implementation
+    handles ``aoi>90`` by truncating the input ``aoi`` to a maximum of
+    90 degrees.
+
     References
     ----------
     .. [1] J. Polo and C. Sanz-Saiz, 'Development of spectral mismatch models
@@ -759,9 +769,8 @@ def spectral_factor_polo(precipitable_water, airmass_absolute, aod500, aoi,
     if module_type is not None and coefficients is not None:
         raise ValueError('Only one of `module_type` and `coefficients` should '
                          'be provided')
-    # prevent nan for aoi greater than 90
-    if aoi > 90:
-        aoi = 90
+    # prevent nan for aoi greater than 90; see docstring Notes
+    aoi = np.clip(aoi, a_min=None, a_max=90)
     f_aoi_rel = pvlib.atmosphere.get_relative_airmass(aoi,
                                                       model='kastenyoung1989')
     f_aoi = pvlib.atmosphere.get_absolute_airmass(f_aoi_rel, pressure)

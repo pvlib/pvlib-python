@@ -122,7 +122,9 @@ def test_get_meteonorm_training(
         time_step='1h',
         url=demo_url)
 
-    assert meta == expected_meta
+    assert meta.items() >= expected_meta.items()  # check stable subset
+    for key in ['version', 'commit']:
+        assert key in meta  # value changes, so only check presence
     pd.testing.assert_index_equal(data.index, expected_meteonorm_index)
     # meteonorm API only guarantees similar, not identical, results between
     # calls.  so we allow a small amount of variation with atol.
@@ -306,7 +308,9 @@ def test_get_meteonorm_tmy(
         interval_index=True,
         map_variables=False,
         url=demo_url)
-    assert meta == expected_meteonorm_tmy_meta
+    assert meta.items() >= expected_meteonorm_tmy_meta.items()
+    for key in ['version', 'commit']:
+        assert key in meta  # value changes, so only check presence
     # meteonorm API only guarantees similar, not identical, results between
     # calls.  so we allow a small amount of variation with atol.
     pd.testing.assert_frame_equal(data.iloc[:12], expected_meteonorm_tmy_data,

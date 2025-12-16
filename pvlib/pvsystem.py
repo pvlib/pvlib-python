@@ -1436,7 +1436,7 @@ class SingleAxisTrackerMount(AbstractMount):
         The tilt of the axis of rotation (i.e, the y-axis defined by
         axis_azimuth) with respect to horizontal. [degrees]
 
-        .. versionchanged:: 0.13.2
+        .. versionchanged:: 0.14.0
             Renamed from ``axis_tilt`` to ``axis_slope``.
 
     axis_azimuth : float, default 180
@@ -1476,7 +1476,7 @@ class SingleAxisTrackerMount(AbstractMount):
         In degrees :math:`^{\circ}`.
         See :term:`cross_axis_slope`.
 
-        .. versionchanged:: 0.13.2
+        .. versionchanged:: 0.14.0
             Renamed from ``cross_axis_tilt`` to ``cross_axis_slope``.
 
     racking_model : str, optional
@@ -1506,12 +1506,12 @@ class SingleAxisTrackerMount(AbstractMount):
     # field axis_tilt, renamed to axis_slope; and
     # field cross_axis_tilt, renamed to cross_axis_slope; GH#2334 & GH#2543
     @renamed_kwarg_warning(
-        since="0.13.2",
+        since="0.14.0",
         old_param_name="axis_tilt",
         new_param_name="axis_slope",
     )
     @renamed_kwarg_warning(
-        since="0.13.2",
+        since="0.14.0",
         old_param_name="cross_axis_tilt",
         new_param_name="cross_axis_slope",
     )
@@ -1531,7 +1531,7 @@ class SingleAxisTrackerMount(AbstractMount):
     @property
     def axis_tilt(self):
         warn(
-            "'axis_tilt' is deprecated since v0.13.2. "
+            "'axis_tilt' is deprecated since v0.14.0. "
             "Use 'axis_slope' instead.",
             pvlibDeprecationWarning,
             stacklevel=2,
@@ -1541,7 +1541,7 @@ class SingleAxisTrackerMount(AbstractMount):
     @axis_tilt.setter
     def axis_tilt(self, new_value):
         warn(
-            "'axis_tilt' is deprecated since v0.13.2. "
+            "'axis_tilt' is deprecated since v0.14.0. "
             "Use 'axis_slope' instead.",
             pvlibDeprecationWarning,
             stacklevel=2,
@@ -1551,7 +1551,7 @@ class SingleAxisTrackerMount(AbstractMount):
     @property
     def cross_axis_tilt(self):
         warn(
-            "'cross_axis_tilt' is deprecated since v0.13.2. "
+            "'cross_axis_tilt' is deprecated since v0.14.0. "
             "Use 'cross_axis_slope' instead.",
             pvlibDeprecationWarning,
             stacklevel=2,
@@ -1561,7 +1561,7 @@ class SingleAxisTrackerMount(AbstractMount):
     @cross_axis_tilt.setter
     def cross_axis_tilt(self, new_value):
         warn(
-            "'cross_axis_tilt' is deprecated since v0.13.2. "
+            "'cross_axis_tilt' is deprecated since v0.14.0. "
             "Use 'cross_axis_slope' instead.",
             pvlibDeprecationWarning,
             stacklevel=2,

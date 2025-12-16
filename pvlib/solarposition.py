@@ -835,9 +835,12 @@ def ephemeris(time, latitude, longitude, pressure=101325.0, temperature=12.0):
 
     mask = (Elevation > -0.575) & (Elevation <= 5)
     Refract[mask] = (
-        Elevation[mask] *
-        (-518.2 + Elevation[mask]*(103.4 + Elevation[mask]*(-12.79 + Elevation[mask]*0.711))) +
-        1735)
+        Elevation[mask] * (
+            -518.2 + Elevation[mask]*(
+                103.4 + Elevation[mask]*(-12.79 + Elevation[mask]*0.711)
+            )
+        ) + 1735
+    )
 
     mask = (Elevation > -1) & (Elevation <= -0.575)
     Refract[mask] = -20.774 / TanEl[mask]

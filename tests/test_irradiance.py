@@ -210,12 +210,14 @@ def test_haydavies(irrad_data, ephem_data, dni_et):
 
 
 def test_haydavies_components(irrad_data, ephem_data, dni_et):
+    keys = ['poa_sky_diffuse', 'poa_isotropic', 'poa_circumsolar',
+                'poa_horizon']
     expected = pd.DataFrame(np.array(
         [[0, 27.1775, 102.9949, 33.1909],
          [0, 27.1775, 30.1818, 27.9837],
          [0, 0, 72.8130, 5.2071],
          [0, 0, 0, 0]]).T,
-        columns=['sky_diffuse', 'isotropic', 'circumsolar', 'horizon'],
+        columns=keys,
         index=irrad_data.index
     )
     # pandas
@@ -229,23 +231,16 @@ def test_haydavies_components(irrad_data, ephem_data, dni_et):
         40, 180, irrad_data['dhi'].values, irrad_data['dni'].values, dni_et,
         ephem_data['apparent_zenith'].values, ephem_data['azimuth'].values,
         return_components=True)
-    assert_allclose(result['sky_diffuse'], expected['sky_diffuse'], atol=1e-4)
-    assert_allclose(result['isotropic'], expected['isotropic'], atol=1e-4)
-    assert_allclose(result['circumsolar'], expected['circumsolar'], atol=1e-4)
-    assert_allclose(result['horizon'], expected['horizon'], atol=1e-4)
+    for key in keys:
+        assert_allclose(result[key], expected[key], atol=1e-4)
     assert isinstance(result, dict)
     # scalar
     result = irradiance.haydavies(
         40, 180, irrad_data['dhi'].values[-1], irrad_data['dni'].values[-1],
         dni_et[-1], ephem_data['apparent_zenith'].values[-1],
         ephem_data['azimuth'].values[-1], return_components=True)
-    assert_allclose(result['sky_diffuse'], expected['sky_diffuse'].iloc[-1],
-                    atol=1e-4)
-    assert_allclose(result['isotropic'], expected['isotropic'].iloc[-1],
-                    atol=1e-4)
-    assert_allclose(result['circumsolar'], expected['circumsolar'].iloc[-1],
-                    atol=1e-4)
-    assert_allclose(result['horizon'], expected['horizon'].iloc[-1], atol=1e-4)
+    for key in keys:
+        assert_allclose(result[key], expected[key].iloc[-1], atol=1e-4)
     assert isinstance(result, dict)
 
 
@@ -312,13 +307,14 @@ def test_perez_components(irrad_data, ephem_data, dni_et, relative_airmass):
          [0.,  26.84138589,          np.nan,  31.72696071],
          [0.,  0.,         np.nan,  4.47966439],
          [0.,  4.62212181,         np.nan,  9.25316454]]).T,
-        columns=['sky_diffuse', 'isotropic', 'circumsolar', 'horizon'],
+        columns=['poa_sky_diffuse', 'poa_isotropic', 'poa_circumsolar',
+                 'poa_horizon'],
         index=irrad_data.index
     )
-    expected_for_sum = expected['sky_diffuse'].copy()
+    expected_for_sum = expected['poa_sky_diffuse'].copy()
     expected_for_sum.iloc[2] = 0
     sum_components = out.iloc[:, 1:].sum(axis=1)
-    sum_components.name = 'sky_diffuse'
+    sum_components.name = 'poa_sky_diffuse'
 
     assert_frame_equal(out, expected, check_less_precise=2)
     assert_series_equal(sum_components, expected_for_sum, check_less_precise=2)
@@ -338,13 +334,14 @@ def test_perez_driesse_components(irrad_data, ephem_data, dni_et,
          [0., 25.806, np.nan, 33.181],
          [0.,  0.000, np.nan,  4.197],
          [0.,  4.184, np.nan, 10.018]]).T,
-        columns=['sky_diffuse', 'isotropic', 'circumsolar', 'horizon'],
+        columns=['poa_sky_diffuse', 'poa_isotropic', 'poa_circumsolar',
+                 'poa_horizon'],
         index=irrad_data.index
     )
-    expected_for_sum = expected['sky_diffuse'].copy()
+    expected_for_sum = expected['poa_sky_diffuse'].copy()
     expected_for_sum.iloc[2] = 0
     sum_components = out.iloc[:, 1:].sum(axis=1)
-    sum_components.name = 'sky_diffuse'
+    sum_components.name = 'poa_sky_diffuse'
 
     assert_frame_equal(out, expected, check_less_precise=2)
     assert_series_equal(sum_components, expected_for_sum, check_less_precise=2)
@@ -384,13 +381,14 @@ def test_perez_negative_horizon():
          [166.785419, 142.24475, 119.173875, 83.525150, 45.725931],
          [113.548755,  16.09757,   9.956174,  3.142467,  0],
          [1.076010,  -6.13353,  -5.262151, -3.831230, -2.208923]]).T,
-        columns=['sky_diffuse', 'isotropic', 'circumsolar', 'horizon'],
+        columns=['poa_sky_diffuse', 'poa_isotropic', 'poa_circumsolar',
+                 'poa_horizon'],
         index=times
     )
 
-    expected_for_sum = expected['sky_diffuse'].copy()
+    expected_for_sum = expected['poa_sky_diffuse'].copy()
     sum_components = out.iloc[:, 1:].sum(axis=1)
-    sum_components.name = 'sky_diffuse'
+    sum_components.name = 'poa_sky_diffuse'
 
     assert_frame_equal(out, expected, check_less_precise=2)
     assert_series_equal(sum_components, expected_for_sum, check_less_precise=2)

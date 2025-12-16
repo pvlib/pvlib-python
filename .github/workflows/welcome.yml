@@ -1,0 +1,33 @@
+name: Welcome First-Time Contributor
+
+on:
+  issues:
+    types: opened
+  pull_request_target:
+    types: opened
+
+permissions: {}
+
+jobs:
+  welcome:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      pull-requests: write
+    steps:
+      - uses: plbstl/first-contribution@v4
+        with:
+          issue-opened-msg: |
+            ### Hey @{fc-author}! :wave:
+
+            Thanks for opening your first issue. Welcome to the community!
+          pr-opened-msg: |
+            ### Hey @{fc-author}! :tada:
+
+            Thanks for opening your first pull request! We appreciate your
+            contribution. Please ensure you have reviewed and understood the
+            [contributing guidelines](https://pvlib-python.readthedocs.io/en/latest/contributing/index.html).
+            
+            If AI is used for any portion of this PR, you must vet the content
+            for technical accuracy and compatibility with the contributing
+            guidelines.

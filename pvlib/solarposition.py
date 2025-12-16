@@ -826,34 +826,40 @@ def ephemeris(time, latitude, longitude, pressure=101325.0, temperature=12.0):
 
     # Calculate refraction correction
     Elevation = SunEl
-    TanEl = pd.Series(np.tan(np.radians(Elevation)), index=time_utc)
-    Refract = pd.Series(0., index=time_utc)
+    TanEl = np.tan(np.radians(Elevation))
+    Refract = np.zeros(len(time_utc))
 
-    Refract[(Elevation > 5) & (Elevation <= 85)] = (
-        58.1/TanEl - 0.07/(TanEl**3) + 8.6e-05/(TanEl**5))
+    mask = (Elevation > 5) & (Elevation <= 85)
+    Refract[mask] = (
+        58.1/TanEl[mask] - 0.07/(TanEl[mask]**3) + 8.6e-05/(TanEl[mask]**5))
 
-    Refract[(Elevation > -0.575) & (Elevation <= 5)] = (
-        Elevation *
-        (-518.2 + Elevation*(103.4 + Elevation*(-12.79 + Elevation*0.711))) +
+    mask = (Elevation > -0.575) & (Elevation <= 5)
+    Refract[mask] = (
+        Elevation[mask] *
+        (-518.2 + Elevation[mask]*(103.4 + Elevation[mask]*(-12.79 + Elevation[mask]*0.711))) +
         1735)
 
-    Refract[(Elevation > -1) & (Elevation <= -0.575)] = -20.774 / TanEl
+    mask = (Elevation > -1) & (Elevation <= -0.575)
+    Refract[mask] = -20.774 / TanEl[mask]
 
     Refract *= (283/(273. + temperature)) * (pressure/101325.) / 3600.
 
     ApparentSunEl = SunEl + Refract
 
     # make output DataFrame
-    DFOut = pd.DataFrame(index=time_utc)
-    DFOut['apparent_elevation'] = ApparentSunEl
-    DFOut['elevation'] = SunEl
-    DFOut['azimuth'] = SunAz
-    DFOut['apparent_zenith'] = 90 - ApparentSunEl
-    DFOut['zenith'] = 90 - SunEl
-    DFOut['solar_time'] = SolarTime
-    DFOut.index = time
+    result = pd.DataFrame(
+        {
+            "apparent_elevation": ApparentSunEl,
+            "elevation": SunEl,
+            "azimuth": SunAz,
+            "apparent_zenith": 90 - ApparentSunEl,
+            "zenith": 90 - SunEl,
+            "solar_time": SolarTime,
+        },
+        index=time
+    )
 
-    return DFOut
+    return result
 
 
 def calc_time(lower_bound, upper_bound, latitude, longitude, attribute, value,

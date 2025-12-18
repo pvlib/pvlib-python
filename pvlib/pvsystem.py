@@ -1217,11 +1217,12 @@ class Array:
             Ambient dry bulb temperature [C]
 
         wind_speed : numeric
-            Wind speed [m/s]
+            Wind speed [m/s], although can be ``None`` for ``'ross'`` model
 
         model : str
             Supported models include ``'sapm'``, ``'pvsyst'``,
-            ``'faiman'``, ``'fuentes'``, and ``'noct_sam'``
+            ``'faiman'``, ``'faiman_rad'``, ``'fuentes'``, ``'noct_sam'``,
+            and ``'ross'``
 
         effective_irradiance : numeric, optional
             The irradiance that is converted to photocurrent in W/m^2.
@@ -1267,6 +1268,12 @@ class Array:
             required = tuple()
             optional = _build_kwargs(['u0', 'u1'],
                                      self.temperature_model_parameters)
+        elif model == 'faiman_rad':
+            func = temperature.faiman_rad
+            required = ()
+            optional = _build_kwargs(['ir_down','u0','u1',
+                                      'sky_view','emissivity'],
+                                     self.temperature_model_parameters)
         elif model == 'fuentes':
             func = temperature.fuentes
             required = _build_tcell_args(['noct_installed'])
@@ -1283,11 +1290,21 @@ class Array:
             optional = _build_kwargs(['transmittance_absorptance',
                                       'array_height', 'mount_standoff'],
                                      self.temperature_model_parameters)
+        elif model == 'ross':
+            func = temperature.ross
+            required = ()
+            # either noct or k must be defined
+            optional = _build_kwargs(['noct','k'],
+                                      self.temperature_model_parameters)
         else:
             raise ValueError(f'{model} is not a valid cell temperature model')
 
-        temperature_cell = func(poa_global, temp_air, wind_speed,
-                                *required, **optional)
+        if model == 'ross':
+            temperature_cell = func(poa_global, temp_air,
+                                    *required, **optional)
+        else:
+            temperature_cell = func(poa_global, temp_air,  wind_speed,
+                                    *required, **optional)
         return temperature_cell
 
     def dc_ohms_from_percent(self):

@@ -1271,8 +1271,8 @@ class Array:
         elif model == 'faiman_rad':
             func = temperature.faiman_rad
             required = ()
-            optional = _build_kwargs(['ir_down','u0','u1',
-                                      'sky_view','emissivity'],
+            optional = _build_kwargs(['ir_down', 'u0', 'u1',
+                                      'sky_view', 'emissivity'],
                                      self.temperature_model_parameters)
         elif model == 'fuentes':
             func = temperature.fuentes
@@ -1294,8 +1294,8 @@ class Array:
             func = temperature.ross
             required = ()
             # either noct or k must be defined
-            optional = _build_kwargs(['noct','k'],
-                                      self.temperature_model_parameters)
+            optional = _build_kwargs(['noct', 'k'],
+                                     self.temperature_model_parameters)
         else:
             raise ValueError(f'{model} is not a valid cell temperature model')
 

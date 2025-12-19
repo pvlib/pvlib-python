@@ -87,3 +87,4 @@ Contributors
 * Anton Driesse (:ghuser:`adriesse`)
 * Rajiv Daxini (:ghuser:`RDaxini`)
 * Kevin Anderson (:ghuser:`kandersolar`)
+* Subhamjyoti Maharana (:ghuser:`SubhamJM`)

@@ -53,6 +53,7 @@ Documentation
 * Provide an overview of temperature modeling functionality in :ref:`temperature`. (:pull:`2591`)
 * Fix typo in parameter name ``atmos_refract`` in :py:func:`pvlib.solarposition.spa_python`
   and :py:func:`pvlib.spa.solar_position`. (:issue:`2532`, :pull:`2592`)
+* Fix Deprecated link to the contributions guide (:issue: `2628`)
 
 
 Testing
@@ -87,3 +88,4 @@ Contributors
 * Anton Driesse (:ghuser:`adriesse`)
 * Rajiv Daxini (:ghuser:`RDaxini`)
 * Kevin Anderson (:ghuser:`kandersolar`)
+* Subhamjyoti Maharana (:ghuser:`SubhamJM`)

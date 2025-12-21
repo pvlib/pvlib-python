@@ -615,7 +615,7 @@ def isotropic(surface_tilt, dhi, return_components=False):
 
     return_components : bool, default False
         Flag used to decide whether to return the calculated diffuse components
-        or not. If `False`, ``sky_diffuse`` is returned. If `True`,
+        or not. If `False`, ``poa_sky_diffuse`` is returned. If `True`,
         ``diffuse_components`` is returned.
 
     Returns

@@ -516,10 +516,9 @@ def test_PVSystem_faiman_rad_celltemp(mocker):
 
 
 def test_PVSystem_ross_celltemp(mocker):
-    # example value
+    # example value (could use equivalent noct as alternative input)
     k = 0.0208  # free-standing system
-    noct = None  # function expects only one of two, the other as None
-
+  
     temp_model_params = {'k': k}
     system = pvsystem.PVSystem(temperature_model_parameters=temp_model_params)
     mocker.spy(temperature, 'ross')

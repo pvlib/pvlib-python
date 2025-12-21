@@ -510,7 +510,7 @@ def test_PVSystem_faiman_rad_celltemp(mocker):
     winds = 1
     out = system.get_cell_temperature(irrads, temps, winds, model='faiman_rad')
     temperature.faiman_rad.assert_called_once_with(irrads, temps, winds,
-                                                   u0, u1,
+                                                   ir_down, u0, u1,
                                                    sky_view, emissivity)
     assert_allclose(out, 56.4, atol=1e-1)
 
@@ -518,6 +518,7 @@ def test_PVSystem_faiman_rad_celltemp(mocker):
 def test_PVSystem_ross_celltemp(mocker):
     # example value
     k = 0.0208  # free-standing system
+    noct = None # function expects only one of two, the other as None
 
     temp_model_params = {'k': k}
     system = pvsystem.PVSystem(temperature_model_parameters=temp_model_params)
@@ -526,7 +527,7 @@ def test_PVSystem_ross_celltemp(mocker):
     irrads = 1000
     winds = None
     out = system.get_cell_temperature(irrads, temps, winds, model='ross')
-    temperature.ross.assert_called_once_with(irrads, temps, k)
+    temperature.ross.assert_called_once_with(irrads, temps, noct, k)
     assert_allclose(out, 45.8, atol=1e-1)
 
 

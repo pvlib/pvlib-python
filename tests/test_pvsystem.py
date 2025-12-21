@@ -526,7 +526,7 @@ def test_PVSystem_ross_celltemp(mocker):
     irrads = 1000
     winds = None
     out = system.get_cell_temperature(irrads, temps, winds, model='ross')
-    temperature.faiman_rad.assert_called_once_with(irrads, temps, k)
+    temperature.ross.assert_called_once_with(irrads, temps, k)
     assert_allclose(out, 45.8, atol=1e-1)
 
 

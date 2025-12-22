@@ -502,14 +502,15 @@ def test_PVSystem_faiman_rad_celltemp(mocker):
     sky_view = 1.0
     emissivity = 0.88
 
-    temp_model_params = {'ir_down': ir_down, 'u0': u0, 'u1': u1,
-                         'sky_view': sky_view, 'emissivity': emissivity}
+    temp_model_params = {'u0': u0, 'u1': u1, 'sky_view': sky_view,
+                         'emissivity': emissivity}
     system = pvsystem.PVSystem(temperature_model_parameters=temp_model_params)
     mocker.spy(temperature, 'faiman_rad')
     temps = 25
     irrads = 1000
     winds = 1
-    out = system.get_cell_temperature(irrads, temps, winds, model='faiman_rad')
+    out = system.get_cell_temperature(irrads, temps, winds, ir_down,
+                                      model='faiman_rad')
     temperature.faiman_rad.assert_called_once_with(irrads, temps, winds,
                                                    ir_down, u0, u1,
                                                    sky_view, emissivity)

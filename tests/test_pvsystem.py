@@ -498,7 +498,7 @@ def test_PVSystem_faiman_rad_celltemp(mocker):
     ir_down = 50  # arbitrary value
     # default values, u0 and u1 being adjusted in same proportion as in
     # https://www.osti.gov/servlets/purl/1884890/ (not suggested, just example)
-    u0,u1 = 25.0*0.86, 6.84*0.88 
+    u0, u1 = 25.0*0.86, 6.84*0.88
     sky_view = 1.0
     emissivity = 0.88
 

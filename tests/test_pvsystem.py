@@ -509,7 +509,7 @@ def test_PVSystem_faiman_rad_celltemp(mocker):
     temps = 25
     irrads = 1000
     winds = 1
-    out = system.get_cell_temperature(irrads, temps, winds, ir_down,
+    out = system.get_cell_temperature(irrads, temps, winds, ir_down=ir_down,
                                       model='faiman_rad')
     temperature.faiman_rad.assert_called_once_with(irrads, temps, winds,
                                                    ir_down, u0, u1,

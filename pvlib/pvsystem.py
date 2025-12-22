@@ -431,7 +431,8 @@ class PVSystem:
 
         model : str
             Supported models include ``'sapm'``, ``'pvsyst'``,
-            ``'faiman'``, ``'fuentes'``, and ``'noct_sam'``
+            ``'faiman'``, ``'faiman_rad'``, ``'fuentes'``, ``'noct_sam'``,
+            and ``'ross'``
 
         effective_irradiance : numeric or tuple of numeric, optional
             The irradiance that is converted to photocurrent in W/m^2.
@@ -1236,8 +1237,9 @@ class Array:
         See Also
         --------
         pvlib.temperature.sapm_cell, pvlib.temperature.pvsyst_cell,
-        pvlib.temperature.faiman, pvlib.temperature.fuentes,
-        pvlib.temperature.noct_sam
+        pvlib.temperature.faiman, pvlib.temperature.faiman_rad,
+        pvlib.temperature.fuentes, pvlib.temperature.noct_sam,
+        pvlib.temperature.ross
 
         Notes
         -----

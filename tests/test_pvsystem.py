@@ -495,9 +495,10 @@ def test_PVSystem_faiman_celltemp(mocker):
 
 
 def test_PVSystem_faiman_rad_celltemp(mocker):
-    # default values (need to account for a certain ir_down and adjust u0, u1)
-    ir_down = None
-    u0, u1 = 25.0, 6.84
+    ir_down = 50  # arbitrary value
+    # default values, u0 and u1 being adjusted in same proportion as in
+    # https://www.osti.gov/servlets/purl/1884890/ (not suggested, just example)
+    u0,u1 = 25.0*0.86, 6.84*0.88 
     sky_view = 1.0
     emissivity = 0.88
 
@@ -512,7 +513,7 @@ def test_PVSystem_faiman_rad_celltemp(mocker):
     temperature.faiman_rad.assert_called_once_with(irrads, temps, winds,
                                                    ir_down, u0, u1,
                                                    sky_view, emissivity)
-    assert_allclose(out, 56.4, atol=1e-1)
+    assert_allclose(out, 48.6, atol=1e-1)
 
 
 def test_PVSystem_ross_celltemp(mocker):

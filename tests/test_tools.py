@@ -102,7 +102,7 @@ def test__golden_sect_DataFrame_nans():
 def test_degrees_to_index_1():
     """Test that _degrees_to_index raises an error when something other than
     'latitude' or 'longitude' is passed."""
-    with pytest.raises(IndexError):  # invalid value for coordinate argument
+    with pytest.raises(ValueError, match="coordinate must be"):  # invalid value for coordinate argument
         tools._degrees_to_index(degrees=22.0, coordinate='width')
 
 

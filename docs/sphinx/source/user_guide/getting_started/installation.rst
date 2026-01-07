@@ -185,7 +185,7 @@ With your conda/virtual environment still active...
    Consider installing pvlib using ``pip install -e .[all]`` so that
    you can run the unit tests and build the documentation.
    Your clone directory is probably similar to
-   ``C:\Users\%USER%\Documents\GitHub\pvlib-python``(Windows) or
+   ``C:\Users\%USER%\Documents\GitHub\pvlib-python`` (Windows) or
    ``/Users/%USER%/Documents/pvlib-python`` (Mac).
 #. **Test** your installation by running ``python -c 'import pvlib'``.
    You're good to go if it returns without an exception.

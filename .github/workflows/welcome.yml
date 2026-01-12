@@ -6,8 +6,6 @@ on:
   pull_request_target:
     types: opened
 
-permissions: {}
-
 jobs:
   welcome:
     runs-on: ubuntu-latest
@@ -17,10 +15,6 @@ jobs:
     steps:
       - uses: plbstl/first-contribution@v4
         with:
-          issue-opened-msg: |
-            ### Hey @{fc-author}! :wave:
-
-            Thanks for opening your first issue. Welcome to the community!
           pr-opened-msg: |
             ### Hey @{fc-author}! :tada:
 

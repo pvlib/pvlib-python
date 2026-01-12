@@ -44,6 +44,8 @@ Enhancements
   ERA5 reanalysis data. (:pull:`2573`)
 * Add :py:func:`~pvlib.iotools.get_merra2`, a function for accessing
   MERRA-2 reanalysis data. (:pull:`2572`)
+* Add :py:func:`~pvlib.spectrum.spectral_factor_polo`, a function for estimating
+  spectral mismatch factors for vertical PV façades. (:issue:`2406`, :pull:`2491`)
 
 Documentation
 ~~~~~~~~~~~~~
@@ -79,4 +81,9 @@ Contributors
 * Will Hobbs (:ghuser:`williamhobbs`)
 * Cliff Hansen (:ghuser:`cwhanse`)
 * Joseph Radford (:ghuser:`josephradford`)
+* Jesús Polo (:ghuser:`jesuspolo`)
+* Adam R. Jensen (:ghuser:`adamrjensen`)
+* Echedey Luis (:ghuser:`echedey-ls`)
+* Anton Driesse (:ghuser:`adriesse`)
+* Rajiv Daxini (:ghuser:`RDaxini`)
 * Kevin Anderson (:ghuser:`kandersolar`)

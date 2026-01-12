@@ -698,3 +698,104 @@ def spectral_factor_jrc(airmass, clearsky_index, module_type=None,
         + coeff[2] * (airmass - 1.5)
     )
     return mismatch
+
+
+def spectral_factor_polo(precipitable_water, airmass_absolute, aod500, aoi,
+                         pressure, module_type=None, coefficients=None,
+                         albedo=0.2):
+    """
+    Estimate the spectral mismatch for BIPV application in vertical facades.
+
+    The model's authors note that this model could also be applied to
+    vertical bifacial ground-mount systems [1]_, although it has not been
+    validated in that context.
+
+    Parameters
+    ----------
+    precipitable_water : numeric
+        Atmospheric precipitable water. [cm]
+    airmass_absolute : numeric
+        Absolute (pressure-adjusted) airmass. See :term:`airmass_absolute`.
+        [unitless]
+    aod500 : numeric
+        Atmospheric aerosol optical depth at 500 nm. [unitless]
+    aoi : numeric
+        Angle of incidence on the vertical surface.  See :term:`aoi`.
+        [degrees]
+    pressure : numeric
+        Atmospheric pressure. See :term:`pressure`. [Pa]
+    module_type : str, optional
+        One of the following PV technology strings from [1]_:
+
+        * ``'cdte'`` - anonymous CdTe module.
+        * ``'monosi'`` - anonymous monocrystalline silicon module.
+        * ``'cigs'`` - anonymous copper indium gallium selenide module.
+        * ``'asi'`` - anonymous amorphous silicon module.
+    coefficients : array-like, optional
+        User-defined coefficients, if not using one of the coefficient
+        sets via the ``module_type`` parameter.  Must have nine elements.
+        The first six elements correspond to the [p1, p2, p3, p4, b, c]
+        parameters of the SMM model.  The last three elements corresponds
+        to the [c1, c2, c3] parameters of the albedo correction factor.
+    albedo : numeric, default 0.2
+        Ground albedo. See :term:`albedo`. [unitless]
+
+    Returns
+    -------
+    modifier: numeric
+        spectral mismatch factor (unitless) which is multiplied
+        with broadband irradiance reaching a module's cells to estimate
+        effective irradiance, i.e., the irradiance that is converted to
+        electrical current.
+
+    Notes
+    -----
+    The Polo model was developed using only SMM values computed for scenarios
+    when the sun is visible from the module's surface (i.e., for ``aoi<90``),
+    and no provision was made in [1]_ for the case of ``aoi>90``. This would
+    create issues in the air mass calculation internal to the model.
+    Following discussion with the model's author, the pvlib implementation
+    handles ``aoi>90`` by truncating the input ``aoi`` to a maximum of
+    90 degrees.
+
+    References
+    ----------
+    .. [1] J. Polo and C. Sanz-Saiz, 'Development of spectral mismatch models
+       for BIPV applications in building façades', Renewable Energy, vol. 245,
+       p. 122820, Jun. 2025, :doi:`10.1016/j.renene.2025.122820`
+    """
+    if module_type is None and coefficients is None:
+        raise ValueError('Must provide either `module_type` or `coefficients`')
+    if module_type is not None and coefficients is not None:
+        raise ValueError('Only one of `module_type` and `coefficients` should '
+                         'be provided')
+    # prevent nan for aoi greater than 90; see docstring Notes
+    aoi = np.clip(aoi, a_min=None, a_max=90)
+    f_aoi_rel = pvlib.atmosphere.get_relative_airmass(aoi,
+                                                      model='kastenyoung1989')
+    f_aoi = pvlib.atmosphere.get_absolute_airmass(f_aoi_rel, pressure)
+    Ram = f_aoi / airmass_absolute
+    _coefficients = {
+        'cdte': (-0.0009, 46.80, 49.20, -0.87, 0.00041, 0.053),
+        'monosi': (0.0027, 10.34, 9.48, 0.31, 0.00077, 0.006),
+        'cigs': (0.0017, 2.33, 1.30, 0.11, 0.00098, -0.018),
+        'asi': (0.0024, 7.32, 7.09, -0.72, -0.0013, 0.089),
+    }
+    c = {
+        'asi': (0.0056, -0.020, 1.014),
+        'cigs': (-0.0009, -0.0003, 1),
+        'cdte': (0.0021, -0.01, 1.01),
+        'monosi': (0, -0.003, 1.0),
+    }
+    if module_type is not None:
+        coeff = _coefficients[module_type]
+        c_albedo = c[module_type]
+    else:
+        coeff = coefficients[:6]
+        c_albedo = coefficients[6:]
+    smm = coeff[0] * Ram + coeff[1] / (coeff[2] + Ram**coeff[3]) \
+        + coeff[4] / aod500 + coeff[5]*np.sqrt(precipitable_water)
+    # Ground albedo correction
+    g = c_albedo[0] * (albedo/0.2)**2 \
+        + c_albedo[1] * (albedo/0.2) + c_albedo[2]
+    return g*smm

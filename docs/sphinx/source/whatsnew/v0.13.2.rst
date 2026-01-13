@@ -53,6 +53,9 @@ Documentation
 * Provide an overview of temperature modeling functionality in :ref:`temperature`. (:pull:`2591`)
 * Fix typo in parameter name ``atmos_refract`` in :py:func:`pvlib.solarposition.spa_python`
   and :py:func:`pvlib.spa.solar_position`. (:issue:`2532`, :pull:`2592`)
+* Add AI checkbox to PR template, and auto-generate a comment on issues and PRs from
+  first-time contributors regarding AI and contributing guidelines.
+  (:issue:`2617`, :pull:`2624`)
 
 
 Testing

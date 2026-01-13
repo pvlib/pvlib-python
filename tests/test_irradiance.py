@@ -211,7 +211,7 @@ def test_haydavies(irrad_data, ephem_data, dni_et):
 
 def test_haydavies_components(irrad_data, ephem_data, dni_et):
     keys = ['poa_sky_diffuse', 'poa_isotropic', 'poa_circumsolar',
-                'poa_horizon']
+            'poa_horizon']
     expected = pd.DataFrame(np.array(
         [[0, 27.1775, 102.9949, 33.1909],
          [0, 27.1775, 30.1818, 27.9837],

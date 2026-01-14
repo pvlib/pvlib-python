@@ -1,8 +1,6 @@
 name: Welcome First-Time Contributor
 
 on:
-  issues:
-    types: opened
   pull_request_target:
     types: opened
 
@@ -10,7 +8,6 @@ jobs:
   welcome:
     runs-on: ubuntu-latest
     permissions:
-      issues: write
       pull-requests: write
     steps:
       - uses: plbstl/first-contribution@v4

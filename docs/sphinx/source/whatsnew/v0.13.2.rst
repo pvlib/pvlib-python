@@ -9,7 +9,7 @@ Breaking Changes
 * Following the removal of the NSRDB PSM3 API, the :func:`!pvlib.iotools.get_psm3`,
   :func:`!pvlib.iotools.read_psm3`, and :func:`!pvlib.iotools.parse_psm3`
   functions are removed. (:issue:`2581`, :pull:`2582`)
-* Rename column names to be prefixed with ``"poa_"`` when ``return_components=True``
+* Rename output column names to be prefixed with ``"poa_"`` when ``return_components=True``
   in :py:func:`~pvlib.irradiance.haydavies`, :py:func:`~pvlib.irradiance.perez`,
   and :py:func:`~pvlib.irradiance.perez_driesse`. (:issue:`2529`, :pull:`2627`)
    

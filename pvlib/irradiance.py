@@ -649,29 +649,29 @@ def isotropic(surface_tilt, dhi, return_components=False):
        Energy vol. 201. pp. 8-12
        :doi:`10.1016/j.solener.2020.02.067`
     '''
-    poa_sky_diffuse = dhi * (1 + tools.cosd(surface_tilt)) * 0.5
 
+    poa_sky_diffuse = dhi * (1 + tools.cosd(surface_tilt)) * 0.5    
+        
     if return_components:
-        diffuse_components = dict()
+        is_pandas = isinstance(dhi, (pd.DataFrame,pd.Series))
+        
+        if is_pandas:
+            poa_sky_diffuse = poa_sky_diffuse.values    
 
-        # original formatting (to be deprecated in v0.14.0)
-        diffuse_components['sky_diffuse'] = poa_sky_diffuse # total
-        diffuse_components['isotropic'] = poa_sky_diffuse
-        diffuse_components['circumsolar'] = 0
-        diffuse_components['horizon'] = 0
+        diffuse_components = {
+            'poa_sky_diffuse': poa_sky_diffuse,
+            'poa_isotropic': poa_sky_diffuse,
+            'poa_circumsolar': 0,
+            'poa_horizon': 0,
+            }
 
-        # new formatting
-        diffuse_components['poa_sky_diffuse'] = poa_sky_diffuse
-        diffuse_components['poa_isotropic'] = poa_sky_diffuse
-        diffuse_components['poa_circumsolar'] = 0
-        diffuse_components['poa_horizon'] = 0
-
-        if isinstance(poa_sky_diffuse, pd.Series):
-            # follows `perez` worfklow
-            # shouldn't it include an argument `index=dhi.index`?
-            diffuse_components = pd.DataFrame(diffuse_components)
-
+        poa_sky_diffuse = pd.DataFrame(poa_sky_diffuse)        
+        if is_pandas:
+            # keeps original index
+            poa_sky_diffuse.index = dhi.index
+        
         return diffuse_components
+    
     else:
         return poa_sky_diffuse
 

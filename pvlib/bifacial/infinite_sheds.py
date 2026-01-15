@@ -301,7 +301,8 @@ def get_irradiance_poa(surface_tilt, surface_azimuth, solar_zenith,
         sky_diffuse_comps_horizontal = haydavies(0, 180, dhi, dni, dni_extra,
                                                  solar_zenith, solar_azimuth,
                                                  return_components=True)
-        circumsolar_horizontal = sky_diffuse_comps_horizontal['circumsolar']
+        circumsolar_horizontal = \
+            sky_diffuse_comps_horizontal['poa_circumsolar']
 
         # Call haydavies a second time where circumsolar_normal is facing
         # directly towards sun, and can be added to DNI
@@ -309,7 +310,7 @@ def get_irradiance_poa(surface_tilt, surface_azimuth, solar_zenith,
                                              dni, dni_extra, solar_zenith,
                                              solar_azimuth,
                                              return_components=True)
-        circumsolar_normal = sky_diffuse_comps_normal['circumsolar']
+        circumsolar_normal = sky_diffuse_comps_normal['poa_circumsolar']
 
         dhi = dhi - circumsolar_horizontal
         dni = dni + circumsolar_normal

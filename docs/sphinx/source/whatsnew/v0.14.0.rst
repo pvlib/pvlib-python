@@ -59,7 +59,7 @@ Testing
 
 Requirements
 ~~~~~~~~~~~~
-* Advance minimum solarfactors to v1.6.1. (:pull:``)
+* Advance minimum solarfactors to v1.6.1. (:pull:`2656`)
 
 Contributors
 ~~~~~~~~~~~~
@@ -72,3 +72,10 @@ Contributors
 * Anton Driesse (:ghuser:`adriesse`)
 * Rajiv Daxini (:ghuser:`RDaxini`)
 * Kevin Anderson (:ghuser:`kandersolar`)
+* Mark Mikofski (:ghuser:`mikofski`)
+* Will Holmgren (:ghuser:`wholmgren`)
+* Ioannis Sifnaios (:ghuser:`IoannisSifnaios`)
+* Mark Campanelli (:ghuser:`markcampanelli`)
+* Jesus Polo (:ghuser:`jesuspolo`)
+* Aman Srivastava (:ghuser:`aman-coder03`)
+* Vincent Filter (:ghuser:`vfilter`)

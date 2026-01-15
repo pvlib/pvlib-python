@@ -49,6 +49,7 @@ Enhancements
   MERRA-2 reanalysis data. (:pull:`2572`)
 * Add :py:func:`~pvlib.spectrum.spectral_factor_polo`, a function for estimating
   spectral mismatch factors for vertical PV façades. (:issue:`2406`, :pull:`2491`)
+* Accelerate the internals of :py:func:`~pvlib.solarpostion.ephemeris`. (:pull:`2626`)
 
 Documentation
 ~~~~~~~~~~~~~
@@ -90,3 +91,4 @@ Contributors
 * Anton Driesse (:ghuser:`adriesse`)
 * Rajiv Daxini (:ghuser:`RDaxini`)
 * Kevin Anderson (:ghuser:`kandersolar`)
+* James Fulton (:ghuser:`dfulu`)

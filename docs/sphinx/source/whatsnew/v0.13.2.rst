@@ -49,6 +49,8 @@ Enhancements
   MERRA-2 reanalysis data. (:pull:`2572`)
 * Add :py:func:`~pvlib.spectrum.spectral_factor_polo`, a function for estimating
   spectral mismatch factors for vertical PV façades. (:issue:`2406`, :pull:`2491`)
+* Include `ross` and `faiman_rad` in the allowed models within 
+  :py:meth:`pvlib.pvsystem.PVSystem.get_cell_temperature` (:issue:`2625`, :pull:`2631`)
 
 Documentation
 ~~~~~~~~~~~~~
@@ -90,3 +92,4 @@ Contributors
 * Anton Driesse (:ghuser:`adriesse`)
 * Rajiv Daxini (:ghuser:`RDaxini`)
 * Kevin Anderson (:ghuser:`kandersolar`)
+* Rodrigo Amaro e Silva (:ghuser:`ramaroesilva`)

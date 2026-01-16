@@ -494,6 +494,44 @@ def test_PVSystem_faiman_celltemp(mocker):
     assert_allclose(out, 56.4, atol=1e-1)
 
 
+def test_PVSystem_faiman_rad_celltemp(mocker):
+    ir_down = 50  # arbitrary value
+    # default values, u0 and u1 being adjusted in same proportion as in
+    # https://www.osti.gov/servlets/purl/1884890/ (not suggested, just example)
+    u0, u1 = 25.0*0.86, 6.84*0.88
+    sky_view = 1.0
+    emissivity = 0.88
+
+    temp_model_params = {'u0': u0, 'u1': u1, 'sky_view': sky_view,
+                         'emissivity': emissivity}
+    system = pvsystem.PVSystem(temperature_model_parameters=temp_model_params)
+    mocker.spy(temperature, 'faiman_rad')
+    temps = 25
+    irrads = 1000
+    winds = 1
+    out = system.get_cell_temperature(irrads, temps, winds, ir_down=ir_down,
+                                      model='faiman_rad')
+    temperature.faiman_rad.assert_called_once_with(irrads, temps, winds,
+                                                   ir_down, u0, u1,
+                                                   sky_view, emissivity)
+    assert_allclose(out, 48.6, atol=1e-1)
+
+
+def test_PVSystem_ross_celltemp(mocker):
+    # example value (could use equivalent noct as alternative input)
+    k = 0.0208  # free-standing system
+
+    temp_model_params = {'k': k}
+    system = pvsystem.PVSystem(temperature_model_parameters=temp_model_params)
+    mocker.spy(temperature, 'ross')
+    temps = 25
+    irrads = 1000
+    winds = None
+    out = system.get_cell_temperature(irrads, temps, winds, model='ross')
+    temperature.ross.assert_called_once_with(irrads, temps, k=k)
+    assert_allclose(out, 45.8, atol=1e-1)
+
+
 def test_PVSystem_noct_celltemp(mocker):
     poa_global, temp_air, wind_speed, noct, module_efficiency = (
         1000., 25., 1., 45., 0.2)

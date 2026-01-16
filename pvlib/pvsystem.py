@@ -414,7 +414,7 @@ class PVSystem:
 
     @_unwrap_single_value
     def get_cell_temperature(self, poa_global, temp_air, wind_speed, model,
-                             effective_irradiance=None):
+                             effective_irradiance=None, ir_down=None):
         """
         Determine cell temperature using the method specified by ``model``.
 
@@ -431,11 +431,16 @@ class PVSystem:
 
         model : str
             Supported models include ``'sapm'``, ``'pvsyst'``,
-            ``'faiman'``, ``'fuentes'``, and ``'noct_sam'``
+            ``'faiman'``, ``'faiman_rad'``, ``'fuentes'``, ``'noct_sam'``,
+            and ``'ross'``
 
         effective_irradiance : numeric or tuple of numeric, optional
             The irradiance that is converted to photocurrent in W/m^2.
             Only used for some models.
+
+        ir_down: numeric, optional
+            Downwelling infrared radiation from the sky, measured on a
+            horizontal surface in W/m^2. Only used in ``'faiman_rad'`` model.
 
         Returns
         -------
@@ -459,14 +464,16 @@ class PVSystem:
         # Not used for all models, but Array.get_cell_temperature handles it
         effective_irradiance = self._validate_per_array(effective_irradiance,
                                                         system_wide=True)
+        ir_down = self._validate_per_array(ir_down, system_wide=True)
 
         return tuple(
             array.get_cell_temperature(poa_global, temp_air, wind_speed,
-                                       model, effective_irradiance)
-            for array, poa_global, temp_air, wind_speed, effective_irradiance
+                                       model, effective_irradiance, ir_down)
+            for array, poa_global, temp_air, wind_speed, effective_irradiance,
+            ir_down
             in zip(
                 self.arrays, poa_global, temp_air, wind_speed,
-                effective_irradiance
+                effective_irradiance, ir_down
             )
         )
 
@@ -1204,7 +1211,7 @@ class Array:
             raise ValueError(model + ' is not a valid IAM model')
 
     def get_cell_temperature(self, poa_global, temp_air, wind_speed, model,
-                             effective_irradiance=None):
+                             effective_irradiance=None, ir_down=None):
         """
         Determine cell temperature using the method specified by ``model``.
 
@@ -1217,15 +1224,20 @@ class Array:
             Ambient dry bulb temperature [C]
 
         wind_speed : numeric
-            Wind speed [m/s]
+            Wind speed [m/s], although can be ``None`` for ``'ross'`` model
 
         model : str
             Supported models include ``'sapm'``, ``'pvsyst'``,
-            ``'faiman'``, ``'fuentes'``, and ``'noct_sam'``
+            ``'faiman'``, ``'faiman_rad'``, ``'fuentes'``, ``'noct_sam'``,
+            and ``'ross'``
 
         effective_irradiance : numeric, optional
             The irradiance that is converted to photocurrent in W/m^2.
             Only used for some models.
+
+        ir_down: numeric, optional
+            Downwelling infrared radiation from the sky, measured on a
+            horizontal surface in W/m^2. Only used in ``'faiman_rad'`` model.
 
         Returns
         -------
@@ -1235,8 +1247,9 @@ class Array:
         See Also
         --------
         pvlib.temperature.sapm_cell, pvlib.temperature.pvsyst_cell,
-        pvlib.temperature.faiman, pvlib.temperature.fuentes,
-        pvlib.temperature.noct_sam
+        pvlib.temperature.faiman, pvlib.temperature.faiman_rad,
+        pvlib.temperature.fuentes, pvlib.temperature.noct_sam,
+        pvlib.temperature.ross
 
         Notes
         -----
@@ -1267,6 +1280,13 @@ class Array:
             required = tuple()
             optional = _build_kwargs(['u0', 'u1'],
                                      self.temperature_model_parameters)
+        elif model == 'faiman_rad':
+            func = functools.partial(temperature.faiman_rad,
+                                     ir_down=ir_down)
+            required = ()
+            optional = _build_kwargs(['ir_down', 'u0', 'u1',
+                                      'sky_view', 'emissivity'],
+                                     self.temperature_model_parameters)
         elif model == 'fuentes':
             func = temperature.fuentes
             required = _build_tcell_args(['noct_installed'])
@@ -1283,11 +1303,21 @@ class Array:
             optional = _build_kwargs(['transmittance_absorptance',
                                       'array_height', 'mount_standoff'],
                                      self.temperature_model_parameters)
+        elif model == 'ross':
+            func = temperature.ross
+            required = ()
+            # either noct or k must be defined
+            optional = _build_kwargs(['noct', 'k'],
+                                     self.temperature_model_parameters)
         else:
             raise ValueError(f'{model} is not a valid cell temperature model')
 
-        temperature_cell = func(poa_global, temp_air, wind_speed,
-                                *required, **optional)
+        if model == 'ross':
+            temperature_cell = func(poa_global, temp_air,
+                                    *required, **optional)
+        else:
+            temperature_cell = func(poa_global, temp_air,  wind_speed,
+                                    *required, **optional)
         return temperature_cell
 
     def dc_ohms_from_percent(self):

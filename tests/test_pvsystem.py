@@ -6,6 +6,7 @@ from numpy import nan, array
 import pandas as pd
 
 import pytest
+from pvlib._deprecation import pvlibDeprecationWarning
 from .conftest import assert_series_equal, assert_frame_equal
 from numpy.testing import assert_allclose
 import unittest.mock as mock
@@ -2411,9 +2412,9 @@ def fixed_mount():
 
 @pytest.fixture
 def single_axis_tracker_mount():
-    return pvsystem.SingleAxisTrackerMount(axis_tilt=10, axis_azimuth=170,
+    return pvsystem.SingleAxisTrackerMount(axis_slope=10, axis_azimuth=170,
                                            max_angle=45, backtrack=False,
-                                           gcr=0.4, cross_axis_tilt=-5)
+                                           gcr=0.4, cross_axis_slope=-5)
 
 
 def test_FixedMount_constructor(fixed_mount):
@@ -2427,8 +2428,8 @@ def test_FixedMount_get_orientation(fixed_mount):
 
 
 def test_SingleAxisTrackerMount_constructor(single_axis_tracker_mount):
-    expected = dict(axis_tilt=10, axis_azimuth=170, max_angle=45,
-                    backtrack=False, gcr=0.4, cross_axis_tilt=-5)
+    expected = dict(axis_slope=10, axis_azimuth=170, max_angle=45,
+                    backtrack=False, gcr=0.4, cross_axis_slope=-5)
     for attr_name, expected_value in expected.items():
         assert getattr(single_axis_tracker_mount, attr_name) == expected_value
 
@@ -2562,3 +2563,36 @@ def test_Array_temperature_missing_parameters(model, keys):
         array.temperature_model_parameters = params
         with pytest.raises(KeyError, match=match):
             array.get_cell_temperature(irrads, temps, winds, model)
+
+
+def test_SingleAxisTrackerMount_renamed_attributes_tilt_to_slope(
+    single_axis_tracker_mount,
+):  # renamed attributes tested here are
+    # axis_tilt -> axis_slope and cross_axis_tilt -> cross_axis_slope
+
+    # test constructor
+    with pytest.warns(pvlibDeprecationWarning, match="axis_slope"):
+        pvsystem.SingleAxisTrackerMount(axis_tilt=10, axis_azimuth=170,
+                                        max_angle=45, backtrack=False,
+                                        gcr=0.4, cross_axis_slope=-5)
+    with pytest.warns(pvlibDeprecationWarning, match="cross_axis_slope"):
+        pvsystem.SingleAxisTrackerMount(axis_slope=10, axis_azimuth=170,
+                                        max_angle=45, backtrack=False,
+                                        gcr=0.4, cross_axis_tilt=-5)
+    with (pytest.warns(pvlibDeprecationWarning, match="axis_slope"),
+          pytest.warns(pvlibDeprecationWarning, match="cross_axis_slope")):
+        pvsystem.SingleAxisTrackerMount(axis_tilt=10, axis_azimuth=170,
+                                        max_angle=45, backtrack=False,
+                                        gcr=0.4, cross_axis_tilt=-5)
+
+    # read values
+    with pytest.warns(pvlibDeprecationWarning, match="axis_slope"):
+        single_axis_tracker_mount.axis_tilt
+    with pytest.warns(pvlibDeprecationWarning, match="cross_axis_slope"):
+        single_axis_tracker_mount.cross_axis_tilt
+
+    # set values
+    with pytest.warns(pvlibDeprecationWarning, match="axis_slope"):
+        single_axis_tracker_mount.axis_tilt = 25.132
+    with pytest.warns(pvlibDeprecationWarning, match="cross_axis_slope"):
+        single_axis_tracker_mount.cross_axis_tilt = 15.657

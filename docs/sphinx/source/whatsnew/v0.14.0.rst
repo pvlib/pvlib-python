@@ -76,6 +76,5 @@ Contributors
 * Will Holmgren (:ghuser:`wholmgren`)
 * Ioannis Sifnaios (:ghuser:`IoannisSifnaios`)
 * Mark Campanelli (:ghuser:`markcampanelli`)
-* Jesus Polo (:ghuser:`jesuspolo`)
 * Aman Srivastava (:ghuser:`aman-coder03`)
 * Vincent Filter (:ghuser:`vfilter`)

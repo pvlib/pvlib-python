@@ -615,27 +615,17 @@ def isotropic(surface_tilt, dhi, return_components=False):
 
     return_components : bool, default False
         Flag used to decide whether to return the calculated diffuse components
-        or not. If `False`, ``poa_sky_diffuse`` is returned. If `True`,
-        ``diffuse_components`` is returned.
+        or not. If `True`, the resulting dataframe will include three more
+        columns. If not, only ``poa_sky_diffuse`` column is returned.
 
     Returns
     -------
-    poa_sky_diffuse : numeric
+    poa_sky_diffuse : DataFrame
         The sky diffuse component of the solar radiation on a tilted
-        surface.
-
-    diffuse_components : dict (array input) or DataFrame (Series input)
-        Keys/columns are:
-            * sky_diffuse (the sum of the components below)
-            * isotropic
-            * circumsolar
-            * horizon
-            * poa_sky_diffuse (the sum of the components below)
-            * poa_isotropic
-            * poa_circumsolar
-            * poa_horizon
-        The first four elements will be deprecated in v0.14.0 and are kept
-        to avoit breaking changes.
+        surface. Columns provided controlled by ``return_components`` argument.
+          If `False`, ``total`` is returned.
+          If `True`, ``isotropic``, ``circumsolar`` and ``horizon``.
+        Index is either inherited from dhi or default.
 
     References
     ----------
@@ -650,30 +640,29 @@ def isotropic(surface_tilt, dhi, return_components=False):
        :doi:`10.1016/j.solener.2020.02.067`
     '''
 
-    poa_sky_diffuse = dhi * (1 + tools.cosd(surface_tilt)) * 0.5    
-        
-    if return_components:
-        is_pandas = isinstance(dhi, (pd.DataFrame,pd.Series))
-        
-        if is_pandas:
-            poa_sky_diffuse = poa_sky_diffuse.values    
+    poa_isotropic = dhi * (1 + tools.cosd(surface_tilt)) * 0.5
 
-        diffuse_components = {
-            'poa_sky_diffuse': poa_sky_diffuse,
-            'poa_isotropic': poa_sky_diffuse,
-            'poa_circumsolar': 0,
-            'poa_horizon': 0,
-            }
-
-        poa_sky_diffuse = pd.DataFrame(poa_sky_diffuse)        
-        if is_pandas:
-            # keeps original index
-            poa_sky_diffuse.index = dhi.index
-        
-        return diffuse_components
+    # if pd.DataFrame or Series handles first output as numerical
+    is_pandas = isinstance(dhi, (pd.DataFrame,pd.Series))
+    if is_pandas:
+        poa_isotropic = poa_isotropic.values
     
+    poa_sky_diffuse = poa_isotropic
+
+    if not return_components:
+        poa_sky_diffuse = {'total': poa_sky_diffuse}
     else:
-        return poa_sky_diffuse
+        poa_sky_diffuse = {'isotropic': poa_isotropic,
+                           'circumsolar': 0,
+                           'horizon': 0}
+
+    poa_sky_diffuse = pd.DataFrame(poa_sky_diffuse)
+
+    # if dhi was pandas, out_df inherits index
+    if is_pandas:
+        poa_sky_diffuse.index = dhi.index
+
+    return poa_sky_diffuse
 
 
 def klucher(surface_tilt, surface_azimuth, dhi, ghi, solar_zenith,

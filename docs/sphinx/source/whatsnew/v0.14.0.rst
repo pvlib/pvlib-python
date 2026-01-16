@@ -1,7 +1,7 @@
 .. _whatsnew_0_14_0:
 
 
-v0.14.0 (January 15, 2025)
+v0.14.0 (January 16, 2026)
 --------------------------
 
 Breaking Changes

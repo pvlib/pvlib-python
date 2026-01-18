@@ -79,4 +79,4 @@ def test_simple_efficiency_zero_load_loss(
         transformer_rating=transformer_rating,
     )
 
-    assert_allclose(result, expected)    
+    assert_allclose(result, expected)

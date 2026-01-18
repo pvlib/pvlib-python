@@ -1,4 +1,5 @@
 import pandas as pd
+import pytest
 
 from numpy.testing import assert_allclose
 
@@ -58,3 +59,24 @@ def test_simple_efficiency_known_values():
                                       *args),
         rating,
     )
+
+
+@pytest.mark.parametrize(
+    "input_power, no_load_loss, load_loss, transformer_rating, expected",
+    [
+        (1000.0, 0.01, 0.0, 1000.0, 990.0),
+    ],
+)
+def test_simple_efficiency_zero_load_loss(
+    input_power, no_load_loss, load_loss, transformer_rating, expected
+):
+    # for load_loss = 0, the model reduces to:
+    # P_out = P_in - L_no_load * P_nom
+    result = transformer.simple_efficiency(
+        input_power=input_power,
+        no_load_loss=no_load_loss,
+        load_loss=load_loss,
+        transformer_rating=transformer_rating,
+    )
+
+    assert_allclose(result, expected)    

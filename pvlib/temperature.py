@@ -535,7 +535,7 @@ def faiman_rad(poa_global, temp_air, wind_speed=1.0, ir_down=None,
         speed at module height used to determine NOCT. [m/s]
 
     ir_down : numeric, default 0.0
-        Downwelling infrared radiation from the sky, measured on a horizontal
+        Downwelling longwave (thermal) radiation from the sky, measured on a horizontal
         surface. [W/m^2]
 
     u0 : numeric, default 25.0
@@ -558,7 +558,7 @@ def faiman_rad(poa_global, temp_air, wind_speed=1.0, ir_down=None,
         [unitless]
 
     emissivity : numeric, default 0.88
-        Infrared emissivity of the module surface facing the sky. The default
+        Longwave (thermal) emissivity of the module surface facing the sky. The default
         value represents the middle of a range of values found in the
         literature. [unitless]
 

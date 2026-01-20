@@ -27,12 +27,11 @@ def simple_efficiency(
     input_power : numeric
         The real AC power input to the transformer. [W]
 
-    no_load_loss : numeric
+    no_load_loss : float
         The constant losses experienced by a transformer, even
-        when the transformer is not under load. Fraction of transformer rating,
-        value from 0 to 1. [unitless]
+        when the transformer is not under load. Fraction of transformer rating, value from 0 to 1. [unitless]
 
-    load_loss:  numeric
+    load_loss:  float
         The load dependent losses experienced by the transformer.
         Fraction of transformer rating, value from 0 to 1. [unitless]
 

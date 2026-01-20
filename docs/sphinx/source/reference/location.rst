@@ -16,6 +16,7 @@ Classes
    :toctree: generated/
    
    location.Location
+
 A :py:class:`~pvlib.location.Location` object may be created from the
 metadata returned by these file types:
 

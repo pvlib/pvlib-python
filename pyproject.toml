@@ -50,7 +50,7 @@ optional = [
     'ephem',
     'nrel-pysam',
     'numba >= 0.17.0',
-    'solarfactors',
+    'solarfactors >= 1.6.1',
     'statsmodels',
 ]
 doc = [
@@ -64,7 +64,7 @@ doc = [
     'pillow',
     'sphinx-toggleprompt == 0.5.2',
     'sphinx-favicon',
-    'solarfactors',
+    'solarfactors >= 1.6.1',
     'sphinx-hoverxref ~= 1.4.2',  # when updating, check that _static/tooltipster_color_theming.css still works
 ]
 test = [

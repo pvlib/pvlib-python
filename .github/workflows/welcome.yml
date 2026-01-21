@@ -20,5 +20,4 @@ jobs:
             [contributing guidelines](https://pvlib-python.readthedocs.io/en/latest/contributing/index.html).
             
             If AI is used for any portion of this PR, you must vet the content
-            for technical accuracy and compatibility with the contributing
-            guidelines.
+            for technical accuracy.

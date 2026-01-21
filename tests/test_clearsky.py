@@ -1,5 +1,6 @@
 from collections import OrderedDict
 
+import pytest
 import numpy as np
 from numpy import nan
 import pandas as pd
@@ -505,13 +506,13 @@ def test_linke_turbidity_corners():
         monthly_lt_nointerp(-90, 180),
         [1.35, 1.7, 1.35, 1.35, 1.35, 1.35, 1.35, 1.35, 1.35, 1.35, 1.35, 1.7])
     # test out of range exceptions at corners
-    with pytest.raises(IndexError):
+    with pytest.raises(ValueError, match="out of range"):
         monthly_lt_nointerp(91, -122)  # exceeds max latitude
-    with pytest.raises(IndexError):
+    with pytest.raises(ValueError, match="out of range"):
         monthly_lt_nointerp(38.2, 181)  # exceeds max longitude
-    with pytest.raises(IndexError):
+    with pytest.raises(ValueError, match="out of range"):
         monthly_lt_nointerp(-91, -122)  # exceeds min latitude
-    with pytest.raises(IndexError):
+    with pytest.raises(ValueError, match="out of range"):
         monthly_lt_nointerp(38.2, -181)  # exceeds min longitude
 
 

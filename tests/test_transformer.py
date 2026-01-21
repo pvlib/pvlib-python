@@ -4,6 +4,7 @@ from numpy.testing import assert_allclose
 
 from pvlib import transformer
 
+import numpy as np
 
 def test_simple_efficiency():
 
@@ -57,4 +58,41 @@ def test_simple_efficiency_known_values():
         transformer.simple_efficiency(rating*(1 + no_load_loss + load_loss),
                                       *args),
         rating,
+    )    
+
+
+def test_simple_efficiency_numpy_array_inputs():
+    input_power = np.array([100.0, 500.0, 1000.0])
+    no_load_loss = np.array([0.005, 0.005, 0.005])
+    load_loss = np.array([0.01, 0.01, 0.01])
+    rating = 1000.0
+
+    output_power = transformer.simple_efficiency(
+        input_power=input_power,
+        no_load_loss=no_load_loss,
+        load_loss=load_loss,
+        transformer_rating=rating
     )
+
+    assert isinstance(output_power, np.ndarray)
+    assert output_power.shape == input_power.shape
+
+def test_simple_efficiency_vector_equals_scalar():
+    input_power = np.array([200.0, 600.0, 900.0])
+    no_load_loss = 0.005
+    load_loss = 0.01
+    rating = 1000.0
+
+    vector_result = transformer.simple_efficiency(
+        input_power=input_power,
+        no_load_loss=no_load_loss,
+        load_loss=load_loss,
+        transformer_rating=rating
+    )
+
+    scalar_result = np.array([
+        transformer.simple_efficiency(p, no_load_loss, load_loss, rating)
+        for p in input_power
+    ])
+
+    assert_allclose(vector_result, scalar_result)

@@ -6,6 +6,7 @@ from pvlib import transformer
 
 import numpy as np
 
+
 def test_simple_efficiency():
 
     # define test inputs
@@ -58,7 +59,7 @@ def test_simple_efficiency_known_values():
         transformer.simple_efficiency(rating*(1 + no_load_loss + load_loss),
                                       *args),
         rating,
-    )    
+    )
 
 
 def test_simple_efficiency_numpy_array_inputs():
@@ -76,6 +77,7 @@ def test_simple_efficiency_numpy_array_inputs():
 
     assert isinstance(output_power, np.ndarray)
     assert output_power.shape == input_power.shape
+
 
 def test_simple_efficiency_vector_equals_scalar():
     input_power = np.array([200.0, 600.0, 900.0])

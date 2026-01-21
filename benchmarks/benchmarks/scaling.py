@@ -15,7 +15,7 @@ class Scaling:
         lon = np.array((4.99, 5, 5.01))
         self.coordinates = np.array([(lati, loni) for
                                      (lati, loni) in zip(lat, lon)])
-        self.times = pd.date_range('2019-01-01', freq='1T', periods=self.n)
+        self.times = pd.date_range('2019-01-01', freq='1min', periods=self.n)
         self.positions = np.array([[0, 0], [100, 0], [100, 100], [0, 100]])
         self.clearsky_index = pd.Series(np.random.rand(self.n),
                                         index=self.times)

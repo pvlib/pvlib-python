@@ -19,7 +19,12 @@ There is a convention on consistent variable names throughout the library:
     albedo
         Ratio of reflected solar irradiance to global horizontal irradiance
         [unitless]
-    
+
+    aod
+        aerosol optical depth. Measure of aerosols (e.g., smoke
+        particles, desert dust) distributed within a column of air from the
+        instrument (Earth's surface) to the top of the atmosphere. [unitless]
+
     aoi
         Angle of incidence. Angle between the surface normal vector and the
         vector pointing towards the sun's center. [°]
@@ -43,7 +48,11 @@ There is a convention on consistent variable names throughout the library:
 
     bhi
         Beam/direct horizontal irradiance
-
+    
+    clearsky_index
+        clearsky index. Ratio of actual global irradiance to modeled clearsky
+        global irradiance
+    
     dhi
         Diffuse horizontal irradiance
 

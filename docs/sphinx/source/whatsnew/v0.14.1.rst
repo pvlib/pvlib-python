@@ -22,6 +22,7 @@ Enhancements
 
 Documentation
 ~~~~~~~~~~~~~
+- Examples have been updated to work with ``pandas==3``.
 
 
 Testing

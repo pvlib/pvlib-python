@@ -15,8 +15,8 @@ Deprecations
 Bug fixes
 ~~~~~~~~~
 * Fix a division-by-zero condition in
-  :py:func:`~pvlib.transformer.simple_efficiency` when ``load_loss = 0``.
-  (:issue:`2645`)
+  :py:func:`pvlib.transformer.simple_efficiency` when ``load_loss = 0``.
+  (:issue:`2645`, :pull:`2646`)
 
 Enhancements
 ~~~~~~~~~~~~

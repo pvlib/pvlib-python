@@ -165,7 +165,7 @@ def test_sun_rise_set_transit_spa(expected_rise_set_spa, golden, delta_t):
         result_rounded[col] = data.dt.round('1s')
 
     assert_frame_equal(frame, result_rounded,
-                       check_dtype=False # ignore us/ns dtypes
+                       check_dtype=False  # ignore us/ns dtypes
                        )
 
     # test for Golden, CO compare to NREL SPA
@@ -808,7 +808,7 @@ def test__datetime_to_unixtime(tz):
     kwargs = dict(start='2019-01-01', freq='h', periods=3, tz=tz)
     try:
         times = pd.date_range(**kwargs, unit='ns')  # pandas 2.x, 3.x
-    except:
+    except TypeError:
         times = pd.date_range(**kwargs)  # pandas 1.x
     expected = times.view(np.int64)/10**9
     actual = solarposition._datetime_to_unixtime(times)

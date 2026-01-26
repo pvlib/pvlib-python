@@ -22,6 +22,7 @@ Enhancements
 
 Documentation
 ~~~~~~~~~~~~~
+- Update gallery examples to work with ``pandas==3``.
 
 
 Testing

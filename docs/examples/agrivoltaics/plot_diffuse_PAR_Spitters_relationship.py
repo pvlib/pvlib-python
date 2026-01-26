@@ -57,7 +57,7 @@ tmy = tmy["2002-09-06":"2002-09-21"]  # select some days
 
 solar_position = pvlib.solarposition.get_solarposition(
     # TMY timestamp is at end of hour, so shift to center of interval
-    tmy.index.shift(freq="-30T"),
+    tmy.index.shift(freq="-30min"),
     latitude=metadata["latitude"],
     longitude=metadata["longitude"],
     altitude=metadata["altitude"],

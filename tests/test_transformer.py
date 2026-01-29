@@ -1,7 +1,9 @@
 import pandas as pd
+import numpy as np
+import pytest
 
 from numpy.testing import assert_allclose
-
+from pvlib.transformer import simple_efficiency
 from pvlib import transformer
 
 
@@ -48,13 +50,47 @@ def test_simple_efficiency_known_values():
 
     # verify correct behavior at no-load condition
     assert_allclose(
-        transformer.simple_efficiency(no_load_loss*rating, *args),
+        transformer.simple_efficiency(no_load_loss * rating, *args),
         0.0
     )
 
     # verify correct behavior at rated condition
     assert_allclose(
-        transformer.simple_efficiency(rating*(1 + no_load_loss + load_loss),
-                                      *args),
+        transformer.simple_efficiency(
+            rating * (1 + no_load_loss + load_loss),
+            *args
+        ),
         rating,
     )
+
+
+# =========================
+# NEW TESTS (Issue #2649)
+# =========================
+
+def test_simple_efficiency_numpy_input_power():
+    input_power = np.array([500, 1000, 1500])
+    no_load_loss = 0.01
+    load_loss = 0.02
+    transformer_rating = 2000
+
+    output = simple_efficiency(
+        input_power, no_load_loss, load_loss, transformer_rating
+    )
+
+    assert isinstance(output, np.ndarray)
+    assert output.shape == input_power.shape
+
+
+def test_simple_efficiency_zero_load_loss():
+    input_power = np.array([500, 1000])
+    no_load_loss = 0.01
+    load_loss = 0.0
+    transformer_rating = 2000
+
+    with pytest.warns(RuntimeWarning):
+        output = simple_efficiency(
+            input_power, no_load_loss, load_loss, transformer_rating
+        )
+
+    assert np.all(np.isnan(output))

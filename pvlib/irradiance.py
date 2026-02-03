@@ -16,7 +16,7 @@ from scipy.optimize import bisect
 from pvlib import atmosphere, solarposition, tools
 import pvlib  # used to avoid dni name collision in complete_irradiance
 
-from pvlib._deprecation import pvlibDeprecationWarning, renamed_kwarg_warning
+from pvlib._deprecation import pvlibDeprecationWarning
 import warnings
 
 

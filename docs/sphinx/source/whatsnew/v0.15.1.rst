@@ -1,0 +1,45 @@
+.. _whatsnew_0_15_1:
+
+
+v0.15.1 (Anticipated March 2026)
+--------------------------------
+
+Breaking Changes
+~~~~~~~~~~~~~~~~
+
+
+Deprecations
+~~~~~~~~~~~~
+
+
+Bug fixes
+~~~~~~~~~
+
+
+Enhancements
+~~~~~~~~~~~~
+
+
+Documentation
+~~~~~~~~~~~~~
+
+
+Testing
+~~~~~~~
+
+
+Benchmarking
+~~~~~~~~~~~~
+
+
+Requirements
+~~~~~~~~~~~~
+
+
+Maintenance
+~~~~~~~~~~~
+
+
+Contributors
+~~~~~~~~~~~~
+

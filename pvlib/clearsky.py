@@ -28,7 +28,10 @@ def ineichen(apparent_zenith, airmass_absolute, linke_turbidity,
     report on clear sky models found the Ineichen/Perez model to have
     excellent performance with a minimal input data set [3]_.
 
-    Default values for monthly Linke turbidity provided by SoDa [4]_, [5]_.
+    Default monthly Linke turbidity values are available via
+    :py:func:`pvlib.clearsky.lookup_linke_turbidity`, which uses data
+    provided by SoDa [4]_, [5]_. Users must supply Linke turbidity values
+    explicitly unless providing their own turbidity data.
 
     Parameters
     -----------
@@ -150,6 +153,10 @@ def lookup_linke_turbidity(time, latitude, longitude, filepath=None,
     Look up the Linke Turibidity from the ``LinkeTurbidities.h5``
     data file supplied with pvlib.
 
+    The Linke turbidity climatology used by this function is sourced from
+    SoDa (Solar Radiation Data) and corresponds to the references cited in
+    :py:func:`pvlib.clearsky.ineichen`.
+
     Parameters
     ----------
     time : pandas.DatetimeIndex
@@ -175,6 +182,20 @@ def lookup_linke_turbidity(time, latitude, longitude, filepath=None,
     The returned value for each time is either the monthly value or an
     interpolated value to smooth the transition between months.
     Interpolation is done on the day of year as determined by UTC.
+
+    Examples
+    --------
+    >>> from pvlib.clearsky import lookup_linke_turbidity, ineichen
+    >>> from pvlib.location import Location
+    >>> import pandas as pd
+    >>>
+    >>> times = pd.date_range('2024-06-01', freq='1H', periods=24, tz='UTC')
+    >>> loc = Location(35, -110)
+    >>>
+    >>> tl = lookup_linke_turbidity(times, loc.latitude, loc.longitude)
+    >>> cs = ineichen(times, loc.latitude, loc.longitude,
+    ...               linke_turbidity=tl)
+
     """
 
     # The .h5 file 'LinkeTurbidities.h5' contains a single 2160 x 4320 x 12

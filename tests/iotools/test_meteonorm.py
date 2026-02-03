@@ -53,7 +53,7 @@ def expected_meta():
 @pytest.fixture
 def expected_meteonorm_index():
     expected_meteonorm_index = \
-        pd.date_range('2023-01-01', '2023-12-31 23:59', freq='1h', tz='UTC') \
+        pd.date_range('2025-01-01', '2025-12-31 23:59', freq='1h', tz='UTC') \
         + pd.Timedelta(minutes=30)
     expected_meteonorm_index.freq = None
     return expected_meteonorm_index
@@ -71,13 +71,13 @@ def expected_meteonorm_data():
         [0.0, 0.0],
         [0.0, 0.0],
         [0.0, 0.0],
-        [2.5, 2.68],
-        [77.5, 77.48],
-        [165.0, 164.99],
-        [210.75, 210.75],
-        [221.0, 220.99],
+        [3.75, 3.74],
+        [57.25, 57.20],
+        [149.0, 148.96],
+        [242.25, 242.24],
+        [228.0, 227.98],
     ]
-    index = pd.date_range('2023-01-01 00:30', periods=12, freq='1h', tz='UTC')
+    index = pd.date_range('2025-01-01 00:30', periods=12, freq='1h', tz='UTC')
     index.freq = None
     expected = pd.DataFrame(expected, index=index, columns=columns)
     return expected
@@ -116,7 +116,7 @@ def test_get_meteonorm_training(
         expected_meteonorm_data):
     data, meta = pvlib.iotools.get_meteonorm_observation_training(
         latitude=50, longitude=10,
-        start='2023-01-01', end='2024-01-01',
+        start='2025-01-01', end='2026-01-01',
         api_key=demo_api_key,
         parameters=['ghi', 'global_horizontal_irradiance_with_shading'],
         time_step='1h',

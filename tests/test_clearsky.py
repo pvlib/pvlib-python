@@ -1,6 +1,5 @@
 from collections import OrderedDict
 
-import pytest
 import numpy as np
 from numpy import nan
 import pandas as pd

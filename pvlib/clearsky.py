@@ -30,8 +30,7 @@ def ineichen(apparent_zenith, airmass_absolute, linke_turbidity,
 
     Default monthly Linke turbidity values are available via
     :py:func:`pvlib.clearsky.lookup_linke_turbidity`, which uses data
-    provided by SoDa [4]_, [5]_. Users must supply Linke turbidity values
-    explicitly unless providing their own turbidity data.
+    provided by SoDa [4]_, [5]_. 
 
     Parameters
     -----------
@@ -87,6 +86,22 @@ def ineichen(apparent_zenith, airmass_absolute, linke_turbidity,
 
     .. [5] J. Remund, et. al., "Worldwide Linke Turbidity Information", Proc.
        ISES Solar World Congress, June 2003. Goteborg, Sweden.
+
+    Examples
+    --------
+    >>> from pvlib.clearsky import lookup_linke_turbidity, ineichen
+    >>> from pvlib.location import Location
+    >>> import pandas as pd
+    >>>
+    >>> times = pd.date_range('2024-06-01', freq='1H', periods=24, tz='UTC')
+    >>> loc = Location(35, -110)
+    >>>
+    >>> tl = lookup_linke_turbidity(times, loc.latitude, loc.longitude)
+    >>> cs = ineichen(
+    ...     times, loc.latitude, loc.longitude,
+    ...     linke_turbidity=tl
+    ... )
+
     '''  # noqa: E501
 
     # ghi is calculated using either the equations in [1] by setting
@@ -182,19 +197,6 @@ def lookup_linke_turbidity(time, latitude, longitude, filepath=None,
     The returned value for each time is either the monthly value or an
     interpolated value to smooth the transition between months.
     Interpolation is done on the day of year as determined by UTC.
-
-    Examples
-    --------
-    >>> from pvlib.clearsky import lookup_linke_turbidity, ineichen
-    >>> from pvlib.location import Location
-    >>> import pandas as pd
-    >>>
-    >>> times = pd.date_range('2024-06-01', freq='1H', periods=24, tz='UTC')
-    >>> loc = Location(35, -110)
-    >>>
-    >>> tl = lookup_linke_turbidity(times, loc.latitude, loc.longitude)
-    >>> cs = ineichen(times, loc.latitude, loc.longitude,
-    ...               linke_turbidity=tl)
 
     """
 

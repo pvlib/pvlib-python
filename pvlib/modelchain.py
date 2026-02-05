@@ -1756,6 +1756,7 @@ class ModelChain:
         ... index=poa1.index)
         >>> mc.run_model_from_poa([poa1, poa2])  # doctest: +ELLIPSIS
         ModelChain: ...
+
         Notes
         -----
         Assigns attributes to results: ``times``, ``weather``,
@@ -1864,8 +1865,8 @@ class ModelChain:
         Multi-array system:
         >>> mount1 = FixedMount(surface_tilt=30, surface_azimuth=180)
         >>> mount2 = FixedMount(surface_tilt=10, surface_azimuth=90)
-        >>> array1 = Array(tilt=30, azimuth=180,module_parameters={'pdc0': 300, 'gamma_pdc': -0.004},temperature_model_parameters={'u0': 25.0, 'u1': 6.84})
-        >>> array2 = Array(tilt=10, azimuth=90,module_parameters={'pdc0': 300, 'gamma_pdc': -0.004},temperature_model_parameters={'u0': 25.0, 'u1': 6.84})
+        >>> array1 = Array(mount=mount1,module_parameters={'pdc0': 300, 'gamma_pdc': -0.004},temperature_model_parameters={'u0': 25.0, 'u1': 6.84})
+        >>> array2 = Array(mount=mount2,module_parameters={'pdc0': 300, 'gamma_pdc': -0.004},temperature_model_parameters={'u0': 25.0, 'u1': 6.84})
         >>> system = PVSystem(arrays=[array1, array2],inverter_parameters={'pdc0': 300})
         >>> mc = ModelChain(system, location,dc_model="pvwatts",ac_model="pvwatts",aoi_model="no_loss",spectral_model="no_loss",temperature_model="faiman")
         >>> eff1 = pd.DataFrame({

@@ -1733,8 +1733,7 @@ class ModelChain:
         ... },
         ... index=pd.date_range("2021-06-01", periods=2, freq="h"))
         >>>
-        >>> mc.run_model_from_poa(poa)
-        <pvlib.modelchain.ModelChain ...>
+        >>> _ = mc.run_model_from_poa(poa)
 
         Multi-array system:
 
@@ -1756,8 +1755,7 @@ class ModelChain:
         ...     'poa_diffuse': [300, 300],
         ... },
         ... index=poa1.index)
-        >>> mc.run_model_from_poa([poa1, poa2])
-        <pvlib.modelchain.ModelChain ...>
+        >>> _ = mc.run_model_from_poa([poa1, poa2])
 
         Notes
         -----
@@ -1864,8 +1862,7 @@ class ModelChain:
         ... },
         ... index=pd.date_range("2021-06-01", periods=2, freq="h"))
         >>>
-        >>> mc.run_model_from_effective_irradiance(eff)
-        <pvlib.modelchain.ModelChain ...>
+        >>> _ = mc.run_model_from_effective_irradiance(eff)
 
         Multi-array system:
 
@@ -1887,8 +1884,8 @@ class ModelChain:
         ...     'wind_speed': [1.8, 1.2],
         ... },
         ... index=eff1.index)
-        >>> mc.run_model_from_effective_irradiance([eff1, eff2])
-        <pvlib.modelchain.ModelChain ...>
+        >>> _ = mc.run_model_from_effective_irradiance([eff1, eff2])
+
 
         Notes
         -----

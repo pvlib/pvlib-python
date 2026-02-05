@@ -1735,7 +1735,7 @@ class ModelChain:
         >>> mc = ModelChain(
         ...     system, location,
         ...     dc_model="pvwatts", ac_model="pvwatts",
-        ...     aoi_model="no_aoi_loss", spectral_model="no_spectral_loss",
+        ...     aoi_model="no_loss", spectral_model="no_loss",
         ...     temperature_model="faiman"
         ... )
         >>> poa = pd.DataFrame({
@@ -1768,7 +1768,7 @@ class ModelChain:
         >>> mc = ModelChain(
         ...     system, location,
         ...     dc_model="pvwatts", ac_model="pvwatts",
-        ...     aoi_model="no_aoi_loss", spectral_model="no_spectral_loss",
+        ...     aoi_model="no_loss", spectral_model="no_loss",
         ...     temperature_model="faiman"
         ... )
         >>> poa1 = pd.DataFrame({
@@ -1892,7 +1892,7 @@ class ModelChain:
         >>> mc = ModelChain(
         ...     system, location,
         ...     dc_model="pvwatts", ac_model="pvwatts",
-        ...     aoi_model="no_aoi_loss", spectral_model="no_spectral_loss",
+        ...     aoi_model="no_loss", spectral_model="no_loss",
         ...     temperature_model="faiman"
         ... )
         >>> eff = pd.DataFrame({
@@ -1925,7 +1925,7 @@ class ModelChain:
         >>> mc = ModelChain(
         ...     system, location,
         ...     dc_model="pvwatts", ac_model="pvwatts",
-        ...     aoi_model="no_aoi_loss", spectral_model="no_spectral_loss",
+        ...     aoi_model="no_loss", spectral_model="no_loss",
         ...     temperature_model="faiman"
         ... )
         >>> eff1 = pd.DataFrame({

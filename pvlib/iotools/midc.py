@@ -108,7 +108,8 @@ TZ_MAP = {
 
 
 def _format_index(data):
-    """Create DatetimeIndex for the Dataframe localized to the timezone provided
+    """
+    Create DatetimeIndex for the Dataframe localized to the timezone provided
     as the label of the second (time) column.
 
     Parameters
@@ -132,7 +133,8 @@ def _format_index(data):
 
 
 def _format_index_raw(data):
-    """Create DatetimeIndex for the Dataframe localized to the timezone provided
+    """
+    Create DatetimeIndex for the Dataframe localized to the timezone provided
     as the label of the third column.
 
     Parameters

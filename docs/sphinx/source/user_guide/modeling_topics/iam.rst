@@ -23,7 +23,7 @@ to the value at normal incidence:
 
    IAM(\theta) = \frac{T(\theta)}{T(0)},
 
-where $T(\theta)$ represents the transmitted light fraction at AOI $\theta$.
+where :math:`T(\theta)` represents the transmitted light fraction at AOI :math:`\theta`.
 IAM equals (by definition) 1.0 when AOI is zero and typically approaches zero
 as AOI approaches 90 degrees.  The shape of the IAM profile at intermediate AOI
 is nonlinear and depends on the module's optical properties.
@@ -82,6 +82,6 @@ model generally leads to different IAM profiles.
 
 Module-specific values can be obtained via testing.  For example, IEC 61853-2
 testing produces measured IAM values across the range of AOI and a corresponding
-parameter value for the Martin-Ruiz model.  Parameters for other models can
-be determined using :py:func:`pvlib.iam.fit`.  Parameters can be (approximately)
+parameter value for the Martin-Ruiz model.  Parameter values for other models can
+be determined using :py:func:`pvlib.iam.fit`.  Parameter values can also be (approximately)
 converted between models using :py:func:`pvlib.iam.convert`.

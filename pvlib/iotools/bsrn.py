@@ -148,11 +148,11 @@ def get_bsrn(station, start, end, username, password,
         <https://bsrn.awi.de/>`_
     .. [2] `Update of the Technical Plan for BSRN Data Management, 2013,
        Global Climate Observing System (GCOS) GCOS-174.
-       <https://bsrn.awi.de/fileadmin/user_upload/bsrn.awi.de/Publications/gcos-174.pdf>`_
-    .. [3] `BSRN Data Release Guidelines
-       <https://bsrn.awi.de/data/conditions-of-data-release/>`_
-    .. [4] `BSRN Data Retrieval via FTP
-       <https://bsrn.awi.de/data/data-retrieval-via-ftp/>`_
+       <https://bsrn.awi.de/fileadmin/user_upload/bsrn.awi.de/Publications/gcos-174.pdf>`
+    .. [3] `BSRN Data Retrieval via FTP
+       <https://bsrn.awi.de/data/data-retrieval-via-ftp/>`
+    .. [4] `BSRN Data Release Guidelines
+       <https://bsrn.awi.de/data/conditions-of-data-release/>`
     """  # noqa: E501
     # The FTP server uses lowercase station abbreviations
     station = station.lower()

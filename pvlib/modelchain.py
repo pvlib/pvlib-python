@@ -1721,11 +1721,11 @@ class ModelChain:
         >>> from pvlib.pvsystem import PVSystem, Array, FixedMount
         >>> from pvlib.location import Location
         >>> from pvlib.modelchain import ModelChain
-        >>>
-        >>> system = PVSystem(module_parameters={'pdc0': 300})
         >>> location = Location(35, -110)
+        >>> mount = FixedMount(surface_tilt=30, surface_azimuth=180)
+        >>> array = Array(mount=mount, module_parameters={'pdc0': 300})
+        >>> system = PVSystem(arrays=[array])
         >>> mc = ModelChain(system, location)
-        >>>
         >>> poa = pd.DataFrame({
         ...     'poa_global': [900, 850],
         ...     'poa_direct': [600, 560],
@@ -1737,12 +1737,12 @@ class ModelChain:
         <pvlib.modelchain.ModelChain ...>
 
         Multi-array system:
+
         >>> mount1 = FixedMount(surface_tilt=30, surface_azimuth=180)
         >>> mount2 = FixedMount(surface_tilt=10, surface_azimuth=90)
-        >>> array1 = Array(mount=mount1)
-        >>> array2 = Array(mount=mount2)
-        >>> system = PVSystem(arrays=[array1, array2],
-        ...                   module_parameters={'pdc0': 300})
+        >>> array1 = Array(mount=mount1, module_parameters={'pdc0': 300})
+        >>> array2 = Array(mount=mount2, module_parameters={'pdc0': 300})
+        >>> system = PVSystem(arrays=[array1, array2])
         >>> mc = ModelChain(system, location)
         >>> poa1 = pd.DataFrame({
         ...     'poa_global': [900, 880],
@@ -1846,13 +1846,15 @@ class ModelChain:
         Examples
         --------
         Single-array system:
+
         >>> import pandas as pd
         >>> from pvlib.pvsystem import PVSystem, Array, FixedMount
         >>> from pvlib.location import Location
         >>> from pvlib.modelchain import ModelChain
-        >>>
-        >>> system = PVSystem(module_parameters={'pdc0': 300})
         >>> location = Location(35, -110)
+        >>> mount = FixedMount(surface_tilt=30, surface_azimuth=180)
+        >>> array = Array(mount=mount, module_parameters={'pdc0': 300})
+        >>> system = PVSystem(arrays=[array])
         >>> mc = ModelChain(system, location)
         >>>
         >>> eff = pd.DataFrame({
@@ -1866,12 +1868,12 @@ class ModelChain:
         <pvlib.modelchain.ModelChain ...>
 
         Multi-array system:
+
         >>> mount1 = FixedMount(surface_tilt=30, surface_azimuth=180)
         >>> mount2 = FixedMount(surface_tilt=10, surface_azimuth=90)
-        >>> array1 = Array(mount=mount1)
-        >>> array2 = Array(mount=mount2)
-        >>> system = PVSystem(arrays=[array1, array2],
-        ...                   module_parameters={'pdc0': 300})
+        >>> array1 = Array(mount=mount1, module_parameters={'pdc0': 300})
+        >>> array2 = Array(mount=mount2, module_parameters={'pdc0': 300})
+        >>> system = PVSystem(arrays=[array1, array2])
         >>> mc = ModelChain(system, location)
         >>> eff1 = pd.DataFrame({
         ...     'effective_irradiance': [900, 920],

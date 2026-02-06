@@ -1744,8 +1744,7 @@ class ModelChain:
         ...     'poa_diffuse': [300, 290],
         ... },
         ... index=pd.date_range("2021-06-01", periods=2, freq="h"))
-        >>> mc.run_model_from_poa(poa)  # doctest: +ELLIPSIS
-        ModelChain: ...
+        >>> mc.run_model_from_poa(poa)
 
         Multi-array system:
 

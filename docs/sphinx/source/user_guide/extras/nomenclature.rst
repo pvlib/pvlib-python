@@ -53,6 +53,11 @@ There is a convention on consistent variable names throughout the library:
     bhi
         Beam/direct horizontal irradiance
     
+    clearness_index
+        clearness index [unitless]. Ratio of global horizontal irraidance to
+        the extra terrestrial irriance. The clearness index ranges between
+        0 and 1, with values closer to 1 indicating clear skies.
+        
     clearsky_index
         clearsky index [unitless]. Ratio of actual global irradiance to modeled
         clearsky global irradiance.

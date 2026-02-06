@@ -1725,13 +1725,13 @@ class ModelChain:
         >>> mount = FixedMount(surface_tilt=30, surface_azimuth=180)
         >>> array = Array(mount=mount, module_parameters={'pdc0': 300})
         >>> system = PVSystem(arrays=[array])
-        >>> mc = ModelChain(system, location)
+        >>> mc = ModelChain(system, location,dc_model="pvwatts")
         >>> poa = pd.DataFrame({
         ...     'poa_global': [900, 850],
         ...     'poa_direct': [600, 560],
         ...     'poa_diffuse': [300, 290],
         ... },
-        ... index=pd.date_range("2021-06-01", periods=2, freq="H"))
+        ... index=pd.date_range("2021-06-01", periods=2, freq="h"))
         >>>
         >>> mc.run_model_from_poa(poa)
         <pvlib.modelchain.ModelChain ...>
@@ -1743,13 +1743,13 @@ class ModelChain:
         >>> array1 = Array(mount=mount1, module_parameters={'pdc0': 300})
         >>> array2 = Array(mount=mount2, module_parameters={'pdc0': 300})
         >>> system = PVSystem(arrays=[array1, array2])
-        >>> mc = ModelChain(system, location)
+        >>> mc = ModelChain(system, location,dc_model="pvwatts")
         >>> poa1 = pd.DataFrame({
         ...     'poa_global': [900, 880],
         ...     'poa_direct': [600, 580],
         ...     'poa_diffuse': [300, 300],
         ... },
-        ... index=pd.date_range("2021-06-01", periods=2, freq="H"))
+        ... index=pd.date_range("2021-06-01", periods=2, freq="h"))
         >>> poa2 = pd.DataFrame({
         ...     'poa_global': [700, 720],
         ...     'poa_direct': [400, 420],
@@ -1855,14 +1855,14 @@ class ModelChain:
         >>> mount = FixedMount(surface_tilt=30, surface_azimuth=180)
         >>> array = Array(mount=mount, module_parameters={'pdc0': 300})
         >>> system = PVSystem(arrays=[array])
-        >>> mc = ModelChain(system, location)
+        >>> mc = ModelChain(system, location,dc_model="pvwatts")
         >>>
         >>> eff = pd.DataFrame({
         ...     'effective_irradiance': [900, 920],
         ...     'temp_air': [25, 24],
         ...     'wind_speed': [2.0, 1.5],
         ... },
-        ... index=pd.date_range("2021-06-01", periods=2, freq="H"))
+        ... index=pd.date_range("2021-06-01", periods=2, freq="h"))
         >>>
         >>> mc.run_model_from_effective_irradiance(eff)
         <pvlib.modelchain.ModelChain ...>
@@ -1874,13 +1874,13 @@ class ModelChain:
         >>> array1 = Array(mount=mount1, module_parameters={'pdc0': 300})
         >>> array2 = Array(mount=mount2, module_parameters={'pdc0': 300})
         >>> system = PVSystem(arrays=[array1, array2])
-        >>> mc = ModelChain(system, location)
+        >>> mc = ModelChain(system, location,dc_model="pvwatts")
         >>> eff1 = pd.DataFrame({
         ...     'effective_irradiance': [900, 920],
         ...     'temp_air': [25, 24],
         ...     'wind_speed': [2.0, 1.5],
         ... },
-        ... index=pd.date_range("2021-06-01", periods=2, freq="H"))
+        ... index=pd.date_range("2021-06-01", periods=2, freq="h"))
         >>> eff2 = pd.DataFrame({
         ...     'effective_irradiance': [600, 630],
         ...     'temp_air': [26, 25],

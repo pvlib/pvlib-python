@@ -22,12 +22,12 @@ There is a convention on consistent variable names throughout the library:
 
     aod
     aod500
-        aerosol optical depth. Measure of aerosols (e.g., smoke
+        aerosol optical depth [unitless]. Measure of aerosols (e.g., smoke
         particles, desert dust) distributed within a column of air from the
         instrument (Earth's surface) to the top of the atmosphere. The AOD
         value indicates the level of extinction of sunlight in this column, and
         when followed by a number (e.g. AOD500), indicates the extinction at
-        this wavelength (500nm). [unitless]
+        this wavelength (500nm).
 
     aoi
         Angle of incidence. Angle between the surface normal vector and the
@@ -54,8 +54,8 @@ There is a convention on consistent variable names throughout the library:
         Beam/direct horizontal irradiance
     
     clearsky_index
-        clearsky index. Ratio of actual global irradiance to modeled clearsky
-        global irradiance
+        clearsky index [unitless]. Ratio of actual global irradiance to modeled
+        clearsky global irradiance.
     
     dhi
         Diffuse horizontal irradiance

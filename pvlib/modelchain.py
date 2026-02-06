@@ -1724,8 +1724,8 @@ class ModelChain:
         >>> location = Location(35, -110)
         >>> mount = FixedMount(surface_tilt=30, surface_azimuth=180)
         >>> array = Array(mount=mount, module_parameters={'pdc0': 300, 'gamma_pdc': -0.004})
-        >>> system = PVSystem(arrays=[array])
-        >>> mc = ModelChain(system, location,dc_model="pvwatts")
+        >>> system = PVSystem(arrays=[array],inverter_parameters={'pdc0': 300})
+        >>> mc = ModelChain(system, location,dc_model="pvwatts",ac_model="pvwatts")
         >>> poa = pd.DataFrame({
         ...     'poa_global': [900, 850],
         ...     'poa_direct': [600, 560],
@@ -1742,8 +1742,8 @@ class ModelChain:
         >>> mount2 = FixedMount(surface_tilt=10, surface_azimuth=90)
         >>> array1 = Array(mount=mount1, module_parameters={'pdc0': 300, 'gamma_pdc': -0.004})
         >>> array2 = Array(mount=mount2, module_parameters={'pdc0': 300, 'gamma_pdc': -0.004})
-        >>> system = PVSystem(arrays=[array1, array2])
-        >>> mc = ModelChain(system, location,dc_model="pvwatts")
+        >>> system = PVSystem(arrays=[array1, array2],inverter_parameters={'pdc0': 300})
+        >>> mc = ModelChain(system, location,dc_model="pvwatts",ac_model="pvwatts")
         >>> poa1 = pd.DataFrame({
         ...     'poa_global': [900, 880],
         ...     'poa_direct': [600, 580],
@@ -1854,8 +1854,8 @@ class ModelChain:
         >>> location = Location(35, -110)
         >>> mount = FixedMount(surface_tilt=30, surface_azimuth=180)
         >>> array = Array(mount=mount,module_parameters={'pdc0': 300, 'gamma_pdc': -0.004})
-        >>> system = PVSystem(arrays=[array])
-        >>> mc = ModelChain(system, location,dc_model="pvwatts")
+        >>> system = PVSystem(arrays=[array],inverter_parameters={'pdc0': 300})
+        >>> mc = ModelChain(system, location,dc_model="pvwatts",ac_model="pvwatts")
         >>>
         >>> eff = pd.DataFrame({
         ...     'effective_irradiance': [900, 920],
@@ -1873,8 +1873,8 @@ class ModelChain:
         >>> mount2 = FixedMount(surface_tilt=10, surface_azimuth=90)
         >>> array1 = Array(mount=mount1, module_parameters={'pdc0': 300, 'gamma_pdc': -0.004})
         >>> array2 = Array(mount=mount2, module_parameters={'pdc0': 300, 'gamma_pdc': -0.004})
-        >>> system = PVSystem(arrays=[array1, array2])
-        >>> mc = ModelChain(system, location,dc_model="pvwatts")
+        >>> system = PVSystem(arrays=[array1, array2],inverter_parameters={'pdc0': 300})
+        >>> mc = ModelChain(system, location,dc_model="pvwatts",ac_model="pvwatts")
         >>> eff1 = pd.DataFrame({
         ...     'effective_irradiance': [900, 920],
         ...     'temp_air': [25, 24],

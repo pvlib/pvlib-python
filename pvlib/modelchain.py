@@ -1723,7 +1723,7 @@ class ModelChain:
         >>> from pvlib.modelchain import ModelChain
         >>> location = Location(35, -110)
         >>> mount = FixedMount(surface_tilt=30, surface_azimuth=180)
-        >>> array = Array(mount=mount, module_parameters={'pdc0': 300, 'gamma_pdc': -0.004})
+        >>> array = Array(mount=mount, module_parameters={'pdc0': 300, 'gamma_pdc': -0.004},temperature_model_parameters={'u0': 25.0, 'u1': 6.84})
         >>> system = PVSystem(arrays=[array],inverter_parameters={'pdc0': 300})
         >>> mc = ModelChain(system, location,dc_model="pvwatts",ac_model="pvwatts", aoi_model="no_loss", spectral_model="no_loss", temperature_model="faiman")
         >>> poa = pd.DataFrame({
@@ -1740,8 +1740,8 @@ class ModelChain:
 
         >>> mount1 = FixedMount(surface_tilt=30, surface_azimuth=180)
         >>> mount2 = FixedMount(surface_tilt=10, surface_azimuth=90)
-        >>> array1 = Array(mount=mount1, module_parameters={'pdc0': 300, 'gamma_pdc': -0.004})
-        >>> array2 = Array(mount=mount2, module_parameters={'pdc0': 300, 'gamma_pdc': -0.004})
+        >>> array1 = Array(mount=mount1, module_parameters={'pdc0': 300, 'gamma_pdc': -0.004}, temperature_model_parameters={'u0': 25.0, 'u1': 6.84})
+        >>> array2 = Array(mount=mount2, module_parameters={'pdc0': 300, 'gamma_pdc': -0.004}, temperature_model_parameters={'u0': 25.0, 'u1': 6.84})
         >>> system = PVSystem(arrays=[array1, array2],inverter_parameters={'pdc0': 300})
         >>> mc = ModelChain(system, location,dc_model="pvwatts",ac_model="pvwatts", aoi_model="no_loss", spectral_model="no_loss", temperature_model="faiman")
         >>> poa1 = pd.DataFrame({
@@ -1853,7 +1853,7 @@ class ModelChain:
         >>> from pvlib.modelchain import ModelChain
         >>> location = Location(35, -110)
         >>> mount = FixedMount(surface_tilt=30, surface_azimuth=180)
-        >>> array = Array(mount=mount,module_parameters={'pdc0': 300, 'gamma_pdc': -0.004})
+        >>> array = Array(mount=mount,module_parameters={'pdc0': 300, 'gamma_pdc': -0.004}, temperature_model_parameters={'u0': 25.0, 'u1': 6.84})
         >>> system = PVSystem(arrays=[array],inverter_parameters={'pdc0': 300})
         >>> mc = ModelChain(system, location,dc_model="pvwatts",ac_model="pvwatts", aoi_model="no_loss", spectral_model="no_loss", temperature_model="faiman")
         >>>
@@ -1871,8 +1871,8 @@ class ModelChain:
 
         >>> mount1 = FixedMount(surface_tilt=30, surface_azimuth=180)
         >>> mount2 = FixedMount(surface_tilt=10, surface_azimuth=90)
-        >>> array1 = Array(mount=mount1, module_parameters={'pdc0': 300, 'gamma_pdc': -0.004})
-        >>> array2 = Array(mount=mount2, module_parameters={'pdc0': 300, 'gamma_pdc': -0.004})
+        >>> array1 = Array(mount=mount1, module_parameters={'pdc0': 300, 'gamma_pdc': -0.004}, temperature_model_parameters={'u0': 25.0, 'u1': 6.84})
+        >>> array2 = Array(mount=mount2, module_parameters={'pdc0': 300, 'gamma_pdc': -0.004}, temperature_model_parameters={'u0': 25.0, 'u1': 6.84})
         >>> system = PVSystem(arrays=[array1, array2],inverter_parameters={'pdc0': 300})
         >>> mc = ModelChain(system, location,dc_model="pvwatts",ac_model="pvwatts", aoi_model="no_loss", spectral_model="no_loss",temperature_model="faiman")
         >>> eff1 = pd.DataFrame({

@@ -1,8 +1,8 @@
-.. _whatsnew_0_14_1:
+.. _whatsnew_0_15_1:
 
 
-v0.14.1 (Month XX, 20YY)
------------------------
+v0.15.1 (Anticipated March 2026)
+--------------------------------
 
 Breaking Changes
 ~~~~~~~~~~~~~~~~
@@ -14,7 +14,9 @@ Deprecations
 
 Bug fixes
 ~~~~~~~~~
-
+* Fix a division-by-zero condition in
+  :py:func:`pvlib.transformer.simple_efficiency` when ``load_loss = 0``.
+  (:issue:`2645`, :pull:`2646`)
 
 Enhancements
 ~~~~~~~~~~~~
@@ -42,4 +44,5 @@ Maintenance
 
 Contributors
 ~~~~~~~~~~~~
+* Aman Srivastava (:ghuser:`aman-coder03`)
 

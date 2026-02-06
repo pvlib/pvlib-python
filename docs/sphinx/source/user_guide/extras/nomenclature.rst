@@ -166,14 +166,14 @@ There is a convention on consistent variable names throughout the library:
     solar_azimuth
         Azimuth angle of the sun in degrees East of North. The solar azimuth
         angle describes the sun’s position along the horizon relative to the
-        observer. The pvlib-python convention is defined as degrees East of
+        observer. Azimuth is defined as degrees East of
         North, so North = 0°, East = 90°, South = 180°, West = 270°.
 
     solar_zenith
-        Zenith angle of the sun in degrees. This is the angle between is
+        Zenith angle of the sun in degrees [°]. Zenith is the angle between is
         between a vector pointed straight up and a vector pointed at the sun,
-        from the observer. This is the complement of solar elevation 
-        90 - elevation). [°]
+        from the observer. Zenith is the complement of solar elevation, i.e.,
+        zenith = 90 - elevation.
 
     spectra
     spectra_components
@@ -183,9 +183,9 @@ There is a convention on consistent variable names throughout the library:
         is composed of direct and diffuse components.
     
     surface_azimuth
-        Azimuth angle of the surface in degrees East of North. This angle
-        describes the horizontal projection of the normal vector from the 
-        surface. The pvlib-python convention is defined as degrees East
+        Azimuth angle of the surface in degrees East of North. Surface azimuth
+        is specified by the horizontal projection of the normal vector from
+        the surface. Azimuth is defined as degrees East
         (clockwise) of North, so North = 0°, East = 90°, South = 180°,
         West = 270°.
 

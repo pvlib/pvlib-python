@@ -350,3 +350,15 @@ Here is a starter template for new examples:
 
 For more details, see the sphinx-gallery
 `docs <https://sphinx-gallery.github.io/stable/syntax.html#embedding-rst>`_.
+
+Controlling Example Order
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Examples within a subsection are ordered alphabetically by filename.
+To control their position explicitly, prefix filenames with numbers
+(e.g., ``01_``, ``02_``).
+
+For more advanced ordering options, see the sphinx-gallery
+`documentation <https://sphinx-gallery.github.io/stable/configuration.html#own-sort-keys>`_.
+
+

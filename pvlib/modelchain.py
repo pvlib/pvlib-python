@@ -1903,8 +1903,7 @@ class ModelChain:
         ...     'wind_speed': [2.0, 1.5],
         ... },
         ... index=pd.date_range("2021-06-01", periods=2, freq="h"))
-        >>> mc.run_model_from_effective_irradiance(eff)  # doctest: +ELLIPSIS
-        ModelChain: ...
+        >>> mc.run_model_from_effective_irradiance(eff)
 
         Multi-array system:
 

@@ -16,7 +16,7 @@ from scipy.optimize import bisect
 from pvlib import atmosphere, solarposition, tools
 import pvlib  # used to avoid dni name collision in complete_irradiance
 
-from pvlib._deprecation import pvlibDeprecationWarning, renamed_kwarg_warning
+from pvlib._deprecation import pvlibDeprecationWarning
 import warnings
 
 
@@ -793,10 +793,11 @@ def haydavies(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
 
     diffuse_components : OrderedDict (array input) or DataFrame (Series input)
         Keys/columns are:
-            * sky_diffuse: Total sky diffuse
-            * isotropic
-            * circumsolar
-            * horizon (always zero, not accounted for by the Hay-Davies model)
+            * poa_sky_diffuse: Total sky diffuse
+            * poa_isotropic
+            * poa_circumsolar
+            * poa_horizon (always zero, not accounted for by the
+              Hay-Davies model)
 
     Notes
     ------
@@ -855,13 +856,13 @@ def haydavies(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
 
     if return_components:
         diffuse_components = OrderedDict()
-        diffuse_components['sky_diffuse'] = sky_diffuse
+        diffuse_components['poa_sky_diffuse'] = sky_diffuse
 
         # Calculate the individual components
-        diffuse_components['isotropic'] = poa_isotropic
-        diffuse_components['circumsolar'] = poa_circumsolar
-        diffuse_components['horizon'] = np.where(
-            np.isnan(diffuse_components['isotropic']), np.nan, 0.)
+        diffuse_components['poa_isotropic'] = poa_isotropic
+        diffuse_components['poa_circumsolar'] = poa_circumsolar
+        diffuse_components['poa_horizon'] = np.where(
+            np.isnan(diffuse_components['poa_isotropic']), np.nan, 0.)
 
         if isinstance(sky_diffuse, pd.Series):
             diffuse_components = pd.DataFrame(diffuse_components)
@@ -1111,10 +1112,10 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
 
     diffuse_components : OrderedDict (array input) or DataFrame (Series input)
         Keys/columns are:
-            * sky_diffuse: Total sky diffuse
-            * isotropic
-            * circumsolar
-            * horizon
+            * poa_sky_diffuse: Total sky diffuse
+            * poa_isotropic
+            * poa_circumsolar
+            * poa_horizon
 
 
     References
@@ -1197,12 +1198,12 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
 
     if return_components:
         diffuse_components = OrderedDict()
-        diffuse_components['sky_diffuse'] = sky_diffuse
+        diffuse_components['poa_sky_diffuse'] = sky_diffuse
 
         # Calculate the different components
-        diffuse_components['isotropic'] = dhi * term1
-        diffuse_components['circumsolar'] = dhi * term2
-        diffuse_components['horizon'] = dhi * term3
+        diffuse_components['poa_isotropic'] = dhi * term1
+        diffuse_components['poa_circumsolar'] = dhi * term2
+        diffuse_components['poa_horizon'] = dhi * term3
 
         # Set values of components to 0 when sky_diffuse is 0
         mask = sky_diffuse == 0
@@ -1353,10 +1354,10 @@ def perez_driesse(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
 
     diffuse_components : OrderedDict (array input) or DataFrame (Series input)
         Keys/columns are:
-            * sky_diffuse: Total sky diffuse
-            * isotropic
-            * circumsolar
-            * horizon
+            * poa_sky_diffuse: Total sky diffuse
+            * poa_isotropic
+            * poa_circumsolar
+            * poa_horizon
 
     Notes
     -----
@@ -1417,12 +1418,12 @@ def perez_driesse(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
 
     if return_components:
         diffuse_components = OrderedDict()
-        diffuse_components['sky_diffuse'] = sky_diffuse
+        diffuse_components['poa_sky_diffuse'] = sky_diffuse
 
         # Calculate the different components
-        diffuse_components['isotropic'] = dhi * term1
-        diffuse_components['circumsolar'] = dhi * term2
-        diffuse_components['horizon'] = dhi * term3
+        diffuse_components['poa_isotropic'] = dhi * term1
+        diffuse_components['poa_circumsolar'] = dhi * term2
+        diffuse_components['poa_horizon'] = dhi * term3
 
         if isinstance(sky_diffuse, pd.Series):
             diffuse_components = pd.DataFrame(diffuse_components)
@@ -1612,11 +1613,6 @@ def ghi_from_poa_driesse_2023(surface_tilt, surface_azimuth,
         return ghi
 
 
-@renamed_kwarg_warning(
-    since='0.11.2',
-    old_param_name='clearsky_ghi',
-    new_param_name='ghi_clear',
-    removal="0.14.0")
 def clearsky_index(ghi, ghi_clear, max_clearsky_index=2.0):
     """
     Calculate the clearsky index.
@@ -2155,16 +2151,6 @@ def _dirint_bins(times, kt_prime, zenith, w, delta_kt_prime):
     return kt_prime_bin, zenith_bin, w_bin, delta_kt_prime_bin
 
 
-@renamed_kwarg_warning(
-    since='0.11.2',
-    old_param_name='ghi_clearsky',
-    new_param_name='ghi_clear',
-    removal="0.14.0")
-@renamed_kwarg_warning(
-    since='0.11.2',
-    old_param_name='dni_clearsky',
-    new_param_name='dni_clear',
-    removal="0.14.0")
 def dirindex(ghi, ghi_clear, dni_clear, zenith, times, pressure=101325.,
              use_delta_kt_prime=True, temp_dew=None, min_cos_zenith=0.065,
              max_zenith=87):
@@ -3661,11 +3647,6 @@ def _get_dirint_coeffs():
     return coeffs[1:, 1:, :, :]
 
 
-@renamed_kwarg_warning(
-    since='0.11.2',
-    old_param_name='clearsky_dni',
-    new_param_name='dni_clear',
-    removal="0.14.0")
 def dni(ghi, dhi, zenith, dni_clear=None, clearsky_tolerance=1.1,
         zenith_threshold_for_zero_dni=88.0,
         zenith_threshold_for_clearsky_limit=80.0):

@@ -1,22 +1,17 @@
-.. _whatsnew_0_13_2:
+.. _whatsnew_0_14_0:
 
 
-v0.13.2 (Anticipated December, 2025)
-------------------------------------
+v0.14.0 (January 16, 2026)
+--------------------------
 
 Breaking Changes
 ~~~~~~~~~~~~~~~~
 * Following the removal of the NSRDB PSM3 API, the :func:`!pvlib.iotools.get_psm3`,
   :func:`!pvlib.iotools.read_psm3`, and :func:`!pvlib.iotools.parse_psm3`
   functions are removed. (:issue:`2581`, :pull:`2582`)
-
-
-Deprecations
-~~~~~~~~~~~~
-
-
-Bug fixes
-~~~~~~~~~
+* Rename output column names to be prefixed with ``"poa_"`` when ``return_components=True``
+  in :py:func:`~pvlib.irradiance.haydavies`, :py:func:`~pvlib.irradiance.perez`,
+  and :py:func:`~pvlib.irradiance.perez_driesse`. (:issue:`2529`, :pull:`2627`)
 
 Enhancements
 ~~~~~~~~~~~~
@@ -44,6 +39,8 @@ Enhancements
   ERA5 reanalysis data. (:pull:`2573`)
 * Add :py:func:`~pvlib.iotools.get_merra2`, a function for accessing
   MERRA-2 reanalysis data. (:pull:`2572`)
+* Add :py:func:`~pvlib.spectrum.spectral_factor_polo`, a function for estimating
+  spectral mismatch factors for vertical PV façades. (:issue:`2406`, :pull:`2491`)
 
 Documentation
 ~~~~~~~~~~~~~
@@ -51,7 +48,6 @@ Documentation
 * Provide an overview of temperature modeling functionality in :ref:`temperature`. (:pull:`2591`)
 * Fix typo in parameter name ``atmos_refract`` in :py:func:`pvlib.solarposition.spa_python`
   and :py:func:`pvlib.spa.solar_position`. (:issue:`2532`, :pull:`2592`)
-
 
 Testing
 ~~~~~~~
@@ -61,22 +57,24 @@ Testing
 * Correct argument and value order in :py:func:`~pvlib.tests.ivtools.test_sde`,
   in tests of :py:func:`~pvlib.ivtools.sde._fit_sandia_cocontent`. (:issue:`2613`, :pull:`2615`)
 
-
-Benchmarking
-~~~~~~~~~~~~
-
-
 Requirements
 ~~~~~~~~~~~~
-
-
-Maintenance
-~~~~~~~~~~~
-
+* Advance minimum solarfactors to v1.6.1. (:pull:`2656`)
 
 Contributors
 ~~~~~~~~~~~~
 * Will Hobbs (:ghuser:`williamhobbs`)
 * Cliff Hansen (:ghuser:`cwhanse`)
 * Joseph Radford (:ghuser:`josephradford`)
+* Jesús Polo (:ghuser:`jesuspolo`)
+* Adam R. Jensen (:ghuser:`adamrjensen`)
+* Echedey Luis (:ghuser:`echedey-ls`)
+* Anton Driesse (:ghuser:`adriesse`)
+* Rajiv Daxini (:ghuser:`RDaxini`)
 * Kevin Anderson (:ghuser:`kandersolar`)
+* Mark Mikofski (:ghuser:`mikofski`)
+* Will Holmgren (:ghuser:`wholmgren`)
+* Ioannis Sifnaios (:ghuser:`IoannisSifnaios`)
+* Mark Campanelli (:ghuser:`markcampanelli`)
+* Aman Srivastava (:ghuser:`aman-coder03`)
+* Vincent Filter (:ghuser:`vfilter`)

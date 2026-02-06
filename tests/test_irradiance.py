@@ -16,7 +16,6 @@ from .conftest import (
     assert_series_equal,
     requires_ephem,
     requires_numba,
-    fail_on_pvlib_version,
 )
 
 from pvlib._deprecation import pvlibDeprecationWarning
@@ -210,12 +209,14 @@ def test_haydavies(irrad_data, ephem_data, dni_et):
 
 
 def test_haydavies_components(irrad_data, ephem_data, dni_et):
+    keys = ['poa_sky_diffuse', 'poa_isotropic', 'poa_circumsolar',
+            'poa_horizon']
     expected = pd.DataFrame(np.array(
         [[0, 27.1775, 102.9949, 33.1909],
          [0, 27.1775, 30.1818, 27.9837],
          [0, 0, 72.8130, 5.2071],
          [0, 0, 0, 0]]).T,
-        columns=['sky_diffuse', 'isotropic', 'circumsolar', 'horizon'],
+        columns=keys,
         index=irrad_data.index
     )
     # pandas
@@ -229,23 +230,16 @@ def test_haydavies_components(irrad_data, ephem_data, dni_et):
         40, 180, irrad_data['dhi'].values, irrad_data['dni'].values, dni_et,
         ephem_data['apparent_zenith'].values, ephem_data['azimuth'].values,
         return_components=True)
-    assert_allclose(result['sky_diffuse'], expected['sky_diffuse'], atol=1e-4)
-    assert_allclose(result['isotropic'], expected['isotropic'], atol=1e-4)
-    assert_allclose(result['circumsolar'], expected['circumsolar'], atol=1e-4)
-    assert_allclose(result['horizon'], expected['horizon'], atol=1e-4)
+    for key in keys:
+        assert_allclose(result[key], expected[key], atol=1e-4)
     assert isinstance(result, dict)
     # scalar
     result = irradiance.haydavies(
         40, 180, irrad_data['dhi'].values[-1], irrad_data['dni'].values[-1],
         dni_et[-1], ephem_data['apparent_zenith'].values[-1],
         ephem_data['azimuth'].values[-1], return_components=True)
-    assert_allclose(result['sky_diffuse'], expected['sky_diffuse'].iloc[-1],
-                    atol=1e-4)
-    assert_allclose(result['isotropic'], expected['isotropic'].iloc[-1],
-                    atol=1e-4)
-    assert_allclose(result['circumsolar'], expected['circumsolar'].iloc[-1],
-                    atol=1e-4)
-    assert_allclose(result['horizon'], expected['horizon'].iloc[-1], atol=1e-4)
+    for key in keys:
+        assert_allclose(result[key], expected[key].iloc[-1], atol=1e-4)
     assert isinstance(result, dict)
 
 
@@ -312,13 +306,14 @@ def test_perez_components(irrad_data, ephem_data, dni_et, relative_airmass):
          [0.,  26.84138589,          np.nan,  31.72696071],
          [0.,  0.,         np.nan,  4.47966439],
          [0.,  4.62212181,         np.nan,  9.25316454]]).T,
-        columns=['sky_diffuse', 'isotropic', 'circumsolar', 'horizon'],
+        columns=['poa_sky_diffuse', 'poa_isotropic', 'poa_circumsolar',
+                 'poa_horizon'],
         index=irrad_data.index
     )
-    expected_for_sum = expected['sky_diffuse'].copy()
+    expected_for_sum = expected['poa_sky_diffuse'].copy()
     expected_for_sum.iloc[2] = 0
     sum_components = out.iloc[:, 1:].sum(axis=1)
-    sum_components.name = 'sky_diffuse'
+    sum_components.name = 'poa_sky_diffuse'
 
     assert_frame_equal(out, expected, check_less_precise=2)
     assert_series_equal(sum_components, expected_for_sum, check_less_precise=2)
@@ -338,13 +333,14 @@ def test_perez_driesse_components(irrad_data, ephem_data, dni_et,
          [0., 25.806, np.nan, 33.181],
          [0.,  0.000, np.nan,  4.197],
          [0.,  4.184, np.nan, 10.018]]).T,
-        columns=['sky_diffuse', 'isotropic', 'circumsolar', 'horizon'],
+        columns=['poa_sky_diffuse', 'poa_isotropic', 'poa_circumsolar',
+                 'poa_horizon'],
         index=irrad_data.index
     )
-    expected_for_sum = expected['sky_diffuse'].copy()
+    expected_for_sum = expected['poa_sky_diffuse'].copy()
     expected_for_sum.iloc[2] = 0
     sum_components = out.iloc[:, 1:].sum(axis=1)
-    sum_components.name = 'sky_diffuse'
+    sum_components.name = 'poa_sky_diffuse'
 
     assert_frame_equal(out, expected, check_less_precise=2)
     assert_series_equal(sum_components, expected_for_sum, check_less_precise=2)
@@ -384,13 +380,14 @@ def test_perez_negative_horizon():
          [166.785419, 142.24475, 119.173875, 83.525150, 45.725931],
          [113.548755,  16.09757,   9.956174,  3.142467,  0],
          [1.076010,  -6.13353,  -5.262151, -3.831230, -2.208923]]).T,
-        columns=['sky_diffuse', 'isotropic', 'circumsolar', 'horizon'],
+        columns=['poa_sky_diffuse', 'poa_isotropic', 'poa_circumsolar',
+                 'poa_horizon'],
         index=times
     )
 
-    expected_for_sum = expected['sky_diffuse'].copy()
+    expected_for_sum = expected['poa_sky_diffuse'].copy()
     sum_components = out.iloc[:, 1:].sum(axis=1)
-    sum_components.name = 'sky_diffuse'
+    sum_components.name = 'poa_sky_diffuse'
 
     assert_frame_equal(out, expected, check_less_precise=2)
     assert_series_equal(sum_components, expected_for_sum, check_less_precise=2)
@@ -1112,20 +1109,6 @@ def test_dirindex(times):
         equal_nan=True)
 
 
-@fail_on_pvlib_version("0.14")
-def test_dirindex_ghi_clearsky_deprecation():
-    times = pd.DatetimeIndex(['2014-06-24T18-1200'])
-    ghi = pd.Series([1038.62], index=times)
-    ghi_clearsky = pd.Series([1042.48031487], index=times)
-    dni_clearsky = pd.Series([939.95469881], index=times)
-    zenith = pd.Series([10.56413562], index=times)
-    pressure, tdew = 93193, 10
-    with pytest.warns(pvlibDeprecationWarning, match='ghi_clear'):
-        irradiance.dirindex(
-            ghi=ghi, ghi_clearsky=ghi_clearsky, dni_clear=dni_clearsky,
-            zenith=zenith, times=times, pressure=pressure, temp_dew=tdew)
-
-
 def test_dirindex_min_cos_zenith_max_zenith():
     # map out behavior under difficult conditions with various
     # limiting kwargs settings
@@ -1157,19 +1140,6 @@ def test_dirindex_min_cos_zenith_max_zenith():
     assert_series_equal(out, expected)
 
 
-@fail_on_pvlib_version("0.14")
-def test_dirindex_dni_clearsky_deprecation():
-    times = pd.DatetimeIndex(['2014-06-24T12-0700', '2014-06-24T18-0700'])
-    ghi = pd.Series([0, 1], index=times)
-    ghi_clearsky = pd.Series([0, 1], index=times)
-    dni_clear = pd.Series([0, 5], index=times)
-    solar_zenith = pd.Series([90, 89.99], index=times)
-    with pytest.warns(pvlibDeprecationWarning, match='dni_clear'):
-        irradiance.dirindex(ghi, ghi_clearsky, dni_clearsky=dni_clear,
-                            zenith=solar_zenith, times=times,
-                            min_cos_zenith=0)
-
-
 def test_dni():
     ghi = pd.Series([90, 100, 100, 100, 100])
     dhi = pd.Series([100, 90, 50, 50, 50])
@@ -1186,17 +1156,6 @@ def test_dni():
     assert_series_equal(dni,
                         pd.Series([float('nan'), float('nan'), 573.685662283,
                                    146.190220008, 573.685662283]))
-
-
-@fail_on_pvlib_version("0.14")
-def test_dni_dni_clearsky_deprecation():
-    ghi = pd.Series([90, 100, 100, 100, 100])
-    dhi = pd.Series([100, 90, 50, 50, 50])
-    zenith = pd.Series([80, 100, 85, 70, 85])
-    dni_clear = pd.Series([50, 50, 200, 50, 300])
-    with pytest.warns(pvlibDeprecationWarning, match='dni_clear'):
-        irradiance.dni(ghi, dhi, zenith,
-                       clearsky_dni=dni_clear, clearsky_tolerance=2)
 
 
 @pytest.mark.parametrize(
@@ -1289,13 +1248,6 @@ def test_clearsky_index():
     out = irradiance.clearsky_index(ghi_measured, ghi_modeled)
     expected = pd.Series([0.2, 0.5], index=times)
     assert_series_equal(out, expected)
-
-
-@fail_on_pvlib_version("0.14")
-def test_clearsky_index_clearsky_ghi_deprecation():
-    with pytest.warns(pvlibDeprecationWarning, match='ghi_clear'):
-        ghi, clearsky_ghi = 200, 300
-        irradiance.clearsky_index(ghi, clearsky_ghi=clearsky_ghi)
 
 
 def test_clearness_index():

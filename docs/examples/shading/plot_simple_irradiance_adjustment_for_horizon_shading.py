@@ -27,7 +27,7 @@ tz = 'MST'
 
 # Set times in the morning of the December solstice.
 times = pd.date_range(
-    '2020-12-20 6:30', '2020-12-20 9:00', freq='1T', tz=tz
+    '2020-12-20 6:30', '2020-12-20 9:00', freq='1min', tz=tz
 )
 
 # Create location object, and get solar position and clearsky irradiance data.

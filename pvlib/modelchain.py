@@ -1783,7 +1783,9 @@ class ModelChain:
         ...     'poa_diffuse': [300, 300],
         ... },
         ... index=poa1.index)
-        >>> mc.run_model_from_poa([poa1, poa2])  # doctest: +ELLIPSIS
+        >>> mc.run_model_from_poa(
+        ...     [poa1, poa2]
+        ... )  # doctest: +ELLIPSIS
         ModelChain: ...
 
         Notes
@@ -1940,7 +1942,9 @@ class ModelChain:
         ...     'wind_speed': [1.8, 1.2],
         ... },
         ... index=eff1.index)
-        >>> mc.run_model_from_effective_irradiance([eff1, eff2])  # doctest: +ELLIPSIS
+        >>> mc.run_model_from_effective_irradiance(
+        ...     [eff1, eff2]
+        ... )  # doctest: +ELLIPSIS
         ModelChain: ...
 
         Notes

@@ -1944,8 +1944,7 @@ class ModelChain:
         ... index=eff1.index)
         >>> mc.run_model_from_effective_irradiance(
         ...     [eff1, eff2]
-        ... )  # doctest: +ELLIPSIS
-        ModelChain: ...
+        ... )
 
         Notes
         -----

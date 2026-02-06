@@ -1741,9 +1741,8 @@ class ModelChain:
         >>> poa = pd.DataFrame({
         ...     'poa_global': [900, 850],
         ...     'poa_direct': [600, 560],
-        ...     'poa_diffuse': [300, 290],
-        ... },
-        ... index=pd.date_range("2021-06-01", periods=2, freq="h"))
+        ...     'poa_diffuse': [300, 290],},
+        ...     index=pd.date_range("2021-06-01", periods=2, freq="h"))
         >>> mc.run_model_from_poa(poa)
 
         Multi-array system:

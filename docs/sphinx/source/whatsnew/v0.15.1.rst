@@ -24,6 +24,11 @@ Enhancements
 
 Documentation
 ~~~~~~~~~~~~~
+* Add the following terms to the :ref:`nomenclature` page:
+    - :term:`clearness_index`
+    - :term:`clearsky_index`
+    - :term:`aod`
+    - :term:`aod500`
 
 
 Testing

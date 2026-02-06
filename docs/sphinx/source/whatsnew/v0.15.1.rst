@@ -29,6 +29,7 @@ Documentation
     - :term:`clearsky_index`
     - :term:`aod`
     - :term:`aod500`
+ (:issue:`2564`, :pull:`2663`)
 
 
 Testing

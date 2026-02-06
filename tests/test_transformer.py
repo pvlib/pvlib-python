@@ -99,6 +99,8 @@ def test_simple_efficiency_vector_equals_scalar():
     ])
 
     assert_allclose(vector_result, scalar_result)
+
+
 @pytest.mark.parametrize(
     "input_power, no_load_loss, load_loss, transformer_rating, expected",
     [

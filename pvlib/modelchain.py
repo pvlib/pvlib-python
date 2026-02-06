@@ -1785,8 +1785,7 @@ class ModelChain:
         ... index=poa1.index)
         >>> mc.run_model_from_poa(
         ...     [poa1, poa2]
-        ... )  # doctest: +ELLIPSIS
-        ModelChain: ...
+        ... )
 
         Notes
         -----

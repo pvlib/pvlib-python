@@ -28,7 +28,9 @@ Documentation
 
 Testing
 ~~~~~~~
-
+* Add test to verify that :py:func:`~pvlib.transformer.simple_efficiency`
+  produces consistent results for vectorized and scalar inputs.
+  (:pull:`2661`)
 
 Benchmarking
 ~~~~~~~~~~~~

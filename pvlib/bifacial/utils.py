@@ -159,20 +159,24 @@ def vf_ground_sky_2d(rotation, gcr, x, pitch, height, max_rows=10):
     # swap angles so that phi[0,:,:,:] is the lesser angle
     phi.sort(axis=0)
 
-    # now re-use phi's memory again, this time storing cos(phi).
-    next_edge = phi[1, :, :, 1:]
-    np.cos(next_edge, out=next_edge)
-    prev_edge = phi[0, :, :, :-1]
-    np.cos(prev_edge, out=prev_edge)
-    # right edge of next row - left edge of previous row, again
-    # reusing memory so that the difference is stored in next_edge.
-    # Note that the 0.5 view factor coefficient is applied after summing
-    # as a minor speed optimization.
-    np.subtract(next_edge, prev_edge, out=next_edge)
-    np.clip(next_edge, a_min=0., a_max=None, out=next_edge)
-    vf = np.sum(next_edge, axis=-1) / 2
-    return vf
+    # compute cos(phi) into new arrays (avoid overwriting phi)
+    upper = phi[1].copy()
+    lower = phi[0].copy()
+    np.cos(upper, out=upper)
+    np.cos(lower, out=lower)
 
+    # include horizon bounds
+    # leftmost bound: cos(0)=1
+    # rightmost bound: cos(pi)=-1
+    upper = np.concatenate([upper, -np.ones_like(upper[..., :1])], axis=-1)
+    lower = np.concatenate([np.ones_like(lower[..., :1]), lower], axis=-1)
+
+    # wedge contribution = upper - lower for each wedge
+    diff = upper - lower
+    np.clip(diff, a_min=0., a_max=None, out=diff)
+
+    vf = np.sum(diff, axis=-1) / 2
+    return vf
 
 def vf_ground_sky_2d_integ(surface_tilt, gcr, height, pitch, max_rows=10,
                            npoints=100, vectorize=False):

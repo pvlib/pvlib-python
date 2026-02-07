@@ -1713,6 +1713,75 @@ class ModelChain:
             of Arrays in the PVSystem.
         ValueError
             If the DataFrames in `data` have different indexes.
+        Examples
+        --------
+        Single-array system:
+
+        >>> import pandas as pd
+        >>> from pvlib.pvsystem import PVSystem, Array, FixedMount
+        >>> from pvlib.location import Location
+        >>> from pvlib.modelchain import ModelChain
+        >>> location = Location(35, -110)
+        >>> mount = FixedMount(surface_tilt=30, surface_azimuth=180)
+        >>> array = Array(
+        ...     mount=mount,
+        ...     module_parameters={'pdc0': 300, 'gamma_pdc': -0.004},
+        ...     temperature_model_parameters={'u0': 25.0, 'u1': 6.84}
+        ... )
+        >>> system = PVSystem(
+        ...     arrays=[array],
+        ...     inverter_parameters={'pdc0': 300}
+        ... )
+        >>> mc = ModelChain(
+        ...     system, location,
+        ...     dc_model="pvwatts", ac_model="pvwatts",
+        ...     aoi_model="no_loss", spectral_model="no_loss",
+        ...     temperature_model="faiman"
+        ... )
+        >>> poa = pd.DataFrame({
+        ...     'poa_global': [900, 850],
+        ...     'poa_direct': [600, 560],
+        ...     'poa_diffuse': [300, 290],},
+        ...     index=pd.date_range("2021-06-01", periods=2, freq="h"))
+        >>> _ = mc.run_model_from_poa(poa)
+
+        Multi-array system:
+
+        >>> mount1 = FixedMount(surface_tilt=30, surface_azimuth=180)
+        >>> mount2 = FixedMount(surface_tilt=10, surface_azimuth=90)
+        >>> array1 = Array(
+        ...     mount=mount1,
+        ...     module_parameters={'pdc0': 300, 'gamma_pdc': -0.004},
+        ...     temperature_model_parameters={'u0': 25.0, 'u1': 6.84}
+        ... )
+        >>> array2 = Array(
+        ...     mount=mount2,
+        ...     module_parameters={'pdc0': 200, 'gamma_pdc': -0.004},
+        ...     temperature_model_parameters={'u0': 25.0, 'u1': 6.84}
+        ... )
+        >>> system = PVSystem(
+        ...     arrays=[array1, array2],
+        ...     inverter_parameters={'pdc0': 500}
+        ... )
+        >>> mc = ModelChain(
+        ...     system, location,
+        ...     dc_model="pvwatts", ac_model="pvwatts",
+        ...     aoi_model="no_loss", spectral_model="no_loss",
+        ...     temperature_model="faiman"
+        ... )
+        >>> poa1 = pd.DataFrame({
+        ...     'poa_global': [900, 880],
+        ...     'poa_direct': [600, 580],
+        ...     'poa_diffuse': [300, 300],},
+        ...     index=pd.date_range("2021-06-01", periods=2, freq="h"))
+        >>> poa2 = pd.DataFrame({
+        ...     'poa_global': [700, 720],
+        ...     'poa_direct': [400, 420],
+        ...     'poa_diffuse': [300, 300],},
+        ...     index=poa1.index)
+        >>> _ = mc.run_model_from_poa(
+        ...         [poa1, poa2]
+        ... )
 
         Notes
         -----
@@ -1798,6 +1867,75 @@ class ModelChain:
             of Arrays in the PVSystem.
         ValueError
             If the DataFrames in `data` have different indexes.
+        Examples
+        --------
+        Single-array system:
+
+        >>> import pandas as pd
+        >>> from pvlib.pvsystem import PVSystem, Array, FixedMount
+        >>> from pvlib.location import Location
+        >>> from pvlib.modelchain import ModelChain
+        >>> location = Location(35, -110)
+        >>> mount = FixedMount(surface_tilt=30, surface_azimuth=180)
+        >>> array = Array(
+        ...     mount=mount,
+        ...     module_parameters={'pdc0': 300, 'gamma_pdc': -0.004},
+        ...     temperature_model_parameters={'u0': 25.0, 'u1': 6.84}
+        ... )
+        >>> system = PVSystem(
+        ...     arrays=[array],
+        ...     inverter_parameters={'pdc0': 300}
+        ... )
+        >>> mc = ModelChain(
+        ...     system, location,
+        ...     dc_model="pvwatts", ac_model="pvwatts",
+        ...     aoi_model="no_loss", spectral_model="no_loss",
+        ...     temperature_model="faiman"
+        ... )
+        >>> eff = pd.DataFrame({
+        ...     'effective_irradiance': [900, 920],
+        ...     'temp_air': [25, 24],
+        ...     'wind_speed': [2.0, 1.5],},
+        ...     index=pd.date_range("2021-06-01", periods=2, freq="h"))
+        >>> _ = mc.run_model_from_effective_irradiance(eff)
+
+        Multi-array system:
+
+        >>> mount1 = FixedMount(surface_tilt=30, surface_azimuth=180)
+        >>> mount2 = FixedMount(surface_tilt=10, surface_azimuth=90)
+        >>> array1 = Array(
+        ...     mount=mount1,
+        ...     module_parameters={'pdc0': 300, 'gamma_pdc': -0.004},
+        ...     temperature_model_parameters={'u0': 25.0, 'u1': 6.84}
+        ... )
+        >>> array2 = Array(
+        ...     mount=mount2,
+        ...     module_parameters={'pdc0': 200, 'gamma_pdc': -0.004},
+        ...     temperature_model_parameters={'u0': 25.0, 'u1': 6.84}
+        ... )
+        >>> system = PVSystem(
+        ...     arrays=[array1, array2],
+        ...     inverter_parameters={'pdc0': 500}
+        ... )
+        >>> mc = ModelChain(
+        ...     system, location,
+        ...     dc_model="pvwatts", ac_model="pvwatts",
+        ...     aoi_model="no_loss", spectral_model="no_loss",
+        ...     temperature_model="faiman"
+        ... )
+        >>> eff1 = pd.DataFrame({
+        ...     'effective_irradiance': [900, 920],
+        ...     'temp_air': [25, 24],
+        ...     'wind_speed': [2.0, 1.5],},
+        ...     index=pd.date_range("2021-06-01", periods=2, freq="h"))
+        >>> eff2 = pd.DataFrame({
+        ...     'effective_irradiance': [600, 630],
+        ...     'temp_air': [26, 25],
+        ...     'wind_speed': [1.8, 1.2],},
+        ...     index=eff1.index)
+        >>> _ = mc.run_model_from_effective_irradiance(
+        ...         [eff1, eff2]
+        ... )
 
         Notes
         -----

@@ -1743,7 +1743,7 @@ class ModelChain:
         ...     'poa_direct': [600, 560],
         ...     'poa_diffuse': [300, 290],},
         ...     index=pd.date_range("2021-06-01", periods=2, freq="h"))
-        >>> mc.run_model_from_poa(poa)
+        >>> _ = mc.run_model_from_poa(poa)
 
         Multi-array system:
 
@@ -1772,17 +1772,15 @@ class ModelChain:
         >>> poa1 = pd.DataFrame({
         ...     'poa_global': [900, 880],
         ...     'poa_direct': [600, 580],
-        ...     'poa_diffuse': [300, 300],
-        ... },
-        ... index=pd.date_range("2021-06-01", periods=2, freq="h"))
+        ...     'poa_diffuse': [300, 300],},
+        ...     index=pd.date_range("2021-06-01", periods=2, freq="h"))
         >>> poa2 = pd.DataFrame({
         ...     'poa_global': [700, 720],
         ...     'poa_direct': [400, 420],
-        ...     'poa_diffuse': [300, 300],
-        ... },
-        ... index=poa1.index)
-        >>> mc.run_model_from_poa(
-        ...     [poa1, poa2]
+        ...     'poa_diffuse': [300, 300],},
+        ...     index=poa1.index)
+        >>> _ = mc.run_model_from_poa(
+        ...         [poa1, poa2]
         ... )
 
         Notes
@@ -1897,10 +1895,9 @@ class ModelChain:
         >>> eff = pd.DataFrame({
         ...     'effective_irradiance': [900, 920],
         ...     'temp_air': [25, 24],
-        ...     'wind_speed': [2.0, 1.5],
-        ... },
-        ... index=pd.date_range("2021-06-01", periods=2, freq="h"))
-        >>> mc.run_model_from_effective_irradiance(eff)
+        ...     'wind_speed': [2.0, 1.5],},
+        ...     index=pd.date_range("2021-06-01", periods=2, freq="h"))
+        >>> _ = mc.run_model_from_effective_irradiance(eff)
 
         Multi-array system:
 
@@ -1929,17 +1926,15 @@ class ModelChain:
         >>> eff1 = pd.DataFrame({
         ...     'effective_irradiance': [900, 920],
         ...     'temp_air': [25, 24],
-        ...     'wind_speed': [2.0, 1.5],
-        ... },
-        ... index=pd.date_range("2021-06-01", periods=2, freq="h"))
+        ...     'wind_speed': [2.0, 1.5],},
+        ...     index=pd.date_range("2021-06-01", periods=2, freq="h"))
         >>> eff2 = pd.DataFrame({
         ...     'effective_irradiance': [600, 630],
         ...     'temp_air': [26, 25],
-        ...     'wind_speed': [1.8, 1.2],
-        ... },
-        ... index=eff1.index)
-        >>> mc.run_model_from_effective_irradiance(
-        ...     [eff1, eff2]
+        ...     'wind_speed': [1.8, 1.2],},
+        ...     index=eff1.index)
+        >>> _ = mc.run_model_from_effective_irradiance(
+        ...         [eff1, eff2]
         ... )
 
         Notes

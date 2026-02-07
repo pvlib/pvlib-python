@@ -7,6 +7,7 @@ from pvlib.bifacial import utils
 from pvlib.shading import masking_angle, ground_angle
 from pvlib.tools import cosd
 from scipy.integrate import trapezoid
+from pvlib.bifacial.utils import vf_ground_sky_2d
 
 
 @pytest.fixture
@@ -190,3 +191,11 @@ def test_vf_ground_2d_integ(test_system_fixed_tilt):
     y = 0.5 * (1 - cosd(phi_y - ts['surface_tilt']))
     y1 = trapezoid(y, x) / (1 - 0)
     assert np.allclose(vf, y1, rtol=1e-2)
+
+def test_vf_ground_sky_2d_returns_valid_range():
+    vf = vf_ground_sky_2d(rotation=0, gcr=0.5, x=0.5,
+                          pitch=1, height=1, max_rows=3)
+
+    assert vf.shape == (1, 1)
+    assert np.all(vf >= 0.0)
+    assert np.all(vf <= 1.0)

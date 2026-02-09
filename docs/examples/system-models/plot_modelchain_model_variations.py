@@ -104,12 +104,26 @@ system = pvlib.pvsystem.PVSystem(
 #
 # This ensures that any differences in the results arise
 # solely from the temperature model choice.
+temperature_model_parameters_sapm = (
+    pvlib.temperature.TEMPERATURE_MODEL_PARAMETERS["sapm"]
+    ["open_rack_glass_glass"]
+)
+
+system_sapm = pvlib.pvsystem.PVSystem(
+    surface_tilt=30,
+    surface_azimuth=180,
+    module_parameters=module_parameters,
+    inverter_parameters=inverter_parameters,
+    temperature_model_parameters=temperature_model_parameters_sapm,
+)
+
 mc_sapm = pvlib.modelchain.ModelChain(
-    system,
+    system_sapm,
     location,
     dc_model="pvwatts",
     ac_model="pvwatts",
     temperature_model="sapm",
+    aoi_model="no_loss",
 )
 
 mc_sapm.run_model(weather_subset)
@@ -124,12 +138,23 @@ mc_sapm.run_model(weather_subset)
 # No other system or weather parameters are changed.
 # This illustrates how individual components within
 # ModelChain can be varied independently.
+temperature_model_parameters_faiman = dict(u0=25, u1=6.84)
+
+system_faiman = pvlib.pvsystem.PVSystem(
+    surface_tilt=30,
+    surface_azimuth=180,
+    module_parameters=module_parameters,
+    inverter_parameters=inverter_parameters,
+    temperature_model_parameters=temperature_model_parameters_faiman,
+)
+
 mc_faiman = pvlib.modelchain.ModelChain(
-    system,
+    system_faiman,
     location,
     dc_model="pvwatts",
     ac_model="pvwatts",
     temperature_model="faiman",
+    aoi_model="no_loss",
 )
 
 mc_faiman.run_model(weather_subset)
@@ -150,6 +175,7 @@ ax.set_ylabel("Cell Temperature (°C)")
 ax.set_title("Comparison of Temperature Models")
 ax.legend()
 plt.tight_layout()
+plt.show()
 
 # %%
 # Compare AC power output
@@ -166,3 +192,4 @@ ax.set_ylabel("AC Power (W)")
 ax.set_title("AC Output with Different Temperature Models")
 ax.legend()
 plt.tight_layout()
+plt.show()

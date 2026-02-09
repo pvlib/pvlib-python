@@ -384,6 +384,32 @@ ipython_warning_is_error = False
 # https://github.com/pvlib/pvlib-python/issues/837
 suppress_warnings = ['ref.footnote']
 
+
+def irradiance_transposition_sort_key(filename):
+    order = [
+        "plot_ghi_transposition.py",
+        "plot_transposition_gain.py",
+        "plot_interval_transposition_error.py",
+        "use_perez_modelchain.py",
+        "plot_mixed_orientation.py",
+        "plot_seasonal_tilt.py",
+        "plot_rtranpose_year.py",
+        "plot_rtranpose_limitations.py",
+    ]
+
+    subsection = os.path.basename(os.path.dirname(filename))
+
+    if subsection == "irradiance-transposition":
+        name = os.path.basename(filename)
+        if name in order:
+            return (0, order.index(name))
+        else:
+            return (0, len(order))
+
+    # For everything else, fall back to filename sorting
+    return (1, filename)
+
+
 # settings for sphinx-gallery
 sphinx_gallery_conf = {
     'examples_dirs': ['../../examples'],  # location of gallery scripts
@@ -400,6 +426,9 @@ sphinx_gallery_conf = {
 
     # https://sphinx-gallery.github.io/dev/configuration.html#removing-config-comments  # noqa: E501
     'remove_config_comments': True,
+
+    # Explicit ordering for irradiance-transposition subsection
+    'within_subsection_order': irradiance_transposition_sort_key,
 }
 # supress warnings in gallery output
 # https://sphinx-gallery.github.io/stable/configuration.html

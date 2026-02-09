@@ -354,11 +354,16 @@ For more details, see the sphinx-gallery
 Controlling Example Order
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Examples within a subsection are ordered alphabetically by filename.
-To control their position explicitly, prefix filenames with numbers
-(e.g., ``01_``, ``02_``).
+Examples within a subsection are ordered according to the
+``within_subsection_order`` setting defined in ``conf.py``.
 
-For more advanced ordering options, see the sphinx-gallery
-`documentation <https://sphinx-gallery.github.io/stable/configuration.html#own-sort-keys>`_.
+By default, Sphinx-Gallery applies its built-in sorting behavior.
+To explicitly control the order of examples, configure
+``within_subsection_order`` in ``docs/sphinx/source/conf.py``.
+This may be set to one of Sphinx-Gallery's built-in sort keys
+(e.g., ``FileNameSortKey`` or ``ExampleTitleSortKey``),
+or to a custom callable for fine-grained control.
 
-
+See the Sphinx-Gallery documentation for details:
+`Gallery examples
+<https://sphinx-gallery.github.io/stable/configuration.html#sorting-gallery-examples>`_.

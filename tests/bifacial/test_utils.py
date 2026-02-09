@@ -192,6 +192,7 @@ def test_vf_ground_2d_integ(test_system_fixed_tilt):
     y1 = trapezoid(y, x) / (1 - 0)
     assert np.allclose(vf, y1, rtol=1e-2)
 
+
 def test_vf_ground_sky_2d_returns_valid_range():
     vf = vf_ground_sky_2d(rotation=0, gcr=0.5, x=0.5,
                           pitch=1, height=1, max_rows=3)

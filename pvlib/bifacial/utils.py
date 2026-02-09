@@ -172,11 +172,14 @@ def vf_ground_sky_2d(rotation, gcr, x, pitch, height, max_rows=10):
     lower = np.concatenate([np.ones_like(lower[..., :1]), lower], axis=-1)
 
     # wedge contribution = upper - lower for each wedge
+    # Note that the 0.5 view factor coefficient is applied after summing
+    # as a minor speed optimization.
     diff = upper - lower
     np.clip(diff, a_min=0., a_max=None, out=diff)
 
     vf = np.sum(diff, axis=-1) / 2
     return vf
+
 
 def vf_ground_sky_2d_integ(surface_tilt, gcr, height, pitch, max_rows=10,
                            npoints=100, vectorize=False):

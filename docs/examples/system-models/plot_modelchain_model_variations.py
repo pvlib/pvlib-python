@@ -24,6 +24,7 @@ component affects overall system behavior.
 
 import pvlib
 import pandas as pd
+import numpy as np
 import matplotlib.pyplot as plt
 
 # %%
@@ -37,16 +38,12 @@ longitude = -110.9
 location = pvlib.location.Location(latitude, longitude)
 
 # %%
-# Create simple synthetic weather data
-# -------------------------------------
+# Generate clear-sky weather data
+# --------------------------------
 #
-# To keep this example lightweight and fully reproducible,
-# we generate a small synthetic weather dataset instead of
-# downloading data from an external source.
-#
-# The weather values are kept constant so that any differences
-# in results arise solely from the chosen temperature model.
-
+# We generate clear-sky irradiance using pvlib and create a 
+# varying air temperature profile instead of using constant 
+# values.
 times = pd.date_range(
     "2019-06-01 00:00",
     "2019-06-07 23:00",
@@ -54,13 +51,15 @@ times = pd.date_range(
     tz="Etc/GMT+7",
 )
 
-weather_subset = pd.DataFrame({
-    "ghi": 800,
-    "dni": 600,
-    "dhi": 200,
-    "temp_air": 25,
-    "wind_speed": 1,
-}, index=times)
+# Clear-sky irradiance
+clearsky = location.get_clearsky(times)
+
+# Create a simple daily temperature cycle
+temp_air = 20 + 10 * np.sin(2 * np.pi * (times.hour - 6) / 24)
+
+weather_subset = clearsky.copy()
+weather_subset["temp_air"] = temp_air
+weather_subset["wind_speed"] = 1
 
 # %%
 # Define a simple PV system
@@ -167,6 +166,8 @@ mc_faiman.run_model(weather_subset)
 # through the temperature coefficient, differences
 # between temperature models can propagate into
 # performance results.
+
+#%%
 fig, ax = plt.subplots(figsize=(10, 4))
 mc_sapm.results.cell_temperature.plot(ax=ax, label="SAPM")
 mc_faiman.results.cell_temperature.plot(ax=ax, label="Faiman")
@@ -175,7 +176,6 @@ ax.set_ylabel("Cell Temperature (°C)")
 ax.set_title("Comparison of Temperature Models")
 ax.legend()
 plt.tight_layout()
-plt.show()
 
 # %%
 # Compare AC power output
@@ -184,6 +184,8 @@ plt.show()
 # Finally, we compare the resulting AC power. Even small
 # differences in temperature modeling can lead to noticeable
 # differences in predicted energy production.
+
+#%%
 fig, ax = plt.subplots(figsize=(10, 4))
 mc_sapm.results.ac.plot(ax=ax, label="SAPM")
 mc_faiman.results.ac.plot(ax=ax, label="Faiman")
@@ -192,4 +194,3 @@ ax.set_ylabel("AC Power (W)")
 ax.set_title("AC Output with Different Temperature Models")
 ax.legend()
 plt.tight_layout()
-plt.show()

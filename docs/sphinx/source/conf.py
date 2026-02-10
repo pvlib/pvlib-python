@@ -388,8 +388,11 @@ suppress_warnings = ['ref.footnote']
 sphinx_gallery_conf = {
     'examples_dirs': ['../../examples'],  # location of gallery scripts
     'gallery_dirs': ['gallery'],  # location of generated output
-    # execute all scripts except for ones in the "system-models" directory:
+    # execute only files starting with plot_
     'filename_pattern': 'plot_',
+
+    # ignore ONLY the OEDI example
+    'ignore_pattern': 'plot_oedi_9068.py',
 
     # directory where function/class granular galleries are stored
     'backreferences_dir': 'reference/generated/gallery_backreferences',

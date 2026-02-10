@@ -41,8 +41,8 @@ location = pvlib.location.Location(latitude, longitude)
 # Generate clear-sky weather data
 # --------------------------------
 #
-# We generate clear-sky irradiance using pvlib and create a 
-# varying air temperature profile instead of using constant 
+# We generate clear-sky irradiance using pvlib and create a
+# varying air temperature profile instead of using constant
 # values.
 times = pd.date_range(
     "2019-06-01 00:00",
@@ -167,7 +167,7 @@ mc_faiman.run_model(weather_subset)
 # between temperature models can propagate into
 # performance results.
 
-#%%
+# %%
 fig, ax = plt.subplots(figsize=(10, 4))
 mc_sapm.results.cell_temperature.plot(ax=ax, label="SAPM")
 mc_faiman.results.cell_temperature.plot(ax=ax, label="Faiman")
@@ -185,7 +185,7 @@ plt.tight_layout()
 # differences in temperature modeling can lead to noticeable
 # differences in predicted energy production.
 
-#%%
+# %%
 fig, ax = plt.subplots(figsize=(10, 4))
 mc_sapm.results.ac.plot(ax=ax, label="SAPM")
 mc_faiman.results.ac.plot(ax=ax, label="Faiman")

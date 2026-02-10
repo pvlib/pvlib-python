@@ -15,9 +15,9 @@ the reduction at normal incidence is implicit in the PV module's power rating
 and does not need to be accounted for separately in a performance model.
 Therefore, only the extra reduction at non-normal incidence should be modeled.
 
-This is done using incidence angle modififer (:term:`IAM`) models.  IAM is
-the fraction of incident light that is transmitted to the PV cell, normalized
-to the value at normal incidence:
+This is done using incidence angle modififer (:term:`IAM`) models.
+Conceptually, IAM is the fraction of incident light that is
+transmitted to the PV cell, normalized to the value at normal incidence:
 
 .. math::
 
@@ -28,6 +28,10 @@ IAM equals (by definition) 1.0 when AOI is zero and typically approaches zero
 as AOI approaches 90°.  The shape of the IAM profile at intermediate AOI
 is nonlinear and depends on the module's optical properties.
 
+IAM may also depend on the wavelength of the light, the polarization of the light,
+and which side of the module the light comes from.  However, IAM models usually
+neglect these minor effects.
+
 In pvlib, IAM is a unitless quantity (values from 0–1) and IAM functions take
 input angles in degrees.
 
@@ -35,13 +39,22 @@ input angles in degrees.
 Types of models
 ---------------
 
-IAM is sometimes applied only to the beam component of in-plane irradiance, as
-the beam component is often the largest contributor to total in-plane
-irradiance and has a highly variable AOI across the day and year.  However,
-in principle IAM should be applied to diffuse irradiance as well.  Modeling IAM
-for diffuse irradiance is complicated by the light coming from a range
-of angles.  IAM for direct irradiance is comparatively straightforward
-because the entire component has a single angle of incidence.
+Because total in-plane irradiance is the combination of light from many
+directions, IAM values are computed for each component separately:
+
+- *direct IAM*: IAM computed for the AOI of direct irradiance
+- *circumsolar IAM*: typically approximated as equal to the direct IAM
+- *diffuse IAM*: IAM integrated across the ranges of AOI spanning the sky and/or
+  ground surfaces
+
+Because diffuse light can be thought of as a field of many small beams of
+direct light, diffuse IAM can then be understood as the IAM averaged across
+those individual beams.  This averaging can be done explicitly or empirically.
+
+In principle, IAM should be applied to all components of incident irradiance.
+In practice, IAM is sometimes applied only to the direct component of in-plane
+irradiance, as the direct component is often the largest contributor to total
+in-plane irradiance and has a highly variable AOI across the day and year.
 
 The IAM models currently available in pvlib are summarized in the
 following table:
@@ -57,7 +70,7 @@ following table:
 +-------------------------------------------+---------+-------------------------------------------+
 | :py:func:`~pvlib.iam.physical`            | direct  | Physics-based; optional AR coating        |
 +-------------------------------------------+---------+-------------------------------------------+
-| :py:func:`~pvlib.iam.sapm`                | direct  | Can exhibit "wiggles" in the curve        |
+| :py:func:`~pvlib.iam.sapm`                | direct  | Can be non-monotonic and exceed 1.0       |
 +-------------------------------------------+---------+-------------------------------------------+
 | :py:func:`~pvlib.iam.schlick`             | direct  | Does not take module-specific parameters  |
 +-------------------------------------------+---------+-------------------------------------------+

@@ -7,10 +7,10 @@ Incidence angle modifier
 Some fraction of the light incident on a PV module surface is reflected away or
 absorbed before it reaches the PV cell.  This irradiance reduction depends
 on the angle at which the light strikes the module (the angle of incidence,
-:term:`aoi`) and the optical properties of the module.
+:term:`AOI <aoi>`) and the optical properties of the module.
 
 Some reduction occurs at all angles of incidence, even normal incidence.
-However, because PV module testing is performed at normal incidence,
+However, because PV modules are rated with irradiance at normal incidence,
 the reduction at normal incidence is implicit in the PV module's power rating
 and does not need to be accounted for separately in a performance model.
 Therefore, only the extra reduction at non-normal incidence should be modeled.
@@ -25,7 +25,7 @@ to the value at normal incidence:
 
 where :math:`T(\theta)` represents the transmitted light fraction at AOI :math:`\theta`.
 IAM equals (by definition) 1.0 when AOI is zero and typically approaches zero
-as AOI approaches 90 degrees.  The shape of the IAM profile at intermediate AOI
+as AOI approaches 90°.  The shape of the IAM profile at intermediate AOI
 is nonlinear and depends on the module's optical properties.
 
 In pvlib, IAM is a unitless quantity (values from 0–1) and IAM functions take
@@ -76,12 +76,12 @@ Model parameters
 ----------------
 
 Some IAM model functions provide default values for their parameters.
-However, these generic values may not be suitable for all modules.
+However, these generic values may not be suitable for all PV modules.
 It should be noted that using the default parameter values for each 
 model generally leads to different IAM profiles.
 
 Module-specific values can be obtained via testing.  For example, IEC 61853-2
 testing produces measured IAM values across the range of AOI and a corresponding
 parameter value for the Martin-Ruiz model.  Parameter values for other models can
-be determined using :py:func:`pvlib.iam.fit`.  Parameter values can also be (approximately)
+be determined using :py:func:`pvlib.iam.fit`.  Parameter values can also be approximately
 converted between models using :py:func:`pvlib.iam.convert`.

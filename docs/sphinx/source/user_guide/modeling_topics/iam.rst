@@ -17,7 +17,7 @@ Therefore, only the extra reduction at non-normal incidence should be modeled.
 
 This is done using incidence angle modififer (:term:`IAM`) models.
 Conceptually, IAM is the fraction of incident light that is
-transmitted to the PV cell, normalized to the value at normal incidence:
+transmitted to the PV cell, normalized to the fraction transmitted at normal incidence:
 
 .. math::
 
@@ -32,8 +32,8 @@ IAM may also depend on the wavelength of the light, the polarization of the ligh
 and which side of the module the light comes from.  However, IAM models usually
 neglect these minor effects.
 
-In pvlib, IAM is a unitless quantity (values from 0–1) and IAM functions take
-input angles in degrees.
+IAM functions in pvlib take an input angle in degrees and return a unitless ratio
+in the range 0–1.
 
 
 Types of models

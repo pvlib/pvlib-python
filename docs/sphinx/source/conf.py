@@ -391,9 +391,6 @@ sphinx_gallery_conf = {
     # execute only files starting with plot_
     'filename_pattern': 'plot_',
 
-    # ignore ONLY the OEDI example
-    'ignore_pattern': 'plot_oedi_9068.py',
-
     # directory where function/class granular galleries are stored
     'backreferences_dir': 'reference/generated/gallery_backreferences',
 

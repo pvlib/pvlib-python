@@ -27,6 +27,7 @@ This user guide is an overview and explains some of the key features of pvlib.
    modeling_topics/weather_data
    modeling_topics/singlediode
    modeling_topics/temperature
+   modeling_topics/iam
 
 .. toctree::
    :maxdepth: 2

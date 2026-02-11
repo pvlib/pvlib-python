@@ -24,6 +24,7 @@ Enhancements
 
 Documentation
 ~~~~~~~~~~~~~
+* Provide an overview of IAM modeling functionality in :ref:`iam`. (:pull:`2683`)
 
 
 Testing
@@ -45,4 +46,9 @@ Maintenance
 Contributors
 ~~~~~~~~~~~~
 * Aman Srivastava (:ghuser:`aman-coder03`)
+* Rajiv Daxini (:ghuser:`RDaxini`)
+* Echedey Luis (:ghuser:`echedey-ls`)
+* Cliff Hansen (:ghuser:`cwhanse`)
+* Anton Driesse (:ghuser:`adriesse`)
+* Kevin Anderson (:ghuser:`kandersolar`)
 

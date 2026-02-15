@@ -171,12 +171,13 @@ plt.show()
 
 daily_average = temperature_models.resample("D").mean()
 
-plt.figure(figsize=(8, 5))
+fig, ax = plt.subplots(figsize=(8, 5))
 
-daily_average.plot(kind="bar")
+daily_average.plot(kind="bar", ax=ax)
 
-plt.ylabel("Average Cell Temperature (°C)")
-plt.title("Daily Average Temperature by Model")
+ax.set_ylabel("Average Cell Temperature (°C)")
+ax.set_title("Daily Average Temperature by Model")
 
 plt.tight_layout()
 plt.show()
+

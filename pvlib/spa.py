@@ -402,9 +402,11 @@ NUTATION_YTERM_ARRAY = np.array([
 @jcompile('float64(int64, int64, int64, int64, int64, int64, int64)',
           nopython=True)
 def julian_day_dt(year, month, day, hour, minute, second, microsecond):
-    """This is the original way to calculate the julian day from the NREL paper.
+    """
+    This is the original way to calculate the julian day from the NREL paper.
     However, it is much faster to convert to unix/epoch time and then convert
-    to julian day. Note that the date must be UTC."""
+    to julian day. Note that the date must be UTC.
+    """
     if month <= 2:
         year = year-1
         month = month+12
@@ -461,6 +463,7 @@ def sum_mult_cos_add_mult(arr, x):
         s += arr[row, 0] * np.cos(arr[row, 1] + arr[row, 2] * x)
     return s
 
+
 @jcompile('float64(float64)', nopython=True)
 def heliocentric_longitude(jme):
     l0 = sum_mult_cos_add_mult(L0, jme)
@@ -474,6 +477,7 @@ def heliocentric_longitude(jme):
              l5 * jme**5)/10**8
     l = np.rad2deg(l_rad)
     return l % 360
+
 
 @jcompile('float64(float64)', nopython=True)
 def heliocentric_latitude(jme):
@@ -762,9 +766,10 @@ def topocentric_elevation_angle_without_atmosphere(observer_latitude,
 
 
 @jcompile('float64(float64, float64, float64, float64)', nopython=True)
-def atmospheric_refraction_correction(local_pressure, local_temp,
-                                      topocentric_elevation_angle_wo_atmosphere,
-                                      atmos_refract):
+def atmospheric_refraction_correction(
+        local_pressure, local_temp,
+        topocentric_elevation_angle_wo_atmosphere,
+        atmos_refract):
     # switch sets delta_e when the sun is below the horizon
     switch = topocentric_elevation_angle_wo_atmosphere >= -1.0 * (
         0.26667 + atmos_refract)

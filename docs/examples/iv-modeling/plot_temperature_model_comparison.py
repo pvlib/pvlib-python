@@ -89,7 +89,8 @@ sapm_temp = pvlib.temperature.sapm_cell(
 # Calculate cell temperature using Faiman model
 # ----------------------------------------------
 #
-# The Faiman model uses heat transfer coefficients to estimate module temperature.
+# The Faiman model uses heat transfer coefficients to estimate module
+# temperature.
 
 faiman_temp = pvlib.temperature.faiman(
     poa_global=weather["poa_global"],
@@ -180,4 +181,3 @@ ax.set_title("Daily Average Temperature by Model")
 
 plt.tight_layout()
 plt.show()
-

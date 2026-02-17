@@ -2,7 +2,7 @@
 
  - [ ] Closes #xxxx
  - [ ] I am familiar with the [contributing guidelines](https://pvlib-python.readthedocs.io/en/latest/contributing/index.html)
- - [ ] Any AI-generated material has been vetted for accuracy and compatability with the pvlib contributing guidelines
+ - [ ] I attest that all AI-generated material has been vetted for accuracy and is in compliance with the pvlib license
  - [ ] Tests added
  - [ ] Updates entries in [`docs/sphinx/source/reference`](https://github.com/pvlib/pvlib-python/blob/main/docs/sphinx/source/reference) for API changes.
  - [ ] Adds description and name entries in the appropriate "what's new" file in [`docs/sphinx/source/whatsnew`](https://github.com/pvlib/pvlib-python/tree/main/docs/sphinx/source/whatsnew) for all changes. Includes link to the GitHub Issue with `` :issue:`num` `` or this Pull Request with `` :pull:`num` ``. Includes contributor name and/or GitHub username (link with `` :ghuser:`user` ``).

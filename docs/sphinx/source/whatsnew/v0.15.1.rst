@@ -30,11 +30,14 @@ Documentation
     - :term:`aod`
     - :term:`aod500`
  (:issue:`2564`, :pull:`2663`)
+* Provide an overview of IAM modeling functionality in :ref:`iam`. (:pull:`2683`)
 
 
 Testing
 ~~~~~~~
-
+* Add test to verify that :py:func:`~pvlib.transformer.simple_efficiency`
+  produces consistent results for vectorized and scalar inputs.
+  (:issue:`2649`, :pull:`2661`)
 
 Benchmarking
 ~~~~~~~~~~~~
@@ -51,4 +54,9 @@ Maintenance
 Contributors
 ~~~~~~~~~~~~
 * Aman Srivastava (:ghuser:`aman-coder03`)
+* Rajiv Daxini (:ghuser:`RDaxini`)
+* Echedey Luis (:ghuser:`echedey-ls`)
+* Cliff Hansen (:ghuser:`cwhanse`)
+* Anton Driesse (:ghuser:`adriesse`)
+* Kevin Anderson (:ghuser:`kandersolar`)
 

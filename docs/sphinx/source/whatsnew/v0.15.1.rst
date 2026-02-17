@@ -24,12 +24,13 @@ Enhancements
 
 Documentation
 ~~~~~~~~~~~~~
-* Add the following terms to the :ref:`nomenclature` page:
+* Add the following terms to the :ref:`nomenclature` page:  (:issue:`2564`, :pull:`2663`)
+
     - :term:`clearness_index`
     - :term:`clearsky_index`
     - :term:`aod`
     - :term:`aod500`
- (:issue:`2564`, :pull:`2663`)
+
 * Provide an overview of IAM modeling functionality in :ref:`iam`. (:pull:`2683`)
 
 

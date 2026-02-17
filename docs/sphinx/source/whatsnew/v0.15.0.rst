@@ -1,0 +1,28 @@
+.. _whatsnew_0_15_0:
+
+
+v0.15.0 (Feb 3, 2026)
+---------------------
+
+Breaking Changes
+~~~~~~~~~~~~~~~~
+* Removed expired parameter name deprecations (:issue:`2662`, :pull:`2666`):
+
+  - Parameter ``clearsky_ghi`` in :py:func:`pvlib.irradiance.clearsky_index`
+  - Parameters ``ghi_clearsky`` and ``dni_clearsky`` in :py:func:`pvlib.irradiance.dirindex`
+  - Parameter ``clearsky_dni`` in :py:func:`pvlib.irradiance.dni`
+
+Documentation
+~~~~~~~~~~~~~
+- Update gallery examples to work with ``pandas==3`` (:pull:`2664`).
+
+Contributors
+~~~~~~~~~~~~
+* Echedey Luis (:ghuser:`echedey-ls`)
+* Aman Srivastava (:ghuser:`aman-coder03`)
+* Cliff Hansen (:ghuser:`cwhanse`)
+* Adam R. Jensen (:ghuser:`adamrjensen`)
+* Will Holmgren (:ghuser:`wholmgren`)
+* Rajiv Daxini (:ghuser:`RDaxini`)
+* Anton Driesse (:ghuser:`adriesse`)
+* Kevin Anderson (:ghuser:`kandersolar`)

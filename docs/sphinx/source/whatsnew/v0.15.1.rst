@@ -1,0 +1,56 @@
+.. _whatsnew_0_15_1:
+
+
+v0.15.1 (Anticipated March 2026)
+--------------------------------
+
+Breaking Changes
+~~~~~~~~~~~~~~~~
+
+
+Deprecations
+~~~~~~~~~~~~
+
+
+Bug fixes
+~~~~~~~~~
+* Fix a division-by-zero condition in
+  :py:func:`pvlib.transformer.simple_efficiency` when ``load_loss = 0``.
+  (:issue:`2645`, :pull:`2646`)
+
+Enhancements
+~~~~~~~~~~~~
+
+
+Documentation
+~~~~~~~~~~~~~
+* Provide an overview of IAM modeling functionality in :ref:`iam`. (:pull:`2683`)
+
+
+Testing
+~~~~~~~
+* Add test to verify that :py:func:`~pvlib.transformer.simple_efficiency`
+  produces consistent results for vectorized and scalar inputs.
+  (:issue:`2649`, :pull:`2661`)
+
+Benchmarking
+~~~~~~~~~~~~
+
+
+Requirements
+~~~~~~~~~~~~
+
+
+Maintenance
+~~~~~~~~~~~
+
+
+Contributors
+~~~~~~~~~~~~
+* Aman Srivastava (:ghuser:`aman-coder03`)
+* Rajiv Daxini (:ghuser:`RDaxini`)
+* Echedey Luis (:ghuser:`echedey-ls`)
+* Cliff Hansen (:ghuser:`cwhanse`)
+* Anton Driesse (:ghuser:`adriesse`)
+* Kevin Anderson (:ghuser:`kandersolar`)
+

@@ -24,7 +24,8 @@ Enhancements
 
 Documentation
 ~~~~~~~~~~~~~
-* Add the following terms to the :ref:`nomenclature` page:  (:issue:`2564`, :pull:`2663`)
+* Add the following terms to the :ref:`nomenclature` page
+  (:issue:`2564`, :pull:`2663`):
 
     - :term:`clearness_index`
     - :term:`clearsky_index`

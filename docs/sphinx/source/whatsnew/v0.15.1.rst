@@ -33,6 +33,9 @@ Documentation
     - :term:`aod500`
 
 * Provide an overview of IAM modeling functionality in :ref:`iam`. (:pull:`2683`)
+* Add AI checkbox to PR template, and auto-generate a comment on issues and PRs
+  from first-time contributors regarding AI and contributing guidelines.
+  (:issue:`2617`, :pull:`2624`)
 
 
 Testing

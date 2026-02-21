@@ -173,7 +173,7 @@ mc_sapm.results.cell_temperature.plot(ax=ax, label="SAPM")
 mc_faiman.results.cell_temperature.plot(ax=ax, label="Faiman")
 
 ax.set_ylabel("Cell Temperature (°C)")
-ax.set_title("Comparison of Temperature Models")
+ax.set_title("Comparison of Cell Temperature")
 ax.legend()
 plt.tight_layout()
 
@@ -181,8 +181,8 @@ plt.tight_layout()
 # Compare AC power output
 # ------------------------
 #
-# Finally, we compare the resulting AC power. Even small
-# differences in temperature modeling can lead to noticeable
+# Finally, we compare the resulting AC power. In this case, the
+# differences in temperature modeling lead to small
 # differences in predicted energy production.
 
 # %%

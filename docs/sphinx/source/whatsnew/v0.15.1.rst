@@ -24,6 +24,8 @@ Enhancements
 
 Documentation
 ~~~~~~~~~~~~~
+* Add examples for run_model_from_poa() and run_model_from_effective_irradiance()
+  (:issue:`1043`, :pull:`2621`)
 * Add the following terms to the :ref:`nomenclature` page
   (:issue:`2564`, :pull:`2663`):
 

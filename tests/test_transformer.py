@@ -5,6 +5,8 @@ from numpy.testing import assert_allclose
 
 from pvlib import transformer
 
+import numpy as np
+
 
 def test_simple_efficiency():
 
@@ -41,42 +43,50 @@ def test_simple_efficiency():
     assert_allclose(calculated_output_power, expected_output_power)
 
 
-def test_simple_efficiency_known_values():
-    no_load_loss = 0.005
-    load_loss = 0.01
-    rating = 1000
-    args = (no_load_loss, load_loss, rating)
-
-    # verify correct behavior at no-load condition
-    assert_allclose(
-        transformer.simple_efficiency(no_load_loss*rating, *args),
-        0.0
-    )
-
-    # verify correct behavior at rated condition
-    assert_allclose(
-        transformer.simple_efficiency(rating*(1 + no_load_loss + load_loss),
-                                      *args),
-        rating,
-    )
-
-
 @pytest.mark.parametrize(
-    "input_power, no_load_loss, load_loss, transformer_rating, expected",
+    "input_power, no_load_loss, load_loss, rating, expected",
     [
+        # no-load condition
+        (0.005 * 1000, 0.005, 0.01, 1000, 0.0),
+
+        # rated condition
+        (1000 * (1 + 0.005 + 0.01), 0.005, 0.01, 1000, 1000),
+
+        # zero load_loss case
+        # for load_loss = 0, the model reduces to:
+        # P_out = P_in - L_no_load * P_nom
         (1000.0, 0.01, 0.0, 1000.0, 990.0),
     ],
 )
-def test_simple_efficiency_zero_load_loss(
-    input_power, no_load_loss, load_loss, transformer_rating, expected
+def test_simple_efficiency_numeric_cases(
+    input_power, no_load_loss, load_loss, rating, expected
 ):
-    # for load_loss = 0, the model reduces to:
-    # P_out = P_in - L_no_load * P_nom
     result = transformer.simple_efficiency(
         input_power=input_power,
         no_load_loss=no_load_loss,
         load_loss=load_loss,
-        transformer_rating=transformer_rating,
+        transformer_rating=rating,
     )
 
     assert_allclose(result, expected)
+
+
+def test_simple_efficiency_vector_equals_scalar():
+    input_power = np.array([200.0, 600.0, 900.0])
+    no_load_loss = 0.005
+    load_loss = 0.01
+    rating = 1000.0
+
+    vector_result = transformer.simple_efficiency(
+        input_power=input_power,
+        no_load_loss=no_load_loss,
+        load_loss=load_loss,
+        transformer_rating=rating,
+    )
+
+    scalar_result = np.array([
+        transformer.simple_efficiency(p, no_load_loss, load_loss, rating)
+        for p in input_power
+    ])
+
+    assert_allclose(vector_result, scalar_result)

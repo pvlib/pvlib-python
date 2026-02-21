@@ -26,13 +26,22 @@ Documentation
 ~~~~~~~~~~~~~
 * Add examples for run_model_from_poa() and run_model_from_effective_irradiance()
   (:issue:`1043`, :pull:`2621`)
+* Add the following terms to the :ref:`nomenclature` page
+  (:issue:`2564`, :pull:`2663`):
+
+    - :term:`clearness_index`
+    - :term:`clearsky_index`
+    - :term:`aod`
+    - :term:`aod500`
 
 * Provide an overview of IAM modeling functionality in :ref:`iam`. (:pull:`2683`)
 
 
 Testing
 ~~~~~~~
-
+* Add test to verify that :py:func:`~pvlib.transformer.simple_efficiency`
+  produces consistent results for vectorized and scalar inputs.
+  (:issue:`2649`, :pull:`2661`)
 
 Benchmarking
 ~~~~~~~~~~~~

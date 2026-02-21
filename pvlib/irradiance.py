@@ -2026,16 +2026,15 @@ def _delta_kt_prime_dirint(kt_prime, use_delta_kt_prime, times):
     for use with :py:func:`_dirint_bins`.
     """
     if use_delta_kt_prime:
-        # Perez eqn 2
+        # Perez eqn 2 (both neighbors) and eqn 3 (one neighbor).
+        # mean(axis=1) skips NaN so that edge positions with only one
+        # valid neighbor return that single delta instead of halving it.
         kt_next = kt_prime.shift(-1)
         kt_previous = kt_prime.shift(1)
-        # replace nan with values that implement Perez Eq 3 for first and last
-        # positions. Use kt_previous and kt_next to handle series of length 1
-        kt_next.iloc[-1] = kt_previous.iloc[-1]
-        kt_previous.iloc[0] = kt_next.iloc[0]
-        delta_kt_prime = 0.5 * ((kt_prime - kt_next).abs().add(
-                                (kt_prime - kt_previous).abs(),
-                                fill_value=0))
+        delta_kt_prime = pd.DataFrame({
+            'next': (kt_prime - kt_next).abs(),
+            'prev': (kt_prime - kt_previous).abs(),
+        }).mean(axis=1)
     else:
         # do not change unless also modifying _dirint_bins
         delta_kt_prime = pd.Series(-1, index=times)

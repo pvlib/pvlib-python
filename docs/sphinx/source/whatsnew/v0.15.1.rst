@@ -14,6 +14,12 @@ Deprecations
 
 Bug fixes
 ~~~~~~~~~
+* Fix incorrect ``delta_kt_prime`` calculation in
+  :py:func:`pvlib.irradiance.dirint` for series containing internal NaN
+  values (e.g. multi-day data with nighttime gaps). Edge positions with
+  only one valid neighbor now correctly use that single delta value
+  (Perez eqn 3) instead of halving it.
+  (:issue:`1847`, :pull:`2698`)
 * Fix a division-by-zero condition in
   :py:func:`pvlib.transformer.simple_efficiency` when ``load_loss = 0``.
   (:issue:`2645`, :pull:`2646`)
@@ -57,6 +63,7 @@ Maintenance
 
 Contributors
 ~~~~~~~~~~~~
+* Ishaan Arora (:ghuser:`ishaan-arora-1`)
 * Aman Srivastava (:ghuser:`aman-coder03`)
 * Rajiv Daxini (:ghuser:`RDaxini`)
 * Echedey Luis (:ghuser:`echedey-ls`)

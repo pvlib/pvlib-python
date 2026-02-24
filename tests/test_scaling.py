@@ -51,8 +51,8 @@ def time_500ms(clear_sky_index):
 
 @pytest.fixture
 def positions():
-    # Sample positions based on the previous lat/lon (calculated manually)
-    expect_xpos = np.array([554863.4, 555975.4, 557087.3])
+    # Sample positions based on correct geodetic scaling
+    expect_xpos = np.array([546433.8, 547528.9, 548623.9])
     expect_ypos = np.array([1110838.8, 1111950.8, 1113062.7])
     return np.array([pt for pt in zip(expect_xpos, expect_ypos)])
 
@@ -94,9 +94,14 @@ def expect_cs_smooth():
 
 @pytest.fixture
 def expect_vr():
-    # Expected VR for expecttmscale
-    return np.array([3., 3., 3., 3., 3., 3., 2.9997844, 2.9708118, 2.6806291,
-                     2.0726611, 1.5653324, 1.2812714, 1.1389995])
+    # Expected VR for expect_tmscale
+    # (updated after fixing latlon_to_xy scaling)
+    return np.array([
+        3., 3., 3., 3., 3., 3.,
+        2.9997677, 2.9697125, 2.6750587,
+        2.0659253, 1.5611084, 1.2791058,
+        1.1379316
+    ])
 
 
 def test_latlon_to_xy_zero():

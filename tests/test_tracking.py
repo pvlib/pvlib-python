@@ -238,8 +238,7 @@ def test__unit_normal():
          [ 0.5, 0.4330127, 0.75],
          [ 0.4330127, -0.5, 0.75],
          [-0.5, -0.4330127, 0.75],
-         [-0.4330127, 0.5, 0.75]]
-        )
+         [-0.4330127, 0.5, 0.75]])
     unorms = tracking._unit_normal(az, tilt, theta)
     assert np.allclose(unorms, expected)
 

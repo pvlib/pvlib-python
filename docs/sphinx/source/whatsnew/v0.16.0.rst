@@ -1,0 +1,49 @@
+.. _whatsnew_0_16_0:
+
+
+v0.16.0 (Month XX, 20YY)
+-----------------------
+
+Breaking Changes
+~~~~~~~~~~~~~~~~
+* Remove support for the `g_poa_effective` keyword argument in
+  :py:func:`pvlib.pvsystem.pvwatts_dc`. Users must now use
+  `effective_irradiance`. (:issue:`2703`, :pull:`2704`)
+
+
+Deprecations
+~~~~~~~~~~~~
+
+
+Bug fixes
+~~~~~~~~~
+
+
+Enhancements
+~~~~~~~~~~~~
+
+
+Documentation
+~~~~~~~~~~~~~
+
+
+Testing
+~~~~~~~
+
+
+Benchmarking
+~~~~~~~~~~~~
+
+
+Requirements
+~~~~~~~~~~~~
+
+
+Maintenance
+~~~~~~~~~~~
+
+
+Contributors
+~~~~~~~~~~~~
+* Rajiv Daxini (:ghuser:`RDaxini`)
+

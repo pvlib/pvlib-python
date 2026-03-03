@@ -78,7 +78,7 @@ def get_reference_spectra(wavelengths=None, standard="ASTM G173-03"):
     ----------
     .. [1] ASTM "G173-03 Standard Tables for Reference Solar Spectral
        Irradiances: Direct Normal and Hemispherical on 37° Tilted Surface."
-    .. [2] “Reference Air Mass 1.5 Spectra,” www.nlr.gov.
+    .. [2] “Reference Air Mass 1.5 Spectra.” NLR.
        https://www.nlr.gov/grid/solar-resource/spectra-am1.5.html
     """  # Contributed by Echedey Luis, inspired by Anton Driesse (get_am15g)
     SPECTRA_FILES = {

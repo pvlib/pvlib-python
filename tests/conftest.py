@@ -89,7 +89,8 @@ skip_windows = pytest.mark.skipif(platform_is_windows,
 def nrel_api_key():
     """API key for NLR Developer Network (formerly NREL).
 
-    Checks NLR_API_KEY first, falls back to NREL_API_KEY with deprecation warning.
+    Checks NLR_API_KEY first, falls back to NREL_API_KEY
+    with deprecation warning.
     """
     try:
         demo_key = os.environ["NLR_API_KEY"]

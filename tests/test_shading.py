@@ -112,7 +112,7 @@ def test_sky_diffuse_passias_scalar(average_masking_angle, shading_loss):
 
 @pytest.fixture
 def true_tracking_angle_and_inputs_NREL():
-    # data from NLR 'Slope-Aware Backtracking for Single-Axis Trackers'
+    # data from NREL 'Slope-Aware Backtracking for Single-Axis Trackers'
     # doi.org/10.2172/1660126 ; Accessed on 2023-11-06.
     tzinfo = timezone(timedelta(hours=-5))
     axis_tilt_angle = 9.666  # deg

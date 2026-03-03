@@ -194,5 +194,5 @@ plt.show()
 #        for the solar spectral influence on photovoltaic device performance."
 #        Energy 286 :doi:`10.1016/j.energy.2023.129461`
 # .. [4] Bird Simple Spectral Model: spectrl2_2.c
-#        https://www.nlr.gov/grid/solar-resource/spectral.html
-#        (Last accessed: 18/09/2024)
+#        https://www.nlr.gov/grid/solar-resource/spectral
+#        (Last accessed: 03/03/2026)

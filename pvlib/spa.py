@@ -1235,7 +1235,7 @@ def earthsun_distance(unixtime, delta_t, numthreads):
     References
     ----------
     [1] Reda, I., Andreas, A., 2003. Solar position algorithm for solar
-    radiation applications. Technical report: NREL/TP-560- 34302. Golden,
+    radiation applications. Technical report: NREL/TP-560-34302. Golden,
     USA, http://www.nlr.gov.
     """
 

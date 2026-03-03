@@ -1001,7 +1001,7 @@ def bird(zenith, airmass_relative, aod380, aod500, precipitable_water,
     .. [2] Daryl R. Myers, "Solar Radiation: Practical Modeling for Renewable
        Energy Applications", pp. 46-51 CRC Press (2013)
 
-    .. [3] `NLR Bird Clear Sky Model <http://www.nlr.gov/grid/solar-resource/
+    .. [3] `Bird Clear Sky Model <http://www.nlr.gov/grid/solar-resource/
        clearsky.html>`_
 
     .. [4] `SERI/TR-642-761 <https://www.nlr.gov/docs/legosti/old/761.pdf>`_

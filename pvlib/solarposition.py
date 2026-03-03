@@ -432,7 +432,7 @@ def sun_rise_set_transit_spa(times, latitude, longitude, how='numpy',
     References
     ----------
     .. [1] Reda, I., Andreas, A., 2003. Solar position algorithm for solar
-       radiation applications. Technical report: NREL/TP-560- 34302. Golden,
+       radiation applications. Technical report: NREL/TP-560-34302. Golden,
        USA, http://www.nlr.gov.
     """
     # Added by Tony Lorenzo (@alorenzo175), University of Arizona, 2015
@@ -987,7 +987,7 @@ def nrel_earthsun_distance(time, how='numpy', delta_t=67.0, numthreads=4):
     References
     ----------
     .. [1] Reda, I., Andreas, A., 2003. Solar position algorithm for solar
-       radiation applications. Technical report: NREL/TP-560- 34302. Golden,
+       radiation applications. Technical report: NREL/TP-560-34302. Golden,
        USA, http://www.nlr.gov.
     """
 

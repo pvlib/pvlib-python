@@ -2,7 +2,7 @@
 Modeling Spectral Irradiance
 ============================
 
-Recreating Figure 5-1A from the SPECTRL2 NLR Technical Report.
+Recreating Figure 5-1A from the SPECTRL2 NREL Technical Report.
 """
 
 # %%
@@ -10,7 +10,7 @@ Recreating Figure 5-1A from the SPECTRL2 NLR Technical Report.
 # based on atmospheric conditions. The spectral distribution of irradiance is
 # the power content at each wavelength band in the solar spectrum and is
 # affected by various scattering and absorption mechanisms in the atmosphere.
-# This example recreates an example figure from the SPECTRL2 NLR Technical
+# This example recreates an example figure from the SPECTRL2 NREL Technical
 # Report [1]_. The figure shows modeled spectra at hourly intervals across
 # a single morning.
 
@@ -95,5 +95,5 @@ plt.show()
 # ----------
 # .. [1] Bird, R, and Riordan, C., 1984, "Simple solar spectral model for
 #    direct and diffuse irradiance on horizontal and tilted planes at the
-#    earth's surface for cloudless atmospheres", NLR Technical Report
+#    earth's surface for cloudless atmospheres", NREL Technical Report
 #    TR-215-2436 :doi:`10.2172/5986936`

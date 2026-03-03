@@ -23,7 +23,7 @@ MIDC_RAW_SHORT_HEADER_TESTFILE = (
     TESTS_DATA_DIR / 'midc_raw_short_header_20191115.txt')
 
 # TODO: not used, remove?
-# midc_network_testfile = ('https://midcdmz.nrel.gov/apps/data_api.pl'
+# midc_network_testfile = ('https://midcdmz.nlr.gov/apps/data_api.pl'
 #                          '?site=UAT&begin=20181018&end=20181019')
 
 

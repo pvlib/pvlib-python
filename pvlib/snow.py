@@ -51,7 +51,7 @@ def fully_covered_nrel(snowfall, snow_depth=None, threshold_snowfall=1.,
        "Measured and modeled photovoltaic system energy losses from snow for
        Colorado and Wisconsin locations." Solar Energy 97; pp.112-121.
     .. [2] Ryberg, D; Freeman, J. "Integration, Validation, and Application
-       of a PV Snow Coverage Model in SAM" (2017) NREL Technical Report
+       of a PV Snow Coverage Model in SAM" (2017) NLR Technical Report
        NREL/TP-6A20-68705
     '''
     timestep = _time_delta_in_hours(snowfall.index)
@@ -134,7 +134,7 @@ def coverage_nrel(snowfall, poa_irradiance, temp_air, surface_tilt,
        "Measured and modeled photovoltaic system energy losses from snow for
        Colorado and Wisconsin locations." Solar Energy 97; pp.112-121.
     .. [2] Ryberg, D; Freeman, J. (2017). "Integration, Validation, and
-       Application of a PV Snow Coverage Model in SAM" NREL Technical Report
+       Application of a PV Snow Coverage Model in SAM" NLR Technical Report
        NREL/TP-6A20-68705
     '''
 
@@ -210,8 +210,8 @@ def dc_loss_nrel(snow_coverage, num_strings):
     References
     ----------
     .. [1] Gilman, P. et al., (2018). "SAM Photovoltaic Model Technical
-       Reference Update", NREL Technical Report NREL/TP-6A20-67399.
-       Available at https://www.nrel.gov/docs/fy18osti/67399.pdf
+       Reference Update", NLR Technical Report NREL/TP-6A20-67399.
+       Available at https://www.nlr.gov/docs/fy18osti/67399.pdf
     '''
     return np.ceil(snow_coverage * num_strings) / num_strings
 
@@ -320,7 +320,7 @@ def loss_townsend(snow_total, snow_events, surface_tilt, relative_humidity,
         Uses of the Townsend Snow Model. In "Photovoltaic Reliability
         Workshop (PVRW) 2023 Proceedings: Posters.", ed. Silverman,
         T. J. Dec. 2023. NREL/CP-5900-87918.
-        Available at: https://www.nrel.gov/docs/fy25osti/90585.pdf
+        Available at: https://www.nlr.gov/docs/fy25osti/90585.pdf
     .. [3] Townsend, T. (2013). Predicting PV Energy Loss Caused by Snow.
         Solar Power International, Chicago IL.
         :doi:`10.13140/RG.2.2.14299.68647`

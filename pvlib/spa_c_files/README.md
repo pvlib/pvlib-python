@@ -1,18 +1,18 @@
 README
 ------
 
-NREL provides a C implementation of the solar position algorithm described in
-[Reda, I.; Andreas, A. (2003). Solar Position Algorithm for Solar Radiation Applications. 55 pp.; NREL Report No. TP-560-34302](http://www.nrel.gov/docs/fy08osti/34302.pdf).
+NLR provides a C implementation of the solar position algorithm described in
+[Reda, I.; Andreas, A. (2003). Solar Position Algorithm for Solar Radiation Applications. 55 pp.; NREL Report No. TP-560-34302](http://www.nlr.gov/docs/fy08osti/34302.pdf).
 
 This folder contains the files required to make SPA C code accessible
-to the `pvlib-python` package. We use the Cython package to wrap the NREL SPA 
+to the `pvlib-python` package. We use the Cython package to wrap the NLR SPA
 implementation. 
 
 ** Due to licensing issues, the SPA C files can _not_ be distributed with
 `pvlib-python`. You must download the SPA C files from the
-[NREL website](https://midcdmz.nrel.gov/spa/). **
+[NLR website](https://midcdmz.nlr.gov/spa/). **
 
-Download the `spa.c` and `spa.h` files from NREL,  and copy them into the
+Download the `spa.c` and `spa.h` files from NLR,  and copy them into the
 `pvlib/spa_c_files` directory. When the extension is built, the ``timezone``
 field in the SPA C files is replaced with `time_zone` to avoid a nameclash
 with the function `__timezone` that is redefined by Python>=3.5. This issue
@@ -20,7 +20,7 @@ is [Python bug 24643](https://bugs.python.org/issue24643).
 
 There are a total of 5 files needed to compile the C code, described below:
 
-* `spa.c`: original C code from NREL 
+* `spa.c`: original C code from NLR
 * `spa.h`: header file for spa.c
 * `cspa_py.pxd`: a cython header file which essentially tells cython which
   parts of the main header file to pay attention to

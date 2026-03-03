@@ -34,7 +34,7 @@ import matplotlib.pyplot as plt
 from scipy.integrate import trapezoid
 from pvlib import spectrum, solarposition, irradiance, atmosphere
 
-lat, lon = 39.742, -105.18  # NREL SRRL location
+lat, lon = 39.742, -105.18  # NLR SRRL location
 surface_tilt = 25
 surface_azimuth = 180  # south-facing system
 pressure = 81190  # at 1828 metres AMSL, roughly
@@ -194,5 +194,5 @@ plt.show()
 #        for the solar spectral influence on photovoltaic device performance."
 #        Energy 286 :doi:`10.1016/j.energy.2023.129461`
 # .. [4] Bird Simple Spectral Model: spectrl2_2.c
-#        https://www.nrel.gov/grid/solar-resource/spectral.html
+#        https://www.nlr.gov/grid/solar-resource/spectral.html
 #        (Last accessed: 18/09/2024)

@@ -56,6 +56,10 @@ Requirements
 
 Maintenance
 ~~~~~~~~~~~
+* Update all NREL references to NLR (National Laboratory of the Rockies)
+  following the laboratory rename and domain migration from ``nrel.gov``
+  to ``nlr.gov``. Add ``NLR_API_KEY`` environment variable support with
+  ``NREL_API_KEY`` fallback. (:issue:`2701`)
 
 
 Contributors

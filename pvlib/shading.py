@@ -87,8 +87,8 @@ def masking_angle(surface_tilt, gcr, slant_height):
        panels", Solar Cells, Volume 11, Pages 281-291.  1984.
        :doi:`10.1016/0379-6787(84)90017-6`
     .. [2] Gilman, P. et al., (2018). "SAM Photovoltaic Model Technical
-       Reference Update", NREL Technical Report NREL/TP-6A20-67399.
-       Available at https://www.nrel.gov/docs/fy18osti/67399.pdf
+       Reference Update", NLR Technical Report NREL/TP-6A20-67399.
+       Available at https://www.nlr.gov/docs/fy18osti/67399.pdf
     """
     # The original equation (8 in [1]) requires pitch and collector width,
     # but it's easy to non-dimensionalize it to make it a function of GCR
@@ -228,8 +228,8 @@ def sky_diffuse_passias(masking_angle):
        panels", Solar Cells, Volume 11, Pages 281-291.  1984.
        :doi:`10.1016/0379-6787(84)90017-6`
     .. [2] Gilman, P. et al., (2018). "SAM Photovoltaic Model Technical
-       Reference Update", NREL Technical Report NREL/TP-6A20-67399.
-       Available at https://www.nrel.gov/docs/fy18osti/67399.pdf
+       Reference Update", NLR Technical Report NREL/TP-6A20-67399.
+       Available at https://www.nlr.gov/docs/fy18osti/67399.pdf
     """
     return 1 - cosd(masking_angle/2)**2
 
@@ -304,7 +304,7 @@ def projected_solar_zenith_angle(solar_zenith, solar_azimuth,
     References
     ----------
     .. [1] K. Anderson and M. Mikofski, 'Slope-Aware Backtracking for
-       Single-Axis Trackers', National Renewable Energy Lab. (NREL), Golden,
+       Single-Axis Trackers', National Laboratory of the Rockies (NLR), Golden,
        CO (United States);
        NREL/TP-5K00-76626, Jul. 2020. :doi:`10.2172/1660126`.
 

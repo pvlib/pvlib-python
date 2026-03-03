@@ -1561,7 +1561,7 @@ def calcparams_desoto(effective_irradiance, temp_cell,
         The energy bandgap at reference temperature in units of eV.
         1.121 eV for crystalline silicon. EgRef must be >0.  For parameters
         from the SAM CEC module database, EgRef=1.121 is implicit for all
-        cell types in the parameter estimation algorithm used by NREL.
+        cell types in the parameter estimation algorithm used by NLR.
 
     dEgdT : float
         The temperature dependence of the energy bandgap at reference
@@ -1569,7 +1569,7 @@ def calcparams_desoto(effective_irradiance, temp_cell,
         (e.g. -0.0002677 as in [1]_) or a DataFrame (this may be useful if
         dEgdT is a modeled as a function of temperature). For parameters from
         the SAM CEC module database, dEgdT=-0.0002677 is implicit for all cell
-        types in the parameter estimation algorithm used by NREL.
+        types in the parameter estimation algorithm used by NLR.
 
     irrad_ref : float, default 1000
         Reference irradiance in W/m^2.
@@ -1604,7 +1604,7 @@ def calcparams_desoto(effective_irradiance, temp_cell,
        photovoltaic array performance", Solar Energy, vol 80, pp. 78-88,
        2006.
 
-    .. [2] System Advisor Model web page. https://sam.nrel.gov.
+    .. [2] System Advisor Model web page. https://sam.nlr.gov.
 
     .. [3] A. Dobos, "An Improved Coefficient Calculator for the California
        Energy Commission 6 Parameter Photovoltaic Module Model", Journal of
@@ -1779,7 +1779,7 @@ def calcparams_cec(effective_irradiance, temp_cell,
         The energy bandgap at reference temperature in units of eV.
         1.121 eV for crystalline silicon. EgRef must be >0.  For parameters
         from the SAM CEC module database, EgRef=1.121 is implicit for all
-        cell types in the parameter estimation algorithm used by NREL.
+        cell types in the parameter estimation algorithm used by NLR.
 
     dEgdT : float
         The temperature dependence of the energy bandgap at reference
@@ -1787,7 +1787,7 @@ def calcparams_cec(effective_irradiance, temp_cell,
         (e.g. -0.0002677 as in [3]) or a DataFrame (this may be useful if
         dEgdT is a modeled as a function of temperature). For parameters from
         the SAM CEC module database, dEgdT=-0.0002677 is implicit for all cell
-        types in the parameter estimation algorithm used by NREL.
+        types in the parameter estimation algorithm used by NLR.
 
     irrad_ref : float, default 1000
         Reference irradiance in W/m^2.
@@ -1822,7 +1822,7 @@ def calcparams_cec(effective_irradiance, temp_cell,
        Energy Commission 6 Parameter Photovoltaic Module Model", Journal of
        Solar Energy Engineering, vol 134, 2012.
 
-    .. [2] System Advisor Model web page. https://sam.nrel.gov.
+    .. [2] System Advisor Model web page. https://sam.nlr.gov.
 
     .. [3] W. De Soto et al., "Improvement and validation of a model for
        photovoltaic array performance", Solar Energy, vol 80, pp. 78-88,
@@ -2889,7 +2889,7 @@ def scale_voltage_current_power(data, voltage=1, current=1):
 def pvwatts_dc(effective_irradiance, temp_cell, pdc0, gamma_pdc, temp_ref=25.,
                k=None, cap_adjustment=False):
     r"""
-    Implement NREL's PVWatts (Version 5) DC power model.
+    Implement NLR's PVWatts (Version 5) DC power model.
 
     Parameters
     ----------
@@ -2963,7 +2963,7 @@ def pvwatts_dc(effective_irradiance, temp_cell, pdc0, gamma_pdc, temp_ref=25.,
        Module Performance," In Proc. 33rd IEEE Photovoltaic Specialists
        Conference (PVSC), San Diego, CA, USA, 2008, pp. 1-6,
        :doi:`10.1109/PVSC.2008.4922586`.
-       Pre-print: https://docs.nrel.gov/docs/fy08osti/42511.pdf
+       Pre-print: https://www.nlr.gov/docs/fy08osti/42511.pdf
     """  # noqa: E501
 
     pdc = (effective_irradiance * 0.001 * pdc0 *
@@ -3004,7 +3004,7 @@ def pvwatts_losses(soiling=2, shading=3, snow=0, mismatch=2, wiring=2,
                    connections=0.5, lid=1.5, nameplate_rating=1, age=0,
                    availability=3):
     r"""
-    Implements NREL's PVWatts system loss model.
+    Implements NLR's PVWatts system loss model.
     The PVWatts loss model [1]_ is:
 
     .. math::

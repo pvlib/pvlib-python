@@ -89,7 +89,7 @@ def get_extra_radiation(datetime_or_doy, solar_constant=1366.1,
        Engineers, 2005. :doi:`10.1061/9780784408056`
 
     .. [6] I. Reda, A. Andreas, "Solar position algorithm for solar
-       radiation applications" NREL Golden, USA. NREL/TP-560-34302,
+       radiation applications" NLR Golden, USA. NREL/TP-560-34302,
        Revised 2008. :doi:`10.2172/15003974`
     """
 
@@ -1730,7 +1730,7 @@ def clearness_index_zenith_independent(clearness_index, airmass,
     max_clearness_index : numeric, default 2.0
         Maximum value of the clearness index. The default, 2.0, allows
         for over-irradiance events typically seen in sub-hourly data.
-        NREL's SRRL Fortran code used 0.82 for hourly data.
+        NLR's SRRL Fortran code used 0.82 for hourly data.
 
     Returns
     -------
@@ -1774,7 +1774,7 @@ def disc(ghi, solar_zenith, datetime_or_doy, pressure=101325,
 
     The original report describing the DISC model [1]_ uses the
     relative airmass rather than the absolute (pressure-corrected)
-    airmass. However, the NREL implementation of the DISC model [2]_
+    airmass. However, the NLR implementation of the DISC model [2]_
     uses absolute airmass. PVLib Matlab also uses the absolute airmass.
     pvlib python defaults to absolute airmass, but the relative airmass
     can be used by supplying `pressure=None`.
@@ -1828,7 +1828,7 @@ def disc(ghi, solar_zenith, datetime_or_doy, pressure=101325,
        Institute, 1987.
 
     .. [2] Maxwell, E. "DISC Model", Excel Worksheet.
-       https://www.nrel.gov/grid/solar-resource/disc.html
+       https://www.nlr.gov/grid/solar-resource/disc.html
 
     See Also
     --------

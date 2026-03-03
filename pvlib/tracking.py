@@ -114,7 +114,7 @@ def singleaxis(apparent_zenith, solar_azimuth,
     ----------
     .. [1] Anderson, K., and Mikofski, M., "Slope-Aware Backtracking for
        Single-Axis Trackers", Technical Report NREL/TP-5K00-76626, July 2020.
-       https://www.nrel.gov/docs/fy20osti/76626.pdf
+       https://www.nlr.gov/docs/fy20osti/76626.pdf
     .. [2] Lorenzo, E., Narvarte, L., and Muñoz, J. (2011). Tracking and
        back-tracking 19(6), 747–753. :doi:`10.1002/pip.1085`
     """
@@ -299,7 +299,7 @@ def calc_axis_tilt(slope_azimuth, slope_tilt, axis_azimuth):
     ----------
     .. [1] Kevin Anderson and Mark Mikofski, "Slope-Aware Backtracking for
        Single-Axis Trackers", Technical Report NREL/TP-5K00-76626, July 2020.
-       https://www.nrel.gov/docs/fy20osti/76626.pdf
+       https://www.nlr.gov/docs/fy20osti/76626.pdf
     """
     delta_gamma = axis_azimuth - slope_azimuth
     # equations 18-19
@@ -408,7 +408,7 @@ def calc_cross_axis_tilt(
     ----------
     .. [1] Kevin Anderson and Mark Mikofski, "Slope-Aware Backtracking for
        Single-Axis Trackers", Technical Report NREL/TP-5K00-76626, July 2020.
-       https://www.nrel.gov/docs/fy20osti/76626.pdf
+       https://www.nlr.gov/docs/fy20osti/76626.pdf
     """
     # delta-gamma, difference between axis and slope azimuths
     delta_gamma = axis_azimuth - slope_azimuth

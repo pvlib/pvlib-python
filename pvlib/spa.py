@@ -1,5 +1,5 @@
 """
-Calculate the solar position using the NREL SPA algorithm either using
+Calculate the solar position using the NLR SPA algorithm either using
 numpy arrays or compiling the code to machine language with numba.
 """
 
@@ -402,7 +402,7 @@ NUTATION_YTERM_ARRAY = np.array([
 @jcompile('float64(int64, int64, int64, int64, int64, int64, int64)',
           nopython=True)
 def julian_day_dt(year, month, day, hour, minute, second, microsecond):
-    """This is the original way to calculate the julian day from the NREL paper.
+    """This is the original way to calculate the julian day from the NLR paper.
     However, it is much faster to convert to unix/epoch time and then convert
     to julian day. Note that the date must be UTC."""
     if month <= 2:
@@ -1031,7 +1031,7 @@ def solar_position(unixtime, lat, lon, elev, pressure, temp, delta_t,
 
     """
     Calculate the solar position using the
-    NREL SPA algorithm described in [1].
+    NLR SPA algorithm described in [1].
 
     If numba is installed, the functions can be compiled
     and the code runs quickly. If not, the functions
@@ -1214,7 +1214,7 @@ def transit_sunrise_sunset(dates, lat, lon, delta_t, numthreads):
 def earthsun_distance(unixtime, delta_t, numthreads):
     """
     Calculates the distance from the earth to the sun using the
-    NREL SPA algorithm described in [1].
+    NLR SPA algorithm described in [1].
 
     Parameters
     ----------
@@ -1236,7 +1236,7 @@ def earthsun_distance(unixtime, delta_t, numthreads):
     ----------
     [1] Reda, I., Andreas, A., 2003. Solar position algorithm for solar
     radiation applications. Technical report: NREL/TP-560- 34302. Golden,
-    USA, http://www.nrel.gov.
+    USA, http://www.nlr.gov.
     """
 
     R = solar_position(unixtime, 0, 0, 0, 0, 0, delta_t,

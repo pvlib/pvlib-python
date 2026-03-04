@@ -40,7 +40,7 @@ Documentation
   (:issue:`2617`, :pull:`2624`)
 * Fix a broken docstring reference to ``grounddiffuse`` in
   :py:func:`pvlib.irradiance.poa_components`
-  (:issue:`2089`, :ghuser:`r0hansaxena`)
+  (:issue:`2089`, :pull:`2708`)
 
 
 Testing
@@ -69,4 +69,5 @@ Contributors
 * Cliff Hansen (:ghuser:`cwhanse`)
 * Anton Driesse (:ghuser:`adriesse`)
 * Kevin Anderson (:ghuser:`kandersolar`)
+* Rohan Saxena (:ghuser:`r0hansaxena`)
 

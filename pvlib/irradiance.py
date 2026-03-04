@@ -491,7 +491,7 @@ def poa_components(aoi, dni, poa_sky_diffuse, poa_ground_diffuse):
     poa_ground_diffuse : numeric
         Ground-reflected irradiance in the plane of the modules,
         as calculated by an albedo model (eg.,
-        :py:func:`pvlib.irradiance.get_ground_diffuse`). [Wm⁻²]
+        :py:func:`~pvlib.irradiance.get_ground_diffuse`). [Wm⁻²]
 
     Returns
     -------

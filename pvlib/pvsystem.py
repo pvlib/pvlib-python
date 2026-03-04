@@ -2963,7 +2963,7 @@ def pvwatts_dc(effective_irradiance, temp_cell, pdc0, gamma_pdc, temp_ref=25.,
        Module Performance," In Proc. 33rd IEEE Photovoltaic Specialists
        Conference (PVSC), San Diego, CA, USA, 2008, pp. 1-6,
        :doi:`10.1109/PVSC.2008.4922586`.
-       https://docs.nlr.gov/docs/fy08osti/42511.pdf
+       Pre-print: :doi:`10.1109/PVSC.2008.4922586`
     """  # noqa: E501
 
     pdc = (effective_irradiance * 0.001 * pdc0 *

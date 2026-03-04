@@ -216,5 +216,5 @@ f.tight_layout()
 # correlations, which include additional variables such as airmass. These
 # methods seem to reduce DNI spikes over 1000 [W/m^2].
 #
-# .. _TMY3: https://docs.nlr.gov/docs/fy08osti/43156.pdf
-# .. _NSRDB: https://docs.nlr.gov/docs/fy12osti/54824.pdf
+# .. _TMY3: https://doi.org/10.2172/928611
+# .. _NSRDB: https://doi.org/10.2172/1054832

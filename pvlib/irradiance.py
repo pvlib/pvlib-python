@@ -89,7 +89,7 @@ def get_extra_radiation(datetime_or_doy, solar_constant=1366.1,
        Engineers, 2005. :doi:`10.1061/9780784408056`
 
     .. [6] I. Reda, A. Andreas, "Solar position algorithm for solar
-       radiation applications" NLR Golden, CO, USA. NREL/TP-560-34302,
+       radiation applications" NREL Golden, CO, USA. NREL/TP-560-34302,
        Revised 2008. :doi:`10.2172/15003974`
     """
 

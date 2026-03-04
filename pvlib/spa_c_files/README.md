@@ -2,7 +2,7 @@ README
 ------
 
 NLR provides a C implementation of the solar position algorithm described in
-[Reda, I.; Andreas, A. (2003). Solar Position Algorithm for Solar Radiation Applications. 55 pp.; NREL Report No. TP-560-34302](http://www.nlr.gov/docs/fy08osti/34302.pdf).
+Reda, I.; Andreas, A. (2003). Solar Position Algorithm for Solar Radiation Applications. 55 pp.; NREL Report No. TP-560-34302. :doi:`10.2172/15003974`
 
 This folder contains the files required to make SPA C code accessible
 to the `pvlib-python` package. We use the Cython package to wrap the NLR SPA

@@ -34,7 +34,7 @@ import matplotlib.pyplot as plt
 from scipy.integrate import trapezoid
 from pvlib import spectrum, solarposition, irradiance, atmosphere
 
-lat, lon = 39.742, -105.18  # NLR SRRL location
+lat, lon = 39.742, -105.18  # SRRL location
 surface_tilt = 25
 surface_azimuth = 180  # south-facing system
 pressure = 81190  # at 1828 metres AMSL, roughly

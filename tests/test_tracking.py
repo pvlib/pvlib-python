@@ -345,7 +345,7 @@ def test_calc_axis_tilt():
 
 def test_slope_aware_backtracking():
     """
-    Test validation data set from https://www.nlr.gov/docs/fy20osti/76626.pdf
+    Test validation data set from https://doi.org/10.2172/1660126
     """
     index = pd.date_range('2019-01-01T08:00', '2019-01-01T17:00', freq='h')
     index = index.tz_localize('Etc/GMT+5')

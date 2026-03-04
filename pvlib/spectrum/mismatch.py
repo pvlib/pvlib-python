@@ -231,7 +231,7 @@ def spectral_factor_firstsolar(precipitable_water, airmass_absolute,
        Water." IEEE Photovoltaic Specialists Conference, Portland, 2016
     .. [3] Marion, William F., et al. User's Manual for Data for Validating
        Models for PV Module Performance. National Renewable Energy
-       Laboratory, 2014. http://www.nlr.gov/docs/fy14osti/61610.pdf
+       Laboratory, 2014. :doi:`10.2172/1130632`
     .. [4] Schweiger, M. and Hermann, W, Influence of Spectral Effects
        on Energy Yield of Different PV Modules: Comparison of Pwat and
        MMF Approach, TUV Rheinland Energy GmbH report 21237296.003,

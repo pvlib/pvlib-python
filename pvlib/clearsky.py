@@ -1004,7 +1004,7 @@ def bird(zenith, airmass_relative, aod380, aod500, precipitable_water,
     .. [3] `Bird Clear Sky Model <http://www.nlr.gov/grid/solar-resource/
        clearsky.html>`_
 
-    .. [4] `SERI/TR-642-761 <https://www.nlr.gov/docs/legosti/old/761.pdf>`_
+    .. [4] SERI/TR-642-761 :doi:`10.2172/6510849`
 
     .. [5] `Error Reports <http://www.nlr.gov/grid/solar-resource/
        clearsky-error-reports.html>`_

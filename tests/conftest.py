@@ -86,31 +86,25 @@ skip_windows = pytest.mark.skipif(platform_is_windows,
 
 
 @pytest.fixture(scope="module")
-def nrel_api_key():
-    """API key for NLR Developer Network (formerly NREL).
+def nlr_api_key():
+    """Supplies pvlib-python's NLR Developer Network API key.
 
-    Checks NLR_API_KEY first, falls back to NREL_API_KEY
-    with deprecation warning.
+    pvlib's CI utilizes a secret variable set to NLR_API_KEY
+    (formerly NREL_API_KEY) to mitigate failures associated with
+    using the default key of "DEMO_KEY". A user is capable of using
+    their own key this way if desired however the default key should
+    suffice for testing purposes.
     """
     try:
         demo_key = os.environ["NLR_API_KEY"]
     except KeyError:
-        try:
-            demo_key = os.environ["NREL_API_KEY"]
-            warnings.warn(
-                "NREL_API_KEY is deprecated, use NLR_API_KEY instead",
-                DeprecationWarning,
-                stacklevel=2,
-            )
-        except KeyError:
-            pytest.skip("requires NLR_API_KEY or NREL_API_KEY env var")
+        warnings.warn(
+            "WARNING: NLR_API_KEY (formerly NREL_API_KEY) environment "
+            "variable not set! Using DEMO_KEY instead. "
+            "Unexpected failures may occur."
+        )
+        demo_key = 'DEMO_KEY'
     return demo_key
-
-
-@pytest.fixture(scope="module")
-def nlr_api_key(nrel_api_key):
-    """Alias for nrel_api_key fixture."""
-    return nrel_api_key
 
 
 try:

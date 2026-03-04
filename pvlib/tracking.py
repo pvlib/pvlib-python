@@ -43,8 +43,10 @@ def singleaxis(apparent_zenith, solar_azimuth,
 
     axis_tilt : float, default 0
         The tilt of the axis of rotation (i.e, the y-axis defined by
-        ``axis_azimuth``) with respect to horizontal.
-        ``axis_tilt`` must be >= 0 and <= 90. [degrees]
+        ``axis_azimuth``) with respect to horizontal (degrees). Positive
+        ``axis_tilt`` is *downward* in the direction of ``axis_azimuth``. For
+        example, for a tracker with ``axis_azimuth``=180 and ``axis_tilt``=10,
+        the north end is higher than the south end of the axis.
 
     axis_azimuth : float, default 0
         A value denoting the compass direction along which the axis of
@@ -62,9 +64,7 @@ def singleaxis(apparent_zenith, solar_azimuth,
         y-axis of the tracker coordinate system. For example, for a tracker
         with ``axis_azimuth`` oriented to the south, a rotation to
         ``max_angle`` is towards the west, and a rotation toward ``-max_angle``
-        is in the opposite direction, toward the east. Hence, a ``max_angle``
-        of 180 degrees (equivalent to max_angle = (-180, 180)) allows the
-        tracker to achieve its full rotation capability.
+        is in the opposite direction, toward the east.
 
     backtrack : bool, default True
         Controls whether the tracker has the capability to "backtrack"
@@ -84,7 +84,7 @@ def singleaxis(apparent_zenith, solar_azimuth,
         intersection between the slope containing the tracker axes and a plane
         perpendicular to the tracker axes. The cross-axis tilt should be
         specified using a right-handed convention. For example, trackers with
-        axis azimuth of 180 degrees (heading south) will have a negative
+        ``axis_azimuth`` of 180 degrees (heading south) will have a negative
         cross-axis tilt if the tracker axes plane slopes down to the east and
         positive cross-axis tilt if the tracker axes plane slopes down to the
         west. Use :func:`~pvlib.tracking.calc_cross_axis_tilt` to calculate
@@ -210,6 +210,50 @@ def singleaxis(apparent_zenith, solar_azimuth,
     return out
 
 
+def _unit_normal(axis_azimuth, axis_tilt, theta):
+    """
+    Unit normal to rotated tracker surface, in global E-N-Up coordinates,
+    given by R*(0, 0, 1)^T, where:
+
+        R = Rz(-axis_azimuth) Rx(-axis_tilt) Ry(theta) *
+
+    Rz is a rotation by -axis_azimuth about the z-axis (axis_azimuth
+    is negated to convert from an azimuth angle to a rotation angle). Rx is a
+    rotation by -axis_tilt about the x-axis, where axis_tilt is negated
+    because pvlib's convention is that the positive y-axis is tilted
+    downwards. Ry is a rotation by theta
+    about the y-axis. theta is negated so that a negative.
+
+    Parameters
+    ----------
+    axis_azimuth : scalar
+    axis_tilt    : scalar
+    theta        : scalar or array-like
+
+    Returns
+    -------
+    ndarray
+        Shape (3,) if theta scalar
+        Shape (N,3) if theta has length N
+    """
+
+    theta = np.asarray(theta)
+
+    cA, sA = cosd(-axis_azimuth), sind(-axis_azimuth)
+    cT, sT = cosd(-axis_tilt), sind(-axis_tilt)
+
+    cTh = cosd(theta)
+    sTh = sind(theta)
+
+    x = sA * sT * cTh + cA * sTh
+    y = sA * sTh - cA * sT * cTh
+    z = cT * cTh
+
+    result = np.column_stack((x, y, z))
+
+    return result
+
+
 def calc_surface_orientation(tracker_theta, axis_tilt=0, axis_azimuth=0):
     """
     Calculate the surface tilt and azimuth angles for a given tracker rotation.
@@ -223,8 +267,7 @@ def calc_surface_orientation(tracker_theta, axis_tilt=0, axis_azimuth=0):
         results in ``surface_azimuth`` to the West while ``tracker_theta < 0``
         results in ``surface_azimuth`` to the East. [degree]
     axis_tilt : float, default 0
-        The tilt of the axis of rotation with respect to horizontal.
-        ``axis_tilt`` must be >= 0 and <= 90.  [degree]
+        The tilt of the axis of rotation with respect to horizontal. [degree]
     axis_azimuth : float, default 0
         A value denoting the compass direction along which the axis of
         rotation lies. Measured east of north. [degree]
@@ -234,7 +277,9 @@ def calc_surface_orientation(tracker_theta, axis_tilt=0, axis_azimuth=0):
     dict or DataFrame
         Contains keys ``'surface_tilt'`` and ``'surface_azimuth'`` representing
         the module orientation accounting for tracker rotation and axis
-        orientation. [degree]
+        orientation (degree).
+        Where ``surface_tilt``=0, ``surface_azimuth`` is set equal to
+        ``axis_azimuth``.
 
     References
     ----------
@@ -245,16 +290,18 @@ def calc_surface_orientation(tracker_theta, axis_tilt=0, axis_azimuth=0):
     with np.errstate(invalid='ignore', divide='ignore'):
         surface_tilt = acosd(cosd(tracker_theta) * cosd(axis_tilt))
 
-        # clip(..., -1, +1) to prevent arcsin(1 + epsilon) issues:
-        azimuth_delta = asind(np.clip(sind(tracker_theta) / sind(surface_tilt),
-                                      a_min=-1, a_max=1))
-        # Combine Eqs 2, 3, and 4:
-        azimuth_delta = np.where(abs(tracker_theta) < 90,
-                                 azimuth_delta,
-                                 -azimuth_delta + np.sign(tracker_theta) * 180)
-        # handle surface_tilt=0 case:
-        azimuth_delta = np.where(sind(surface_tilt) != 0, azimuth_delta, 90)
-        surface_azimuth = (axis_azimuth + azimuth_delta) % 360
+    # unit normal to rotated tracker surface
+    unit_normal = _unit_normal(axis_azimuth, axis_tilt, tracker_theta)
+
+    # deviate from [1] to allow for negative tilt.
+    # project unit_normal to x-y plane to calculate azimuth
+    surface_azimuth = np.degrees(
+        np.arctan2(unit_normal[:, 0], unit_normal[:, 1]))
+    # constrain angles to [0, 360)
+    surface_azimuth = np.mod(surface_azimuth, 360.0)
+
+    surface_azimuth = np.where(surface_tilt == 0., axis_azimuth,
+                               surface_azimuth)
 
     out = {
         'surface_tilt': surface_tilt,
@@ -378,15 +425,14 @@ def calc_cross_axis_tilt(
     ----------
     slope_azimuth : float
         direction of the normal to the slope containing the tracker axes, when
-        projected on the horizontal [degrees]
+        projected on the horizontal. [degrees]
     slope_tilt : float
-        angle of the slope containing the tracker axes, relative to horizontal
+        angle of the slope containing the tracker axes, relative to horizontal.
         [degrees]
     axis_azimuth : float
-        direction of tracker axes projected on the horizontal [degrees]
+        direction of tracker axes projected on the horizontal. [degrees]
     axis_tilt : float
-        tilt of trackers relative to horizontal.  ``axis_tilt`` must be >= 0
-        and <= 90. [degree]
+        tilt of trackers relative to horizontal. [degree]
 
     Returns
     -------

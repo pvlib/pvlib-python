@@ -942,7 +942,7 @@ def bird(zenith, airmass_relative, aod380, aod500, precipitable_water,
     """
     Bird Simple Clear Sky Broadband Solar Radiation Model
 
-    Based on NREL Excel implementation by Daryl R. Myers [1, 2].
+    Based on NLR Excel implementation by Daryl R. Myers [1, 2].
 
     Bird and Hulstrom define the zenith as the "angle between a line to
     the sun and the local zenith". There is no distinction in the paper
@@ -953,7 +953,7 @@ def bird(zenith, airmass_relative, aod380, aod500, precipitable_water,
     was to compare existing clear sky models with "rigorous radiative
     transfer models" (RTM) it is possible that apparent zenith was
     obtained as output from the RTM. However, the implementation presented
-    in PVLIB is tested against the NREL Excel implementation by Daryl
+    in PVLIB is tested against the NLR Excel implementation by Daryl
     Myers which uses an analytical expression for solar zenith instead
     of apparent zenith.
 
@@ -1001,13 +1001,13 @@ def bird(zenith, airmass_relative, aod380, aod500, precipitable_water,
     .. [2] Daryl R. Myers, "Solar Radiation: Practical Modeling for Renewable
        Energy Applications", pp. 46-51 CRC Press (2013)
 
-    .. [3] `NREL Bird Clear Sky Model <http://rredc.nrel.gov/solar/models/
-       clearsky/>`_
+    .. [3] `Bird Clear Sky Model <http://www.nlr.gov/grid/solar-resource/
+       clearsky.html>`_
 
-    .. [4] `SERI/TR-642-761 <https://www.nrel.gov/docs/legosti/old/761.pdf>`_
+    .. [4] SERI/TR-642-761 :doi:`10.2172/6510849`
 
-    .. [5] `Error Reports <http://rredc.nrel.gov/solar/models/clearsky/
-       error_reports.html>`_
+    .. [5] `Error Reports <http://www.nlr.gov/grid/solar-resource/
+       clearsky-error-reports.html>`_
     """
     etr = dni_extra  # extraradiation
     ze_rad = np.deg2rad(zenith)  # zenith in radians

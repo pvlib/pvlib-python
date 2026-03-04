@@ -179,7 +179,7 @@ A solar radiation network in the USA, run by NOAA.
 MIDC
 ^^^^
 
-A solar radiation network in the USA, run by NREL.
+A solar radiation network in the USA, run by NLR.
 
 .. autosummary::
    :toctree: generated/

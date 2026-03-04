@@ -20,6 +20,9 @@ Bug fixes
 
 Enhancements
 ~~~~~~~~~~~~
+* Add ``is_backtracking`` and ``is_at_limit`` boolean outputs to
+  :py:func:`pvlib.tracking.singleaxis`
+  (:issue:`2672`, :ghuser:`r0hansaxena`)
 
 
 Documentation

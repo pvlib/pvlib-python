@@ -103,6 +103,10 @@ def singleaxis(apparent_zenith, solar_azimuth,
         * `surface_azimuth`: The azimuth of the rotated panel, determined by
           projecting the vector normal to the panel's surface to the earth's
           surface. [degrees]
+        * `is_backtracking`: Boolean indicator of whether the tracker is
+          in backtracking mode to avoid row-to-row shading.
+        * `is_at_limit`: Boolean indicator of whether the rotation angle
+          has been clipped to ``max_angle`` or its opposite.
 
     See also
     --------
@@ -172,11 +176,14 @@ def singleaxis(apparent_zenith, solar_azimuth,
         # there's no row-to-row shade to avoid, & backtracking is unnecessary
         # [1], Eqs. 15-16
         with np.errstate(invalid='ignore'):
+            _backtracking_mask = temp < 1
             tracker_theta = omega_ideal + np.where(
-                temp < 1, omega_correction,
+                _backtracking_mask, omega_correction,
                 0)
+        is_backtracking = _backtracking_mask
     else:
         tracker_theta = omega_ideal
+        is_backtracking = np.full_like(omega_ideal, False, dtype=bool)
 
     # NOTE: max_angle defined relative to zero-point rotation, not the
     # system-plane normal
@@ -189,7 +196,9 @@ def singleaxis(apparent_zenith, solar_azimuth,
         min_angle, max_angle = max_angle
 
     # Clip tracker_theta between the minimum and maximum angles.
+    tracker_theta_unclipped = tracker_theta.copy()
     tracker_theta = np.clip(tracker_theta, min_angle, max_angle)
+    is_at_limit = tracker_theta_unclipped != tracker_theta
 
     # Calculate auxiliary angles
     surface = calc_surface_orientation(tracker_theta, axis_tilt, axis_azimuth)
@@ -200,12 +209,15 @@ def singleaxis(apparent_zenith, solar_azimuth,
 
     # Bundle DataFrame for return values and filter for sun below horizon.
     out = {'tracker_theta': tracker_theta, 'aoi': aoi,
-           'surface_azimuth': surface_azimuth, 'surface_tilt': surface_tilt}
+           'surface_azimuth': surface_azimuth, 'surface_tilt': surface_tilt,
+           'is_backtracking': is_backtracking, 'is_at_limit': is_at_limit}
     if index is not None:
         out = pd.DataFrame(out, index=index)
-        out[zen_gt_90] = np.nan
+        out.loc[zen_gt_90, ['tracker_theta', 'aoi',
+                            'surface_azimuth', 'surface_tilt']] = np.nan
     else:
-        out = {k: np.where(zen_gt_90, np.nan, v) for k, v in out.items()}
+        for k in ['tracker_theta', 'aoi', 'surface_azimuth', 'surface_tilt']:
+            out[k] = np.where(zen_gt_90, np.nan, out[k])
 
     return out
 

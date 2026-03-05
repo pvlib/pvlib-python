@@ -743,6 +743,38 @@ def test_dirint_no_delta_kt():
                         np.array([861.9,  670.4]), 1)
 
 
+def test_delta_kt_prime_dirint_multiday():
+    # GH 1847: _delta_kt_prime_dirint mishandled NaN boundaries between
+    # days, halving the delta at edge positions instead of using the
+    # single available neighbor value (Perez eqn 3).
+    times = pd.date_range('2014-01-01T05', periods=15, freq='1h',
+                          tz='Etc/GMT+0')
+    kt_prime = pd.Series(
+        [np.nan, np.nan, np.nan,
+         0.29458475, 0.21863506, 0.37650014,
+         0.41238529, 0.23375275, 0.23363453,
+         0.26348652, 0.25412631, 0.43794681,
+         np.nan, np.nan, np.nan],
+        index=times)
+    result = irradiance._delta_kt_prime_dirint(kt_prime, True, times)
+    # first valid value (index 3): only forward neighbor exists,
+    # delta_kt_prime == |kt[3] - kt[4]| (Perez eqn 3)
+    expected_first = abs(kt_prime.iloc[3] - kt_prime.iloc[4])
+    assert_almost_equal(result.iloc[3], expected_first)
+    # last valid value (index 11): only backward neighbor exists,
+    # delta_kt_prime == |kt[11] - kt[10]| (Perez eqn 3)
+    expected_last = abs(kt_prime.iloc[11] - kt_prime.iloc[10])
+    assert_almost_equal(result.iloc[11], expected_last)
+    # interior valid value (index 6): both neighbors exist,
+    # delta_kt_prime == mean of both deltas (Perez eqn 2)
+    expected_mid = 0.5 * (abs(kt_prime.iloc[6] - kt_prime.iloc[7])
+                          + abs(kt_prime.iloc[6] - kt_prime.iloc[5]))
+    assert_almost_equal(result.iloc[6], expected_mid)
+    # NaN positions should remain NaN
+    assert np.isnan(result.iloc[0])
+    assert np.isnan(result.iloc[-1])
+
+
 def test_dirint_coeffs():
     coeffs = irradiance._get_dirint_coeffs()
     assert coeffs[0, 0, 0, 0] == 0.385230

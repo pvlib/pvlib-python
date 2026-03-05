@@ -25,6 +25,7 @@ Enhancements
 
 Documentation
 ~~~~~~~~~~~~~
+* Remove `g_poa_effective` from the :ref:`nomenclature` page (:pull:`2704`)
 
 
 Testing

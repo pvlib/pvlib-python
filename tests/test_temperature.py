@@ -501,3 +501,51 @@ def test_glm_repr():
                 "'alpha': 0.9}")
 
     assert glm.__repr__() == expected
+
+
+@pytest.mark.parametrize('tz', [None, 'Etc/GMT+5'])
+def test_fuentes_timezone(tz):
+    index = pd.date_range('2019-01-01', freq='h', periods=3, tz=tz)
+
+    df = pd.DataFrame({'poa_global': 1000, 'temp_air': 20, 'wind_speed': 1},
+                      index)
+
+    out = temperature.fuentes(df['poa_global'], df['temp_air'],
+                              df['wind_speed'], noct_installed=45)
+
+    expected = pd.Series(
+        [48.041843, 51.845471, 51.846428],
+        index=index,
+        name='tmod'
+    )
+
+    assert_series_equal(out.round(6), expected.round(6))
+
+
+def test_fuentes_int_vs_float():
+    """Ensure integer and float inputs give identical results."""
+    index = pd.date_range("2019-01-01", freq="h", periods=2)
+
+    inputs = pd.DataFrame({
+        "poa_global": [1000, 500],
+        "temp_air": [25, 25],
+        "wind_speed": [1, 1],
+    }, index=index)
+
+    result_int = temperature.fuentes(
+        poa_global=inputs["poa_global"],
+        temp_air=inputs["temp_air"],
+        wind_speed=inputs["wind_speed"],
+        noct_installed=45
+    )
+
+    inputs_float = inputs.astype(float)
+
+    result_float = temperature.fuentes(
+        poa_global=inputs_float["poa_global"],
+        temp_air=inputs_float["temp_air"],
+        wind_speed=inputs_float["wind_speed"],
+        noct_installed=45
+    )
+
+    assert_allclose(result_int.values, result_float.values)

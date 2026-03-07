@@ -40,7 +40,7 @@ Documentation
   (:issue:`2617`, :pull:`2624`)
 * Fix :py:class:`pvlib.pvsystem.PVSystem` docstring incorrectly stating
   ``module_type`` defaults to ``'glass_polymer'`` instead of ``None``.
-  (:issue:`2634`)
+  (:issue:`2634`, :pull:`2713`)
 * Fix a broken docstring reference to ``grounddiffuse`` in
   :py:func:`pvlib.irradiance.poa_components`
   (:issue:`2089`, :pull:`2708`)

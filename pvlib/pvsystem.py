@@ -850,8 +850,9 @@ class PVSystem:
         """
         Calculates DC power according to the PVWatts model using
         :py:func:`pvlib.pvsystem.pvwatts_dc`, `self.module_parameters['pdc0']`,
-        `self.module_parameters['gamma_pdc']`, `self.module_parameters['temp_ref']`,
-        `self.module_parameters['k']`, `self.module_parameters['cap_adjustment']`.
+        `self.module_parameters['gamma_pdc']`,
+        `self.module_parameters['temp_ref']`, `self.module_parameters['k']`,
+        `self.module_parameters['cap_adjustment']`.
 
         See :py:func:`pvlib.pvsystem.pvwatts_dc` for details.
         """
@@ -861,7 +862,8 @@ class PVSystem:
             pvwatts_dc(effective_irradiance, temp_cell,
                        array.module_parameters['pdc0'],
                        array.module_parameters['gamma_pdc'],
-                       **_build_kwargs(['temp_ref', 'k', 'cap_adjustment'], array.module_parameters))
+                       **_build_kwargs(['temp_ref', 'k', 'cap_adjustment'],
+                                       array.module_parameters))
             for array, effective_irradiance, temp_cell
             in zip(self.arrays, effective_irradiance, temp_cell)
         )

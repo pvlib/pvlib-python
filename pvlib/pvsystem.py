@@ -860,7 +860,7 @@ class PVSystem:
             pvwatts_dc(effective_irradiance, temp_cell,
                        array.module_parameters['pdc0'],
                        array.module_parameters['gamma_pdc'],
-                       **_build_kwargs(['temp_ref'], array.module_parameters))
+                       **_build_kwargs(['temp_ref', 'k', 'cap_adjustment'], array.module_parameters))
             for array, effective_irradiance, temp_cell
             in zip(self.arrays, effective_irradiance, temp_cell)
         )

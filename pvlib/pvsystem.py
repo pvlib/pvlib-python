@@ -850,7 +850,8 @@ class PVSystem:
         """
         Calculates DC power according to the PVWatts model using
         :py:func:`pvlib.pvsystem.pvwatts_dc`, `self.module_parameters['pdc0']`,
-        and `self.module_parameters['gamma_pdc']`.
+        `self.module_parameters['gamma_pdc']`, `self.module_parameters['temp_ref']`,
+        `self.module_parameters['k']`, `self.module_parameters['cap_adjustment']`.
 
         See :py:func:`pvlib.pvsystem.pvwatts_dc` for details.
         """

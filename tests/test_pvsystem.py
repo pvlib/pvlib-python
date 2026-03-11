@@ -2260,7 +2260,7 @@ def pvwatts_system_defaults():
 
 @pytest.fixture
 def pvwatts_system_kwargs():
-    module_parameters = {'pdc0': 100, 'gamma_pdc': -0.003, 'temp_ref': 20}
+    module_parameters = {'pdc0': 100, 'gamma_pdc': -0.003, 'temp_ref': 20, 'k': 0.01, 'cap_adjustment': True}
     inverter_parameters = {'pdc0': 90, 'eta_inv_nom': 0.95, 'eta_inv_ref': 1.0}
     system = pvsystem.PVSystem(module_parameters=module_parameters,
                                inverter_parameters=inverter_parameters)

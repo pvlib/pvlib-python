@@ -20,7 +20,9 @@ Bug fixes
 
 Enhancements
 ~~~~~~~~~~~~
-
+* Use ``k`` and ``cap_adjustment`` from :py:func:`pvlib.pvsystem.Array.module_parameters` in :py:func:`pvlib.pvsystem.PVSystem.pvwatts_dc`
+  (:issue:`2714`, :pull:`2715`)
+  
 
 Documentation
 ~~~~~~~~~~~~~
@@ -70,4 +72,5 @@ Contributors
 * Anton Driesse (:ghuser:`adriesse`)
 * Kevin Anderson (:ghuser:`kandersolar`)
 * Rohan Saxena (:ghuser:`r0hansaxena`)
+* Marco Fumagalli (:ghuser:`fuma900`)
 

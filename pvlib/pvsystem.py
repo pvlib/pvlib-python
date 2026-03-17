@@ -140,7 +140,7 @@ class PVSystem:
     module : string, optional
         The model name of the modules.
 
-    module_type : string, default 'glass_polymer'
+    module_type : string, optional
          Describes the module's construction. Valid strings are 'glass_polymer'
          and 'glass_glass'. Used for cell and module temperature calculations.
 

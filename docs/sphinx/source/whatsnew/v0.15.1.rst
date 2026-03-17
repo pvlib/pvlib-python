@@ -38,8 +38,8 @@ Documentation
 * Add AI checkbox to PR template, and auto-generate a comment on PRs
   from first-time contributors regarding AI and contributing guidelines.
   (:issue:`2617`, :pull:`2624`)
-* Correct :py:class:`pvlib.pvsystem.PVSystem` docstring to state that
-  ``module_type`` defaults to ``None``.
+* Update :py:class:`pvlib.pvsystem.PVSystem` docstring to state that
+  ``module_type`` is optional.
   (:issue:`2634`, :pull:`2713`)
 * Fix a broken docstring reference to ``grounddiffuse`` in
   :py:func:`pvlib.irradiance.poa_components`

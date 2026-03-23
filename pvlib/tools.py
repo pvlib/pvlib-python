@@ -638,7 +638,8 @@ def lambertw_pvlib(x):
         g = np.log(x[small] + 1) - np.log(np.log(x[small] + 1) + 1)
         for _ in range(0, 3):
             expg = np.exp(g)
-            g = g - (g*expg - z) * (g + 1) / (expg * (g + 1)**2 - 0.5*(g + 2)*(expg*g - z))
+            g = g - (g*expg - z) * (g + 1) / \
+                (expg * (g + 1)**2 - 0.5*(g + 2)*(expg*g - z))
         w[small] = g
 
     return w

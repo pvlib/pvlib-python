@@ -289,6 +289,7 @@ def test_lambertw_pvlib():
     test_exp = np.arange(-10., 300, step=10)
     test_x = 10.**test_exp
     # known solution from scipy.special.lambertw
+    # scipy 1.7.1, python 3.13.1, numpy 2.3.5
     expected = np.array([
         9.9999999989999997e-11, 5.6714329040978384e-01,
         2.0028685413304952e+01, 4.2306755091738395e+01,

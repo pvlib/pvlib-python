@@ -603,4 +603,4 @@ def _lambertw_pvlib(x):
                 (expg * g_p1**2 - 0.5*(g + 2)*g_expg_z)
         w[small] = g
 
-    return w[0] if w.shape==1 else w
+    return w[0] if w.shape == 1 else w

@@ -585,7 +585,7 @@ def _lambertw_pvlib(x):
     '''
     localx = np.asarray(x, float)
     w = np.full_like(localx, np.nan)
-    small = localx <= 10
+    small = localx <= 100
     # for large x, solve 0 = f(w) = w + log(w) - log(x) using Newton's
     # w will contain nan for these numbers due to log(w) = log(log(x))
     w[~small] = _log_lambertw(np.log(localx[~small]))

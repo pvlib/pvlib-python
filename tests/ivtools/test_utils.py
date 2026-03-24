@@ -185,10 +185,10 @@ def test_lambertw_pvlib():
     result = _lambertw_pvlib(test_x)
     assert np.allclose(result, expected, rtol=1e-14)
     # with float input
-    for x, k in zip([1.e-10, 1.e+10], [1, 5]):
+    for x, k in zip(test_x[[1, 5]], expected[[1, 5]]):
         result = _lambertw_pvlib(x)
         assert np.isclose(result, expected[k])
     # with 1d array
-    for x, k in zip([1.e-10, 1.e+10], [1, 5]):
+    for x, k in zip(test_x[[1, 5]], expected[[1, 5]]):
         result = _lambertw_pvlib(np.array([x]))
         assert np.isclose(result, expected[k])

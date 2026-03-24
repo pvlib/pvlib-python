@@ -552,7 +552,6 @@ def _log_lambertw(logx):
     Parameters
     ----------
     logx : numeric
-        Log(x) of
 
     Returns
     -------
@@ -571,29 +570,30 @@ def _log_lambertw(logx):
 
 
 def _lambertw_pvlib(x):
-    r'''Lambert's W function principal branch, :math:`W_0(x)`, for :math:`x`
-    real valued.
+    r'''Lambert's W function principal branch, :math:`W_0(x)`, for
+    :math:`x>=0`.
 
     Parameters
     ----------
-    x : np.array
+    x : float or np.array
         Must be real numbers.
 
     Returns
     -------
-    np.array
+    float or np.array
 
     '''
-    w = np.full_like(x, np.nan)
-    small = x <= 10
+    localx = np.asarray(x, float)
+    w = np.full_like(localx, np.nan)
+    small = localx <= 10
     # for large x, solve 0 = f(w) = w + log(w) - log(x) using Newton's
-    w[~small] = _log_lambertw(np.log(x[~small]))
-
     # w will contain nan for these numbers due to log(w) = log(log(x))
+    w[~small] = _log_lambertw(np.log(localx[~small]))
+
     # for small x, solve 0 = g(w) = w * exp(w) - x using Halley's method
-    if any(small):
-        z = x[small]
-        temp = np.log(x[small] + 1)
+    if np.any(small):
+        z = localx[small]
+        temp = np.log(localx[small] + 1)
         g = temp - np.log(temp + 1)
         for _ in range(0, 3):
             expg = np.exp(g)
@@ -603,4 +603,4 @@ def _lambertw_pvlib(x):
                 (expg * g_p1**2 - 0.5*(g + 2)*g_expg_z)
         w[small] = g
 
-    return w
+    return w[0] if w.shape==1 else w

@@ -593,11 +593,14 @@ def _lambertw_pvlib(x):
     # for small x, solve 0 = g(w) = w * exp(w) - x using Halley's method
     if any(small):
         z = x[small]
-        g = np.log(x[small] + 1) - np.log(np.log(x[small] + 1) + 1)
+        temp = np.log(x[small] + 1)
+        g = temp - np.log(temp + 1)
         for _ in range(0, 3):
             expg = np.exp(g)
-            g = g - (g*expg - z) * (g + 1) / \
-                (expg * (g + 1)**2 - 0.5*(g + 2)*(expg*g - z))
+            g_expg_z = g*expg - z
+            g_p1 = g + 1
+            g = g - g_expg_z * g_p1 / \
+                (expg * g_p1**2 - 0.5*(g + 2)*g_expg_z)
         w[small] = g
 
     return w

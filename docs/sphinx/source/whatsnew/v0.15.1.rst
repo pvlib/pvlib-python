@@ -28,7 +28,7 @@ Enhancements
   (:issue:`2714`, :pull:`2715`)
 * Add :py:func:`pvlib.tools.lambertw_pvlib` to speed up calculations when using
   LambertW single diode equation methods.
-  (:pull:`2723`)  
+  (:discussion:`2720`, :pull:`2723`)  
 
 Documentation
 ~~~~~~~~~~~~~

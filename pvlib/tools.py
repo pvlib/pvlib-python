@@ -613,17 +613,16 @@ def _log_lambertw(logx):
 
 
 def lambertw_pvlib(x):
-    r'''Lambert's W function.
+    r'''Lambert's W function principal branch, :math:`W_0(x)`, for :math:`x` real valued.
 
     Parameters
     ----------
-    x : numeric
+    x : np.array
         Must be real numbers.
 
     Returns
     -------
-    numeric
-        Lambert's W(x). Principal branch only.
+    np.array
 
     '''
     w = np.full_like(x, np.nan)

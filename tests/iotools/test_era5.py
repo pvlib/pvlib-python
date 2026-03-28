@@ -93,6 +93,7 @@ def test_get_era5_timeout(params):
     with pytest.raises(requests.exceptions.Timeout, match=match):
         df, meta = pvlib.iotools.get_era5(**params, timeout=1)
 
+
 def test__m_to_cm():
     from pvlib.iotools.era5 import _m_to_cm
     assert _m_to_cm(0.01) == 1  # 0.01 m = 1 cm

@@ -20,6 +20,10 @@ Bug fixes
 * Fix a division-by-zero condition in
   :py:func:`pvlib.transformer.simple_efficiency` when ``load_loss = 0``.
   (:issue:`2645`, :pull:`2646`)
+* Fix a bug in :py:func:`pvlib.iotools.era5._m_to_cm` where meters were
+  incorrectly divided by 100 instead of multiplied, causing precipitations to be
+  underestimated by a factor of 10,000 when ``map_variables=True``.
+  (:issue:`2724`, :pull:`2725`)
 
 Enhancements
 ~~~~~~~~~~~~
@@ -79,4 +83,5 @@ Contributors
 * Kevin Anderson (:ghuser:`kandersolar`)
 * Rohan Saxena (:ghuser:`r0hansaxena`)
 * Marco Fumagalli (:ghuser:`fuma900`)
+* Jean-Baptiste Pasquier (:ghuser:`pasquierjb`)
 

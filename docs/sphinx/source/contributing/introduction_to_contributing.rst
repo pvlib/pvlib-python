@@ -12,11 +12,12 @@ contributors from novice to expert. Don't worry if you don't (yet)
 understand parts of it.
 
 
-.. _core-principles:
+.. _core-guidelines:
 
 Core guidelines
 ~~~~~~~~~~~~~~~
-While we welcome new contributors, reviewer capacity is limited. Therefore, following these core guidelines is essential:
+While we welcome new contributors, reviewer capacity is limited. Therefore,
+following these core guidelines is essential:
 
 * Every pull request (PR) should address one or more open issues. The PR should
   be outlined in the issue discussion.
@@ -30,7 +31,6 @@ While we welcome new contributors, reviewer capacity is limited. Therefore, foll
   this reason.
 * Maintainers reserve the right to close PRs that do not comply with the
   contributing guidelines.
-
 
 
 .. _easy-ways-to-contribute:

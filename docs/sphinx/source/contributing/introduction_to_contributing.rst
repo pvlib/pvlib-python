@@ -23,10 +23,10 @@ management of contributions are as follows:
 * Every pull request (PR) should address one or more open issues. The PR should
   be outlined in the issue discussion.
 * GSoC: For Google Summer of Code, we invite applications only from those with
-  significnat PV modeling experience and who are motivated to join the pvlib
-  maintainance teams
+  significant PV modeling experience and who are motivated to join the pvlib
+  maintenance teams
 * A background in solar energy and/or experience in pvlib python is required to
-  effectively address some issues due to subtleties that are hard to appreciate
+  address some issues effectively due to subtleties that are hard to appreciate
   until struggling with an implementation. It is not always clear which issues
   fall into this bucket. Don't be offended if maintainers close your PR for
   this reason.
@@ -34,8 +34,7 @@ management of contributions are as follows:
   contributing guidelines.
 
 While we welcome new contributors, reviewer capacity is limited. Therefore,
-following the guidelines above throughout in the contributing process is
-critical. Since 
+following the guidelines above throughout the contributing process is critical. 
 
 
 .. _easy-ways-to-contribute:

@@ -438,7 +438,7 @@ class PVSystem:
             The irradiance that is converted to photocurrent in W/m^2.
             Only used for some models.
 
-        ir_down: numeric, optional
+        ir_down: numeric or tuple of numeric, optional
             Downwelling infrared radiation from the sky, measured on a
             horizontal surface in W/m^2. Only used in ``'faiman_rad'`` model.
 
@@ -1228,7 +1228,8 @@ class Array:
             Ambient dry bulb temperature [C]
 
         wind_speed : numeric
-            Wind speed [m/s], although can be ``None`` for ``'ross'`` model
+            Wind speed [m/s]
+            When ``model='ross'``, this input is ignored
 
         model : str
             Supported models include ``'sapm'``, ``'pvsyst'``,
@@ -1288,7 +1289,7 @@ class Array:
             func = functools.partial(temperature.faiman_rad,
                                      ir_down=ir_down)
             required = ()
-            optional = _build_kwargs(['ir_down', 'u0', 'u1',
+            optional = _build_kwargs(['u0', 'u1',
                                       'sky_view', 'emissivity'],
                                      self.temperature_model_parameters)
         elif model == 'fuentes':

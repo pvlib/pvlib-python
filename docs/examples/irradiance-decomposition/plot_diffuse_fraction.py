@@ -35,7 +35,7 @@ greensboro, metadata = read_tmy3(DATA_DIR / '723170TYA.CSV', coerce_year=1990,
 # NOTE: TMY3 files timestamps indicate the end of the hour, so shift indices
 # back 30-minutes to calculate solar position at center of the interval
 solpos = get_solarposition(
-    greensboro.index.shift(freq="-30T"), latitude=metadata['latitude'],
+    greensboro.index.shift(freq="-30min"), latitude=metadata['latitude'],
     longitude=metadata['longitude'], altitude=metadata['altitude'],
     pressure=greensboro.pressure*100,  # convert from millibar to Pa
     temperature=greensboro.temp_air)

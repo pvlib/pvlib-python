@@ -111,7 +111,10 @@ def simple_efficiency(
     b = 1
     c = no_load_loss - input_power_normalized
 
-    output_power_normalized = (-b + (b**2 - 4*a*c)**0.5) / (2 * a)
+    # alternative form of the quadratic equation to avoid
+    # divide-by-zero when a == 0
+    disc = (b*b - 4*a*c)**0.5
+    output_power_normalized = 2*c / (-b - disc)
 
     output_power = output_power_normalized * transformer_rating
     return output_power

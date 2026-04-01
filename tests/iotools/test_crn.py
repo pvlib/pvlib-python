@@ -75,7 +75,7 @@ def test_read_crn(testfile, columns_mapped, dtypes):
         # use inferred types for strings, to cover both pandas 2 and 3
         if _dtype is not None:
             expected[col] = expected[col].astype(_dtype)
-        
+
     out = crn.read_crn(testfile)
     assert_frame_equal(out, expected)
 

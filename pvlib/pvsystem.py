@@ -414,7 +414,7 @@ class PVSystem:
 
     @_unwrap_single_value
     def get_cell_temperature(self, poa_global, temp_air, wind_speed, model,
-                             effective_irradiance=None, ir_down=None):
+                             effective_irradiance=None, longwave_down=None):
         """
         Determine cell temperature using the method specified by ``model``.
 
@@ -438,7 +438,7 @@ class PVSystem:
             The irradiance that is converted to photocurrent in W/m^2.
             Only used for some models.
 
-        ir_down: numeric or tuple of numeric, optional
+        longwave_down: numeric or tuple of numeric, optional
             Downwelling infrared radiation from the sky, measured on a
             horizontal surface in W/m^2. Only used in ``'faiman_rad'`` model.
 
@@ -464,16 +464,18 @@ class PVSystem:
         # Not used for all models, but Array.get_cell_temperature handles it
         effective_irradiance = self._validate_per_array(effective_irradiance,
                                                         system_wide=True)
-        ir_down = self._validate_per_array(ir_down, system_wide=True)
+        longwave_down = self._validate_per_array(longwave_down,
+                                                 system_wide=True)
 
         return tuple(
             array.get_cell_temperature(poa_global, temp_air, wind_speed,
-                                       model, effective_irradiance, ir_down)
+                                       model, effective_irradiance,
+                                       longwave_down)
             for array, poa_global, temp_air, wind_speed, effective_irradiance,
-            ir_down
+            longwave_down
             in zip(
                 self.arrays, poa_global, temp_air, wind_speed,
-                effective_irradiance, ir_down
+                effective_irradiance, longwave_down
             )
         )
 
@@ -1215,7 +1217,7 @@ class Array:
             raise ValueError(model + ' is not a valid IAM model')
 
     def get_cell_temperature(self, poa_global, temp_air, wind_speed, model,
-                             effective_irradiance=None, ir_down=None):
+                             effective_irradiance=None, longwave_down=None):
         """
         Determine cell temperature using the method specified by ``model``.
 
@@ -1240,7 +1242,7 @@ class Array:
             The irradiance that is converted to photocurrent in W/m^2.
             Only used for some models.
 
-        ir_down: numeric, optional
+        longwave_down: numeric, optional
             Downwelling infrared radiation from the sky, measured on a
             horizontal surface in W/m^2. Only used in ``'faiman_rad'`` model.
 
@@ -1287,7 +1289,7 @@ class Array:
                                      self.temperature_model_parameters)
         elif model == 'faiman_rad':
             func = functools.partial(temperature.faiman_rad,
-                                     ir_down=ir_down)
+                                     longwave_down=longwave_down)
             required = ()
             optional = _build_kwargs(['u0', 'u1',
                                       'sky_view', 'emissivity'],

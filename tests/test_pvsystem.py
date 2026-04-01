@@ -495,7 +495,7 @@ def test_PVSystem_faiman_celltemp(mocker):
 
 
 def test_PVSystem_faiman_rad_celltemp(mocker):
-    ir_down = 50  # arbitrary value
+    longwave_down = 50  # arbitrary value
     # default values, u0 and u1 being adjusted in same proportion as in
     # https://www.osti.gov/servlets/purl/1884890/ (not suggested, just example)
     u0, u1 = 25.0*0.86, 6.84*0.88
@@ -509,10 +509,11 @@ def test_PVSystem_faiman_rad_celltemp(mocker):
     temps = 25
     irrads = 1000
     winds = 1
-    out = system.get_cell_temperature(irrads, temps, winds, ir_down=ir_down,
+    out = system.get_cell_temperature(irrads, temps, winds,
+                                      longwave_down=longwave_down,
                                       model='faiman_rad')
     temperature.faiman_rad.assert_called_once_with(irrads, temps, winds,
-                                                   ir_down, u0, u1,
+                                                   longwave_down, u0, u1,
                                                    sky_view, emissivity)
     assert_allclose(out, 48.6, atol=1e-1)
 

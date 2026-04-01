@@ -43,7 +43,7 @@ def test_midc__format_index_tz_conversion():
     data = pd.read_csv(MIDC_TESTFILE)
     data = data.rename(columns={'MST': 'PST'})
     data = midc._format_index(data)
-    assert data.index[0].tz == pytz.timezone('Etc/GMT+8')
+    assert str(data.index[0].tz) == 'Etc/GMT+8'
 
 
 def test_midc__format_index_raw():

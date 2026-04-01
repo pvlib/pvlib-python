@@ -509,7 +509,7 @@ def faiman(poa_global, temp_air, wind_speed=1.0, u0=25.0, u1=6.84):
     return temp_air + temp_difference
 
 
-def faiman_rad(poa_global, temp_air, wind_speed=1.0, ir_down=None,
+def faiman_rad(poa_global, temp_air, wind_speed=1.0, longwave_down=None,
                u0=25.0, u1=6.84, sky_view=1.0, emissivity=0.88):
     r'''
     Calculate cell or module temperature using the Faiman model augmented
@@ -534,7 +534,7 @@ def faiman_rad(poa_global, temp_air, wind_speed=1.0, ir_down=None,
         factor was determined.  The default value 1.0 m/s is the wind
         speed at module height used to determine NOCT. [m/s]
 
-    ir_down : numeric, default 0.0
+    longwave_down : numeric, default 0.0
         Downwelling infrared radiation from the sky, measured on a horizontal
         surface. [W/m^2]
 
@@ -572,11 +572,11 @@ def faiman_rad(poa_global, temp_air, wind_speed=1.0, ir_down=None,
     are vectors they must be the same length.
 
     When only irradiance, air temperature and wind speed inputs are provided
-    (`ir_down` is `None`) this function calculates the same device temperature
-    as the original faiman model. When down-welling long-wave radiation data
-    are provided as well (`ir_down` is not None) the default u0 and u1 values
-    from the original model should not be used because a portion of the
-    radiative losses would be double-counted.
+    (`longwave_down` is `None`) this function calculates the same device
+    temperature as the original faiman model. When downwelling long-wave
+    radiation data are provided (`longwave_down` is not None) the
+    default `u0` and `u1` values from the original model should not be used
+    because a portion of the radiative losses would be double-counted.
 
     References
     ----------
@@ -606,11 +606,11 @@ def faiman_rad(poa_global, temp_air, wind_speed=1.0, ir_down=None,
     abs_zero = -273.15
     sigma = scipy.constants.Stefan_Boltzmann
 
-    if ir_down is None:
+    if longwave_down is None:
         qrad_sky = 0.0
     else:
         ir_up = sigma * ((temp_air - abs_zero)**4)
-        qrad_sky = emissivity * sky_view * (ir_up - ir_down)
+        qrad_sky = emissivity * sky_view * (ir_up - longwave_down)
 
     heat_input = poa_global - qrad_sky
     total_loss_factor = u0 + u1 * wind_speed

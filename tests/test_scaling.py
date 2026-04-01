@@ -52,7 +52,7 @@ def time_500ms(clear_sky_index):
 @pytest.fixture
 def positions():
     # Sample positions based on the previous lat/lon (calculated manually)
-    expect_xpos = np.array([554863.4, 555975.4, 557087.3])
+    expect_xpos = np.array([546433.8, 547528.9, 548623.9])
     expect_ypos = np.array([1110838.8, 1111950.8, 1113062.7])
     return np.array([pt for pt in zip(expect_xpos, expect_ypos)])
 
@@ -89,14 +89,16 @@ def expect_wavelet():
 @pytest.fixture
 def expect_cs_smooth():
     # Expected smoothed clear sky index for indices 5000:5004 (Matlab)
-    return np.array([1., 1., 1.05774, 0.94226, 1.])
+    return np.array([1., 1., 1.057735, 0.942265, 1.])
 
 
 @pytest.fixture
 def expect_vr():
     # Expected VR for expecttmscale
-    return np.array([3., 3., 3., 3., 3., 3., 2.9997844, 2.9708118, 2.6806291,
-                     2.0726611, 1.5653324, 1.2812714, 1.1389995])
+    return np.array([3., 3., 3., 3., 3.,
+                     2.99999999, 2.99976775, 2.96971249,
+                     2.67505872, 2.06592527, 1.5611084,
+                     1.27910582, 1.13793164])
 
 
 def test_latlon_to_xy_zero():

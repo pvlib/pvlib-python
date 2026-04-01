@@ -14,16 +14,25 @@ Deprecations
 
 Bug fixes
 ~~~~~~~~~
+* Fix a bug in :py:func:`pvlib.scaling.latlon_to_xy` where latitude
+  scaling was incorrectly applied to both latitude and longitude components.
+  (:issue:`2614`, :pull:`2712`)
 * Fix a division-by-zero condition in
   :py:func:`pvlib.transformer.simple_efficiency` when ``load_loss = 0``.
   (:issue:`2645`, :pull:`2646`)
 * Update URLs in :py:mod:`pvlib.iotools.psm4` to use nlr.gov instead of
   nrel.gov. (:issue:`2701`, :pull:`2705`)
+* Fix a bug in :py:func:`pvlib.iotools.era5._m_to_cm` where meters were
+  incorrectly divided by 100 instead of multiplied, causing precipitations to be
+  underestimated by a factor of 10,000 when ``map_variables=True``.
+  (:issue:`2724`, :pull:`2725`)
 
 
 Enhancements
 ~~~~~~~~~~~~
-
+* Use ``k`` and ``cap_adjustment`` from :py:func:`pvlib.pvsystem.Array.module_parameters` in :py:func:`pvlib.pvsystem.PVSystem.pvwatts_dc`
+  (:issue:`2714`, :pull:`2715`)
+  
 
 Documentation
 ~~~~~~~~~~~~~
@@ -41,6 +50,12 @@ Documentation
 * Add AI checkbox to PR template, and auto-generate a comment on PRs
   from first-time contributors regarding AI and contributing guidelines.
   (:issue:`2617`, :pull:`2624`)
+* Update :py:class:`pvlib.pvsystem.PVSystem` docstring to state that
+  ``module_type`` is optional.
+  (:issue:`2634`, :pull:`2713`)
+* Fix a broken docstring reference to ``grounddiffuse`` in
+  :py:func:`pvlib.irradiance.poa_components`
+  (:issue:`2089`, :pull:`2708`)
 
 
 Testing
@@ -74,4 +89,7 @@ Contributors
 * Anton Driesse (:ghuser:`adriesse`)
 * Kevin Anderson (:ghuser:`kandersolar`)
 * Jason Curtis (:ghuser:`jason-curtis`)
+* Rohan Saxena (:ghuser:`r0hansaxena`)
+* Marco Fumagalli (:ghuser:`fuma900`)
+* Jean-Baptiste Pasquier (:ghuser:`pasquierjb`)
 

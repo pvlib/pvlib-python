@@ -1289,7 +1289,7 @@ class Array:
                                      self.temperature_model_parameters)
         elif model == 'faiman_rad':
             func = functools.partial(temperature.faiman_rad,
-                                     longwave_down=longwave_down)
+                                     ir_down=longwave_down)
             required = ()
             optional = _build_kwargs(['u0', 'u1',
                                       'sky_view', 'emissivity'],

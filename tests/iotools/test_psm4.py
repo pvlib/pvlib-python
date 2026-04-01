@@ -49,7 +49,7 @@ def assert_psm4_equal(data, metadata, expected):
     for mf in METADATA_FIELDS:
         assert mf in metadata
     # check timezone
-    assert (data.index.tzinfo.zone == 'Etc/GMT%+d' % -metadata['Time Zone'])
+    assert (str(data.index.tzinfo) == 'Etc/GMT%+d' % -metadata['Time Zone'])
 
 
 @pytest.mark.remote_data

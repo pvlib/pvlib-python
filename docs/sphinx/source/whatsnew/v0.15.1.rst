@@ -17,6 +17,9 @@ Bug fixes
 * Fix a division-by-zero condition in
   :py:func:`pvlib.transformer.simple_efficiency` when ``load_loss = 0``.
   (:issue:`2645`, :pull:`2646`)
+* Update URLs in :py:mod:`pvlib.iotools.psm4` to use nlr.gov instead of
+  nrel.gov. (:issue:`2701`, :pull:`2705`)
+
 
 Enhancements
 ~~~~~~~~~~~~

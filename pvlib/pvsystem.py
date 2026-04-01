@@ -439,7 +439,7 @@ class PVSystem:
             Only used for some models.
 
         longwave_down: numeric or tuple of numeric, optional
-            Downwelling infrared radiation from the sky, measured on a
+            Downwelling long-wave radiation from the sky, measured on a
             horizontal surface in W/m^2. Only used in ``'faiman_rad'`` model.
 
         Returns
@@ -1243,7 +1243,7 @@ class Array:
             Only used for some models.
 
         longwave_down: numeric, optional
-            Downwelling infrared radiation from the sky, measured on a
+            Downwelling long-wave radiation from the sky, measured on a
             horizontal surface in W/m^2. Only used in ``'faiman_rad'`` model.
 
         Returns

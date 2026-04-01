@@ -320,7 +320,7 @@ def loss_townsend(snow_total, snow_events, surface_tilt, relative_humidity,
         Uses of the Townsend Snow Model. In "Photovoltaic Reliability
         Workshop (PVRW) 2023 Proceedings: Posters.", ed. Silverman,
         T. J. Dec. 2023. NREL/CP-5900-87918.
-        :doi:`10.2172/1429291`
+        Available at: https://www.osti.gov/biblio/2229734
     .. [3] Townsend, T. (2013). Predicting PV Energy Loss Caused by Snow.
         Solar Power International, Chicago IL.
         :doi:`10.13140/RG.2.2.14299.68647`

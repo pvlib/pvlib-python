@@ -235,7 +235,7 @@ Alternatively, users may install all optional dependencies using
 
 .. _nrelspa:
 
-NLR SPA algorithm
+NREL SPA algorithm
 ------------------
 
 pvlib-python is distributed with several validated, high-precision, and
@@ -243,11 +243,11 @@ high-performance solar position calculators. We strongly recommend using
 the built-in solar position calculators.
 
 pvlib-python also includes unsupported wrappers for the official NLR
-SPA algorithm. NLR's license does not allow redistribution of the
+implementation of NREL SPA. NLR's license does not allow redistribution of the
 source code, so you must jump through some hoops to use it with pvlib.
 You will need a C compiler to use this code.
 
-To install the NLR SPA algorithm for use with pvlib:
+To install the NREL SPA algorithm for use with pvlib:
 
 #. Download the pvlib repository (as described in :ref:`obtainsource`)
 #. Download the `SPA files from NLR <http://www.nlr.gov/midc/spa/>`_

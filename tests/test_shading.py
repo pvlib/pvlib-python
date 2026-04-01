@@ -170,7 +170,7 @@ def test_projected_solar_zenith_angle_numeric(
 ):
     psza_func = shading.projected_solar_zenith_angle
     axis_tilt, axis_azimuth, timedata = true_tracking_angle_and_inputs_NREL
-    # test against data provided by NLR
+    # test against data provided by NREL
     psz = psza_func(
         timedata["Apparent Zenith"],
         timedata["Solar Azimuth"],

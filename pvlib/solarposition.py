@@ -56,10 +56,10 @@ def get_solarposition(time, latitude, longitude,
         if ``altitude`` is not supplied.
 
     method : string, default 'nrel_numpy'
-        'nrel_numpy' uses an implementation of the NLR SPA algorithm
+        'nrel_numpy' uses an implementation of the NREL SPA algorithm
         described in [1] (default, recommended): :py:func:`spa_python`
 
-        'nrel_numba' uses an implementation of the NLR SPA algorithm
+        'nrel_numba' uses an implementation of the NREL SPA algorithm
         described in [1], but also compiles the code first:
         :py:func:`spa_python`
 
@@ -129,8 +129,8 @@ def spa_c(time, latitude, longitude, pressure=101325., altitude=0.,
           temperature=12., delta_t=67.0,
           raw_spa_output=False):
     r"""
-    Calculate the solar position using the C implementation of the NLR
-    SPA code.
+    Calculate the solar position using the NLR C implementation of the
+    NREL SPA.
 
     The source files for this code are located in './spa_c_files/', along with
     a README file which describes how the C code is wrapped in Python.
@@ -283,9 +283,9 @@ def spa_python(time, latitude, longitude,
                atmos_refract=None, how='numpy', numthreads=4):
     """
     Calculate the solar position using a python implementation of the
-    NLR SPA algorithm.
+    NREL SPA algorithm.
 
-    The details of the NLR SPA algorithm are described in [1]_, [2]_.
+    The details of the NREL SPA algorithm are described in [1]_, [2]_.
 
     If numba is installed, the functions can be compiled to
     machine code and the function can be multithreaded.
@@ -394,9 +394,9 @@ def sun_rise_set_transit_spa(times, latitude, longitude, how='numpy',
                              delta_t=67.0, numthreads=4):
     """
     Calculate the sunrise, sunset, and sun transit times using the
-    NLR SPA algorithm.
+    NREL SPA algorithm.
 
-    The details of the NLR SPA algorithm are described in [1]_.
+    The details of the NREL SPA algorithm are described in [1]_.
 
     If numba is installed, the functions can be compiled to
     machine code and the function can be multithreaded.
@@ -956,9 +956,9 @@ def pyephem_earthsun_distance(time):
 def nrel_earthsun_distance(time, how='numpy', delta_t=67.0, numthreads=4):
     """
     Calculates the distance from the earth to the sun using the
-    NLR SPA algorithm.
+    NREL SPA algorithm.
 
-    The details of the NLR SPA algorithm are described in [1]_.
+    The details of the NREL SPA algorithm are described in [1]_.
 
     Parameters
     ----------

@@ -203,7 +203,7 @@ def spectrl2(apparent_zenith, aoi, surface_tilt, ground_albedo,
         Surface pressure. [Pa]
     relative_airmass : numeric
         Relative airmass. The airmass model used in [1]_ is the `'kasten1966'`
-        model, while a later implementation by NLR uses the
+        model, while a later implementation by NREL used the
         `'kastenyoung1989'` model. [unitless]
     precipitable_water : numeric
         Atmospheric water vapor content. [cm]

@@ -107,7 +107,7 @@ def solaranywhere_index():
 
 def test_solaranywhere_tmy3(solaranywhere_index):
     # The SolarAnywhere TMY3 format specifies midnight as 00:00 whereas the
-    # NLR TMY3 format utilizes 24:00. The SolarAnywhere file is therefore
+    # NREL TMY3 format utilizes 24:00. The SolarAnywhere file is therefore
     # included to test files with  00:00 timestamps are parsed correctly
     data, meta = tmy.read_tmy3(TMY3_SOLARANYWHERE, encoding='iso-8859-1',
                                map_variables=False)

@@ -34,5 +34,4 @@ This user guide is an overview and explains some of the key features of pvlib.
    :caption: Extras
 
    extras/nomenclature
-   extras/nrel_nlr
    extras/faq

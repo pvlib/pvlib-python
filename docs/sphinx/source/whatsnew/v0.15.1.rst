@@ -59,8 +59,7 @@ Maintenance
 * Update all NREL references to NLR (National Laboratory of the Rockies)
   following the laboratory rename and domain migration from ``nrel.gov``
   to ``nlr.gov``. Rename ``NREL_API_KEY`` environment variable to
-  ``NLR_API_KEY``. See :ref:`nrel_nlr` for details.
-  (:issue:`2701`, :pull:`2705`)
+  ``NLR_API_KEY``. (:issue:`2701`, :pull:`2705`)
 
 
 Contributors
@@ -71,4 +70,5 @@ Contributors
 * Cliff Hansen (:ghuser:`cwhanse`)
 * Anton Driesse (:ghuser:`adriesse`)
 * Kevin Anderson (:ghuser:`kandersolar`)
+* Jason Curtis (:ghuser:`jason-curtis`)
 

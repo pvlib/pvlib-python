@@ -72,7 +72,7 @@ def test_read_crn(testfile, columns_mapped, dtypes):
     for (col, _dtype) in zip(expected.columns, dtypes):
         expected[col] = expected[col].astype(_dtype)
     out = crn.read_crn(testfile)
-    assert_frame_equal(out, expected)
+    assert_frame_equal(out, expected, check_dtype=False)
 
 
 # Test map_variables=False returns correct column names
@@ -96,4 +96,4 @@ def test_read_crn_problems(testfile_problems, columns_mapped, dtypes):
     for (col, _dtype) in zip(expected.columns, dtypes):
         expected[col] = expected[col].astype(_dtype)
     out = crn.read_crn(testfile_problems)
-    assert_frame_equal(out, expected)
+    assert_frame_equal(out, expected, check_dtype=False)

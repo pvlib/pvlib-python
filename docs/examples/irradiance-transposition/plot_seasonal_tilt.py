@@ -96,6 +96,6 @@ results = pd.DataFrame({
     'Seasonal 20/40 Production': mc.results.ac,
     'Fixed 30 Production': mc2.results.ac,
 })
-results.resample('m').sum().plot()
+results.resample('ME').sum().plot()
 plt.ylabel('Monthly Production')
 plt.show()

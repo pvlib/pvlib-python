@@ -37,7 +37,7 @@ def _j_to_w(j):
 
 
 def _m_to_cm(m):
-    return m / 100
+    return m * 100
 
 
 UNITS = {

@@ -53,6 +53,8 @@ Documentation
 * Fix a broken docstring reference to ``grounddiffuse`` in
   :py:func:`pvlib.irradiance.poa_components`
   (:issue:`2089`, :pull:`2708`)
+* Add :ref:`core-guidelines` to the :ref:`introduction-to-contributing` page.
+  (:issue:`2716`, :pull:`2726`)
 
 
 Testing

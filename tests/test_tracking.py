@@ -23,7 +23,7 @@ def test_solar_noon():
                                        gcr=2.0/7.0)
 
     expect = pd.DataFrame({'tracker_theta': 0, 'aoi': 10,
-                           'surface_azimuth': 90, 'surface_tilt': 0},
+                           'surface_azimuth': 0, 'surface_tilt': 0},
                           index=index, dtype=np.float64)
     expect = expect[SINGLEAXIS_COL_ORDER]
 
@@ -38,7 +38,7 @@ def test_scalars():
                                        max_angle=90, backtrack=True,
                                        gcr=2.0/7.0)
     assert isinstance(tracker_data, dict)
-    expect = {'tracker_theta': 0, 'aoi': 10, 'surface_azimuth': 90,
+    expect = {'tracker_theta': 0, 'aoi': 10, 'surface_azimuth': 0,
               'surface_tilt': 0}
     for k, v in expect.items():
         assert np.isclose(tracker_data[k], v)
@@ -52,7 +52,7 @@ def test_arrays():
                                        max_angle=90, backtrack=True,
                                        gcr=2.0/7.0)
     assert isinstance(tracker_data, dict)
-    expect = {'tracker_theta': 0, 'aoi': 10, 'surface_azimuth': 90,
+    expect = {'tracker_theta': 0, 'aoi': 10, 'surface_azimuth': 0,
               'surface_tilt': 0}
     for k, v in expect.items():
         assert_allclose(tracker_data[k], v, atol=1e-7)
@@ -68,7 +68,7 @@ def test_nans():
                                            gcr=2.0/7.0)
     expect = {'tracker_theta': np.array([0, nan, nan]),
               'aoi': np.array([10, nan, nan]),
-              'surface_azimuth': np.array([90, nan, nan]),
+              'surface_azimuth': np.array([0, nan, nan]),
               'surface_tilt': np.array([0, nan, nan])}
     for k, v in expect.items():
         assert_allclose(tracker_data[k], v, atol=1e-7)
@@ -82,7 +82,7 @@ def test_nans():
                                            max_angle=90, backtrack=True,
                                            gcr=2.0/7.0)
     expect = pd.DataFrame(np.array(
-        [[ 0., 10., 90.,  0.],
+        [[ 0., 10., 0.,  0.],
          [nan, nan, nan, nan],
          [nan, nan, nan, nan]]),
         columns=['tracker_theta', 'aoi', 'surface_azimuth', 'surface_tilt'])
@@ -195,6 +195,54 @@ def test_backtrack():
     assert_frame_equal(expect, tracker_data)
 
 
+def test__unit_normal():
+    # with scalar input
+    unorm = tracking._unit_normal(180., 45., 45.)
+    np.allclose(unorm, np.array([-np.sqrt(2)/2, -0.5, -0.5]))
+    # with vector input
+    az = np.array([0., 90., 180., 270.,
+                   0., 90., 180., 270.,
+                   180., 180., 180, 180.,
+                   180., 180., 180., 180,
+                   0., 90., 180., 270.,
+                   ])
+    tilt = np.array([30., 30., 30., 30.,
+                     0., 0., 0., 0.,
+                     -30., -90., 90., 180.,
+                     0., 0., 0., 0.,
+                     30., 30., 30., 30,
+                     ])
+    theta = np.array([0., 0., 0., 0.,
+                      0., 0., 0., 0.,
+                      0., 0., 0., 0.,
+                      -30., 30., -90., 90.,
+                      30., 30., 30., 30.,
+                      ])
+    expected = np.array(
+        [[ 0., 0.5, 0.8660254],
+         [ 0.5, 0., 0.8660254],
+         [ 0., -0.5, 0.8660254],
+         [-0.5, -0., 0.8660254],
+         [ 0., 0., 1.],
+         [ 0., 0., 1.],
+         [ 0., -0., 1.],
+         [-0., 0., 1.],
+         [-0., 0.5, 0.8660254],
+         [-0., 1., 0.],
+         [ 0., -1., 0.],
+         [ 0., -0., -1.],
+         [ 0.5, 0., 0.8660254],
+         [-0.5, -0.,  0.8660254],
+         [ 1., 0., 0.],
+         [-1., -0., 0.],
+         [ 0.5, 0.4330127, 0.75],
+         [ 0.4330127, -0.5, 0.75],
+         [-0.5, -0.4330127, 0.75],
+         [-0.4330127, 0.5, 0.75]])
+    unorms = tracking._unit_normal(az, tilt, theta)
+    assert np.allclose(unorms, expected)
+
+
 def test_axis_tilt():
     apparent_zenith = pd.Series([30])
     apparent_azimuth = pd.Series([135])
@@ -226,6 +274,7 @@ def test_axis_tilt():
 
 
 def test_axis_azimuth():
+    # sun to the east, horizontal east-oriented tracker
     apparent_zenith = pd.Series([30])
     apparent_azimuth = pd.Series([90])
 
@@ -234,13 +283,30 @@ def test_axis_azimuth():
                                        max_angle=90, backtrack=True,
                                        gcr=2.0/7.0)
 
-    expect = pd.DataFrame({'aoi': 30, 'surface_azimuth': 180,
+    expect = pd.DataFrame({'aoi': 30, 'surface_azimuth': 90,
                            'surface_tilt': 0, 'tracker_theta': 0},
                           index=[0], dtype=np.float64)
     expect = expect[SINGLEAXIS_COL_ORDER]
 
     assert_frame_equal(expect, tracker_data)
 
+    # sun to the east, horizontal south-oriented tracker
+    apparent_zenith = pd.Series([30])
+    apparent_azimuth = pd.Series([90])
+
+    tracker_data = tracking.singleaxis(apparent_zenith, apparent_azimuth,
+                                       axis_tilt=0, axis_azimuth=180,
+                                       max_angle=90, backtrack=True,
+                                       gcr=2.0/7.0)
+
+    expect = pd.DataFrame({'aoi': 0, 'surface_azimuth': 90,
+                           'surface_tilt': 30, 'tracker_theta': -30},
+                          index=[0], dtype=np.float64)
+    expect = expect[SINGLEAXIS_COL_ORDER]
+
+    assert_frame_equal(expect, tracker_data)
+
+    # sun to the south, horizontal east-oriented tracker
     apparent_zenith = pd.Series([30])
     apparent_azimuth = pd.Series([180])
 
@@ -269,7 +335,7 @@ def test_horizon_flat():
                               axis_azimuth=180, backtrack=False, max_angle=180)
     expected = pd.DataFrame(np.array(
         [[ nan,  nan,  nan,  nan],
-         [  0.,  45., 270.,   0.],
+         [  0.,  45., 180.,   0.],
          [ nan,  nan,  nan,  nan]]),
         columns=['tracker_theta', 'aoi', 'surface_azimuth', 'surface_tilt'])
     assert_frame_equal(out, expected)
@@ -408,7 +474,7 @@ def test_calc_surface_orientation_types():
     # numpy arrays
     rotations = np.array([-10, 0, 10])
     expected_tilts = np.array([10, 0, 10], dtype=float)
-    expected_azimuths = np.array([270, 90, 90], dtype=float)
+    expected_azimuths = np.array([270, 0, 90], dtype=float)
     out = tracking.calc_surface_orientation(tracker_theta=rotations)
     np.testing.assert_allclose(expected_tilts, out['surface_tilt'])
     np.testing.assert_allclose(expected_azimuths, out['surface_azimuth'])
@@ -445,7 +511,7 @@ def test_calc_surface_orientation_special():
     # special cases for rotations
     rotations = np.array([-180, -90, -0, 0, 90, 180])
     expected_tilts = np.array([180, 90, 0, 0, 90, 180], dtype=float)
-    expected_azimuths = [270, 270, 90, 90, 90, 90]
+    expected_azimuths = [270, 270, 0, 0, 90, 90]
     out = tracking.calc_surface_orientation(rotations)
     np.testing.assert_allclose(out['surface_tilt'], expected_tilts)
     np.testing.assert_allclose(out['surface_azimuth'], expected_azimuths)
@@ -461,7 +527,7 @@ def test_calc_surface_orientation_special():
     # special cases for axis_azimuth
     rotations = np.array([-10, 0, 10])
     expected_tilts = np.array([10, 0, 10], dtype=float)
-    expected_azimuth_offsets = np.array([-90, 90, 90], dtype=float)
+    expected_azimuth_offsets = np.array([-90, 0, 90], dtype=float)
     for axis_azimuth in [0, 90, 180, 270, 360]:
         expected_azimuths = (axis_azimuth + expected_azimuth_offsets) % 360
         out = tracking.calc_surface_orientation(rotations,

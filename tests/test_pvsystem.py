@@ -524,12 +524,12 @@ def test_PVSystem_ross_celltemp(mocker):
 
     temp_model_params = {'k': k}
     system = pvsystem.PVSystem(temperature_model_parameters=temp_model_params)
-    mocker.spy(temperature, 'ross')
+    m = mocker.spy(temperature, 'ross')
     temps = 25
     irrads = 1000
     winds = None
     out = system.get_cell_temperature(irrads, temps, winds, model='ross')
-    temperature.ross.assert_called_once_with(irrads, temps, k=k)
+    m.assert_called_once_with(irrads, temps, k=k)
     assert_allclose(out, 45.8, atol=1e-1)
 
 

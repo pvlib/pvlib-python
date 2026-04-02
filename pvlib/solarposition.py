@@ -67,7 +67,7 @@ def get_solarposition(time, latitude, longitude,
 
         'ephemeris' uses the pvlib ephemeris code: :py:func:`ephemeris`
 
-        'nrel_c' uses the NREL SPA C code [3]: :py:func:`spa_c`
+        'nrel_c' uses the NLR SPA C code [3]: :py:func:`spa_c`
 
     temperature : float, default 12
         Degrees C.
@@ -85,7 +85,7 @@ def get_solarposition(time, latitude, longitude,
        solar radiation applications. Solar Energy, vol. 81, no. 6, p. 838,
        2007.
 
-    .. [3] NREL SPA code: https://midcdmz.nrel.gov/spa/
+    .. [3] NLR SPA code: https://midcdmz.nlr.gov/spa/
     """
 
     if altitude is None and pressure is None:
@@ -129,8 +129,8 @@ def spa_c(time, latitude, longitude, pressure=101325., altitude=0.,
           temperature=12., delta_t=67.0,
           raw_spa_output=False):
     r"""
-    Calculate the solar position using the C implementation of the NREL
-    SPA code.
+    Calculate the solar position using the NLR C implementation of the
+    NREL SPA.
 
     The source files for this code are located in './spa_c_files/', along with
     a README file which describes how the C code is wrapped in Python.
@@ -173,7 +173,7 @@ def spa_c(time, latitude, longitude, pressure=101325., altitude=0.,
 
     References
     ----------
-    .. [1] NREL SPA reference: https://midcdmz.nrel.gov/spa/
+    .. [1] NLR SPA reference: https://midcdmz.nlr.gov/spa/
 
     Note: The ``timezone`` field in the SPA C files is replaced with
     ``time_zone`` to avoid a nameclash with the function ``__timezone`` that is
@@ -432,8 +432,8 @@ def sun_rise_set_transit_spa(times, latitude, longitude, how='numpy',
     References
     ----------
     .. [1] Reda, I., Andreas, A., 2003. Solar position algorithm for solar
-       radiation applications. Technical report: NREL/TP-560- 34302. Golden,
-       USA, http://www.nrel.gov.
+       radiation applications. Technical report: NREL/TP-560-34302. Golden,
+       USA, http://www.nlr.gov.
     """
     # Added by Tony Lorenzo (@alorenzo175), University of Arizona, 2015
 
@@ -996,8 +996,8 @@ def nrel_earthsun_distance(time, how='numpy', delta_t=67.0, numthreads=4):
     References
     ----------
     .. [1] Reda, I., Andreas, A., 2003. Solar position algorithm for solar
-       radiation applications. Technical report: NREL/TP-560- 34302. Golden,
-       USA, http://www.nrel.gov.
+       radiation applications. Technical report: NREL/TP-560-34302. Golden,
+       USA, http://www.nlr.gov.
     """
 
     if not isinstance(time, pd.DatetimeIndex):

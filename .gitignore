@@ -99,3 +99,8 @@ coverage.xml
 env
 results
 
+
+# Gas Town runtime
+.beads/
+.claude/
+.runtime/

@@ -228,7 +228,7 @@ def _read_pvwatts_8760(filename):
     ('pvwatts_8760_roofmount.csv', 49),
 ])
 def test_fuentes(filename, inoct):
-    # Test against data exported from pvwatts.nrel.gov
+    # Test against data exported from pvwatts.nlr.gov
     data = _read_pvwatts_8760(TESTS_DATA_DIR / filename)
     data = data.iloc[:24*7, :]  # just use one week
     inputs = {

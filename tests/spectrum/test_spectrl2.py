@@ -6,7 +6,7 @@ from numpy.testing import assert_allclose
 
 
 def test_spectrl2(spectrl2_data):
-    # compare against output from solar_utils wrapper around NREL spectrl2_2.c
+    # compare against output from solar_utils wrapper around NLR spectrl2_2.c
     kwargs, expected = spectrl2_data
     actual = spectrum.spectrl2(**kwargs)
     assert_allclose(expected['wavelength'].values, actual['wavelength'])

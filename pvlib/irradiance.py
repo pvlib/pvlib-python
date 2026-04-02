@@ -16,7 +16,7 @@ from scipy.optimize import bisect
 from pvlib import atmosphere, solarposition, tools
 import pvlib  # used to avoid dni name collision in complete_irradiance
 
-from pvlib._deprecation import pvlibDeprecationWarning, renamed_kwarg_warning
+from pvlib._deprecation import pvlibDeprecationWarning
 import warnings
 
 
@@ -89,7 +89,7 @@ def get_extra_radiation(datetime_or_doy, solar_constant=1366.1,
        Engineers, 2005. :doi:`10.1061/9780784408056`
 
     .. [6] I. Reda, A. Andreas, "Solar position algorithm for solar
-       radiation applications" NREL Golden, USA. NREL/TP-560-34302,
+       radiation applications" NREL Golden, CO, USA. NREL/TP-560-34302,
        Revised 2008. :doi:`10.2172/15003974`
     """
 
@@ -490,7 +490,8 @@ def poa_components(aoi, dni, poa_sky_diffuse, poa_ground_diffuse):
 
     poa_ground_diffuse : numeric
         Ground-reflected irradiance in the plane of the modules,
-        as calculated by an albedo model (eg. :func:`grounddiffuse`). [Wm⁻²]
+        as calculated by an albedo model (eg.,
+        :py:func:`~pvlib.irradiance.get_ground_diffuse`). [Wm⁻²]
 
     Returns
     -------
@@ -1613,11 +1614,6 @@ def ghi_from_poa_driesse_2023(surface_tilt, surface_azimuth,
         return ghi
 
 
-@renamed_kwarg_warning(
-    since='0.11.2',
-    old_param_name='clearsky_ghi',
-    new_param_name='ghi_clear',
-    removal="0.14.0")
 def clearsky_index(ghi, ghi_clear, max_clearsky_index=2.0):
     """
     Calculate the clearsky index.
@@ -1735,7 +1731,7 @@ def clearness_index_zenith_independent(clearness_index, airmass,
     max_clearness_index : numeric, default 2.0
         Maximum value of the clearness index. The default, 2.0, allows
         for over-irradiance events typically seen in sub-hourly data.
-        NREL's SRRL Fortran code used 0.82 for hourly data.
+        NLR's SRRL Fortran code used 0.82 for hourly data.
 
     Returns
     -------
@@ -1779,7 +1775,7 @@ def disc(ghi, solar_zenith, datetime_or_doy, pressure=101325,
 
     The original report describing the DISC model [1]_ uses the
     relative airmass rather than the absolute (pressure-corrected)
-    airmass. However, the NREL implementation of the DISC model [2]_
+    airmass. However, the NLR implementation of the DISC model [2]_
     uses absolute airmass. PVLib Matlab also uses the absolute airmass.
     pvlib python defaults to absolute airmass, but the relative airmass
     can be used by supplying `pressure=None`.
@@ -1833,7 +1829,7 @@ def disc(ghi, solar_zenith, datetime_or_doy, pressure=101325,
        Institute, 1987.
 
     .. [2] Maxwell, E. "DISC Model", Excel Worksheet.
-       https://www.nrel.gov/grid/solar-resource/disc.html
+       https://www.nlr.gov/grid/solar-resource/disc.html
 
     See Also
     --------
@@ -2156,16 +2152,6 @@ def _dirint_bins(times, kt_prime, zenith, w, delta_kt_prime):
     return kt_prime_bin, zenith_bin, w_bin, delta_kt_prime_bin
 
 
-@renamed_kwarg_warning(
-    since='0.11.2',
-    old_param_name='ghi_clearsky',
-    new_param_name='ghi_clear',
-    removal="0.14.0")
-@renamed_kwarg_warning(
-    since='0.11.2',
-    old_param_name='dni_clearsky',
-    new_param_name='dni_clear',
-    removal="0.14.0")
 def dirindex(ghi, ghi_clear, dni_clear, zenith, times, pressure=101325.,
              use_delta_kt_prime=True, temp_dew=None, min_cos_zenith=0.065,
              max_zenith=87):
@@ -3662,11 +3648,6 @@ def _get_dirint_coeffs():
     return coeffs[1:, 1:, :, :]
 
 
-@renamed_kwarg_warning(
-    since='0.11.2',
-    old_param_name='clearsky_dni',
-    new_param_name='dni_clear',
-    removal="0.14.0")
 def dni(ghi, dhi, zenith, dni_clear=None, clearsky_tolerance=1.1,
         zenith_threshold_for_zero_dni=88.0,
         zenith_threshold_for_clearsky_limit=80.0):

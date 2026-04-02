@@ -31,6 +31,7 @@ Enhancements
   (:issue:`2714`, :pull:`2715`)
 * Include `ross` and `faiman_rad` in the allowed models within 
   :py:meth:`pvlib.pvsystem.PVSystem.get_cell_temperature` (:issue:`2625`, :pull:`2631`)  
+* Accelerate the internals of :py:func:`~pvlib.solarpostion.ephemeris`. (:pull:`2626`)
 
 Documentation
 ~~~~~~~~~~~~~
@@ -86,3 +87,5 @@ Contributors
 * Marco Fumagalli (:ghuser:`fuma900`)
 * Jean-Baptiste Pasquier (:ghuser:`pasquierjb`)
 * Rodrigo Amaro e Silva (:ghuser:`ramaroesilva`)
+* James Fulton (:ghuser:`dfulu`)
+

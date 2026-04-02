@@ -213,16 +213,15 @@ def singleaxis(apparent_zenith, solar_azimuth,
 def _unit_normal(axis_azimuth, axis_tilt, theta):
     """
     Unit normal to rotated tracker surface, in global E-N-Up coordinates,
-    given by R*(0, 0, 1)^T, where:
+    given by R*(0, 0, 1).T, where:
 
-        R = Rz(-axis_azimuth) Rx(-axis_tilt) Ry(theta) *
+        R = Rz(-axis_azimuth) Rx(-axis_tilt) Ry(theta)
 
     Rz is a rotation by -axis_azimuth about the z-axis (axis_azimuth
     is negated to convert from an azimuth angle to a rotation angle). Rx is a
     rotation by -axis_tilt about the x-axis, where axis_tilt is negated
     because pvlib's convention is that the positive y-axis is tilted
-    downwards. Ry is a rotation by theta
-    about the y-axis. theta is negated so that a negative.
+    downwards. Ry is a rotation by theta about the y-axis.
 
     Parameters
     ----------

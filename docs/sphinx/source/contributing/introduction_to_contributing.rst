@@ -19,11 +19,11 @@ Core guidelines
 While we welcome new contributors, reviewer capacity is limited. Therefore,
 following these core guidelines is essential:
 
-* Every pull request (PR) should address one or more open issues. The PR should
-  be outlined in the issue discussion.
+* Pull requests (PRs) should address one or more open issues. Context should
+  be provided, e.g. a link to the relevant discussion.
 * GSoC: For Google Summer of Code, we invite applications only from those with
   significant PV modeling experience and who are motivated to join the pvlib
-  maintenance teams
+  maintenance team.
 * pvlib-python is an advanced scientific modeling toolbox. A background
   in solar energy and/or experience in pvlib-python is required to
   address some issues effectively. It is not always clear which issues

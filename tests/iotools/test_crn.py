@@ -33,9 +33,11 @@ def columns_unmapped():
 
 @pytest.fixture
 def dtypes():
+    # None indicates string, which is dtype("O") for pandas 2 and StringDtype
+    # for pandas 3
     return [
         dtype('int64'), dtype('int64'), dtype('int64'), dtype('int64'),
-        dtype('int64'), dtype('O'), dtype('float64'), dtype('float64'),
+        dtype('int64'), None, dtype('float64'), dtype('float64'),
         dtype('float64'), dtype('float64'), dtype('float64'),
         dtype('int64'), dtype('float64'), dtype('O'), dtype('int64'),
         dtype('float64'), dtype('int64'), dtype('float64'),
@@ -70,7 +72,10 @@ def test_read_crn(testfile, columns_mapped, dtypes):
          0.0, 393.0, 0, 4.8, 'C', 0, 81.0, 0, nan, nan, 1223, 0, 0.64, 0]])
     expected = pd.DataFrame(values, columns=columns_mapped, index=index)
     for (col, _dtype) in zip(expected.columns, dtypes):
-        expected[col] = expected[col].astype(_dtype)
+        # use inferred types for strings, to cover both pandas 2 and 3
+        if _dtype is not None:
+            expected[col] = expected[col].astype(_dtype)
+
     out = crn.read_crn(testfile)
     assert_frame_equal(out, expected)
 
@@ -94,6 +99,8 @@ def test_read_crn_problems(testfile_problems, columns_mapped, dtypes):
          1.64, 0]])
     expected = pd.DataFrame(values, columns=columns_mapped, index=index)
     for (col, _dtype) in zip(expected.columns, dtypes):
-        expected[col] = expected[col].astype(_dtype)
+        # use inferred types for strings, to cover both pandas 2 and 3
+        if _dtype is not None:
+            expected[col] = expected[col].astype(_dtype)
     out = crn.read_crn(testfile_problems)
     assert_frame_equal(out, expected)

@@ -126,7 +126,7 @@ The CEC table doesn't include my module or inverter, what should I do?
 ----------------------------------------------------------------------
 
 The CEC tables for module and inverter parameters included in pvlib are periodically
-copied from `SAM <https://github.com/NREL/SAM/tree/develop/deploy/libraries>`_,
+copied from `SAM <https://github.com/NatLabRockies/SAM/tree/develop/deploy/libraries>`_,
 so you can check the tables there for more up-to-date tables.
 
 For modules, if even the SAM files don't include the module you're looking for

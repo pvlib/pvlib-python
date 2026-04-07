@@ -20,12 +20,22 @@ Bug fixes
 * Fix a division-by-zero condition in
   :py:func:`pvlib.transformer.simple_efficiency` when ``load_loss = 0``.
   (:issue:`2645`, :pull:`2646`)
+* Update URLs in :py:mod:`pvlib.iotools.psm4` to use nlr.gov instead of
+  nrel.gov. (:issue:`2701`, :pull:`2705`)
+* Fix a bug in :py:func:`pvlib.iotools.era5._m_to_cm` where meters were
+  incorrectly divided by 100 instead of multiplied, causing precipitations to be
+  underestimated by a factor of 10,000 when ``map_variables=True``.
+  (:issue:`2724`, :pull:`2725`)
+
 
 Enhancements
 ~~~~~~~~~~~~
 * Use ``k`` and ``cap_adjustment`` from :py:func:`pvlib.pvsystem.Array.module_parameters`
   in :py:func:`pvlib.pvsystem.PVSystem.pvwatts_dc`
   (:issue:`2714`, :pull:`2715`)
+* Include `ross` and `faiman_rad` in the allowed models within 
+  :py:meth:`pvlib.pvsystem.PVSystem.get_cell_temperature` (:issue:`2625`, :pull:`2631`)  
+* Accelerate the internals of :py:func:`~pvlib.solarpostion.ephemeris`. (:pull:`2626`)
 
 Documentation
 ~~~~~~~~~~~~~
@@ -67,6 +77,10 @@ Requirements
 
 Maintenance
 ~~~~~~~~~~~
+* Update all NREL references to NLR (National Laboratory of the Rockies)
+  following the laboratory rename and domain migration from ``nrel.gov``
+  to ``nlr.gov``. Rename ``NREL_API_KEY`` environment variable to
+  ``NLR_API_KEY``. (:issue:`2701`, :pull:`2705`)
 
 
 Contributors
@@ -77,6 +91,10 @@ Contributors
 * Cliff Hansen (:ghuser:`cwhanse`)
 * Anton Driesse (:ghuser:`adriesse`)
 * Kevin Anderson (:ghuser:`kandersolar`)
+* Jason Curtis (:ghuser:`jason-curtis`)
 * Rohan Saxena (:ghuser:`r0hansaxena`)
 * Marco Fumagalli (:ghuser:`fuma900`)
+* Jean-Baptiste Pasquier (:ghuser:`pasquierjb`)
+* Rodrigo Amaro e Silva (:ghuser:`ramaroesilva`)
+* James Fulton (:ghuser:`dfulu`)
 

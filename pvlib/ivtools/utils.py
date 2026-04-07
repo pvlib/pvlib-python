@@ -470,7 +470,7 @@ def astm_e1036(v, i, imax_limits=(0.75, 1.15), vmax_limits=(0.75, 1.15),
        ASTM E1036-15(2019), :doi:`10.1520/E1036-15R19`
     '''
 
-    # Adapted from https://github.com/NREL/iv_params
+    # Adapted from https://github.com/NatLabRockies/iv_params
     # Copyright (c) 2022, Alliance for Sustainable Energy, LLC
     # All rights reserved.
 

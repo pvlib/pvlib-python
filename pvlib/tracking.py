@@ -103,7 +103,7 @@ def singleaxis(apparent_zenith, solar_azimuth,
         * `surface_azimuth`: The azimuth of the rotated panel (degrees),
           determined by projecting the vector normal to the panel's surface to
           the earth's surface. Where ``surface_tilt``=0, ``surface_azimuth``
-          is set equal to ``axis_azimuth`` + 90.
+          is set equal to ``axis_azimuth`` - 90.
 
     See also
     --------
@@ -279,7 +279,7 @@ def calc_surface_orientation(tracker_theta, axis_tilt=0, axis_azimuth=0):
         the module orientation accounting for tracker rotation and axis
         orientation (degree).
         Where ``surface_tilt``=0, ``surface_azimuth`` is set equal to
-        ``axis_azimuth`` + 90.
+        ``axis_azimuth`` - 90.
 
     References
     ----------
@@ -297,11 +297,11 @@ def calc_surface_orientation(tracker_theta, axis_tilt=0, axis_azimuth=0):
     # project unit_normal to x-y plane to calculate azimuth
     surface_azimuth = np.degrees(
         np.arctan2(unit_normal[:, 0], unit_normal[:, 1]))
+
+    surface_azimuth = np.where(surface_tilt == 0., axis_azimuth - 90.,
+                               surface_azimuth)
     # constrain angles to [0, 360)
     surface_azimuth = np.mod(surface_azimuth, 360.0)
-
-    surface_azimuth = np.where(surface_tilt == 0., axis_azimuth + 90.,
-                               surface_azimuth)
 
     out = {
         'surface_tilt': surface_tilt,

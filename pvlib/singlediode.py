@@ -8,7 +8,7 @@ from pvlib.tools import _golden_sect_DataFrame
 from pvlib.ivtools.utils import _lambertw_pvlib, _log_lambertw
 
 from scipy.optimize import brentq, newton
-#from scipy.special import lambertw
+
 
 # newton method default parameters for this module
 NEWTON_DEFAULT_PARAMS = {
@@ -815,7 +815,6 @@ def _lambertw_v_from_i(current, photocurrent, saturation_current,
                        (-I[idx_inf] + IL[idx_inf] + I0[idx_inf]) /
                        (Gsh[idx_inf] * a[idx_inf]))
             lambertwterm[idx_inf] = _log_lambertw(logargW)
-
 
         # Eqn. 3 in Jain and Kapoor, 2004
         #  V = -I*(Rs + Rsh) + IL*Rsh - a*lambertwterm + I0*Rsh

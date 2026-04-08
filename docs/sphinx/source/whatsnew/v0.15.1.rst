@@ -30,7 +30,8 @@ Bug fixes
 
 Enhancements
 ~~~~~~~~~~~~
-* Use ``k`` and ``cap_adjustment`` from :py:func:`pvlib.pvsystem.Array.module_parameters` in :py:func:`pvlib.pvsystem.PVSystem.pvwatts_dc`
+* Use ``k`` and ``cap_adjustment`` from :py:func:`pvlib.pvsystem.Array.module_parameters`
+  in :py:func:`pvlib.pvsystem.PVSystem.pvwatts_dc`
   (:issue:`2714`, :pull:`2715`)
 * Include `ross` and `faiman_rad` in the allowed models within 
   :py:meth:`pvlib.pvsystem.PVSystem.get_cell_temperature` (:issue:`2625`, :pull:`2631`)  

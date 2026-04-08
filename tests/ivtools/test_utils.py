@@ -3,6 +3,7 @@ import pandas as pd
 import pytest
 from pvlib.ivtools.utils import _numdiff, rectify_iv_curve, astm_e1036
 from pvlib.ivtools.utils import _schumaker_qspline
+from pvlib.ivtools.utils import _lambertw_pvlib
 
 from tests.conftest import TESTS_DATA_DIR
 
@@ -171,3 +172,23 @@ def test_astm_e1036_fit_points(v_array, i_array):
                 'ff': 0.7520255886236707}
     result.pop('mp_fit')
     assert result == pytest.approx(expected)
+
+
+def test_lambertw_pvlib():
+    test_x = np.array([0., 1.e-10, 1., 10., 100., 1.e+10, 1.e+100, 1.e+300])
+    # known solution from scipy.special.lambertw
+    # scipy 1.7.1, python 3.13.1, numpy 2.3.5
+    expected = np.array([
+        0.0000000000000000e+00, 9.9999999989999997e-11, 5.6714329040978384e-01,
+        1.7455280027406994e+00, 3.3856301402900502e+00, 2.0028685413304952e+01,
+        2.2484310644511851e+02, 6.8424720862976085e+02])
+    result = _lambertw_pvlib(test_x)
+    assert np.allclose(result, expected, rtol=1e-14)
+    # with float input
+    for x, known in zip(test_x[[1, 5]], expected[[1, 5]]):
+        result = _lambertw_pvlib(x)
+        assert np.isclose(result, known)
+    # with 1d array
+    for x, known in zip(test_x[[1, 5]], expected[[1, 5]]):
+        result = _lambertw_pvlib(np.array([x]))
+        assert np.isclose(result, known)

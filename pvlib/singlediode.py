@@ -859,16 +859,16 @@ def _lambertw_i_from_v(voltage, photocurrent, saturation_current,
     # Explicit solutions where Rs=0
     if np.any(idx_z):
         I[idx_z] = IL[idx_z] - I0[idx_z] * np.expm1(V[idx_z] / a[idx_z]) - \
-                   Gsh[idx_z] * V[idx_z]
+            Gsh[idx_z] * V[idx_z]
 
     # Only compute using LambertW if there are cases with Rs>0
     # Does NOT handle possibility of overflow, github issue 298
     if np.any(idx_p):
         # LambertW argument, cannot be float128, may overflow to np.inf
         argW = Rs[idx_p] * I0[idx_p] / (
-                    a[idx_p] * (Rs[idx_p] * Gsh[idx_p] + 1.)) * \
-               np.exp((Rs[idx_p] * (IL[idx_p] + I0[idx_p]) + V[idx_p]) /
-                      (a[idx_p] * (Rs[idx_p] * Gsh[idx_p] + 1.)))
+            a[idx_p] * (Rs[idx_p] * Gsh[idx_p] + 1.)) * (
+                np.exp((Rs[idx_p] * (IL[idx_p] + I0[idx_p]) + V[idx_p])
+                       / (a[idx_p] * (Rs[idx_p] * Gsh[idx_p] + 1.))))
 
         lambertwterm = _lambertw_pvlib(argW)
 
@@ -876,8 +876,8 @@ def _lambertw_i_from_v(voltage, photocurrent, saturation_current,
         #  I = -V/(Rs + Rsh) - (a/Rs)*lambertwterm + Rsh*(IL + I0)/(Rs + Rsh)
         # Recast in terms of Gsh=1/Rsh for better numerical stability.
         I[idx_p] = (IL[idx_p] + I0[idx_p] - V[idx_p] * Gsh[idx_p]) / \
-                   (Rs[idx_p] * Gsh[idx_p] + 1.) - (
-                               a[idx_p] / Rs[idx_p]) * lambertwterm
+            (Rs[idx_p] * Gsh[idx_p] + 1.) \
+            - (a[idx_p] / Rs[idx_p]) * lambertwterm
 
     if output_is_scalar:
         return I.item()

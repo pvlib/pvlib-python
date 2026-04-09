@@ -868,8 +868,6 @@ def _lambertw_i_from_v(voltage, photocurrent, saturation_current,
                np.exp((Rs[idx_p] * (IL[idx_p] + I0[idx_p]) + V[idx_p]) /
                       (a[idx_p] * (Rs[idx_p] * Gsh[idx_p] + 1.)))
 
-        # lambertw typically returns complex value with zero imaginary part
-        # may overflow to np.inf
         lambertwterm = _lambertw_pvlib(argW)
 
         # Eqn. 2 in Jain and Kapoor, 2004

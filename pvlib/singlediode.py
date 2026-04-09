@@ -802,10 +802,12 @@ def _lambertw_v_from_i(current, photocurrent, saturation_current,
         with np.errstate(over='ignore'):
             argW = I0 / (Gsh * a) * np.exp((-I + IL + I0) / (Gsh * a))
 
+        lambertwterm = np.zeros_like(argW)
+
         # Record indices where lambertw input overflowed
         idx_inf = np.isinf(argW)
 
-        lambertwterm = _lambertw_pvlib(argW)
+        lambertwterm[~idx_inf] = _lambertw_pvlib(argW[~idx_inf])
 
         # Only re-compute LambertW if it overflowed
         if np.any(idx_inf):

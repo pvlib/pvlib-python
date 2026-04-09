@@ -55,7 +55,7 @@ def _get_acis(start, end, params, map_variables, url, **kwargs):
     metadata = payload['meta']
 
     try:
-        # for StnData endpoint, unpack combination "ll" into lat, lon 
+        # for StnData endpoint, unpack combination "ll" into lat, lon
         metadata['lon'], metadata['lat'] = metadata.pop('ll')
     except KeyError:
         pass
@@ -242,7 +242,6 @@ def get_acis_nrcc(latitude, longitude, start, end, grid, map_variables=True,
     df, meta = _get_acis(start, end, params, map_variables, url, **kwargs)
     df = df.replace(-999, np.nan)
     return df, meta
-
 
 
 def get_acis_mpe(latitude, longitude, start, end, map_variables=True,
@@ -453,7 +452,7 @@ def get_acis_available_stations(latitude_range, longitude_range,
     -------
     stations : pandas.DataFrame
         A dataframe of station metadata, one row per station.
-        The ``sids`` column contains IDs that can be used with 
+        The ``sids`` column contains IDs that can be used with
         :py:func:`get_acis_station_data`.
 
     Raises
@@ -489,7 +488,7 @@ def get_acis_available_stations(latitude_range, longitude_range,
     params = {
         "bbox": bbox,
         "meta": ("name,state,sids,sid_dates,ll,elev,"
-                 "uid,county,climdiv,tzo,network"),    
+                 "uid,county,climdiv,tzo,network"),
     }
     if start is not None and end is not None:
         params['elems'] = ['maxt', 'mint', 'avgt', 'obst',

@@ -128,7 +128,7 @@ def get_solaranywhere(latitude, longitude, api_key, start=None, end=None,
     .. [1] `SolarAnywhere API
        <https://www.solaranywhere.com/support/using-solaranywhere/api/>`_
     .. [2] `SolarAnywhere irradiance and weather API requests
-       https://apidocs.solaranywhere.com/>`_
+       <https://apidocs.solaranywhere.com/>`_
     .. [3] `SolarAnywhere variable definitions
        <https://www.solaranywhere.com/support/data-fields/definitions/>`_
     """  # noqa: E501

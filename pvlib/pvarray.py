@@ -11,7 +11,8 @@ Supporting functions and parameter fitting functions may also be found here.
 import numpy as np
 import pandas as pd
 from scipy.optimize import curve_fit
-from scipy.special import exp10, lambertw
+from scipy.special import exp10
+from pvlib.ivtools.utils import _lambertw_pvlib
 
 
 def pvefficiency_adr(effective_irradiance, temp_cell,
@@ -483,7 +484,7 @@ def batzelis(effective_irradiance, temp_cell,
 
     # Eq 9-10
     del0 = (1 - beta_voc * t0) / (50.1 - alpha_sc * t0)
-    w0 = np.real(lambertw(np.exp(1/del0 + 1)))
+    w0 = _lambertw_pvlib(np.exp(1/del0 + 1))
 
     # Eqs 27-28
     alpha_imp = alpha_sc + (beta_voc - 1/t0) / (w0 - 1)

@@ -52,8 +52,7 @@ def get_solaranywhere(latitude, longitude, api_key, start=None, end=None,
                       url=URL, map_variables=True, timeout=300):
     """Retrieve historical irradiance time series data from SolarAnywhere.
 
-    The SolarAnywhere API is described in [1]_ and [2]_. A detailed list of
-    API options can be found in [3]_.
+    The SolarAnywhere API is described in [1]_ and [2]_.
 
     Parameters
     ----------
@@ -74,7 +73,7 @@ def get_solaranywhere(latitude, longitude, api_key, start=None, end=None,
         'SolarAnywhereTGYLatest' (TMY for GHI), 'SolarAnywhereTDYLatest' (TMY
         for DNI), or 'SolarAnywherePOELatest' for probability of exceedance.
         Specific dataset versions can also be specified, e.g.,
-        'SolarAnywhere3_2' (see [3]_ for a full list of options).
+        'SolarAnywhere3_2' (see [2]_ for a full list of options).
     time_resolution: {60, 30, 15, 5}, default: 60
         Time resolution in minutes. For TMY data, time resolution has to be 60
         minutes (hourly).
@@ -87,7 +86,7 @@ def get_solaranywhere(latitude, longitude, api_key, start=None, end=None,
         Probability of exceedance in the range of 1 to 99. Only relevant when
         requesting probability of exceedance (POE) time series. [%]
     variables: list-like, default: :const:`DEFAULT_VARIABLES`
-        Variables to retrieve (described in [4]_), must include
+        Variables to retrieve (described in [3]_), must include
         'ObservationTime'. Available variables depend on whether historical or
         TMY data is requested.
     missing_data: {'Omit', 'FillAverage'}, default: 'FillAverage'
@@ -129,10 +128,8 @@ def get_solaranywhere(latitude, longitude, api_key, start=None, end=None,
     .. [1] `SolarAnywhere API
        <https://www.solaranywhere.com/support/using-solaranywhere/api/>`_
     .. [2] `SolarAnywhere irradiance and weather API requests
-       <https://developers.cleanpower.com/irradiance-and-weather-data/irradiance-and-weather-requests/>`_
-    .. [3] `SolarAnywhere API options
-       <https://developers.cleanpower.com/irradiance-and-weather-data/complete-schema/createweatherdatarequest/options/>`_
-    .. [4] `SolarAnywhere variable definitions
+       <https://apidocs.solaranywhere.com/>`_
+    .. [3] `SolarAnywhere variable definitions
        <https://www.solaranywhere.com/support/data-fields/definitions/>`_
     """  # noqa: E501
     headers = {'content-type': "application/json; charset=utf-8",

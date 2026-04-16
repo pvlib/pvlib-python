@@ -5,9 +5,10 @@ Low-level functions for solving the single diode equation.
 import numpy as np
 import pandas as pd
 from pvlib.tools import _golden_sect_DataFrame
+from pvlib.ivtools.utils import _lambertw_pvlib, _log_lambertw
 
 from scipy.optimize import brentq, newton
-from scipy.special import lambertw
+
 
 # newton method default parameters for this module
 NEWTON_DEFAULT_PARAMS = {
@@ -801,12 +802,12 @@ def _lambertw_v_from_i(current, photocurrent, saturation_current,
         with np.errstate(over='ignore'):
             argW = I0 / (Gsh * a) * np.exp((-I + IL + I0) / (Gsh * a))
 
-        # lambertw typically returns complex value with zero imaginary part
-        # may overflow to np.inf
-        lambertwterm = lambertw(argW).real
+        lambertwterm = np.zeros_like(argW)
 
-        # Record indices where lambertw input overflowed output
-        idx_inf = np.isinf(lambertwterm)
+        # Record indices where lambertw input overflowed
+        idx_inf = np.isinf(argW)
+
+        lambertwterm[~idx_inf] = _lambertw_pvlib(argW[~idx_inf])
 
         # Only re-compute LambertW if it overflowed
         if np.any(idx_inf):
@@ -815,15 +816,7 @@ def _lambertw_v_from_i(current, photocurrent, saturation_current,
                        np.log(a[idx_inf]) +
                        (-I[idx_inf] + IL[idx_inf] + I0[idx_inf]) /
                        (Gsh[idx_inf] * a[idx_inf]))
-
-            # Three iterations of Newton-Raphson method to solve
-            #  w+log(w)=logargW. The initial guess is w=logargW. Where direct
-            #  evaluation (above) results in NaN from overflow, 3 iterations
-            #  of Newton's method gives approximately 8 digits of precision.
-            w = logargW
-            for _ in range(0, 3):
-                w = w * (1. - np.log(w) + logargW) / (1. + w)
-            lambertwterm[idx_inf] = w
+            lambertwterm[idx_inf] = _log_lambertw(logargW)
 
         # Eqn. 3 in Jain and Kapoor, 2004
         #  V = -I*(Rs + Rsh) + IL*Rsh - a*lambertwterm + I0*Rsh
@@ -866,27 +859,25 @@ def _lambertw_i_from_v(voltage, photocurrent, saturation_current,
     # Explicit solutions where Rs=0
     if np.any(idx_z):
         I[idx_z] = IL[idx_z] - I0[idx_z] * np.expm1(V[idx_z] / a[idx_z]) - \
-                   Gsh[idx_z] * V[idx_z]
+            Gsh[idx_z] * V[idx_z]
 
     # Only compute using LambertW if there are cases with Rs>0
     # Does NOT handle possibility of overflow, github issue 298
     if np.any(idx_p):
         # LambertW argument, cannot be float128, may overflow to np.inf
         argW = Rs[idx_p] * I0[idx_p] / (
-                    a[idx_p] * (Rs[idx_p] * Gsh[idx_p] + 1.)) * \
-               np.exp((Rs[idx_p] * (IL[idx_p] + I0[idx_p]) + V[idx_p]) /
-                      (a[idx_p] * (Rs[idx_p] * Gsh[idx_p] + 1.)))
+            a[idx_p] * (Rs[idx_p] * Gsh[idx_p] + 1.)) * (
+                np.exp((Rs[idx_p] * (IL[idx_p] + I0[idx_p]) + V[idx_p])
+                       / (a[idx_p] * (Rs[idx_p] * Gsh[idx_p] + 1.))))
 
-        # lambertw typically returns complex value with zero imaginary part
-        # may overflow to np.inf
-        lambertwterm = lambertw(argW).real
+        lambertwterm = _lambertw_pvlib(argW)
 
         # Eqn. 2 in Jain and Kapoor, 2004
         #  I = -V/(Rs + Rsh) - (a/Rs)*lambertwterm + Rsh*(IL + I0)/(Rs + Rsh)
         # Recast in terms of Gsh=1/Rsh for better numerical stability.
         I[idx_p] = (IL[idx_p] + I0[idx_p] - V[idx_p] * Gsh[idx_p]) / \
-                   (Rs[idx_p] * Gsh[idx_p] + 1.) - (
-                               a[idx_p] / Rs[idx_p]) * lambertwterm
+            (Rs[idx_p] * Gsh[idx_p] + 1.) \
+            - (a[idx_p] / Rs[idx_p]) * lambertwterm
 
     if output_is_scalar:
         return I.item()
@@ -1031,7 +1022,7 @@ def batzelis(photocurrent, saturation_current, resistance_series,
         voc = a * np.log(Iph / Is)
 
     # Eqs 5-8
-    w = np.real(lambertw(np.e * Iph / Is))
+    w = _lambertw_pvlib(np.e * Iph / Is)
     # vmp = (1 + Rs/Rsh) * a * (w - 1) - Rs * Iph * (1 - 1/w)  # not needed
     with np.errstate(divide='ignore', invalid='ignore'):  # zero Iph -> zero w
         imp = Iph * (1 - 1/w) - a * (w - 1) / Rsh

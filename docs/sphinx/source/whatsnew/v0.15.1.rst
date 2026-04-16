@@ -38,6 +38,9 @@ Enhancements
 * Accelerate the internals of :py:func:`~pvlib.solarpostion.ephemeris`. (:pull:`2626`)
 * Accelerate the intervals of :py:func:`~pvlib.pvsystem.singlediode` when
   `method='lambertw'`. (:pull:`2732`, :pull:`2723`)
+* :py:func:`~pvlib.tracking.singlediode` accepts negative values for 
+  parameter `axis_tilt`. (:pull:`2702`, :issue:`1976`)
+
 
 Documentation
 ~~~~~~~~~~~~~

@@ -461,8 +461,10 @@ def test_singleaxis_neg_axis_tilt():
     '''
     params = dict(apparent_zenith=45, solar_azimuth=270)
 
-    tr_pos = pvlib.tracking.singleaxis(axis_tilt=10, axis_azimuth=0, **params)
-    tr_neg = pvlib.tracking.singleaxis(axis_tilt=-10, axis_azimuth=180, **params)
+    tr_pos = pvlib.tracking.singleaxis(axis_tilt=10, axis_azimuth=0,
+                                       **params)
+    tr_neg = pvlib.tracking.singleaxis(axis_tilt=-10, axis_azimuth=180,
+                                       **params)
 
     tr_neg['tracker_theta'] *= -1  # expect tracker_theta to be negated
 

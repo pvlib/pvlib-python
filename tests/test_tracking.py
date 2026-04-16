@@ -198,7 +198,7 @@ def test_backtrack():
 def test__unit_normal():
     # with scalar input
     unorm = tracking._unit_normal(180., 45., 45.)
-    np.allclose(unorm, np.array([-np.sqrt(2)/2, -0.5, -0.5]))
+    assert_allclose(unorm, np.array([[-np.sqrt(2)/2, -0.5, 0.5]]))
     # with vector input
     az = np.array([0., 90., 180., 270.,
                    0., 90., 180., 270.,
@@ -453,6 +453,21 @@ def test_slope_aware_backtracking():
     assert_series_equal(truetracking['tracker_theta'],
                         expected_data['TrueTracking'].rename('tracker_theta'),
                         check_less_precise=True)
+
+
+def test_singleaxis_neg_axis_tilt():
+    ''' Check equivalence of (negative tilt, axis azimuth) and
+    (positive tilt, axis azimuth + 180)
+    '''
+    params = dict(apparent_zenith=45, solar_azimuth=270)
+
+    tr_pos = pvlib.tracking.singleaxis(axis_tilt=10, axis_azimuth=0, **params)
+    tr_neg = pvlib.tracking.singleaxis(axis_tilt=-10, axis_azimuth=180, **params)
+
+    tr_neg['tracker_theta'] *= -1  # expect tracker_theta to be negated
+
+    for key in tr_pos:
+        assert_allclose(tr_pos[key], tr_neg[key])
 
 
 def test_singleaxis_aoi_gh1221():

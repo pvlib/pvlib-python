@@ -233,8 +233,7 @@ def _unit_normal(axis_azimuth, axis_tilt, theta):
     Returns
     -------
     ndarray
-        Shape (3,) if theta scalar
-        Shape (N,3) if theta has length N
+        Shape (N,3) where theta has length N
     """
 
     theta = np.asarray(theta)
@@ -287,13 +286,14 @@ def calc_surface_orientation(tracker_theta, axis_tilt=0, axis_azimuth=0):
        Tracking of One-Axis Trackers", Technical Report NREL/TP-6A20-58891,
        July 2013. :doi:`10.2172/1089596`
     """
+    # from [1], Eq. 1
     with np.errstate(invalid='ignore', divide='ignore'):
         surface_tilt = acosd(cosd(tracker_theta) * cosd(axis_tilt))
 
+    # for surface azimuth deviate from [1] to allow for negative tilt.
     # unit normal to rotated tracker surface
     unit_normal = _unit_normal(axis_azimuth, axis_tilt, tracker_theta)
 
-    # deviate from [1] to allow for negative tilt.
     # project unit_normal to x-y plane to calculate azimuth
     surface_azimuth = np.degrees(
         np.arctan2(unit_normal[:, 0], unit_normal[:, 1]))

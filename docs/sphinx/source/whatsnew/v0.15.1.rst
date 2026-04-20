@@ -1,15 +1,8 @@
 .. _whatsnew_0_15_1:
 
 
-v0.15.1 (Anticipated March 2026)
---------------------------------
-
-Breaking Changes
-~~~~~~~~~~~~~~~~
-
-
-Deprecations
-~~~~~~~~~~~~
+v0.15.1 (Anticipated April 20, 2026)
+------------------------------------
 
 
 Bug fixes
@@ -35,7 +28,7 @@ Enhancements
   (:issue:`2714`, :pull:`2715`)
 * Include `ross` and `faiman_rad` in the allowed models within 
   :py:meth:`pvlib.pvsystem.PVSystem.get_cell_temperature` (:issue:`2625`, :pull:`2631`)  
-* Accelerate the internals of :py:func:`~pvlib.solarpostion.ephemeris`. (:pull:`2626`)
+* Accelerate the internals of :py:func:`~pvlib.solarposition.ephemeris`. (:pull:`2626`)
 * Accelerate the intervals of :py:func:`~pvlib.pvsystem.singlediode` when
   `method='lambertw'`. (:pull:`2732`, :pull:`2723`)
 * :py:func:`~pvlib.tracking.singleaxis` accepts negative values for 
@@ -73,13 +66,6 @@ Testing
 * Add test to verify that :py:func:`~pvlib.transformer.simple_efficiency`
   produces consistent results for vectorized and scalar inputs.
   (:issue:`2649`, :pull:`2661`)
-
-Benchmarking
-~~~~~~~~~~~~
-
-
-Requirements
-~~~~~~~~~~~~
 
 
 Maintenance

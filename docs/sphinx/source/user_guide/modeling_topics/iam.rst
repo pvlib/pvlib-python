@@ -15,7 +15,7 @@ the reduction at normal incidence is implicit in the PV module's power rating
 and does not need to be accounted for separately in a performance model.
 Therefore, only the extra reduction at non-normal incidence should be modeled.
 
-This is done using incidence angle modififer (:term:`IAM`) models.
+This is done using incidence angle modififer (:term:`IAM <iam>`) models.
 Conceptually, IAM is the fraction of incident light that is
 transmitted to the PV cell, normalized to the fraction transmitted at normal incidence:
 

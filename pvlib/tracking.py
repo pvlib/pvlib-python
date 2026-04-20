@@ -45,7 +45,7 @@ def singleaxis(apparent_zenith, solar_azimuth,
         The tilt of the axis of rotation (i.e, the y-axis defined by
         ``axis_azimuth``) with respect to horizontal (degrees). Positive
         ``axis_tilt`` is *downward* in the direction of ``axis_azimuth``. For
-        example, for a tracker with ``axis_azimuth``=180 and ``axis_tilt``=10,
+        example, for a tracker with ``axis_azimuth=180``and ``axis_tilt=10``,
         the north end is higher than the south end of the axis.
 
     axis_azimuth : float, default 0

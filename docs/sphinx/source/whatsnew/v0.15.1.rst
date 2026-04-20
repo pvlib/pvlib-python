@@ -15,8 +15,6 @@ Bug fixes
   (:issue:`2645`, :pull:`2646`)
 * Update URLs in :py:mod:`pvlib.iotools.psm4` to use nlr.gov instead of
   nrel.gov. (:issue:`2701`, :pull:`2705`)
-* Fix a bug in :py:func:`pvlib.iotools.era5._m_to_cm` where meters were
-  incorrectly divided by 100 instead of multiplied, causing precipitations to be
 * Fix a bug in :py:func:`pvlib.iotools.get_era5` where conversion of
   precipitation in meters to ``cm`` was underestimated by a factor of 10,000 when ``map_variables=True``.
   (:issue:`2724`, :pull:`2725`)
@@ -32,8 +30,7 @@ Enhancements
 * Accelerate the internals of :py:func:`~pvlib.solarposition.ephemeris`. (:pull:`2626`)
 * Accelerate the intervals of :py:func:`~pvlib.pvsystem.singlediode` when
   ``method='lambertw'``. (:pull:`2732`, :pull:`2723`)
-* :py:func:`~pvlib.tracking.singleaxis` accepts negative values for 
-  parameter ``axis_tilt``. (:pull:`2702`, :issue:`1976`)
+* Accept negative ``axis_tilt`` values in :py:func:`~pvlib.tracking.singleaxis`. (:pull:`2702`, :issue:`1976`)
 
 
 Documentation
@@ -43,9 +40,6 @@ Documentation
 * Add the following terms to the :ref:`nomenclature` page
   (:issue:`2564`, :pull:`2663`):
 
-    - :term:`clearness_index`
-    - :term:`clearsky_index`
-    - :term:`aod`
   - :term:`clearness_index`
   - :term:`clearsky_index`
   - :term:`aod`

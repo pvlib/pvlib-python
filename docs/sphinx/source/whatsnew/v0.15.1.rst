@@ -90,4 +90,8 @@ Contributors
 * Jean-Baptiste Pasquier (:ghuser:`pasquierjb`)
 * Rodrigo Amaro e Silva (:ghuser:`ramaroesilva`)
 * James Fulton (:ghuser:`dfulu`)
-
+* Will Holmgren (:ghuser:`wholmgren`)
+* Mark Campanelli (:ghuser:`markcampanelli`)
+* Chirag Sharma  (:ghuser:`Chirag3841`)
+* Will Hobbs (:ghuser:`williamhobbs`)
+* Adam R. Jensen (:ghuser:`adamrjensen`)

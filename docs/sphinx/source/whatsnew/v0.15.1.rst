@@ -28,7 +28,7 @@ Enhancements
 * Include ``ross`` and ``faiman_rad`` in the allowed models within 
   :py:meth:`pvlib.pvsystem.PVSystem.get_cell_temperature` (:issue:`2625`, :pull:`2631`)  
 * Accelerate the internals of :py:func:`~pvlib.solarposition.ephemeris`. (:pull:`2626`)
-* Accelerate the intervals of :py:func:`~pvlib.pvsystem.singlediode` when
+* Accelerate the internals of :py:func:`~pvlib.pvsystem.singlediode` when
   ``method='lambertw'``. (:pull:`2732`, :pull:`2723`)
 * Accept negative ``axis_tilt`` values in :py:func:`~pvlib.tracking.singleaxis`. (:pull:`2702`, :issue:`1976`)
 

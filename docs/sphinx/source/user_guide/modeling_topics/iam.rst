@@ -74,7 +74,7 @@ following table:
 +-------------------------------------------+---------+-------------------------------------------+
 | :py:func:`~pvlib.iam.schlick`             | direct  | Does not take module-specific parameters  |
 +-------------------------------------------+---------+-------------------------------------------+
-| :py:func:`~pvlib.iam.schlick_diffuse`     | diffuse | Does not take module-specific parmaeters  |
+| :py:func:`~pvlib.iam.schlick_diffuse`     | diffuse | Does not take module-specific parameters  |
 +-------------------------------------------+---------+-------------------------------------------+
 
 In addition to the core models above, pvlib provides several other functions

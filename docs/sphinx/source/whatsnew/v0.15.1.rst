@@ -17,27 +17,28 @@ Bug fixes
   nrel.gov. (:issue:`2701`, :pull:`2705`)
 * Fix a bug in :py:func:`pvlib.iotools.era5._m_to_cm` where meters were
   incorrectly divided by 100 instead of multiplied, causing precipitations to be
-  underestimated by a factor of 10,000 when ``map_variables=True``.
+* Fix a bug in :py:func:`pvlib.iotools.get_era5` where conversion of
+  precipitation in meters to ``cm`` was underestimated by a factor of 10,000 when ``map_variables=True``.
   (:issue:`2724`, :pull:`2725`)
 
 
 Enhancements
 ~~~~~~~~~~~~
-* Use ``k`` and ``cap_adjustment`` from :py:func:`pvlib.pvsystem.Array.module_parameters`
+* Use ``k`` and ``cap_adjustment`` from :py:attr:`pvlib.pvsystem.Array.module_parameters`
   in :py:func:`pvlib.pvsystem.PVSystem.pvwatts_dc`
   (:issue:`2714`, :pull:`2715`)
-* Include `ross` and `faiman_rad` in the allowed models within 
+* Include ``ross`` and ``faiman_rad`` in the allowed models within 
   :py:meth:`pvlib.pvsystem.PVSystem.get_cell_temperature` (:issue:`2625`, :pull:`2631`)  
 * Accelerate the internals of :py:func:`~pvlib.solarposition.ephemeris`. (:pull:`2626`)
 * Accelerate the intervals of :py:func:`~pvlib.pvsystem.singlediode` when
-  `method='lambertw'`. (:pull:`2732`, :pull:`2723`)
+  ``method='lambertw'``. (:pull:`2732`, :pull:`2723`)
 * :py:func:`~pvlib.tracking.singleaxis` accepts negative values for 
-  parameter `axis_tilt`. (:pull:`2702`, :issue:`1976`)
+  parameter ``axis_tilt``. (:pull:`2702`, :issue:`1976`)
 
 
 Documentation
 ~~~~~~~~~~~~~
-* Add examples for run_model_from_poa() and run_model_from_effective_irradiance()
+* Add examples for :py:meth:`pvlib.modelchain.ModelChain.run_model_from_poa` and :py:meth:`~pvlib.modelchain.ModelChain.run_model_from_effective_irradiance`
   (:issue:`1043`, :pull:`2621`)
 * Add the following terms to the :ref:`nomenclature` page
   (:issue:`2564`, :pull:`2663`):
@@ -45,14 +46,17 @@ Documentation
     - :term:`clearness_index`
     - :term:`clearsky_index`
     - :term:`aod`
-    - :term:`aod500`
+  - :term:`clearness_index`
+  - :term:`clearsky_index`
+  - :term:`aod`
+  - :term:`aod500`
 
-* Provide an overview of IAM modeling functionality in :ref:`iam`. (:pull:`2683`)
+* Add an overview of IAM modeling functionality in new documentation page :ref:`iam`. (:pull:`2683`)
 * Add AI checkbox to PR template, and auto-generate a comment on PRs
   from first-time contributors regarding AI and contributing guidelines.
   (:issue:`2617`, :pull:`2624`)
 * Update :py:class:`pvlib.pvsystem.PVSystem` docstring to state that
-  ``module_type`` is optional.
+* Clarify :py:class:`pvlib.pvsystem.PVSystem` parameter ``module_type`` is optional.
   (:issue:`2634`, :pull:`2713`)
 * Fix a broken docstring reference to ``grounddiffuse`` in
   :py:func:`pvlib.irradiance.poa_components`

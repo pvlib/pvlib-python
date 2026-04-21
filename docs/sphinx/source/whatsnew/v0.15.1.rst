@@ -43,6 +43,7 @@ Documentation
   - :term:`clearness_index`
   - :term:`clearsky_index`
   - :term:`aod`
+  - :term:`iam`
   - :term:`aod500`
 
 * Add an overview of IAM modeling functionality in new documentation page :ref:`iam`. (:pull:`2683`)

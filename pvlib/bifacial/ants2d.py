@@ -164,7 +164,9 @@ def _ants2d_singleside(tracker_rotation, cos_aoi, phi, gcr, height, pitch,
 
     References
     ----------
-    .. [1] TODO
+    .. [1] K. S. Anderson, A. R. Jensen, and C. W. Hansen, "A Bifacial View
+           Factor Model Considering Terrain Slope and Nonuniform Albedo,"
+           IEEE JPV, 2026. :doi:`10.1109/JPHOTOV.2026.3677506`
     """
     # reminder of base dimensions: ground segment, row segment, time
 
@@ -235,14 +237,14 @@ def _apply_sky_diffuse_model(dni, dhi, model, solar_zenith, solar_azimuth,
         # circumsolar_horizontal from DHI
         sky_diffuse_comps_horizontal = diffuse_model_func(
             surface_tilt=0, surface_azimuth=180, **kwargs, **extra_kwargs)
-        circumsolar_horizontal = sky_diffuse_comps_horizontal['circumsolar']
+        circumsolar_horizontal = sky_diffuse_comps_horizontal['poa_circumsolar']
 
         # Call the model a second time where circumsolar_normal is facing
         # directly towards sun, and can be added to DNI
         sky_diffuse_comps_normal = diffuse_model_func(
             surface_tilt=solar_zenith, surface_azimuth=solar_azimuth,
             **kwargs, **extra_kwargs)
-        circumsolar_normal = sky_diffuse_comps_normal['circumsolar']
+        circumsolar_normal = sky_diffuse_comps_normal['poa_circumsolar']
 
         dhi = dhi - circumsolar_horizontal
         dni = dni + circumsolar_normal
@@ -424,7 +426,9 @@ def get_irradiance(tracker_rotation, axis_azimuth, solar_zenith, solar_azimuth,
 
     References
     ----------
-    .. [1] TODO
+    .. [1] K. S. Anderson, A. R. Jensen, and C. W. Hansen, "A Bifacial View
+           Factor Model Considering Terrain Slope and Nonuniform Albedo,"
+           IEEE JPV, 2026. :doi:`10.1109/JPHOTOV.2026.3677506`
     """
 
     # so we can return scalars out if needed

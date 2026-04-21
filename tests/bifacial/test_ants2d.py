@@ -72,8 +72,8 @@ def test__apply_sky_diffuse_model(model):
                                                kwargs['surface_azimuth'],
                                                kwargs['solar_zenith'],
                                                kwargs['solar_azimuth'])
-    poa_direct = inputs['dni'] * aoi_proj + diffuse['circumsolar']
-    poa_sky_diffuse = diffuse['isotropic']
+    poa_direct = inputs['dni'] * aoi_proj + diffuse['poa_circumsolar']
+    poa_sky_diffuse = diffuse['poa_isotropic']
     poa_ground = 1000 * 0.25 * (1 - pvlib.tools.cosd(20)) / 2
     assert adj['poa_direct'] == pytest.approx(poa_direct, abs=1e-10)
     assert adj['poa_sky_diffuse'] == pytest.approx(poa_sky_diffuse, abs=1e-10)

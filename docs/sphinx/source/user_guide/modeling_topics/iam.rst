@@ -15,7 +15,7 @@ the reduction at normal incidence is implicit in the PV module's power rating
 and does not need to be accounted for separately in a performance model.
 Therefore, only the extra reduction at non-normal incidence should be modeled.
 
-This is done using incidence angle modififer (:term:`IAM`) models.
+This is done using incidence angle modififer (:term:`IAM <iam>`) models.
 Conceptually, IAM is the fraction of incident light that is
 transmitted to the PV cell, normalized to the fraction transmitted at normal incidence:
 
@@ -74,7 +74,7 @@ following table:
 +-------------------------------------------+---------+-------------------------------------------+
 | :py:func:`~pvlib.iam.schlick`             | direct  | Does not take module-specific parameters  |
 +-------------------------------------------+---------+-------------------------------------------+
-| :py:func:`~pvlib.iam.schlick_diffuse`     | diffuse | Does not take module-specific parmaeters  |
+| :py:func:`~pvlib.iam.schlick_diffuse`     | diffuse | Does not take module-specific parameters  |
 +-------------------------------------------+---------+-------------------------------------------+
 
 In addition to the core models above, pvlib provides several other functions

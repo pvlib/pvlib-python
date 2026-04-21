@@ -14,7 +14,7 @@ solar-position data, and adjust DNI and POA-global irradiance.
 # After location information and a date range is established, solar position
 # data is calculated using :py:func:`pvlib.solarposition.get_solarposition`.
 # Horizon data is assigned, and interpolated to the solar azimuth time
-# series data. Finally, in times when solar elevation is greater than the
+# series data. Finally, in times when solar elevation is less than the
 # interpolated horizon elevation angle, DNI is set to 0.
 
 import numpy as np
@@ -27,7 +27,7 @@ tz = 'MST'
 
 # Set times in the morning of the December solstice.
 times = pd.date_range(
-    '2020-12-20 6:30', '2020-12-20 9:00', freq='1T', tz=tz
+    '2020-12-20 6:30', '2020-12-20 9:00', freq='1min', tz=tz
 )
 
 # Create location object, and get solar position and clearsky irradiance data.

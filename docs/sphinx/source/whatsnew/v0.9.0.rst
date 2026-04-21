@@ -50,7 +50,7 @@ Breaking changes
   :py:meth:`~pvlib.pvsystem.PVSystem.calcparams_cec` (:issue:`1118`, :pull:`1222`)
 
 * Switched the order of the outputs from the PSM3 iotools, notably
-  :py:func:`~pvlib.iotools.get_psm3` and :py:func:`~pvlib.iotools.read_psm3`
+  :py:func:`!pvlib.iotools.get_psm3` and :py:func:`!pvlib.iotools.read_psm3`
   (:issue:`1245`, :pull:`1268`)
 
 * Changed the naming of the inputs ``startdate``/``enddate`` to ``start``/``end`` in
@@ -223,7 +223,7 @@ Documentation
   and to make the procedural and OO results match exactly. (:issue:`1116`, :pull:`1144`)
 * Add a gallery example showing how to appropriately use interval-averaged
   weather data for modeling. (:pull:`1152`)
-* Update documentation links in :py:func:`pvlib.iotools.get_psm3` (:pull:`1169`)
+* Update documentation links in :py:func:`!pvlib.iotools.get_psm3` (:pull:`1169`)
 * Use ``Mount`` classes in ``introtutorial`` and ``pvsystem`` docs pages (:pull:`1267`)
 * Clarified how statistics are calculated for :py:func:`pvlib.clearsky.detect_clearsky`
   (:issue:`1070`, :pull:`1243`)

@@ -67,7 +67,7 @@ def get_solarposition(time, latitude, longitude,
 
         'ephemeris' uses the pvlib ephemeris code: :py:func:`ephemeris`
 
-        'nrel_c' uses the NREL SPA C code [3]: :py:func:`spa_c`
+        'nrel_c' uses the NLR SPA C code [3]: :py:func:`spa_c`
 
     temperature : float, default 12
         Degrees C.
@@ -85,7 +85,7 @@ def get_solarposition(time, latitude, longitude,
        solar radiation applications. Solar Energy, vol. 81, no. 6, p. 838,
        2007.
 
-    .. [3] NREL SPA code: https://midcdmz.nrel.gov/spa/
+    .. [3] NLR SPA code: https://midcdmz.nlr.gov/spa/
     """
 
     if altitude is None and pressure is None:
@@ -129,8 +129,8 @@ def spa_c(time, latitude, longitude, pressure=101325., altitude=0.,
           temperature=12., delta_t=67.0,
           raw_spa_output=False):
     r"""
-    Calculate the solar position using the C implementation of the NREL
-    SPA code.
+    Calculate the solar position using the NLR C implementation of the
+    NREL SPA.
 
     The source files for this code are located in './spa_c_files/', along with
     a README file which describes how the C code is wrapped in Python.
@@ -173,7 +173,7 @@ def spa_c(time, latitude, longitude, pressure=101325., altitude=0.,
 
     References
     ----------
-    .. [1] NREL SPA reference: https://midcdmz.nrel.gov/spa/
+    .. [1] NLR SPA reference: https://midcdmz.nlr.gov/spa/
 
     Note: The ``timezone`` field in the SPA C files is replaced with
     ``time_zone`` to avoid a nameclash with the function ``__timezone`` that is
@@ -314,7 +314,7 @@ def spa_python(time, latitude, longitude,
         using time.year and time.month from pandas.DatetimeIndex.
         For most simulations the default delta_t is sufficient.
         The USNO has historical and forecasted delta_t [3]_.
-    atmos_refrac : float, optional
+    atmos_refract : float, optional
         The approximate atmospheric refraction (in degrees)
         at sunrise and sunset.
     how : str, optional, default 'numpy'
@@ -432,8 +432,8 @@ def sun_rise_set_transit_spa(times, latitude, longitude, how='numpy',
     References
     ----------
     .. [1] Reda, I., Andreas, A., 2003. Solar position algorithm for solar
-       radiation applications. Technical report: NREL/TP-560- 34302. Golden,
-       USA, http://www.nrel.gov.
+       radiation applications. Technical report: NREL/TP-560-34302. Golden,
+       USA, http://www.nlr.gov.
     """
     # Added by Tony Lorenzo (@alorenzo175), University of Arizona, 2015
 
@@ -826,34 +826,43 @@ def ephemeris(time, latitude, longitude, pressure=101325.0, temperature=12.0):
 
     # Calculate refraction correction
     Elevation = SunEl
-    TanEl = pd.Series(np.tan(np.radians(Elevation)), index=time_utc)
-    Refract = pd.Series(0., index=time_utc)
+    TanEl = np.tan(np.radians(Elevation))
+    Refract = np.zeros(len(time_utc))
 
-    Refract[(Elevation > 5) & (Elevation <= 85)] = (
-        58.1/TanEl - 0.07/(TanEl**3) + 8.6e-05/(TanEl**5))
+    mask = (Elevation > 5) & (Elevation <= 85)
+    Refract[mask] = (
+        58.1/TanEl[mask] - 0.07/(TanEl[mask]**3) + 8.6e-05/(TanEl[mask]**5))
 
-    Refract[(Elevation > -0.575) & (Elevation <= 5)] = (
-        Elevation *
-        (-518.2 + Elevation*(103.4 + Elevation*(-12.79 + Elevation*0.711))) +
-        1735)
+    mask = (Elevation > -0.575) & (Elevation <= 5)
+    Refract[mask] = (
+        Elevation[mask] * (
+            -518.2 + Elevation[mask]*(
+                103.4 + Elevation[mask]*(-12.79 + Elevation[mask]*0.711)
+            )
+        ) + 1735
+    )
 
-    Refract[(Elevation > -1) & (Elevation <= -0.575)] = -20.774 / TanEl
+    mask = (Elevation > -1) & (Elevation <= -0.575)
+    Refract[mask] = -20.774 / TanEl[mask]
 
     Refract *= (283/(273. + temperature)) * (pressure/101325.) / 3600.
 
     ApparentSunEl = SunEl + Refract
 
     # make output DataFrame
-    DFOut = pd.DataFrame(index=time_utc)
-    DFOut['apparent_elevation'] = ApparentSunEl
-    DFOut['elevation'] = SunEl
-    DFOut['azimuth'] = SunAz
-    DFOut['apparent_zenith'] = 90 - ApparentSunEl
-    DFOut['zenith'] = 90 - SunEl
-    DFOut['solar_time'] = SolarTime
-    DFOut.index = time
+    result = pd.DataFrame(
+        {
+            "apparent_elevation": ApparentSunEl,
+            "elevation": SunEl,
+            "azimuth": SunAz,
+            "apparent_zenith": 90 - ApparentSunEl,
+            "zenith": 90 - SunEl,
+            "solar_time": SolarTime,
+        },
+        index=time
+    )
 
-    return DFOut
+    return result
 
 
 def calc_time(lower_bound, upper_bound, latitude, longitude, attribute, value,
@@ -987,8 +996,8 @@ def nrel_earthsun_distance(time, how='numpy', delta_t=67.0, numthreads=4):
     References
     ----------
     .. [1] Reda, I., Andreas, A., 2003. Solar position algorithm for solar
-       radiation applications. Technical report: NREL/TP-560- 34302. Golden,
-       USA, http://www.nrel.gov.
+       radiation applications. Technical report: NREL/TP-560-34302. Golden,
+       USA, http://www.nlr.gov.
     """
 
     if not isinstance(time, pd.DatetimeIndex):

@@ -44,7 +44,7 @@ Bug fixes
   incorrect loss results for systems that are near the ground. (:issue:`1636`,
   :pull:`1653`)
 * Fixed incorrect mapping of requested parameters names when using
-  :py:func:`pvlib.iotools.get_psm3`.
+  :py:func:`!pvlib.iotools.get_psm3`.
   Also fixed the random reordering of the dataframe columns.
   (:issue:`1629`, :issue:`1647`, :pull:`1648`)
 * When using ``utc_time_range`` with :py:func:`pvlib.iotools.read_ecmwf_macc`,

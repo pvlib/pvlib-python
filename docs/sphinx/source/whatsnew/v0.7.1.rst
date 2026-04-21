@@ -5,8 +5,8 @@ v0.7.1 (January 17, 2020)
 
 Enhancements
 ~~~~~~~~~~~~
-* Added :py:func:`~pvlib.iotools.read_psm3` to read local NSRDB PSM3 files and
-  :py:func:`~pvlib.iotools.parse_psm3` to parse local NSRDB PSM3 file-like
+* Added :py:func:`!pvlib.iotools.read_psm3` to read local NSRDB PSM3 files and
+  :py:func:`!pvlib.iotools.parse_psm3` to parse local NSRDB PSM3 file-like
   objects. (:issue:`841`)
 * Added `leap_day` parameter to `iotools.get_psm3` instead of hardcoding it as
   False.

@@ -140,7 +140,7 @@ class PVSystem:
     module : string, optional
         The model name of the modules.
 
-    module_type : string, default 'glass_polymer'
+    module_type : string, optional
          Describes the module's construction. Valid strings are 'glass_polymer'
          and 'glass_glass'. Used for cell and module temperature calculations.
 
@@ -414,7 +414,7 @@ class PVSystem:
 
     @_unwrap_single_value
     def get_cell_temperature(self, poa_global, temp_air, wind_speed, model,
-                             effective_irradiance=None):
+                             effective_irradiance=None, longwave_down=None):
         """
         Determine cell temperature using the method specified by ``model``.
 
@@ -431,11 +431,16 @@ class PVSystem:
 
         model : str
             Supported models include ``'sapm'``, ``'pvsyst'``,
-            ``'faiman'``, ``'fuentes'``, and ``'noct_sam'``
+            ``'faiman'``, ``'faiman_rad'``, ``'fuentes'``, ``'noct_sam'``,
+            and ``'ross'``
 
         effective_irradiance : numeric or tuple of numeric, optional
             The irradiance that is converted to photocurrent in W/m^2.
             Only used for some models.
+
+        longwave_down: numeric or tuple of numeric, optional
+            Downwelling long-wave radiation from the sky, measured on a
+            horizontal surface in W/m^2. Only used in ``'faiman_rad'`` model.
 
         Returns
         -------
@@ -459,14 +464,18 @@ class PVSystem:
         # Not used for all models, but Array.get_cell_temperature handles it
         effective_irradiance = self._validate_per_array(effective_irradiance,
                                                         system_wide=True)
+        longwave_down = self._validate_per_array(longwave_down,
+                                                 system_wide=True)
 
         return tuple(
             array.get_cell_temperature(poa_global, temp_air, wind_speed,
-                                       model, effective_irradiance)
-            for array, poa_global, temp_air, wind_speed, effective_irradiance
+                                       model, effective_irradiance,
+                                       longwave_down)
+            for array, poa_global, temp_air, wind_speed, effective_irradiance,
+            longwave_down
             in zip(
                 self.arrays, poa_global, temp_air, wind_speed,
-                effective_irradiance
+                effective_irradiance, longwave_down
             )
         )
 
@@ -850,7 +859,10 @@ class PVSystem:
         """
         Calculates DC power according to the PVWatts model using
         :py:func:`pvlib.pvsystem.pvwatts_dc`, `self.module_parameters['pdc0']`,
-        and `self.module_parameters['gamma_pdc']`.
+        `self.module_parameters['gamma_pdc']`,
+        `self.module_parameters['temp_ref']`, and optionally,
+        `self.module_parameters['k']` and
+        `self.module_parameters['cap_adjustment']`.
 
         See :py:func:`pvlib.pvsystem.pvwatts_dc` for details.
         """
@@ -860,7 +872,8 @@ class PVSystem:
             pvwatts_dc(effective_irradiance, temp_cell,
                        array.module_parameters['pdc0'],
                        array.module_parameters['gamma_pdc'],
-                       **_build_kwargs(['temp_ref'], array.module_parameters))
+                       **_build_kwargs(['temp_ref', 'k', 'cap_adjustment'],
+                                       array.module_parameters))
             for array, effective_irradiance, temp_cell
             in zip(self.arrays, effective_irradiance, temp_cell)
         )
@@ -1204,7 +1217,7 @@ class Array:
             raise ValueError(model + ' is not a valid IAM model')
 
     def get_cell_temperature(self, poa_global, temp_air, wind_speed, model,
-                             effective_irradiance=None):
+                             effective_irradiance=None, longwave_down=None):
         """
         Determine cell temperature using the method specified by ``model``.
 
@@ -1218,14 +1231,20 @@ class Array:
 
         wind_speed : numeric
             Wind speed [m/s]
+            When ``model='ross'``, this input is ignored
 
         model : str
             Supported models include ``'sapm'``, ``'pvsyst'``,
-            ``'faiman'``, ``'fuentes'``, and ``'noct_sam'``
+            ``'faiman'``, ``'faiman_rad'``, ``'fuentes'``, ``'noct_sam'``,
+            and ``'ross'``
 
         effective_irradiance : numeric, optional
             The irradiance that is converted to photocurrent in W/m^2.
             Only used for some models.
+
+        longwave_down: numeric, optional
+            Downwelling long-wave radiation from the sky, measured on a
+            horizontal surface in W/m^2. Only used in ``'faiman_rad'`` model.
 
         Returns
         -------
@@ -1235,8 +1254,9 @@ class Array:
         See Also
         --------
         pvlib.temperature.sapm_cell, pvlib.temperature.pvsyst_cell,
-        pvlib.temperature.faiman, pvlib.temperature.fuentes,
-        pvlib.temperature.noct_sam
+        pvlib.temperature.faiman, pvlib.temperature.faiman_rad,
+        pvlib.temperature.fuentes, pvlib.temperature.noct_sam,
+        pvlib.temperature.ross
 
         Notes
         -----
@@ -1267,6 +1287,13 @@ class Array:
             required = tuple()
             optional = _build_kwargs(['u0', 'u1'],
                                      self.temperature_model_parameters)
+        elif model == 'faiman_rad':
+            func = functools.partial(temperature.faiman_rad,
+                                     ir_down=longwave_down)
+            required = ()
+            optional = _build_kwargs(['u0', 'u1',
+                                      'sky_view', 'emissivity'],
+                                     self.temperature_model_parameters)
         elif model == 'fuentes':
             func = temperature.fuentes
             required = _build_tcell_args(['noct_installed'])
@@ -1283,11 +1310,21 @@ class Array:
             optional = _build_kwargs(['transmittance_absorptance',
                                       'array_height', 'mount_standoff'],
                                      self.temperature_model_parameters)
+        elif model == 'ross':
+            func = temperature.ross
+            required = ()
+            # either noct or k must be defined
+            optional = _build_kwargs(['noct', 'k'],
+                                     self.temperature_model_parameters)
         else:
             raise ValueError(f'{model} is not a valid cell temperature model')
 
-        temperature_cell = func(poa_global, temp_air, wind_speed,
-                                *required, **optional)
+        if model == 'ross':
+            temperature_cell = func(poa_global, temp_air,
+                                    *required, **optional)
+        else:
+            temperature_cell = func(poa_global, temp_air,  wind_speed,
+                                    *required, **optional)
         return temperature_cell
 
     def dc_ohms_from_percent(self):
@@ -1561,7 +1598,7 @@ def calcparams_desoto(effective_irradiance, temp_cell,
         The energy bandgap at reference temperature in units of eV.
         1.121 eV for crystalline silicon. EgRef must be >0.  For parameters
         from the SAM CEC module database, EgRef=1.121 is implicit for all
-        cell types in the parameter estimation algorithm used by NREL.
+        cell types in the parameter estimation algorithm used by NLR.
 
     dEgdT : float
         The temperature dependence of the energy bandgap at reference
@@ -1569,7 +1606,7 @@ def calcparams_desoto(effective_irradiance, temp_cell,
         (e.g. -0.0002677 as in [1]_) or a DataFrame (this may be useful if
         dEgdT is a modeled as a function of temperature). For parameters from
         the SAM CEC module database, dEgdT=-0.0002677 is implicit for all cell
-        types in the parameter estimation algorithm used by NREL.
+        types in the parameter estimation algorithm used by NLR.
 
     irrad_ref : float, default 1000
         Reference irradiance in W/m^2.
@@ -1604,7 +1641,7 @@ def calcparams_desoto(effective_irradiance, temp_cell,
        photovoltaic array performance", Solar Energy, vol 80, pp. 78-88,
        2006.
 
-    .. [2] System Advisor Model web page. https://sam.nrel.gov.
+    .. [2] System Advisor Model web page. https://sam.nlr.gov.
 
     .. [3] A. Dobos, "An Improved Coefficient Calculator for the California
        Energy Commission 6 Parameter Photovoltaic Module Model", Journal of
@@ -1779,7 +1816,7 @@ def calcparams_cec(effective_irradiance, temp_cell,
         The energy bandgap at reference temperature in units of eV.
         1.121 eV for crystalline silicon. EgRef must be >0.  For parameters
         from the SAM CEC module database, EgRef=1.121 is implicit for all
-        cell types in the parameter estimation algorithm used by NREL.
+        cell types in the parameter estimation algorithm used by NLR.
 
     dEgdT : float
         The temperature dependence of the energy bandgap at reference
@@ -1787,7 +1824,7 @@ def calcparams_cec(effective_irradiance, temp_cell,
         (e.g. -0.0002677 as in [3]) or a DataFrame (this may be useful if
         dEgdT is a modeled as a function of temperature). For parameters from
         the SAM CEC module database, dEgdT=-0.0002677 is implicit for all cell
-        types in the parameter estimation algorithm used by NREL.
+        types in the parameter estimation algorithm used by NLR.
 
     irrad_ref : float, default 1000
         Reference irradiance in W/m^2.
@@ -1822,7 +1859,7 @@ def calcparams_cec(effective_irradiance, temp_cell,
        Energy Commission 6 Parameter Photovoltaic Module Model", Journal of
        Solar Energy Engineering, vol 134, 2012.
 
-    .. [2] System Advisor Model web page. https://sam.nrel.gov.
+    .. [2] System Advisor Model web page. https://sam.nlr.gov.
 
     .. [3] W. De Soto et al., "Improvement and validation of a model for
        photovoltaic array performance", Solar Energy, vol 80, pp. 78-88,
@@ -2084,7 +2121,7 @@ def retrieve_sam(name=None, path=None):
     Notes
     -----
     Files available at
-        https://github.com/NREL/SAM/tree/develop/deploy/libraries
+        https://github.com/NatLabRockies/SAM/tree/develop/deploy/libraries
 
     Examples
     --------
@@ -2498,7 +2535,11 @@ def singlediode(photocurrent, saturation_current, resistance_series,
 
     method : str, default 'lambertw'
         Determines the method used to calculate points on the IV curve. The
-        options are ``'lambertw'``, ``'newton'``, or ``'brentq'``.
+        options are ``'lambertw'``, ``'newton'``, ``'brentq'``, or
+        ``'chandrupatla'``.
+
+        .. note::
+           ``'chandrupatla'`` requires scipy 1.15 or greater.
 
     Returns
     -------
@@ -2530,28 +2571,35 @@ def singlediode(photocurrent, saturation_current, resistance_series,
     explicit function of :math:`V=f(I)` and :math:`I=f(V)` as shown in [2]_.
 
     If the method is ``'newton'`` then the root-finding Newton-Raphson method
-    is used. It should be safe for well behaved IV-curves, but the ``'brentq'``
-    method is recommended for reliability.
+    is used. It should be safe for well-behaved IV curves, otherwise the
+    ``'chandrupatla``` or ``'brentq'`` methods are recommended for reliability.
 
     If the method is ``'brentq'`` then Brent's bisection search method is used
     that guarantees convergence by bounding the voltage between zero and
-    open-circuit.
+    open-circuit. ``'brentq'`` is generally slower than the other options.
+
+    If the method is ``'chandrupatla'`` then Chandrupatla's method is used
+    that guarantees convergence.
 
     References
     ----------
-    .. [1] S.R. Wenham, M.A. Green, M.E. Watt, "Applied Photovoltaics" ISBN
-       0 86758 909 4
+    .. [1] S. R. Wenham, M. A. Green, M. E. Watt, "Applied Photovoltaics",
+       Centre for Photovoltaic Devices and Systems, 1995. ISBN
+       0867589094
 
     .. [2] A. Jain, A. Kapoor, "Exact analytical solutions of the
        parameters of real solar cells using Lambert W-function", Solar
-       Energy Materials and Solar Cells, 81 (2004) 269-277.
+       Energy Materials and Solar Cells, vol. 81 no. 2, pp. 269-277, Feb. 2004.
+       :doi:`10.1016/j.solmat.2003.11.018`.
 
-    .. [3] D. King et al, "Sandia Photovoltaic Array Performance Model",
-       SAND2004-3535, Sandia National Laboratories, Albuquerque, NM
+    .. [3] D. L. King, E. E. Boyson and J. A. Kratochvil "Photovoltaic Array
+       Performance Model", Sandia National Laboratories, Albuquerque, NM, USA.
+       Report SAND2004-3535, 2004.
 
-    .. [4] "Computer simulation of the effects of electrical mismatches in
-       photovoltaic cell interconnection circuits" JW Bishop, Solar Cell (1988)
-       https://doi.org/10.1016/0379-6787(88)90059-2
+    .. [4] J.W. Bishop, "Computer simulation of the effects of electrical
+       mismatches in photovoltaic cell interconnection circuits" Solar Cells,
+       vol. 25 no. 1, pp. 73-89, Oct. 1988.
+       :doi:`doi.org/10.1016/0379-6787(88)90059-2`
     """
     args = (photocurrent, saturation_current, resistance_series,
             resistance_shunt, nNsVth)  # collect args
@@ -2561,8 +2609,9 @@ def singlediode(photocurrent, saturation_current, resistance_series,
         out = _singlediode._lambertw(*args)
         points = out[:7]
     else:
-        # Calculate points on the IV curve using either 'newton' or 'brentq'
-        # methods. Voltages are determined by first solving the single diode
+        # Calculate points on the IV curve using Bishop's algorithm and solving
+        # with 'newton', 'brentq' or 'chandrupatla' method.
+        # Voltages are determined by first solving the single diode
         # equation for the diode voltage V_d then backing out voltage
         v_oc = _singlediode.bishop88_v_from_i(
             0.0, *args, method=method.lower()
@@ -2630,7 +2679,11 @@ def max_power_point(photocurrent, saturation_current, resistance_series,
         cells ``Ns`` and the builtin voltage ``Vbi`` of the intrinsic layer.
         [V].
     method : str
-        either ``'newton'`` or ``'brentq'``
+        either ``'newton'``, ``'brentq'``, or ``'chandrupatla'``.
+
+        .. note::
+           ``'chandrupatla'`` requires scipy 1.15 or greater.
+
 
     Returns
     -------
@@ -2713,8 +2766,13 @@ def v_from_i(current, photocurrent, saturation_current, resistance_series,
         0 < nNsVth
 
     method : str
-        Method to use: ``'lambertw'``, ``'newton'``, or ``'brentq'``. *Note*:
-        ``'brentq'`` is limited to 1st quadrant only.
+        Method to use: ``'lambertw'``, ``'newton'``, ``'brentq'``, or
+        ``'chandrupatla'``. *Note*: ``'brentq'`` is limited to
+        non-negative current.
+
+        .. note::
+           ``'chandrupatla'`` requires scipy 1.15 or greater.
+
 
     Returns
     -------
@@ -2795,8 +2853,13 @@ def i_from_v(voltage, photocurrent, saturation_current, resistance_series,
         0 < nNsVth
 
     method : str
-        Method to use: ``'lambertw'``, ``'newton'``, or ``'brentq'``. *Note*:
-        ``'brentq'`` is limited to 1st quadrant only.
+        Method to use: ``'lambertw'``, ``'newton'``, ``'brentq'``, or
+        ``'chandrupatla'``. *Note*: ``'brentq'`` is limited to
+        non-negative current.
+
+        .. note::
+           ``'chandrupatla'`` requires scipy 1.15 or greater.
+
 
     Returns
     -------
@@ -2860,52 +2923,116 @@ def scale_voltage_current_power(data, voltage=1, current=1):
 
 @renamed_kwarg_warning(
     "0.13.0", "g_poa_effective", "effective_irradiance")
-def pvwatts_dc(effective_irradiance, temp_cell, pdc0, gamma_pdc, temp_ref=25.):
+def pvwatts_dc(effective_irradiance, temp_cell, pdc0, gamma_pdc, temp_ref=25.,
+               k=None, cap_adjustment=False):
     r"""
-    Implements NREL's PVWatts DC power model. The PVWatts DC model [1]_ is:
-
-    .. math::
-
-        P_{dc} = \frac{G_{poa eff}}{1000} P_{dc0} ( 1 + \gamma_{pdc} (T_{cell} - T_{ref}))
-
-    Note that ``pdc0`` is also used as a symbol in
-    :py:func:`pvlib.inverter.pvwatts`. ``pdc0`` in this function refers to the DC
-    power of the modules at reference conditions. ``pdc0`` in
-    :py:func:`pvlib.inverter.pvwatts` refers to the DC power input limit of
-    the inverter.
+    Implement NLR's PVWatts (Version 5) DC power model.
 
     Parameters
     ----------
     effective_irradiance: numeric
-        Irradiance transmitted to the PV cells. To be
-        fully consistent with PVWatts, the user must have already
-        applied angle of incidence losses, but not soiling, spectral,
-        etc. [W/m^2]
+        Irradiance transmitted to the PV cells. To be fully consistent with
+        PVWatts, the user must have already applied angle of incidence losses,
+        but not soiling, spectral, etc. [Wm⁻²]
     temp_cell: numeric
         Cell temperature [C].
     pdc0: numeric
-        Power of the modules at 1000 W/m^2 and cell reference temperature. [W]
+        Power of the modules at 1000 Wm⁻² and cell reference temperature. [W]
     gamma_pdc: numeric
-        The temperature coefficient of power. Typically -0.002 to
-        -0.005 per degree C. [1/C]
+        The temperature coefficient of power. Typically -0.002 to -0.005 per
+        degree C. [1/°C]
     temp_ref: numeric, default 25.0
-        Cell reference temperature. PVWatts defines it to be 25 C and
-        is included here for flexibility. [C]
+        Cell reference temperature. PVWatts defines it to be 25 °C and is
+        included here for flexibility. [°C]
+    k: numeric, optional
+        Irradiance correction factor, defined in [2]_. Typically positive.
+        [unitless]
+    cap_adjustment: Boolean, default False
+        If True, only apply the optional adjustment at and below 1000 Wm⁻²
 
     Returns
     -------
     pdc: numeric
         DC power. [W]
 
+    Notes
+    -----
+    The PVWatts Version 5 DC model [1]_ is:
+
+    .. math::
+
+        P_{dc} = \frac{G_{poa eff}}{1000} P_{dc0} ( 1 + \gamma_{pdc} (T_{cell} - T_{ref}))
+
+    This model has also been referred to as the power temperature coefficient
+    model.
+
+    An optional adjustment can be applied to :math:`P_{dc}` as described in
+    [2]_. The adjustment accounts for the variation in module efficiency with
+    irradiance. The piece-wise adjustment to power is parameterized by `k`,
+    where `k` is the reduction in actual power at 200 Wm⁻² relative to power
+    calculated at 200 Wm⁻² as 0.2*`pdc0`. For example, a module that is rated
+    at 500 W at STC but produces 95 W at 200 Wm⁻² (a 5% relative reduction in
+    efficiency) would have a value of `k` = 0.01.
+
+    .. math::
+
+        k=\frac{0.2P_{dc0}-P_{200}}{P_{dc0}}
+
+    For positive `k` values, and `k` is typically positive, this adjustment
+    would also increase relative efficiency when irradiance is above 1000 Wm⁻².
+    This may not be desired, as modules with nonlinear irradiance response
+    often have peak efficiency near 1000 Wm⁻², and it is either flat or
+    declining at higher irradiance. An optional parameter, `cap_adjustment`,
+    can address this by modifying the adjustment from [2]_ to only apply below
+    1000 Wm⁻².
+
+    Note that ``pdc0`` is also used as a symbol in
+    :py:func:`pvlib.inverter.pvwatts`. ``pdc0`` in this function refers to the
+    DC power of the modules at reference conditions. ``pdc0`` in
+    :py:func:`pvlib.inverter.pvwatts` refers to the DC power input limit of
+    the inverter.
+
     References
     ----------
-    .. [1] A. P. Dobos, "PVWatts Version 5 Manual"
-           http://pvwatts.nrel.gov/downloads/pvwattsv5.pdf
-           (2014).
+    .. [1] A. P. Dobos, "PVWatts Version 5 Manual", NREL, Golden, CO, USA,
+       Technical Report NREL/TP-6A20-62641, 2014, :doi:`10.2172/1158421`.
+    .. [2] B. Marion, "Comparison of Predictive Models for Photovoltaic
+       Module Performance," In Proc. 33rd IEEE Photovoltaic Specialists
+       Conference (PVSC), San Diego, CA, USA, 2008, pp. 1-6,
+       :doi:`10.1109/PVSC.2008.4922586`.
+       Pre-print: :doi:`10.1109/PVSC.2008.4922586`
     """  # noqa: E501
 
     pdc = (effective_irradiance * 0.001 * pdc0 *
            (1 + gamma_pdc * (temp_cell - temp_ref)))
+
+    # apply Marion's correction if k is provided
+    if k is not None:
+
+        # preserve input types
+        index = pdc.index if isinstance(pdc, pd.Series) else None
+        is_scalar = np.isscalar(pdc)
+
+        # calculate error adjustments
+        err_1 = k * (1 - (1 - effective_irradiance / 200)**4)
+        err_2 = k * (1000 - effective_irradiance) / (1000 - 200)
+        err = np.where(effective_irradiance <= 200, err_1, err_2)
+
+        # cap adjustment, if needed
+        if cap_adjustment:
+            err = np.where(effective_irradiance >= 1000, 0, err)
+
+        # make error adjustment
+        pdc = pdc - pdc0 * err
+
+        # set negative power to zero
+        pdc = np.where(pdc < 0, 0, pdc)
+
+        # preserve input types
+        if index is not None:
+            pdc = pd.Series(pdc, index=index)
+        elif is_scalar:
+            pdc = float(pdc)
 
     return pdc
 
@@ -2914,7 +3041,7 @@ def pvwatts_losses(soiling=2, shading=3, snow=0, mismatch=2, wiring=2,
                    connections=0.5, lid=1.5, nameplate_rating=1, age=0,
                    availability=3):
     r"""
-    Implements NREL's PVWatts system loss model.
+    Implements NLR's PVWatts system loss model.
     The PVWatts loss model [1]_ is:
 
     .. math::
@@ -2945,9 +3072,8 @@ def pvwatts_losses(soiling=2, shading=3, snow=0, mismatch=2, wiring=2,
 
     References
     ----------
-    .. [1] A. P. Dobos, "PVWatts Version 5 Manual"
-           http://pvwatts.nrel.gov/downloads/pvwattsv5.pdf
-           (2014).
+    .. [1] A. P. Dobos, "PVWatts Version 5 Manual", NREL, Golden, CO, USA,
+       Technical Report NREL/TP-6A20-62641, 2014, :doi:`10.2172/1158421`.
     """
 
     params = [soiling, shading, snow, mismatch, wiring, connections, lid,

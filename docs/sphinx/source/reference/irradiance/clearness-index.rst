@@ -1,7 +1,7 @@
 .. currentmodule:: pvlib
 
-Clearness index models
-----------------------
+Clearness and clearsky index
+----------------------------
 
 .. autosummary::
    :toctree: ../generated/

@@ -51,7 +51,7 @@ iec61853data = '''
 25        1000         75.0  273.651
 26        1100         75.0  301.013
 '''
-df = pd.read_csv(StringIO(iec61853data), delim_whitespace=True)
+df = pd.read_csv(StringIO(iec61853data), sep=r"\s+")
 
 # %%
 #

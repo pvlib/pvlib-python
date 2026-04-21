@@ -53,7 +53,7 @@ def expected_meta():
 @pytest.fixture
 def expected_meteonorm_index():
     expected_meteonorm_index = \
-        pd.date_range('2023-01-01', '2023-12-31 23:59', freq='1h', tz='UTC') \
+        pd.date_range('2025-01-01', '2025-12-31 23:59', freq='1h', tz='UTC') \
         + pd.Timedelta(minutes=30)
     expected_meteonorm_index.freq = None
     return expected_meteonorm_index
@@ -71,13 +71,13 @@ def expected_meteonorm_data():
         [0.0, 0.0],
         [0.0, 0.0],
         [0.0, 0.0],
-        [2.5, 2.68],
-        [77.5, 77.47],
-        [165.0, 164.98],
-        [210.75, 210.74],
-        [221.0, 220.99],
+        [3.75, 3.74],
+        [57.25, 57.20],
+        [149.0, 148.96],
+        [242.25, 242.24],
+        [228.0, 227.98],
     ]
-    index = pd.date_range('2023-01-01 00:30', periods=12, freq='1h', tz='UTC')
+    index = pd.date_range('2025-01-01 00:30', periods=12, freq='1h', tz='UTC')
     index.freq = None
     expected = pd.DataFrame(expected, index=index, columns=columns)
     return expected
@@ -116,15 +116,20 @@ def test_get_meteonorm_training(
         expected_meteonorm_data):
     data, meta = pvlib.iotools.get_meteonorm_observation_training(
         latitude=50, longitude=10,
-        start='2023-01-01', end='2024-01-01',
+        start='2025-01-01', end='2026-01-01',
         api_key=demo_api_key,
         parameters=['ghi', 'global_horizontal_irradiance_with_shading'],
         time_step='1h',
         url=demo_url)
 
-    assert meta == expected_meta
+    assert meta.items() >= expected_meta.items()  # check stable subset
+    for key in ['version', 'commit']:
+        assert key in meta  # value changes, so only check presence
     pd.testing.assert_index_equal(data.index, expected_meteonorm_index)
-    pd.testing.assert_frame_equal(data.iloc[:12], expected_meteonorm_data)
+    # meteonorm API only guarantees similar, not identical, results between
+    # calls.  so we allow a small amount of variation with atol.
+    pd.testing.assert_frame_equal(data.iloc[:12], expected_meteonorm_data,
+                                  check_exact=False, atol=1)
 
 
 @pytest.mark.remote_data
@@ -207,7 +212,7 @@ def test_get_meteonorm_custom_horizon(demo_api_key, demo_url):
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_get_meteonorm_forecast_HTTPError(demo_api_key, demo_url):
     with pytest.raises(
-            HTTPError, match="unknown parameter: not_a_real_parameter"):
+            HTTPError, match='invalid parameter "not_a_real_parameter"'):
         _ = pvlib.iotools.get_meteonorm_forecast_basic(
             latitude=50, longitude=10,
             start=pd.Timestamp.now(tz='UTC'),
@@ -265,9 +270,9 @@ def expected_meteonorm_tmy_data():
         [0.],
         [0.],
         [0.],
-        [9.06],
-        [8.43],
-        [86.63],
+        [9.07],
+        [8.44],
+        [86.64],
         [110.44],
     ]
     index = pd.date_range(
@@ -303,5 +308,10 @@ def test_get_meteonorm_tmy(
         interval_index=True,
         map_variables=False,
         url=demo_url)
-    assert meta == expected_meteonorm_tmy_meta
-    pd.testing.assert_frame_equal(data.iloc[:12], expected_meteonorm_tmy_data)
+    assert meta.items() >= expected_meteonorm_tmy_meta.items()
+    for key in ['version', 'commit']:
+        assert key in meta  # value changes, so only check presence
+    # meteonorm API only guarantees similar, not identical, results between
+    # calls.  so we allow a small amount of variation with atol.
+    pd.testing.assert_frame_equal(data.iloc[:12], expected_meteonorm_tmy_data,
+                                  check_exact=False, atol=1)

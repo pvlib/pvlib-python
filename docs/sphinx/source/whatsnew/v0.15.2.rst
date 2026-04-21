@@ -1,8 +1,8 @@
-.. _whatsnew_0_13_2:
+.. _whatsnew_0_15_2:
 
 
-v0.13.2 (Anticipated December, 2025)
-------------------------------------
+v0.15.2 (Anticipated June 2026)
+-------------------------------
 
 Breaking Changes
 ~~~~~~~~~~~~~~~~

@@ -65,7 +65,8 @@ def test_get_solargis_utc_start_timestamp(hourly_index_start_utc):
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_get_solargis_http_error():
     # Test if HTTPError is raised if date outside range is specified
-    with pytest.raises(requests.HTTPError, match="data coverage"):
+    match = r"request fromDate .* is before the available start date"
+    with pytest.raises(requests.HTTPError, match=match):
         _, _ = pvlib.iotools.get_solargis(
             latitude=48.61259, longitude=20.827079,
             start='1920-01-01', end='1920-01-01',  # date outside range

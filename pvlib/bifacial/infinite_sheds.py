@@ -167,7 +167,7 @@ def _shaded_fraction(solar_zenith, solar_azimuth, surface_tilt,
        :doi:`10.1109/PVSC40753.2019.8980572`.
     .. [2] Kevin Anderson and Mark Mikofski, "Slope-Aware Backtracking for
        Single-Axis Trackers", Technical Report NREL/TP-5K00-76626, July 2020.
-       https://www.nrel.gov/docs/fy20osti/76626.pdf
+       :doi:`10.2172/1660126`
     """
     tan_phi = utils._solar_projection_tangent(
         solar_zenith, solar_azimuth, surface_azimuth)
@@ -302,7 +302,8 @@ def get_irradiance_poa(surface_tilt, surface_azimuth, solar_zenith,
         sky_diffuse_comps_horizontal = haydavies(0, 180, dhi, dni, dni_extra,
                                                  solar_zenith, solar_azimuth,
                                                  return_components=True)
-        circumsolar_horizontal = sky_diffuse_comps_horizontal['circumsolar']
+        circumsolar_horizontal = \
+            sky_diffuse_comps_horizontal['poa_circumsolar']
 
         # Call haydavies a second time where circumsolar_normal is facing
         # directly towards sun, and can be added to DNI
@@ -310,7 +311,7 @@ def get_irradiance_poa(surface_tilt, surface_azimuth, solar_zenith,
                                              dni, dni_extra, solar_zenith,
                                              solar_azimuth,
                                              return_components=True)
-        circumsolar_normal = sky_diffuse_comps_normal['circumsolar']
+        circumsolar_normal = sky_diffuse_comps_normal['poa_circumsolar']
 
         dhi = dhi - circumsolar_horizontal
         dni = dni + circumsolar_normal

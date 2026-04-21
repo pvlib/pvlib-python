@@ -52,15 +52,7 @@ Where can I get irradiance data for my simulation?
 
 pvlib has a module called iotools which has several functions for
 retrieving irradiance data as well as reading standard file formats
-such as EPW, TMY2, and TMY3. For free irradiance data, you may
-consider NREL's NSRDB which can be accessed using the
-:py:func:`pvlib.iotools.get_psm3` function and is available for
-North America. For Europe and Africa, you may consider looking into
-CAMS (:py:func:`pvlib.iotools.get_cams`).
-PVGIS (:py:func:`pvlib.iotools.get_pvgis_hourly`) is another option, which
-provides irradiance from several different databases with near global coverage.
-pvlib also has functions for accessing a plethora of ground-measured
-irradiance datasets, including the BSRN, SURFRAD, SRML, and NREL's MIDC.
+such as EPW, TMY2, and TMY3.  See :ref:`weatherdata`.
 
 
 Can I use PVsyst (PAN/OND) files with pvlib?
@@ -134,7 +126,7 @@ The CEC table doesn't include my module or inverter, what should I do?
 ----------------------------------------------------------------------
 
 The CEC tables for module and inverter parameters included in pvlib are periodically
-copied from `SAM <https://github.com/NREL/SAM/tree/develop/deploy/libraries>`_,
+copied from `SAM <https://github.com/NatLabRockies/SAM/tree/develop/deploy/libraries>`_,
 so you can check the tables there for more up-to-date tables.
 
 For modules, if even the SAM files don't include the module you're looking for

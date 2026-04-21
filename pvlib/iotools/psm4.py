@@ -1,9 +1,9 @@
 """
 Functions for reading and retrieving data from NSRDB PSM4. See:
-https://developer.nrel.gov/docs/solar/nsrdb/nsrdb-GOES-aggregated-v4-0-0-download/
-https://developer.nrel.gov/docs/solar/nsrdb/nsrdb-GOES-tmy-v4-0-0-download/
-https://developer.nrel.gov/docs/solar/nsrdb/nsrdb-GOES-conus-v4-0-0-download/
-https://developer.nrel.gov/docs/solar/nsrdb/nsrdb-GOES-full-disc-v4-0-0-download/
+https://developer.nlr.gov/docs/solar/nsrdb/nsrdb-GOES-aggregated-v4-0-0-download/
+https://developer.nlr.gov/docs/solar/nsrdb/nsrdb-GOES-tmy-v4-0-0-download/
+https://developer.nlr.gov/docs/solar/nsrdb/nsrdb-GOES-conus-v4-0-0-download/
+https://developer.nlr.gov/docs/solar/nsrdb/nsrdb-GOES-full-disc-v4-0-0-download/
 """
 
 import io
@@ -13,7 +13,7 @@ import pandas as pd
 from json import JSONDecodeError
 from pvlib import tools
 
-NSRDB_API_BASE = "https://developer.nrel.gov/api/nsrdb/v2/solar/"
+NSRDB_API_BASE = "https://developer.nlr.gov/api/nsrdb/v2/solar/"
 PSM4_AGG_ENDPOINT = "nsrdb-GOES-aggregated-v4-0-0-download.csv"
 PSM4_TMY_ENDPOINT = "nsrdb-GOES-tmy-v4-0-0-download.csv"
 PSM4_CON_ENDPOINT = "nsrdb-GOES-conus-v4-0-0-download.csv"
@@ -92,9 +92,9 @@ def get_nsrdb_psm4_aggregated(latitude, longitude, api_key, email,
     longitude : float or int
         in decimal degrees, between -180 and 180, east is positive
     api_key : str
-        NREL Developer Network API key
+        NLR Developer Network API key
     email : str
-        NREL API uses this to automatically communicate messages back
+        NLR API uses this to automatically communicate messages back
         to the user only if necessary
     year : int or str
         PSM4 API parameter specifing year (e.g. ``2023``) to download. The
@@ -130,9 +130,9 @@ def get_nsrdb_psm4_aggregated(latitude, longitude, api_key, email,
     Returns
     -------
     data : pandas.DataFrame
-        timeseries data from NREL PSM4
+        timeseries data from NLR PSM4
     metadata : dict
-        metadata from NREL PSM4 about the record, see
+        metadata from NLR PSM4 about the record, see
         :func:`pvlib.iotools.read_nsrdb_psm4` for fields
 
     Raises
@@ -145,8 +145,8 @@ def get_nsrdb_psm4_aggregated(latitude, longitude, api_key, email,
 
     Notes
     -----
-    The required NREL developer key, `api_key`, is available for free by
-    registering at the `NREL Developer Network <https://developer.nrel.gov/>`_.
+    The required NLR developer key, `api_key`, is available for free by
+    registering at the `NLR Developer Network <https://developer.nlr.gov/>`_.
 
     .. warning:: The "DEMO_KEY" `api_key` is severely rate limited and may
         result in rejected requests.
@@ -161,10 +161,10 @@ def get_nsrdb_psm4_aggregated(latitude, longitude, api_key, email,
 
     References
     ----------
-    .. [1] `NREL National Solar Radiation Database (NSRDB)
-       <https://nsrdb.nrel.gov/>`_
+    .. [1] `NLR National Solar Radiation Database (NSRDB)
+       <https://developer.nlr.gov/docs/solar/nsrdb/>`_
     .. [2] `NSRDB GOES Aggregated V4.0.0
-       <https://developer.nrel.gov/docs/solar/nsrdb/nsrdb-GOES-aggregated-v4-0-0-download/>`_
+       <https://developer.nlr.gov/docs/solar/nsrdb/nsrdb-GOES-aggregated-v4-0-0-download/>`_
     """
     # The well know text (WKT) representation of geometry notation is strict.
     # A POINT object is a string with longitude first, then the latitude, with
@@ -191,7 +191,7 @@ def get_nsrdb_psm4_aggregated(latitude, longitude, api_key, email,
         'utc': str(utc).lower(),
         'interval': time_step
     }
-    # request CSV download from NREL PSM4
+    # request CSV download from NLR PSM4
     if url is None:
         url = PSM4_AGG_URL
 
@@ -228,9 +228,9 @@ def get_nsrdb_psm4_tmy(latitude, longitude, api_key, email, year='tmy',
     longitude : float or int
         in decimal degrees, between -180 and 180, east is positive
     api_key : str
-        NREL Developer Network API key
+        NLR Developer Network API key
     email : str
-        NREL API uses this to automatically communicate messages back
+        NLR API uses this to automatically communicate messages back
         to the user only if necessary
     year : str, default 'tmy'
         PSM4 API parameter specifing TMY variant to download (e.g. ``'tmy'``
@@ -267,9 +267,9 @@ def get_nsrdb_psm4_tmy(latitude, longitude, api_key, email, year='tmy',
     Returns
     -------
     data : pandas.DataFrame
-        timeseries data from NREL PSM4
+        timeseries data from NLR PSM4
     metadata : dict
-        metadata from NREL PSM4 about the record, see
+        metadata from NLR PSM4 about the record, see
         :func:`pvlib.iotools.read_nsrdb_psm4` for fields
 
     Raises
@@ -282,8 +282,8 @@ def get_nsrdb_psm4_tmy(latitude, longitude, api_key, email, year='tmy',
 
     Notes
     -----
-    The required NREL developer key, `api_key`, is available for free by
-    registering at the `NREL Developer Network <https://developer.nrel.gov/>`_.
+    The required NLR developer key, `api_key`, is available for free by
+    registering at the `NLR Developer Network <https://developer.nlr.gov/>`_.
 
     .. warning:: The "DEMO_KEY" `api_key` is severely rate limited and may
         result in rejected requests.
@@ -299,10 +299,10 @@ def get_nsrdb_psm4_tmy(latitude, longitude, api_key, email, year='tmy',
 
     References
     ----------
-    .. [1] `NREL National Solar Radiation Database (NSRDB)
-       <https://nsrdb.nrel.gov/>`_
+    .. [1] `NLR National Solar Radiation Database (NSRDB)
+       <https://developer.nlr.gov/docs/solar/nsrdb/>`_
     .. [2] `NSRDB GOES Tmy V4.0.0
-       <https://developer.nrel.gov/docs/solar/nsrdb/nsrdb-GOES-tmy-v4-0-0-download/>`_
+       <https://developer.nlr.gov/docs/solar/nsrdb/nsrdb-GOES-tmy-v4-0-0-download/>`_
     """
     # The well know text (WKT) representation of geometry notation is strict.
     # A POINT object is a string with longitude first, then the latitude, with
@@ -329,7 +329,7 @@ def get_nsrdb_psm4_tmy(latitude, longitude, api_key, email, year='tmy',
         'utc': str(utc).lower(),
         'interval': time_step
     }
-    # request CSV download from NREL PSM4
+    # request CSV download from NLR PSM4
     if url is None:
         url = PSM4_TMY_URL
 
@@ -366,9 +366,9 @@ def get_nsrdb_psm4_conus(latitude, longitude, api_key, email, year,
     longitude : float or int
         in decimal degrees, between -180 and 180, east is positive
     api_key : str
-        NREL Developer Network API key
+        NLR Developer Network API key
     email : str
-        NREL API uses this to automatically communicate messages back
+        NLR API uses this to automatically communicate messages back
         to the user only if necessary
     year : int or str
         PSM4 API parameter specifing year (e.g. ``2023``) to download. The
@@ -403,9 +403,9 @@ def get_nsrdb_psm4_conus(latitude, longitude, api_key, email, year,
     Returns
     -------
     data : pandas.DataFrame
-        timeseries data from NREL PSM4
+        timeseries data from NLR PSM4
     metadata : dict
-        metadata from NREL PSM4 about the record, see
+        metadata from NLR PSM4 about the record, see
         :func:`pvlib.iotools.read_nsrdb_psm4` for fields
 
     Raises
@@ -418,8 +418,8 @@ def get_nsrdb_psm4_conus(latitude, longitude, api_key, email, year,
 
     Notes
     -----
-    The required NREL developer key, `api_key`, is available for free by
-    registering at the `NREL Developer Network <https://developer.nrel.gov/>`_.
+    The required NLR developer key, `api_key`, is available for free by
+    registering at the `NLR Developer Network <https://developer.nlr.gov/>`_.
 
     .. warning:: The "DEMO_KEY" `api_key` is severely rate limited and may
         result in rejected requests.
@@ -435,10 +435,10 @@ def get_nsrdb_psm4_conus(latitude, longitude, api_key, email, year,
 
     References
     ----------
-    .. [1] `NREL National Solar Radiation Database (NSRDB)
-       <https://nsrdb.nrel.gov/>`_
+    .. [1] `NLR National Solar Radiation Database (NSRDB)
+       <https://developer.nlr.gov/docs/solar/nsrdb/>`_
     .. [2] `NSRDB GOES Conus V4.0.0
-       <https://developer.nrel.gov/docs/solar/nsrdb/nsrdb-GOES-conus-v4-0-0-download/>`_
+       <https://developer.nlr.gov/docs/solar/nsrdb/nsrdb-GOES-conus-v4-0-0-download/>`_
     """
     # The well know text (WKT) representation of geometry notation is strict.
     # A POINT object is a string with longitude first, then the latitude, with
@@ -465,7 +465,7 @@ def get_nsrdb_psm4_conus(latitude, longitude, api_key, email, year,
         'utc': str(utc).lower(),
         'interval': time_step
     }
-    # request CSV download from NREL PSM4
+    # request CSV download from NLR PSM4
     if url is None:
         url = PSM4_CON_URL
 
@@ -504,9 +504,9 @@ def get_nsrdb_psm4_full_disc(latitude, longitude, api_key, email,
     longitude : float or int
         in decimal degrees, between -180 and 180, east is positive
     api_key : str
-        NREL Developer Network API key
+        NLR Developer Network API key
     email : str
-        NREL API uses this to automatically communicate messages back
+        NLR API uses this to automatically communicate messages back
         to the user only if necessary
     year : int or str
         PSM4 API parameter specifing year (e.g. ``2023``) to download. The
@@ -542,9 +542,9 @@ def get_nsrdb_psm4_full_disc(latitude, longitude, api_key, email,
     Returns
     -------
     data : pandas.DataFrame
-        timeseries data from NREL PSM4
+        timeseries data from NLR PSM4
     metadata : dict
-        metadata from NREL PSM4 about the record, see
+        metadata from NLR PSM4 about the record, see
         :func:`pvlib.iotools.read_nsrdb_psm4` for fields
 
     Raises
@@ -557,8 +557,8 @@ def get_nsrdb_psm4_full_disc(latitude, longitude, api_key, email,
 
     Notes
     -----
-    The required NREL developer key, `api_key`, is available for free by
-    registering at the `NREL Developer Network <https://developer.nrel.gov/>`_.
+    The required NLR developer key, `api_key`, is available for free by
+    registering at the `NLR Developer Network <https://developer.nlr.gov/>`_.
 
     .. warning:: The "DEMO_KEY" `api_key` is severely rate limited and may
         result in rejected requests.
@@ -574,10 +574,10 @@ def get_nsrdb_psm4_full_disc(latitude, longitude, api_key, email,
 
     References
     ----------
-    .. [1] `NREL National Solar Radiation Database (NSRDB)
-       <https://nsrdb.nrel.gov/>`_
+    .. [1] `NLR National Solar Radiation Database (NSRDB)
+       <https://developer.nlr.gov/docs/solar/nsrdb/>`_
     .. [2] `NSRDB GOES Full Disc V4.0.0
-       <https://developer.nrel.gov/docs/solar/nsrdb/nsrdb-GOES-full-disc-v4-0-0-download/>`_
+       <https://developer.nlr.gov/docs/solar/nsrdb/nsrdb-GOES-full-disc-v4-0-0-download/>`_
     """
     # The well know text (WKT) representation of geometry notation is strict.
     # A POINT object is a string with longitude first, then the latitude, with
@@ -604,7 +604,7 @@ def get_nsrdb_psm4_full_disc(latitude, longitude, api_key, email,
         'utc': str(utc).lower(),
         'interval': time_step
     }
-    # request CSV download from NREL PSM4
+    # request CSV download from NLR PSM4
     if url is None:
         url = PSM4_FUL_URL
 
@@ -640,16 +640,16 @@ def read_nsrdb_psm4(filename, map_variables=True):
     Returns
     -------
     data : pandas.DataFrame
-        timeseries data from NREL PSM4
+        timeseries data from NLR PSM4
     metadata : dict
-        metadata from NREL PSM4 about the record, see notes for fields
+        metadata from NLR PSM4 about the record, see notes for fields
 
     Notes
     -----
     The return is a tuple with two items. The first item is a dataframe with
     the PSM4 timeseries data.
 
-    The second item is a dictionary with metadata from NREL PSM4 about the
+    The second item is a dictionary with metadata from NLR PSM4 about the
     record containing the following fields:
 
     * Source
@@ -714,12 +714,11 @@ def read_nsrdb_psm4(filename, map_variables=True):
     pvlib.iotools.get_nsrdb_psm4_tmy
     pvlib.iotools.get_nsrdb_psm4_conus
     pvlib.iotools.get_nsrdb_psm4_full_disc
-    pvlib.iotools.read_psm3
 
     References
     ----------
-    .. [1] `NREL National Solar Radiation Database (NSRDB)
-       <https://nsrdb.nrel.gov/>`_
+    .. [1] `NLR National Solar Radiation Database (NSRDB)
+       <https://developer.nlr.gov/docs/solar/nsrdb/>`_
     .. [2] `Standard Time Series Data File Format
        <https://web.archive.org/web/20170207203107/https://sam.nrel.gov/sites/default/files/content/documents/pdf/wfcsv.pdf>`_
     """

@@ -1057,7 +1057,7 @@ def solar_position(unixtime, lat, lon, elev, pressure, temp, delta_t,
         degrees C; used for atmospheric correction
     delta_t : float or array
         Difference between terrestrial time and UT1.
-    atmos_refrac : float
+    atmos_refract : float
         The approximate atmospheric refraction (in degrees)
         at sunrise and sunset.
     numthreads: int, optional, default 8
@@ -1235,8 +1235,8 @@ def earthsun_distance(unixtime, delta_t, numthreads):
     References
     ----------
     [1] Reda, I., Andreas, A., 2003. Solar position algorithm for solar
-    radiation applications. Technical report: NREL/TP-560- 34302. Golden,
-    USA, http://www.nrel.gov.
+    radiation applications. Technical report: NREL/TP-560-34302. Golden,
+    USA, http://www.nlr.gov.
     """
 
     R = solar_position(unixtime, 0, 0, 0, 0, 0, delta_t,

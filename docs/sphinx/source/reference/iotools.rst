@@ -81,9 +81,6 @@ Satellite-derived irradiance and weather data for the Americas.
    iotools.get_nsrdb_psm4_conus
    iotools.get_nsrdb_psm4_full_disc
    iotools.read_nsrdb_psm4
-   iotools.get_psm3
-   iotools.read_psm3
-   iotools.parse_psm3
 
 
 Commercial datasets
@@ -182,7 +179,7 @@ A solar radiation network in the USA, run by NOAA.
 MIDC
 ^^^^
 
-A solar radiation network in the USA, run by NREL.
+A solar radiation network in the USA, run by NLR (known as NREL prior to December 2025).
 
 .. autosummary::
    :toctree: generated/
@@ -235,6 +232,27 @@ lower quality.
    :toctree: generated/
 
    iotools.read_crn
+
+ECMWF ERA5
+^^^^^^^^^^
+
+A global reanalysis dataset providing weather and solar resource data.
+
+.. autosummary::
+   :toctree: generated/
+
+   iotools.get_era5
+
+MERRA-2
+^^^^^^^
+
+A global reanalysis dataset providing weather, aerosol, and solar irradiance
+data.
+
+.. autosummary::
+   :toctree: generated/
+
+   iotools.get_merra2
 
 
 Generic data file readers

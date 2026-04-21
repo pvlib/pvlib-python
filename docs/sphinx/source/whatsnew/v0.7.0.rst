@@ -148,7 +148,7 @@ Enhancements
   diode model fitting function '6parsolve' from NREL's System Advisor Model.
 * Add :py:func:`~pvlib.ivtools.fit_sdm_desoto`, a method to fit the De Soto single
   diode model to the typical specifications given in manufacturers datasheets.
-* Add `timeout` to :py:func:`pvlib.iotools.get_psm3`.
+* Add `timeout` to :py:func:`!pvlib.iotools.get_psm3`.
 * Add :py:func:`~pvlib.scaling.wvm`, a port of the wavelet variability model for
   computing reductions in variability due to a spatially distributed plant.
 * Add :py:meth:`~pvlib.location.Location.from_epw`, a method to create a Location

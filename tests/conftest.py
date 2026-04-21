@@ -3,6 +3,7 @@ import platform
 import warnings
 
 import pandas as pd
+import scipy
 import os
 from packaging.version import Version
 import pytest
@@ -85,20 +86,22 @@ skip_windows = pytest.mark.skipif(platform_is_windows,
 
 
 @pytest.fixture(scope="module")
-def nrel_api_key():
-    """Supplies pvlib-python's NREL Developer Network API key.
+def nlr_api_key():
+    """Supplies pvlib-python's NLR Developer Network API key.
 
-    pvlib's CI utilizes a secret variable set to NREL_API_KEY
-    to mitigate failures associated with using the default key of
-    "DEMO_KEY". A user is capable of using their own key this way if
-    desired however the default key should suffice for testing purposes.
+    pvlib's CI utilizes a secret variable set to NLR_API_KEY
+    (formerly NREL_API_KEY) to mitigate failures associated with
+    using the default key of "DEMO_KEY". A user is capable of using
+    their own key this way if desired however the default key should
+    suffice for testing purposes.
     """
     try:
-        demo_key = os.environ["NREL_API_KEY"]
+        demo_key = os.environ["NLR_API_KEY"]
     except KeyError:
         warnings.warn(
-            "WARNING: NREL API KEY environment variable not set! "
-            "Using DEMO_KEY instead. Unexpected failures may occur."
+            "WARNING: NLR_API_KEY (formerly NREL_API_KEY) environment "
+            "variable not set! Using DEMO_KEY instead. "
+            "Unexpected failures may occur."
         )
         demo_key = 'DEMO_KEY'
     return demo_key
@@ -127,6 +130,33 @@ except KeyError:
 requires_solaranywhere_credentials = pytest.mark.skipif(
     not has_solaranywhere_credentials,
     reason='requires solaranywhere credentials')
+
+
+try:
+    # Attempt to load ECMWF API key used for testing
+    # pvlib.iotools.get_era5
+    ecwmf_api_key = os.environ["ECMWF_API_KEY"]
+    has_ecmwf_credentials = True
+except KeyError:
+    has_ecmwf_credentials = False
+
+requires_ecmwf_credentials = pytest.mark.skipif(
+    not has_ecmwf_credentials,
+    reason='requires ECMWF credentials')
+
+
+try:
+    # Attempt to load NASA EarthData credentials used for testing
+    # pvlib.iotools.get_merra2
+    earthdata_username = os.environ["EARTHDATA_USERNAME"]
+    earthdata_password = os.environ["EARTHDATA_PASSWORD"]
+    has_earthdata_credentials = True
+except KeyError:
+    has_earthdata_credentials = False
+
+requires_earthdata_credentials = pytest.mark.skipif(
+    not has_earthdata_credentials,
+    reason='requires EarthData credentials')
 
 
 try:
@@ -192,6 +222,17 @@ requires_pysam = pytest.mark.skipif(not has_pysam, reason="requires PySAM")
 has_pandas_2_0 = Version(pd.__version__) >= Version("2.0.0")
 requires_pandas_2_0 = pytest.mark.skipif(not has_pandas_2_0,
                                          reason="requires pandas>=2.0.0")
+
+
+# single-diode equation functions have method=='chandrupatla', which relies
+# on scipy.optimize.elementwise.find_root, which is only available in
+# scipy>=1.15.
+# TODO remove this when our minimum scipy is >=1.15
+chandrupatla_available = Version(scipy.__version__) >= Version("1.15.0")
+chandrupatla = pytest.param(
+    "chandrupatla", marks=pytest.mark.skipif(not chandrupatla_available,
+                                             reason="needs scipy 1.15")
+)
 
 
 @pytest.fixture()

@@ -6,10 +6,10 @@ Irradiance
 .. toctree::
    :maxdepth: 2
 
-   class-methods
-   components
+   decomposition
    transposition
    reverse-transposition
-   decomposition
+   angle-of-incidence
    clearness-index
-   albedo
+   extraterrestrial-radiation
+   other

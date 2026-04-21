@@ -109,9 +109,9 @@ Enhancements
   :py:func:`pvlib.iotools.get_pvgis_horizon`. (:issue:`1290`, :pull:`1395`)
 * Update the URL used in the :py:func:`pvlib.iotools.get_cams` function. The new URL supports load-balancing
   and redirects to the fastest server. (:issue:`1688`, :pull:`1740`)
-* :py:func:`pvlib.iotools.get_psm3` now has a ``url`` parameter to give the user
+* :py:func:`!pvlib.iotools.get_psm3` now has a ``url`` parameter to give the user
   the option of controlling what NSRDB endpoint is used. (:pull:`1736`)
-* :py:func:`pvlib.iotools.get_psm3` now uses the new NSRDB 3.2.2 endpoint for
+* :py:func:`!pvlib.iotools.get_psm3` now uses the new NSRDB 3.2.2 endpoint for
   hourly and half-hourly single-year datasets. (:issue:`1591`, :pull:`1736`)
 * The default solar position algorithm (NREL SPA) is now 50-100% faster. (:pull:`1748`)
 * Added functions to retrieve daily precipitation, temperature, and snowfall data
@@ -146,7 +146,7 @@ Testing
 Documentation
 ~~~~~~~~~~~~~
 * Updated the description of the interval parameter in
-  :py:func:`pvlib.iotools.get_psm3`. (:issue:`1702`, :pull:`1712`)
+  :py:func:`!pvlib.iotools.get_psm3`. (:issue:`1702`, :pull:`1712`)
 * Fixed outdated nbviewer links. (:issue:`1721`, :pull:`1726`)
 
 

@@ -117,7 +117,7 @@ def sandia(v_dc, p_dc, inverter):
        for Grid-Connected Photovoltaic Inverters", Sandia National
        Laboratories, Albuquerque, N.M., USA, SAND2007-5036, Sept. 2007.
        :doi:`10.2172/920449`
-    .. [2] System Advisor Model web page. https://sam.nrel.gov.
+    .. [2] System Advisor Model web page. https://sam.nlr.gov.
 
     See also
     --------
@@ -335,7 +335,7 @@ def adr(v_dc, p_dc, inverter, vtol=0.10):
 
 def pvwatts(pdc, pdc0, eta_inv_nom=0.96, eta_inv_ref=0.9637):
     r"""
-    NREL's PVWatts inverter model.
+    NLR's PVWatts inverter model.
 
     The PVWatts inverter model [1]_ calculates inverter efficiency :math:`\eta`
     as a function of input DC power :math:`P_{dc}`
@@ -388,8 +388,8 @@ def pvwatts(pdc, pdc0, eta_inv_nom=0.96, eta_inv_ref=0.9637):
 
     References
     ----------
-    .. [1] A. P. Dobos, "PVWatts Version 5 Manual,"
-       http://pvwatts.nrel.gov/downloads/pvwattsv5.pdf (2014).
+    .. [1] A. P. Dobos, "PVWatts Version 5 Manual", NREL, Golden, CO, USA,
+       Technical Report NREL/TP-6A20-62641, 2014, :doi:`10.2172/1158421`.
     """
 
     pac0 = eta_inv_nom * pdc0
@@ -414,7 +414,7 @@ def pvwatts(pdc, pdc0, eta_inv_nom=0.96, eta_inv_ref=0.9637):
 
 def pvwatts_multi(pdc, pdc0, eta_inv_nom=0.96, eta_inv_ref=0.9637):
     r"""
-    Extend NREL's PVWatts inverter model for multiple MPP inputs.
+    Extend NLR's PVWatts inverter model for multiple MPP inputs.
 
     DC input power is summed over MPP inputs to obtain the DC power
     input to the PVWatts inverter model. See :py:func:`pvlib.inverter.pvwatts`

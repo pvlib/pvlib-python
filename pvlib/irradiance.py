@@ -3817,11 +3817,11 @@ def louche(ghi, solar_zenith, datetime_or_doy, max_zenith=90):
         Contains the following keys/columns:
 
         * ``dni``: the modeled direct normal irradiance, see :term:`dni`.
-            [Wm⁻²]
+          [Wm⁻²]
         * ``dhi``: the modeled diffuse horizontal irradiance, see :term:`dhi`.
-            [Wm⁻²]
+          [Wm⁻²]
         * ``kt``: Clearness index. Ratio of global to
-            extraterrestrial irradiance on a horizontal plane. [unitless]
+          extraterrestrial irradiance on a horizontal plane. [unitless]
 
     References
     -------

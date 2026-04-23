@@ -440,7 +440,7 @@ def interp(aoi, theta_ref, iam_ref, method='linear', normalize=True):
     method : str, default 'linear'
         Specifies the interpolation method.
         Useful options are: 'linear', 'quadratic', 'cubic'.
-        See scipy.interpolate.interp1d for more options.
+        See scipy.interpolate for more options.
 
     normalize : boolean, default True
         When true, the interpolated values are divided by the interpolated
@@ -470,7 +470,7 @@ def interp(aoi, theta_ref, iam_ref, method='linear', normalize=True):
     '''
     # Contributed by Anton Driesse (@adriesse), PV Performance Labs. July, 2019
 
-    from scipy.interpolate import interp1d
+    from scipy.interpolate import CubicSpline, make_interp_spline
 
     # Scipy doesn't give the clearest feedback, so check number of points here.
     MIN_REF_VALS = {'linear': 2, 'quadratic': 3, 'cubic': 4, 1: 2, 2: 3, 3: 4}
@@ -483,10 +483,31 @@ def interp(aoi, theta_ref, iam_ref, method='linear', normalize=True):
         raise ValueError("Negative value(s) found in 'iam_ref'. "
                          "This is not physically possible.")
 
-    interpolator = interp1d(theta_ref, iam_ref, kind=method,
-                            fill_value='extrapolate')
-    aoi_input = aoi
+    theta_ref = np.asarray(theta_ref)
+    iam_ref = np.asarray(iam_ref)
 
+    if method == "linear":
+        spline = make_interp_spline(theta_ref, iam_ref, k=1)
+
+        def interpolator(x):
+            return spline(x)
+
+    elif method == "quadratic":
+        spline = make_interp_spline(theta_ref, iam_ref, k=2)
+
+        def interpolator(x):
+            return spline(x)
+
+    elif method == "cubic":
+        spline = CubicSpline(theta_ref, iam_ref, extrapolate=True)
+
+        def interpolator(x):
+            return spline(x)
+
+    else:
+        raise ValueError(f"Invalid interpolation method '{method}'.")
+
+    aoi_input = aoi
     aoi = np.asanyarray(aoi)
     aoi = np.abs(aoi)
     iam = interpolator(aoi)

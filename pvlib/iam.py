@@ -470,7 +470,7 @@ def interp(aoi, theta_ref, iam_ref, method='linear', normalize=True):
     '''
     # Contributed by Anton Driesse (@adriesse), PV Performance Labs. July, 2019
 
-    from scipy.interpolate import CubicSpline, make_interp_spline
+    from scipy.interpolate import make_interp_spline
 
     # Scipy doesn't give the clearest feedback, so check number of points here.
     MIN_REF_VALS = {'linear': 2, 'quadratic': 3, 'cubic': 4, 1: 2, 2: 3, 3: 4}
@@ -499,7 +499,7 @@ def interp(aoi, theta_ref, iam_ref, method='linear', normalize=True):
             return spline(x)
 
     elif method == "cubic":
-        spline = CubicSpline(theta_ref, iam_ref, extrapolate=True)
+        spline = make_interp_spline(theta_ref, iam_ref, k=3)
 
         def interpolator(x):
             return spline(x)

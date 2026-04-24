@@ -234,10 +234,10 @@ def _apply_sky_diffuse_model(dni, dhi, model, solar_zenith, solar_azimuth,
             return_components=True
         )
         # Call the model first time within the horizontal plane - to subtract
-        # circumsolar_horizontal from DHI
+        # circumsolar_horiz from DHI
         sky_diffuse_comps_horizontal = diffuse_model_func(
             surface_tilt=0, surface_azimuth=180, **kwargs, **extra_kwargs)
-        circumsolar_horizontal = sky_diffuse_comps_horizontal['poa_circumsolar']
+        circumsolar_horiz = sky_diffuse_comps_horizontal['poa_circumsolar']
 
         # Call the model a second time where circumsolar_normal is facing
         # directly towards sun, and can be added to DNI
@@ -246,7 +246,7 @@ def _apply_sky_diffuse_model(dni, dhi, model, solar_zenith, solar_azimuth,
             **kwargs, **extra_kwargs)
         circumsolar_normal = sky_diffuse_comps_normal['poa_circumsolar']
 
-        dhi = dhi - circumsolar_horizontal
+        dhi = dhi - circumsolar_horiz
         dni = dni + circumsolar_normal
     elif model != 'isotropic':
         raise ValueError(f"Invalid model: {model}")

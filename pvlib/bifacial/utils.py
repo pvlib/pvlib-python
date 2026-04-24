@@ -5,7 +5,7 @@ modeling.
 import numpy as np
 from pvlib.tools import sind, cosd, tand
 import warnings
-from pvlib._deprecation import pvlibDeprecationWarning
+from pvlib._deprecation import pvlibDeprecationWarning, renamed_kwarg_warning
 
 
 def _solar_projection_tangent(solar_zenith, solar_azimuth, surface_azimuth):
@@ -238,6 +238,7 @@ def vf_ground_sky_2d(rotation, gcr, x, pitch, height, max_rows=10):
     return vf
 
 
+@renamed_kwarg_warning("1.4.0", "surface_tilt", "tracker_rotation")
 def vf_ground_sky_2d_integ(tracker_rotation, gcr, height, pitch, g0=0, g1=1,
                            max_rows=10, npoints=None, vectorize=None):
     """
@@ -246,9 +247,12 @@ def vf_ground_sky_2d_integ(tracker_rotation, gcr, height, pitch, g0=0, g1=1,
 
     Parameters
     ----------
-    surface_tilt : numeric
-        Surface tilt angle in degrees from horizontal, e.g., surface facing up
-        = 0, surface facing horizon = 90. [degree]
+    tracker_rotation : numeric
+        Tracker rotation angle as a right-handed rotation around
+        the axis defined by ``axis_tilt`` and ``axis_azimuth``.  For example,
+        with ``axis_tilt=0`` and ``axis_azimuth=180``, ``tracker_theta > 0``
+        results in ``surface_azimuth`` to the West while ``tracker_theta < 0``
+        results in ``surface_azimuth`` to the East. [degree]
     gcr : float
         Ratio of row slant length to row spacing (pitch). [unitless]
     height : float

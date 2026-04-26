@@ -24,7 +24,7 @@ Documentation
 ~~~~~~~~~~~~~
 * Clarified that :py:func:`pvlib.soiling.hsu` has an implicit minimum
   soiling ratio of approximately 0.6563 due to the mathematical form
-  of the model. (:issue:`2534`, :pull:`XXXX`)
+  of the model. (:issue:`2534`, :pull:`2743`)
 
 
 Testing

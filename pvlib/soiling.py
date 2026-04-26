@@ -16,9 +16,11 @@ def hsu(rainfall, cleaning_threshold, surface_tilt, pm2_5, pm10,
     Calculates soiling ratio given particulate and rain data using the
     Fixed Velocity model from Humboldt State University (HSU).
 
-    The HSU soiling model [1]_ returns the soiling ratio, a value between zero
-    and one which is equivalent to (1 - transmission loss). Therefore a soiling
-    ratio of 1.0 is equivalent to zero transmission loss.
+    The HSU soiling model [1]_ returns the soiling ratio, a value between
+    zero and one which is equivalent to (1 - transmission loss).
+    Therefore a soiling ratio of 1.0 is equivalent to zero transmission loss.
+    Due to the mathematical form of the model, the soiling ratio has an
+    implicit minimum of approximately 0.6563. See ``Returns`` for details.
 
     Parameters
     ----------
@@ -49,10 +51,18 @@ def hsu(rainfall, cleaning_threshold, surface_tilt, pm2_5, pm10,
         It is recommended that `rain_accum_period` be between 1 hour and
         24 hours.
 
-    Returns
+Returns
     -------
     soiling_ratio : Series
         Values between 0 and 1. Equal to 1 - transmission loss.
+        Due to the mathematical form of the model
+        (``SR = 1 - 0.3437 * erf(0.17 * ω^0.8473)``),
+        the soiling ratio has an implicit minimum value of approximately
+        0.6563 (i.e., maximum transmission loss of ~34.37%), regardless
+        of the accumulated particulate mass. Note that the valid range
+        of the underlying equation is further limited to accumulated
+        mass densities up to 10 g/m², corresponding to a soiling ratio
+        of approximately 0.6875. See [1]_ and [2]_ for details.
 
     References
     -----------

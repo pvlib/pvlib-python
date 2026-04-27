@@ -45,4 +45,4 @@ Maintenance
 
 Contributors
 ~~~~~~~~~~~~
-Omesh37
+* :ghuser:`Omesh37`

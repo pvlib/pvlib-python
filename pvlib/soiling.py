@@ -56,7 +56,7 @@ Returns
     soiling_ratio : Series
         Values between 0 and 1. Equal to 1 - transmission loss.
 
-Notes
+    Notes
     -------
     Due to the mathematical form of the HSU model
     (``SR = 1 - 0.3437 * erf(0.17 * ω^0.8473)``),

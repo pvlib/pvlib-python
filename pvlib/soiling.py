@@ -51,12 +51,12 @@ def hsu(rainfall, cleaning_threshold, surface_tilt, pm2_5, pm10,
         It is recommended that `rain_accum_period` be between 1 hour and
         24 hours.
 
-Returns
+    Returns
     -------
     soiling_ratio : Series
         Values between 0 and 1. Equal to 1 - transmission loss.
 
-Notes
+    Notes
     -------
     Due to the mathematical form of the HSU model
     (``SR = 1 - 0.3437 * erf(0.17 * ω^0.8473)``),

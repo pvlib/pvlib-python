@@ -13,6 +13,7 @@ import pandas as pd
 import functools
 from scipy.optimize import minimize
 from pvlib.tools import cosd, sind, acosd
+from scipy.interpolate import make_interp_spline
 
 # a dict of required parameter names for each IAM model
 # keys are the function names for the IAM models
@@ -469,9 +470,6 @@ def interp(aoi, theta_ref, iam_ref, method='linear', normalize=True):
     pvlib.iam.sapm
     '''
     # Contributed by Anton Driesse (@adriesse), PV Performance Labs. July, 2019
-
-    from scipy.interpolate import make_interp_spline
-
     # Scipy doesn't give the clearest feedback, so check number of points here.
     MIN_REF_VALS = {'linear': 2, 'quadratic': 3, 'cubic': 4, 1: 2, 2: 3, 3: 4}
 
@@ -487,22 +485,13 @@ def interp(aoi, theta_ref, iam_ref, method='linear', normalize=True):
     iam_ref = np.asarray(iam_ref)
 
     if method == "linear":
-        spline = make_interp_spline(theta_ref, iam_ref, k=1)
-
-        def interpolator(x):
-            return spline(x)
+        interpolator = make_interp_spline(theta_ref, iam_ref, k=1)
 
     elif method == "quadratic":
-        spline = make_interp_spline(theta_ref, iam_ref, k=2)
-
-        def interpolator(x):
-            return spline(x)
+        interpolator = make_interp_spline(theta_ref, iam_ref, k=2)
 
     elif method == "cubic":
-        spline = make_interp_spline(theta_ref, iam_ref, k=3)
-
-        def interpolator(x):
-            return spline(x)
+        interpolator = make_interp_spline(theta_ref, iam_ref, k=3)
 
     else:
         raise ValueError(f"Invalid interpolation method '{method}'.")

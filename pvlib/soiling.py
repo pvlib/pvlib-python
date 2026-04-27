@@ -55,14 +55,17 @@ Returns
     -------
     soiling_ratio : Series
         Values between 0 and 1. Equal to 1 - transmission loss.
-        Due to the mathematical form of the model
-        (``SR = 1 - 0.3437 * erf(0.17 * ω^0.8473)``),
-        the soiling ratio has an implicit minimum value of approximately
-        0.6563 (i.e., maximum transmission loss of ~34.37%), regardless
-        of the accumulated particulate mass. Note that the valid range
-        of the underlying equation is further limited to accumulated
-        mass densities up to 10 g/m², corresponding to a soiling ratio
-        of approximately 0.6875. See [1]_ and [2]_ for details.
+
+Notes
+    -------
+    Due to the mathematical form of the HSU model
+    (``SR = 1 - 0.3437 * erf(0.17 * ω^0.8473)``),
+    the soiling ratio has a minimum value of approximately 0.6563
+    (i.e., maximum transmission loss of ~34.37%), regardless of
+    the accumulated particulate mass. The HSU model is developed
+    (validated) for accumulated mass densities up to 10 g/m²,
+    corresponding to a soiling ratio of approximately 0.6875.
+    See [1]_ for details.
 
     References
     -----------

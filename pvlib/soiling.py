@@ -20,7 +20,7 @@ def hsu(rainfall, cleaning_threshold, surface_tilt, pm2_5, pm10,
     zero and one which is equivalent to (1 - transmission loss).
     Therefore a soiling ratio of 1.0 is equivalent to zero transmission loss.
     Due to the mathematical form of the HSU model, the soiling ratio has a
-    minimum of approximately 0.6563. See ``Returns`` for details.
+    minimum of approximately 0.6563. See ``Notes`` for details.
 
     Parameters
     ----------

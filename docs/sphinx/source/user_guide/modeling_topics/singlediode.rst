@@ -95,6 +95,8 @@ from various datasources:
 +---------------------------------------------------------------+---------+--------------------+
 | :py:func:`~pvlib.ivtools.sdm.fit_desoto`                      | De Soto | datasheet          |
 +---------------------------------------------------------------+---------+--------------------+
+| :py:func:`~pvlib.ivtools.sdm.fit_desoto_batzelis`             | De Soto | datasheet          |
++---------------------------------------------------------------+---------+--------------------+
 | :py:func:`~pvlib.ivtools.sdm.fit_desoto_sandia`               | De Soto | I-V curves         |
 +---------------------------------------------------------------+---------+--------------------+
 | :py:func:`~pvlib.ivtools.sdm.fit_pvsyst_sandia`               | PVsyst  | I-V curves         |

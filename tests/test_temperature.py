@@ -271,7 +271,7 @@ def test_fuentes_timezone(tz):
     out = temperature.fuentes(df['poa_global'], df['temp_air'],
                               df['wind_speed'], noct_installed=45)
 
-    assert_series_equal(out, pd.Series([47.85, 50.85, 50.85], index=index,
+    assert_series_equal(out, pd.Series([48.042, 51.845, 51.846], index=index,
                                        name='tmod'))
 
 

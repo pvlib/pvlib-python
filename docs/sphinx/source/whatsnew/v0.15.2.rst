@@ -14,7 +14,9 @@ Deprecations
 
 Bug fixes
 ~~~~~~~~~
-
+* Corrects a bug in :py:func:`pvlib.temperature.fuentes`. Users can expect
+  modeled cell temperature values to increase slightly.
+  (:issue:`2608`, :pull:``)
 
 Enhancements
 ~~~~~~~~~~~~
@@ -46,3 +48,4 @@ Maintenance
 Contributors
 ~~~~~~~~~~~~
 * :ghuser:`Omesh37`
+* Cliff Hansen :ghuser:`cwhanse`

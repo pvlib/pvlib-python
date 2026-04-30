@@ -185,7 +185,7 @@ def _shaded_fraction(solar_zenith, solar_azimuth, surface_tilt,
 def get_irradiance_poa(surface_tilt, surface_azimuth, solar_zenith,
                        solar_azimuth, gcr, height, pitch, ghi, dhi, dni,
                        albedo, model='isotropic', dni_extra=None, iam=1.0,
-                       npoints=100, vectorize=False):
+                       npoints=None, vectorize=None):
     r"""
     Calculate plane-of-array (POA) irradiance on one side of a row of modules.
 
@@ -252,13 +252,24 @@ def get_irradiance_poa(surface_tilt, surface_azimuth, solar_zenith,
         Incidence angle modifier, the fraction of direct irradiance incident
         on the surface that is not reflected away. [unitless]
 
-    npoints : int, default 100
+    npoints : int, optional
         Number of discretization points for calculating integrated view
         factors.
 
-    vectorize : bool, default False
+        .. deprecated:: 0.15.2
+           Integrated view factors are now calculated analytically, so
+           this parameter now has no effect and will be removed in the
+           future.
+
+    vectorize : bool, optional
         If True, vectorize the view factor calculation across ``surface_tilt``.
         This increases speed with the cost of increased memory usage.
+
+        .. deprecated:: 0.15.2
+           Integrated view factors are now calculated more efficiently, so
+           there is no need to disable vectorization to save memory.
+           This parameter now has no effect and will be removed in the
+           future.
 
     Returns
     -------
@@ -382,7 +393,7 @@ def get_irradiance(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
                    gcr, height, pitch, ghi, dhi, dni,
                    albedo, model='isotropic', dni_extra=None, iam_front=1.0,
                    iam_back=1.0, bifaciality=0.8, shade_factor=-0.02,
-                   transmission_factor=0, npoints=100, vectorize=False):
+                   transmission_factor=0, npoints=None, vectorize=None):
     """
     Get front and rear irradiance using the infinite sheds model.
 
@@ -472,13 +483,24 @@ def get_irradiance(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
         module's cells due to module features such as busbars, junction box,
         etc. A negative value is a reduction in back irradiance. [unitless]
 
-    npoints : int, default 100
+    npoints : int, optional
         Number of discretization points for calculating integrated view
         factors.
 
-    vectorize : bool, default False
+        .. deprecated:: 0.15.2
+           Integrated view factors are now calculated analytically, so
+           this parameter now has no effect and will be removed in the
+           future.
+
+    vectorize : bool, optional
         If True, vectorize the view factor calculation across ``surface_tilt``.
         This increases speed with the cost of increased memory usage.
+
+        .. deprecated:: 0.15.2
+           Integrated view factors are now calculated more efficiently, so
+           there is no need to disable vectorization to save memory.
+           This parameter now has no effect and will be removed in the
+           future.
 
     Returns
     -------

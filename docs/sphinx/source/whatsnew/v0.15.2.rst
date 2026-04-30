@@ -48,4 +48,4 @@ Maintenance
 Contributors
 ~~~~~~~~~~~~
 * :ghuser:`Omesh37`
-* Cliff Hansen :ghuser:`cwhanse`
+* Cliff Hansen (:ghuser:`cwhanse`)

@@ -38,7 +38,7 @@ def _solar_projection_tangent(solar_zenith, solar_azimuth, surface_azimuth):
     return tan_phi
 
 
-def _unshaded_ground_fraction(surface_tilt, phi, gcr, height=None,
+def _unshaded_ground_fraction(tracker_rotation, phi, gcr, height=None,
                               pitch=None, g0=0, g1=1, max_rows=10,
                               max_zenith=85):
     r"""
@@ -46,12 +46,12 @@ def _unshaded_ground_fraction(surface_tilt, phi, gcr, height=None,
 
     Parameters
     ----------
-    surface_tilt : numeric
-        Surface tilt angle. The tilt angle is defined as
-        degrees from horizontal, e.g., surface facing up = 0, surface facing
-        horizon = 90. [degree]
+    tracker_rotation : numeric
+        Tracker rotation angle as a right-handed rotation around
+        the same axis as ``phi``. [degree]
     phi : numeric
-        Projected solar zenith angle. [degree].
+        Projected solar zenith angle, defined around the same axis as
+        ``tracker_rotation``. [degree].
     gcr : float
         Ground coverage ratio, which is the ratio of row slant length to row
         spacing (pitch). [unitless]
@@ -100,12 +100,13 @@ def _unshaded_ground_fraction(surface_tilt, phi, gcr, height=None,
     squeeze = []
     if np.isscalar(g0) and np.isscalar(g1):
         squeeze.append(0)
-    if np.isscalar(surface_tilt) and np.isscalar(phi):
+    if np.isscalar(tracker_rotation) and np.isscalar(phi):
         squeeze.append(1)
 
     # dimensions: k/max_rows, ground segment, time
 
-    surface_tilt = np.atleast_1d(surface_tilt)[np.newaxis, np.newaxis, :]
+    tracker_rotation = np.atleast_1d(tracker_rotation)[np.newaxis, np.newaxis,
+                                                       :]
     phi = np.atleast_1d(phi)[np.newaxis, np.newaxis, :]
 
     g0 = np.atleast_1d(g0)[np.newaxis, :, np.newaxis]
@@ -116,8 +117,8 @@ def _unshaded_ground_fraction(surface_tilt, phi, gcr, height=None,
     k = np.arange(-max_rows, max_rows)[:, np.newaxis, np.newaxis]
 
     collector_width = pitch * gcr
-    Lcostheta = collector_width * cosd(surface_tilt)
-    Lsintheta = collector_width * sind(surface_tilt)
+    Lcostheta = collector_width * cosd(tracker_rotation)
+    Lsintheta = collector_width * sind(tracker_rotation)
     tanphi = tand(phi)
 
     # a, b: boundaries of ground segment

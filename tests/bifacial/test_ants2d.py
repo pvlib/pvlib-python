@@ -388,6 +388,15 @@ def test_get_irradiance_custom_x0x1(ants_params_fixed):
         np.testing.assert_allclose(expected[key][1], actual[key][0])
 
 
+def test_get_irradiance_custom_g0g1(ants_params_fixed):
+    # different ways of specifying the ground surface
+    expected = ants2d.get_irradiance(**ants_params_fixed, ground_segments=2)
+    actual = ants2d.get_irradiance(**ants_params_fixed,
+                                   ground_segments=[(0.0, 0.5), (0.5, 1.0)])
+    for key in expected:
+        np.testing.assert_allclose(expected[key], actual[key])
+
+
 def test_get_irradiance_slope(ants_params_fixed):
     # check the slope affects direct & diffuse shading
     flat = ants2d.get_irradiance(cross_axis_slope=0, **ants_params_fixed)

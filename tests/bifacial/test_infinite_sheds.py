@@ -333,3 +333,26 @@ def test_get_irradiance_with_haydavies():
             gcr, height, pitch, ghi, dhi, dni, albedo, model, None,
             iam_front, iam_back, bifaciality=0.8, shade_factor=-0.02,
             transmission_factor=0, npoints=npoints)
+
+
+def test_get_irradiance_mixed_inputs():
+    # check that scalar surface_tilt, surface_azimuth work with
+    # arrays for other inputs
+    ts_inputs = dict(solar_zenith=0, solar_azimuth=180, ghi=1000, dhi=300,
+                  dni=700, albedo=0)
+    kwargs = dict(gcr=0.5, height=1, pitch=1, bifaciality=0.8, iam_front=1.0,
+                  iam_back=1.0, shade_factor=-0.02, transmission_factor=0)
+
+    surface_tilt = 0
+    surface_azimuth = 180
+
+    result_scalars = infinite_sheds.get_irradiance(surface_tilt,
+                                                   surface_azimuth,
+                                                   **ts_inputs, **kwargs)
+    
+    ts_inputs = {k: np.array([v, v]) for k, v in ts_inputs.items()}
+    result_arrays = infinite_sheds.get_irradiance(surface_tilt,
+                                                  surface_azimuth,
+                                                  **ts_inputs, **kwargs)
+    for key in result_scalars:
+        np.testing.assert_allclose(result_scalars[key], result_arrays[key][0])

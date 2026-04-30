@@ -100,7 +100,7 @@ def _unshaded_ground_fraction(surface_tilt, phi, gcr, height=None,
     squeeze = []
     if np.isscalar(g0) and np.isscalar(g1):
         squeeze.append(0)
-    if np.isscalar(surface_tilt):
+    if np.isscalar(surface_tilt) and np.isscalar(phi):
         squeeze.append(1)
 
     # dimensions: k/max_rows, ground segment, time
@@ -272,17 +272,19 @@ def vf_ground_sky_2d_integ(tracker_rotation, gcr, height, pitch, g0=0, g1=1,
         Maximum number of rows to consider in front and behind the current row.
     npoints : int, optional
 
-        .. deprecated:: TODO
+        .. deprecated:: 0.15.2
 
            This parameter has no effect; integrated view factors are now
            calculated exactly instead of with discretized approximations.
+           This parameter will be removed in the future.
 
     vectorize : bool, optional
 
-        .. deprecated:: TODO
+        .. deprecated:: 0.15.2
 
            This parameter has no effect; calculations are now vectorized
            with no memory usage penality.
+           This parameter will be removed in the future.
 
     Returns
     -------
@@ -293,7 +295,7 @@ def vf_ground_sky_2d_integ(tracker_rotation, gcr, height, pitch, g0=0, g1=1,
     if npoints is not None or vectorize is not None:
         msg = (
             "The `npoints` and `vectorize` parameters have no effect and will "
-            "be removed in a future version."  # TODO make this better
+            "be removed in a future version."
         )
         warnings.warn(msg, pvlibDeprecationWarning)
 

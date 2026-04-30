@@ -238,7 +238,7 @@ def vf_ground_sky_2d(rotation, gcr, x, pitch, height, max_rows=10):
     return vf
 
 
-@renamed_kwarg_warning("1.4.0", "surface_tilt", "tracker_rotation")
+@renamed_kwarg_warning("0.15.2", "surface_tilt", "tracker_rotation")
 def vf_ground_sky_2d_integ(tracker_rotation, gcr, height, pitch, g0=0, g1=1,
                            max_rows=10, npoints=None, vectorize=None):
     """

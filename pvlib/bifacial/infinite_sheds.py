@@ -55,8 +55,6 @@ def _poa_sky_diffuse_pv(dhi, gcr, surface_tilt):
         = 0, surface facing horizon = 90. [degree]
     gcr : float
         Ratio of row slant length to row spacing (pitch). [unitless]
-    npoints : int, default 100
-        Number of points for integration. [unitless]
 
     A detailed calculation would be
 
@@ -488,19 +486,20 @@ def get_irradiance(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
         factors.
 
         .. deprecated:: 0.15.2
-           Integrated view factors are now calculated analytically, so
-           this parameter now has no effect and will be removed in the
-           future.
+
+           This parameter has no effect; integrated view factors are now
+           calculated exactly instead of with discretized approximations.
+           This parameter will be removed in the future.
 
     vectorize : bool, optional
         If True, vectorize the view factor calculation across ``surface_tilt``.
         This increases speed with the cost of increased memory usage.
 
         .. deprecated:: 0.15.2
-           Integrated view factors are now calculated more efficiently, so
-           there is no need to disable vectorization to save memory.
-           This parameter now has no effect and will be removed in the
-           future.
+
+           This parameter has no effect; calculations are now vectorized
+           with no memory usage penality.
+           This parameter will be removed in the future.
 
     Returns
     -------

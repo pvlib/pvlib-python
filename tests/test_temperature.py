@@ -275,7 +275,7 @@ def test_fuentes_timezone(tz):
                                        name='tmod'))
     # GH 2608
     df = pd.DataFrame({'poa_global': 1000., 'temp_air': 20., 'wind_speed': 1.},
-                       index)
+                      index)
 
     out = temperature.fuentes(df['poa_global'], df['temp_air'],
                               df['wind_speed'], noct_installed=45)

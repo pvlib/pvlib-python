@@ -14,8 +14,9 @@ Deprecations
 
 Bug fixes
 ~~~~~~~~~
-* Corrects a bug in :py:func:`pvlib.temperature.fuentes`. Users can expect
-  modeled cell temperature values to increase slightly.
+* Corrects a bug in :py:func:`pvlib.temperature.fuentes`. If inputs were
+  data type integer, users can expect modeled cell temperature values to
+  increase slightly.
   (:issue:`2608`, :pull:``)
 
 Enhancements

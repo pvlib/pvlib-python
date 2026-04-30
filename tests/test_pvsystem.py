@@ -711,7 +711,7 @@ def test_PVSystem_fuentes_celltemp(mocker):
     assert_series_equal(spy.call_args[0][1], temps)
     assert_series_equal(spy.call_args[0][2], winds)
     assert spy.call_args[0][3] == noct_installed
-    assert_series_equal(out, pd.Series([52.85, 55.85, 55.85], index,
+    assert_series_equal(out, pd.Series([52.884, 56.835, 56.836], index,
                                        name='tmod'))
 
 

@@ -17,7 +17,7 @@ Bug fixes
 * Corrects a bug in :py:func:`pvlib.temperature.fuentes`. If inputs were
   data type integer, users can expect modeled cell temperature values to
   increase slightly.
-  (:issue:`2608`, :pull:``)
+  (:issue:`2608`, :pull:`2745`)
 
 Enhancements
 ~~~~~~~~~~~~

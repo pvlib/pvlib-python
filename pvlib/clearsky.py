@@ -19,46 +19,46 @@ from pvlib.tools import _degrees_to_index
 def ineichen(apparent_zenith, airmass_absolute, linke_turbidity,
              altitude=0, dni_extra=1364., perez_enhancement=False):
     '''
-    Determine clear sky GHI, DNI, and DHI from Ineichen/Perez model.
+    Determine clear-sky GHI, DNI, and DHI using the Ineichen/Perez model.
 
-    Implements the Ineichen and Perez clear sky model for global
-    horizontal irradiance (GHI), direct normal irradiance (DNI), and
-    calculates the clear-sky diffuse horizontal (DHI) component as the
-    difference between GHI and DNI*cos(zenith) as presented in [1]_ [2]_. A
-    report on clear sky models found the Ineichen/Perez model to have
+    The Ineichen and Perez clear sky model [1]_ [2]_ describes global
+    horizontal irradiance (GHI) and direct normal irradiance (DNI), Diffuse
+    horizontal irradiance (DHI) is then computed as DHI = GHI - DNI*cos(zenith)
+    Analysis of clear sky models found the Ineichen/Perez model to have
     excellent performance with a minimal input data set [3]_.
 
-    Default values for monthly Linke turbidity provided by SoDa [4]_, [5]_.
+    The Ineichen/Perez model requires Linke turbidity as input. Monthly
+    averages of gridded Linke turbidity (historical data from SoDa [4]_, [5]_)
+    are available using :py:func:`~pvlib.clearsky.lookup_linke_turbidity`.
 
     Parameters
     -----------
     apparent_zenith : numeric
-        Refraction corrected solar zenith angle in degrees.
+        Refraction-corrected solar zenith angle. [°]
 
     airmass_absolute : numeric
-        Pressure corrected airmass.
+        Pressure-corrected airmass. [unitless]
 
     linke_turbidity : numeric
-        Linke Turbidity.
+        Linke turbidity. [unitless]
 
     altitude : numeric, default 0
-        Altitude above sea level in meters.
+        Altitude above sea level. [m]
 
-    dni_extra : numeric, default 1364
-        Extraterrestrial irradiance. The units of ``dni_extra``
-        determine the units of the output.
+    dni_extra : numeric, default 1364 Wm⁻²
+        Extraterrestrial irradiance.
 
     perez_enhancement : bool, default False
-        Controls if the Perez enhancement factor should be applied.
-        Setting to True may produce spurious results for times when
+        If `True`, the Perez enhancement factor is applied.
+        The Perez enhancement factor may produce spurious results when
         the Sun is near the horizon and the airmass is high.
         See https://github.com/pvlib/pvlib-python/issues/435
 
     Returns
     -------
     clearsky : DataFrame (if Series input) or OrderedDict of arrays
-        DataFrame/OrderedDict contains the columns/keys
-        ``'dhi', 'dni', 'ghi'``.
+        Contains the columns/keys ``'dhi', 'dni', 'ghi'``, with the same
+        unit as the input parameter ``dni_extra``.
 
     See also
     --------
@@ -84,6 +84,11 @@ def ineichen(apparent_zenith, airmass_absolute, linke_turbidity,
 
     .. [5] J. Remund, et. al., "Worldwide Linke Turbidity Information", Proc.
        ISES Solar World Congress, June 2003. Goteborg, Sweden.
+
+    Examples
+    --------
+    https://pvlib-python.readthedocs.io/en/stable/user_guide/modeling_topics/clearsky.html#examples
+
     '''  # noqa: E501
 
     # ghi is calculated using either the equations in [1] by setting

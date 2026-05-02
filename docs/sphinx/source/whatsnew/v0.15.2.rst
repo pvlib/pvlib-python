@@ -22,9 +22,12 @@ Enhancements
 
 Documentation
 ~~~~~~~~~~~~~
-* Clarified that :py:func:`pvlib.soiling.hsu` has an implicit minimum
+* Clarifies that :py:func:`pvlib.soiling.hsu` has an implicit minimum
   soiling ratio of approximately 0.6563 due to the mathematical form
   of the model. (:issue:`2534`, :pull:`2743`)
+* Clarifies how Linke turbidity values can be provided to
+ :py:func:`pvlib.clearsky.ineichen` via
+ :py:func:`pvlib.clearsky.lookup_linke_turbidity` (:issue:`2598`, :pull:`2746`)
 
 
 Testing

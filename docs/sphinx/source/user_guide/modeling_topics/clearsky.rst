@@ -255,11 +255,10 @@ wavelengths [Bir80]_, and is implemented in
     @savefig kasten-tl.png width=10in
     In [1]: plt.tight_layout()
 
-
-.. _clearsky-examples:
-
 Examples
 ^^^^^^^^
+
+.. _clearsky-examples:
 
 A clear sky time series using only basic pvlib functions.
 

@@ -49,7 +49,7 @@ def ineichen(apparent_zenith, airmass_absolute, linke_turbidity,
         Extraterrestrial irradiance.
 
     perez_enhancement : bool, default False
-        If `True`, the Perez enhancement factor is applied.
+        If ``True``, the Perez enhancement factor is applied.
         The Perez enhancement factor may produce spurious results when
         the Sun is near the horizon and the airmass is high.
         See https://github.com/pvlib/pvlib-python/issues/435

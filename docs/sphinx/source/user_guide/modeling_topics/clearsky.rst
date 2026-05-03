@@ -257,6 +257,7 @@ wavelengths [Bir80]_, and is implemented in
 
 
 .. _clearsky-examples:
+
 Examples
 ^^^^^^^^
 

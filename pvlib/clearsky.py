@@ -21,8 +21,8 @@ def ineichen(apparent_zenith, airmass_absolute, linke_turbidity,
     '''
     Determine clear-sky GHI, DNI, and DHI using the Ineichen/Perez model.
 
-    The Ineichen and Perez clear sky model [1]_ [2]_ describes global
-    horizontal irradiance (GHI) and direct normal irradiance (DNI), Diffuse
+    The Ineichen and Perez clear sky model [1]_ [2]_ estimates global
+    horizontal irradiance (GHI) and direct normal irradiance (DNI). Diffuse
     horizontal irradiance (DHI) is then computed as DHI = GHI - DNI*cos(zenith)
     Analysis of clear sky models found the Ineichen/Perez model to have
     excellent performance with a minimal input data set [3]_.
@@ -49,7 +49,7 @@ def ineichen(apparent_zenith, airmass_absolute, linke_turbidity,
         Extraterrestrial irradiance.
 
     perez_enhancement : bool, default False
-        If `True`, the Perez enhancement factor is applied.
+        If ``True``, the Perez enhancement factor is applied.
         The Perez enhancement factor may produce spurious results when
         the Sun is near the horizon and the airmass is high.
         See https://github.com/pvlib/pvlib-python/issues/435

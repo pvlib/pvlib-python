@@ -87,7 +87,7 @@ def ineichen(apparent_zenith, airmass_absolute, linke_turbidity,
 
     Examples
     --------
-    https://pvlib-python.readthedocs.io/en/stable/user_guide/modeling_topics/clearsky.html#examples
+    See :ref:`Clearsky modeling examples <clearsky-examples>`
 
     '''  # noqa: E501
 

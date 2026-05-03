@@ -256,6 +256,7 @@ wavelengths [Bir80]_, and is implemented in
     In [1]: plt.tight_layout()
 
 
+.. _clearsky-examples:
 Examples
 ^^^^^^^^
 
@@ -281,7 +282,6 @@ A clear sky time series using only basic pvlib functions.
 
     In [1]: dni_extra = pvlib.irradiance.get_extra_radiation(times)
 
-    # an input is a pandas Series, so solis is a DataFrame
     In [1]: ineichen = clearsky.ineichen(apparent_zenith, airmass, linke_turbidity, altitude, dni_extra)
 
     In [1]: plt.figure();

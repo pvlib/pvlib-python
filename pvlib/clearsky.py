@@ -21,7 +21,7 @@ def ineichen(apparent_zenith, airmass_absolute, linke_turbidity,
     '''
     Determine clear-sky GHI, DNI, and DHI using the Ineichen/Perez model.
 
-    The Ineichen and Perez clear sky model [1]_ [2]_ describes global
+    The Ineichen and Perez clear sky model [1]_ [2]_ estimates global
     horizontal irradiance (GHI) and direct normal irradiance (DNI). Diffuse
     horizontal irradiance (DHI) is then computed as DHI = GHI - DNI*cos(zenith)
     Analysis of clear sky models found the Ineichen/Perez model to have

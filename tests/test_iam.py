@@ -213,6 +213,32 @@ def test_iam_interp():
     with pytest.raises(ValueError):
         _iam.interp(0.0, [0, 90], [1, -1])
 
+    # check linear after updating interp1d
+    theta_ref = np.array([0, 60, 90])
+    iam_ref = np.array([1.0, 0.8, 0.0])
+
+    aoi = np.array([0, 30, 60])
+    iam = _iam.interp(
+        aoi, theta_ref, iam_ref,
+        method="linear", normalize=False)
+    expected = np.array([1.0, 0.9, 0.8])
+    np.testing.assert_allclose(iam, expected)
+
+    # check quadratic
+    theta_ref = np.array([0, 30, 60, 90])
+    iam_ref = 1.0 - 1e-4 * theta_ref**2
+    aoi = np.array([15, 45, 75])
+    iam = _iam.interp(
+        aoi,
+        theta_ref,
+        iam_ref,
+        method="quadratic",
+        normalize=False
+    )
+
+    expected = 1.0 - 1e-4 * aoi**2
+    np.testing.assert_allclose(iam, expected, rtol=1e-12)
+
 
 @pytest.mark.parametrize('aoi,expected', [
     (45, 0.9975036250000002),

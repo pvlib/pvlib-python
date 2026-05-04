@@ -136,17 +136,21 @@ plt.show()
 # (i.e., receives DNI).
 
 vf_ground_sky = pvlib.bifacial.utils.vf_ground_sky_2d_integ(
-    surface_tilt=tracking_orientations['surface_tilt'],
+    tracker_rotation=tracking_orientations['tracker_theta'],
     gcr=gcr,
     height=height,
     pitch=pitch,
 )
 
-unshaded_ground_fraction = pvlib.bifacial.utils._unshaded_ground_fraction(
-    surface_tilt=tracking_orientations['surface_tilt'],
-    surface_azimuth=tracking_orientations['surface_azimuth'],
+phi = pvlib.shading.projected_solar_zenith_angle(
     solar_zenith=solpos['apparent_zenith'],
     solar_azimuth=solpos['azimuth'],
+    axis_tilt=0,
+    axis_azimuth=axis_azimuth,
+)
+unshaded_ground_fraction = pvlib.bifacial.utils._unshaded_ground_fraction(
+    tracker_rotation=tracking_orientations['tracker_theta'],
+    phi=phi,
     gcr=gcr,
 )
 

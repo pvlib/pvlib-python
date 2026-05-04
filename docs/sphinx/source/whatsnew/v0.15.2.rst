@@ -10,6 +10,15 @@ Breaking Changes
 
 Deprecations
 ~~~~~~~~~~~~
+* Parameters ``npoints`` and ``vectorize`` in the following functions
+  are now unnecessary and are deprecated (:pull:`2740`):
+
+  - :py:func:`pvlib.bifacial.infinite_sheds.get_irradiance`
+  - :py:func:`pvlib.bifacial.infinite_sheds.get_irradiance_poa`
+  - :py:func:`pvlib.bifacial.utils.vf_ground_sky_2d_integ`
+
+* Parameter ``surface_tilt`` is deprecated and renamed to ``tracker_rotation``
+  in :py:func:`pvlib.bifacial.utils.vf_ground_sky_2d_integ` (:pull:`2740`).
 
 
 Bug fixes
@@ -21,6 +30,13 @@ Bug fixes
 
 Enhancements
 ~~~~~~~~~~~~
+* Implement the ANTS-2D bifacial irradiance model in
+  :py:func:`pvlib.bifacial.ants2d.get_irradiance`. (:pull:`2740`)
+* Add parameters ``g0`` and ``g1`` to allow segmented ground surfaces in
+  :py:func:`~pvlib.bifacial.utils.vf_ground_sky_2d_integ` and
+  :py:func:`~pvlib.bifacial.utils.vf_row_ground_2d_integ`. (:pull:`2740`)
+* Accelerate :py:func:`~pvlib.bifacial.utils.vf_ground_sky_2d_integ` by one or
+  two orders of magnitude. (:pull:`2740`)
 
 
 Documentation

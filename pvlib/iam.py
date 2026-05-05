@@ -470,6 +470,10 @@ def interp(aoi, theta_ref, iam_ref, method='linear', normalize=True):
     pvlib.iam.sapm
     '''
     # Contributed by Anton Driesse (@adriesse), PV Performance Labs. July, 2019
+    if isinstance(theta_ref, list):
+        raise TypeError("theta_ref cannot be a list")
+    if isinstance(iam_ref, list):
+        raise TypeError("iam_ref cannot be a list")
     # Scipy doesn't give the clearest feedback, so check number of points here.
     MIN_REF_VALS = {'linear': 2, 'quadratic': 3, 'cubic': 4, 1: 2, 2: 3, 3: 4}
 
@@ -480,9 +484,6 @@ def interp(aoi, theta_ref, iam_ref, method='linear', normalize=True):
     if np.any(np.less(iam_ref, 0)):
         raise ValueError("Negative value(s) found in 'iam_ref'. "
                          "This is not physically possible.")
-
-    theta_ref = np.asarray(theta_ref)
-    iam_ref = np.asarray(iam_ref)
 
     if method == "linear":
         interpolator = make_interp_spline(theta_ref, iam_ref, k=1)

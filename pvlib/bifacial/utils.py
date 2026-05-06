@@ -50,29 +50,29 @@ def _unshaded_ground_fraction(tracker_rotation, phi, gcr, height=None,
         Tracker rotation angle as a right-handed rotation around
         the same axis as ``phi``. [degree]
     phi : numeric
-        Projected solar zenith angle, defined around the same axis as
-        ``tracker_rotation``. [degree].
+        Projected solar zenith angle, defined as a right-handed rotation
+        around the same axis as ``tracker_rotation``. [degree].
     gcr : float
         Ground coverage ratio, which is the ratio of row slant length to row
         spacing (pitch). [unitless]
     height : float, optional
-        Height of the center point of the row above the ground; must be in the
-        same units as ``pitch``.  Required if ``g0`` is not zero or ``g1`` is
-        not one.
+        Height above ground of the center point of the row slant length; must
+        be in the same units as ``pitch``.  Required if ``g0`` is not zero or
+        ``g1`` is not one.
     pitch : float, optional
-        Distance between two rows; must be in the same units as ``height``.
-        Required if ``g0`` is not zero or ``g1`` is not one.
+        Distance between centers of adjacent rows; must be in the same units
+        as ``height``. Required if ``g0`` is not zero or ``g1`` is not one.
     g0 : numeric, default 0
-        Position on the ground surface, as a fraction of the row-to-row
-        spacing. ``g0=0`` corresponds to ground underneath the middle of the
+        Left position on the ground surface, as a fraction of the row-to-row
+        spacing. ``g0=0`` corresponds to ground underneath the center of the
         left row. ``g0`` should be less than ``g1``. [unitless]
     g1 : numeric, default 1
-        Position on the ground surface, as a fraction of the row-to-row
-        spacing. ``g1=1`` corresponds to ground underneath the middle of the
+        Right position on the ground surface, as a fraction of the row-to-row
+        spacing. ``g1=1`` corresponds to ground underneath the center of the
         right row. ``g1`` should be greater than ``g0``. [unitless]
     max_rows : int, default 10
-        Maximum number of rows to consider on either side of the current
-        row. [unitless]
+        Maximum number of rows to consider on either side of the left and
+        right rows. [unitless]
     max_zenith : numeric, default 85
         Maximum zenith angle. For solar_zenith > max_zenith, unshaded ground
         fraction is set to 0. [degree]
@@ -112,9 +112,7 @@ def _unshaded_ground_fraction(tracker_rotation, phi, gcr, height=None,
     g0 = np.atleast_1d(g0)[np.newaxis, :, np.newaxis]
     g1 = np.atleast_1d(g1)[np.newaxis, :, np.newaxis]
 
-    # TODO seems like this should be np.arange(-max_rows, max_rows+1)?
-    # see GH #1867
-    k = np.arange(-max_rows, max_rows)[:, np.newaxis, np.newaxis]
+    k = np.arange(-max_rows, max_rows+2)[:, np.newaxis, np.newaxis]
 
     collector_width = pitch * gcr
     Lcostheta = collector_width * cosd(tracker_rotation)
@@ -202,7 +200,7 @@ def vf_ground_sky_2d(rotation, gcr, x, pitch, height, max_rows=10):
     # handle floats:
     x = np.atleast_1d(x)[:, np.newaxis, np.newaxis]
     rotation = np.atleast_1d(rotation)[np.newaxis, :, np.newaxis]
-    all_k = np.arange(-max_rows, max_rows + 1)
+    all_k = np.arange(-max_rows, max_rows + 2)
     width = gcr * pitch / 2.
     distance_to_row_centers = (all_k - x) * pitch
     dy = width * sind(rotation)
@@ -315,9 +313,7 @@ def vf_ground_sky_2d_integ(tracker_rotation, gcr, height, pitch, g0=0, g1=1,
     g0 = np.atleast_1d(g0)[np.newaxis, :, np.newaxis]
     g1 = np.atleast_1d(g1)[np.newaxis, :, np.newaxis]
 
-    # TODO seems like this should be np.arange(-max_rows, max_rows+1)?
-    # see GH #1867
-    k = np.arange(-max_rows, max_rows)[:, np.newaxis, np.newaxis]
+    k = np.arange(-max_rows, max_rows+1)[:, np.newaxis, np.newaxis]
 
     collector_width = pitch * gcr
     Lcostheta = collector_width * cosd(tracker_rotation)
@@ -591,8 +587,6 @@ def vf_row_ground_2d_integ(surface_tilt, gcr, height=None, pitch=None,
     g0 = np.atleast_1d(g0)[np.newaxis, :, np.newaxis, np.newaxis]
     g1 = np.atleast_1d(g1)[np.newaxis, :, np.newaxis, np.newaxis]
 
-    # TODO seems like this should be np.arange(-max_rows, max_rows+1)?
-    # see GH #1867
     k = np.arange(-max_rows, max_rows)[:, np.newaxis, np.newaxis, np.newaxis]
 
     collector_width = pitch * gcr

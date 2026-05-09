@@ -1927,10 +1927,10 @@ def dirint(ghi, solar_zenith, times, pressure=101325., use_delta_kt_prime=True,
 
     Parameters
     ----------
-    ghi : array-like
+    ghi : numeric
         Global horizontal irradiance. See :term:`ghi`. [Wm⁻²]
 
-    solar_zenith : array-like
+    solar_zenith : numeric
         True (not refraction-corrected) solar zenith angles. See
         :term:`solar_zenith`. [°]
 
@@ -1964,9 +1964,9 @@ def dirint(ghi, solar_zenith, times, pressure=101325., use_delta_kt_prime=True,
 
     Returns
     -------
-    dni : array-like
-        The modeled direct normal irradiance, as provided by the
-        DIRINT model. [Wm⁻²]
+    dni : numeric or pd.Series
+        Estimated direct normal irradiance. Returns float if all inputs
+        are scalar, pd.Series otherwise. [Wm⁻²]
 
     Notes
     -----
@@ -1983,7 +1983,8 @@ def dirint(ghi, solar_zenith, times, pressure=101325., use_delta_kt_prime=True,
        Global Horizontal to Direct Normal Insolation", Technical Report No.
        SERI/TR-215-3087, Golden, CO: Solar Energy Research Institute, 1987.
     """
-
+    scalar_input = np.isscalar(solar_zenith)
+    
     disc_out = disc(ghi, solar_zenith, times, pressure=pressure,
                     min_cos_zenith=min_cos_zenith, max_zenith=max_zenith)
     airmass = disc_out['airmass']
@@ -1998,9 +1999,12 @@ def dirint(ghi, solar_zenith, times, pressure=101325., use_delta_kt_prime=True,
     dirint_coeffs = _dirint_coeffs(times, kt_prime, solar_zenith, w,
                                    delta_kt_prime)
 
+
     # Perez eqn 5
     dni = disc_out['dni'] * dirint_coeffs
 
+    if scalar_input:
+        return float(dni.iloc[0])
     return dni
 
 
@@ -2160,6 +2164,7 @@ def _dirint_bins(times, kt_prime, zenith, w, delta_kt_prime):
     return kt_prime_bin, zenith_bin, w_bin, delta_kt_prime_bin
 
 
+    
 def dirindex(ghi, ghi_clear, dni_clear, zenith, times, pressure=101325.,
              use_delta_kt_prime=True, temp_dew=None, min_cos_zenith=0.065,
              max_zenith=87):

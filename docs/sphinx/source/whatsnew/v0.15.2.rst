@@ -15,7 +15,7 @@ Deprecations
 Bug fixes
 ~~~~~~~~~
 * Fixed :py:func:`pvlib.irradiance.dirint` raising ``KeyError`` with
-  scalar inputs on pandas >= 2.0. (:pull:`XXXX`, :issue:`2751`)
+  scalar inputs on pandas >= 2.0. (:pull:`2752`, :issue:`2751`)
   By :ghuser:`Omesh37`.
 * Corrects a bug in :py:func:`pvlib.temperature.fuentes`. If inputs were
   data type integer, users can expect modeled cell temperature values to

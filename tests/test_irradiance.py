@@ -1139,6 +1139,34 @@ def test_dirindex_min_cos_zenith_max_zenith():
     expected = pd.Series([nan, 5.], index=times)
     assert_series_equal(out, expected)
 
+def test_dirint_scalar_inputs():
+    """Scalar numeric inputs return scalar float output. GH #2751"""
+    times = pd.DatetimeIndex(['2023-06-21 12:00'], tz='UTC')
+
+    # scalar int input → should return float (not Series)
+    result = irradiance.dirint(
+        ghi=500, solar_zenith=45, times=times
+    )
+    assert np.isscalar(result), "scalar input should return scalar output"
+    assert isinstance(result, float)
+
+    # scalar float with delta_kt_prime disabled → non-NaN value check
+    result = irradiance.dirint(
+        ghi=500.0, solar_zenith=45.0, times=times,
+        use_delta_kt_prime=False
+    )
+    assert np.isscalar(result)
+    assert isinstance(result, float)
+    assert result > 0  # should be positive DNI
+
+    # Series input → should still return Series (regression check)
+    times2 = pd.date_range('2023-06-21 10:00', periods=3, freq='h', tz='UTC')
+    result_series = irradiance.dirint(
+        ghi=pd.Series([400, 500, 300], index=times2),
+        solar_zenith=pd.Series([50, 40, 60], index=times2),
+        times=times2
+    )
+    assert isinstance(result_series, pd.Series)
 
 def test_dni():
     ghi = pd.Series([90, 100, 100, 100, 100])

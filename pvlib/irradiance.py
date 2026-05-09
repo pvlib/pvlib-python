@@ -1984,7 +1984,7 @@ def dirint(ghi, solar_zenith, times, pressure=101325., use_delta_kt_prime=True,
        SERI/TR-215-3087, Golden, CO: Solar Energy Research Institute, 1987.
     """
     scalar_input = np.isscalar(solar_zenith)
-    
+
     disc_out = disc(ghi, solar_zenith, times, pressure=pressure,
                     min_cos_zenith=min_cos_zenith, max_zenith=max_zenith)
     airmass = disc_out['airmass']
@@ -1998,7 +1998,6 @@ def dirint(ghi, solar_zenith, times, pressure=101325., use_delta_kt_prime=True,
 
     dirint_coeffs = _dirint_coeffs(times, kt_prime, solar_zenith, w,
                                    delta_kt_prime)
-
 
     # Perez eqn 5
     dni = disc_out['dni'] * dirint_coeffs
@@ -2164,7 +2163,6 @@ def _dirint_bins(times, kt_prime, zenith, w, delta_kt_prime):
     return kt_prime_bin, zenith_bin, w_bin, delta_kt_prime_bin
 
 
-    
 def dirindex(ghi, ghi_clear, dni_clear, zenith, times, pressure=101325.,
              use_delta_kt_prime=True, temp_dew=None, min_cos_zenith=0.065,
              max_zenith=87):

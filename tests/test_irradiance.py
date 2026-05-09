@@ -1139,6 +1139,7 @@ def test_dirindex_min_cos_zenith_max_zenith():
     expected = pd.Series([nan, 5.], index=times)
     assert_series_equal(out, expected)
 
+
 def test_dirint_scalar_inputs():
     """Scalar numeric inputs return scalar float output. GH #2751"""
     times = pd.DatetimeIndex(['2023-06-21 12:00'], tz='UTC')
@@ -1167,6 +1168,7 @@ def test_dirint_scalar_inputs():
         times=times2
     )
     assert isinstance(result_series, pd.Series)
+
 
 def test_dni():
     ghi = pd.Series([90, 100, 100, 100, 100])

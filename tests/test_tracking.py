@@ -564,8 +564,7 @@ def test_calc_surface_orientation_2d(shape):
     # Regression test for GH#2747: calc_surface_orientation must accept
     # tracker_theta of arbitrary rank, not just 1-D.  Compare the >1-D result
     # to the 1-D result computed on the flattened input.
-    rng = np.random.default_rng(0)
-    rotations_flat = rng.uniform(-90, 90, size=int(np.prod(shape)))
+    rotations_flat = np.linspace(-90, 90, int(np.prod(shape)))
     rotations_nd = rotations_flat.reshape(shape)
 
     out_1d = tracking.calc_surface_orientation(rotations_flat,

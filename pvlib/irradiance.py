@@ -1927,10 +1927,10 @@ def dirint(ghi, solar_zenith, times, pressure=101325., use_delta_kt_prime=True,
 
     Parameters
     ----------
-    ghi : numeric
+    ghi : array-like
         Global horizontal irradiance. See :term:`ghi`. [Wm⁻²]
 
-    solar_zenith : numeric
+    solar_zenith : array-like
         True (not refraction-corrected) solar zenith angles. See
         :term:`solar_zenith`. [°]
 
@@ -1964,7 +1964,7 @@ def dirint(ghi, solar_zenith, times, pressure=101325., use_delta_kt_prime=True,
 
     Returns
     -------
-    dni : numeric or pd.Series
+    dni : pd.Series
         Estimated direct normal irradiance. Returns float if all inputs
         are scalar, pd.Series otherwise. [Wm⁻²]
 
@@ -1983,7 +1983,6 @@ def dirint(ghi, solar_zenith, times, pressure=101325., use_delta_kt_prime=True,
        Global Horizontal to Direct Normal Insolation", Technical Report No.
        SERI/TR-215-3087, Golden, CO: Solar Energy Research Institute, 1987.
     """
-    scalar_input = np.isscalar(solar_zenith)
 
     disc_out = disc(ghi, solar_zenith, times, pressure=pressure,
                     min_cos_zenith=min_cos_zenith, max_zenith=max_zenith)
@@ -2002,8 +2001,6 @@ def dirint(ghi, solar_zenith, times, pressure=101325., use_delta_kt_prime=True,
     # Perez eqn 5
     dni = disc_out['dni'] * dirint_coeffs
 
-    if scalar_input:
-        return float(dni.iloc[0])
     return dni
 
 
@@ -2115,10 +2112,6 @@ def _dirint_bins(times, kt_prime, zenith, w, delta_kt_prime):
     # Ensure scalar inputs are converted to Series so that boolean masks
     # produce a boolean Series rather than a scalar bool.
     # Scalar bools cause KeyError in pandas >= 2.0. GH #XXXX
-    kt_prime = pd.Series(kt_prime, index=times, dtype=float)
-    zenith = pd.Series(zenith, index=times, dtype=float)
-    w = pd.Series(w, index=times, dtype=float)
-    delta_kt_prime = pd.Series(delta_kt_prime, index=times, dtype=float)
 
     # @wholmgren: the following bin assignments use MATLAB's 1-indexing.
     # Later, we'll subtract 1 to conform to Python's 0-indexing.

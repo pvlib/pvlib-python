@@ -247,3 +247,29 @@ def test_loss_townsend_cases(poa_global, surface_tilt, slant_height,
         poa_global, slant_height, lower_edge_height, string_factor)
     actual = np.around(actual * 100)
     assert np.allclose(expected, actual)
+
+    
+def test_loss_townsend_front_side_fraction():
+    snow_total = np.array([25.4, 25.4, 12.7, 2.54, 0, 0, 0, 0, 0, 0, 12.7,
+                           25.4])
+    snow_events = np.array([2, 2, 1, 0, 0, 0, 0, 0, 0, 0, 2, 3])
+    surface_tilt = 20
+    relative_humidity = np.array([80, 80, 80, 80, 80, 80, 80, 80, 80, 80,
+                                  80, 80])
+    temp_air = np.array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+    poa_global = np.array([350000, 350000, 350000, 350000, 350000, 350000,
+                           350000, 350000, 350000, 350000, 350000, 350000])
+    slant_height = 2.54
+    lower_edge_height = 0.254
+    front_side_fraction = 0.9
+
+    unadjusted = snow.loss_townsend(
+        snow_total, snow_events, surface_tilt, relative_humidity, temp_air,
+        poa_global, slant_height, lower_edge_height)
+
+    adjusted = snow.loss_townsend(
+        snow_total, snow_events, surface_tilt, relative_humidity, temp_air,
+        poa_global, slant_height, lower_edge_height,
+        front_side_fraction=front_side_fraction)
+
+    np.testing.assert_allclose(adjusted, unadjusted * front_side_fraction)

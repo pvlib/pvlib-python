@@ -249,7 +249,7 @@ def _townsend_effective_snow(snow_total, snow_events):
 def loss_townsend(snow_total, snow_events, surface_tilt, relative_humidity,
                   temp_air, poa_global, slant_height, lower_edge_height,
                   string_factor=1.0, angle_of_repose=40,
-                  front_side_fraction=None):
+                  front_side_fraction=1.0):
     '''
     Calculates monthly snow loss based on the Townsend monthly snow loss
     model.
@@ -294,13 +294,12 @@ def loss_townsend(snow_total, snow_events, surface_tilt, relative_humidity,
         Piled snow angle, assumed to stabilize at 40°, the midpoint of
         25°-55° avalanching slope angles. [deg]
 
-    front_side_fraction : numeric or array-like, default None
-        Optional multiplier applied to the calculated loss fraction. For
-        bifacial systems, this can be used to scale the snow loss by the
-        front-side energy fraction from a no-soiling simulation. For example,
-        use 0.9 when 90% of monthly energy is from the front side and 10% is
-        from the rear side. If None, no bifacial adjustment is applied. [-]
-        
+    front_side_fraction : numeric or array-like, default 1.0
+        Fraction of monthly energy from front-side insolation (unitless).
+        Multiplies the calculated loss fraction. For example,
+        use 0.9 when 90% of monthly energy is from the front side
+        of a bifacial system and 10% is from the rear side.
+
     Returns
     -------
     loss : array-like
@@ -319,8 +318,8 @@ def loss_townsend(snow_total, snow_events, surface_tilt, relative_humidity,
     The definition for snow events documented above is based on [3]_.
 
     For bifacial systems, [2]_ recommends including both front-side and
-    rear-side insolation in ``poa_global``. The resulting loss may then be
-    scaled by the front-side energy fraction using ``front_side_fraction``.
+    rear-side insolation in ``poa_global``. The resulting loss is
+    scaled by the front-side energy fraction ``front_side_fraction``.
 
     References
     ----------
@@ -396,8 +395,6 @@ def loss_townsend(snow_total, snow_events, surface_tilt, relative_humidity,
         * string_factor
     )
 
-    if front_side_fraction is not None:
-        front_side_fraction = np.asarray(front_side_fraction)
-        loss_fraction = loss_fraction * front_side_fraction
+    loss_fraction = loss_fraction * front_side_fraction
 
     return np.clip(loss_fraction, 0, 1)

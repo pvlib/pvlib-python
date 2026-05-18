@@ -254,11 +254,9 @@ def test_loss_townsend_front_side_fraction():
                            25.4])
     snow_events = np.array([2, 2, 1, 0, 0, 0, 0, 0, 0, 0, 2, 3])
     surface_tilt = 20
-    relative_humidity = np.array([80, 80, 80, 80, 80, 80, 80, 80, 80, 80,
-                                  80, 80])
-    temp_air = np.array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
-    poa_global = np.array([350000, 350000, 350000, 350000, 350000, 350000,
-                           350000, 350000, 350000, 350000, 350000, 350000])
+    relative_humidity = np.full(12, 80)
+    temp_air = np.full(12, 0)
+    poa_global = np.full(12, 350000)
     slant_height = 2.54
     lower_edge_height = 0.254
     front_side_fraction = 0.9

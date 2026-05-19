@@ -247,6 +247,8 @@ def test_loss_townsend_cases(poa_global, surface_tilt, slant_height,
         poa_global, slant_height, lower_edge_height, string_factor)
     actual = np.around(actual * 100)
     assert np.allclose(expected, actual)
+
+
 def test_loss_townsend_front_side_fraction():
     snow_total = np.array([25.4, 25.4, 12.7, 2.54, 0, 0, 0, 0, 0, 0, 12.7,
                            25.4])

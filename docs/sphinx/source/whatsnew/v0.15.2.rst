@@ -10,6 +10,8 @@ Breaking Changes
 
 Deprecations
 ~~~~~~~~~~~~
+* ``Location.pytz`` is deprecated. Use ``Location.tz`` instead.
+  (:ghuser:`JoLo90`, :pull:`2757`)
 
 
 Bug fixes

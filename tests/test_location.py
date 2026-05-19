@@ -9,8 +9,6 @@ from .conftest import assert_frame_equal, assert_index_equal
 
 import pytest
 
-import pytz
-
 import pvlib
 from pvlib import location
 from pvlib.location import Location, lookup_altitude
@@ -37,7 +35,7 @@ def test_location_all():
         pytest.param('Asia/Yangon', 'Asia/Yangon'),
         pytest.param(datetime.timezone.utc, 'UTC'),
         pytest.param(zoneinfo.ZoneInfo('Etc/GMT-7'), 'Etc/GMT-7'),
-        pytest.param(pytz.timezone('US/Arizona'), 'US/Arizona'),
+        pytest.param(zoneinfo.ZoneInfo('US/Arizona'), 'US/Arizona'),
         pytest.param(-6, 'Etc/GMT+6'),
         pytest.param(-11.0, 'Etc/GMT+11'),
         pytest.param(12, 'Etc/GMT-12'),
@@ -45,8 +43,7 @@ def test_location_all():
 )
 def test_location_tz(tz, tz_expected):
     loc = Location(32.2, -111, tz)
-    assert isinstance(loc.pytz, datetime.tzinfo)  # Abstract base class.
-    assert isinstance(loc.pytz, pytz.tzinfo.BaseTzInfo)
+    assert isinstance(loc._zoneinfo, datetime.tzinfo)  # Abstract base class.
     assert type(loc.tz) is str
     assert loc.tz == tz_expected
 
@@ -54,12 +51,10 @@ def test_location_tz(tz, tz_expected):
 def test_location_tz_update():
     loc = Location(32.2, -111, -11)
     assert loc.tz == 'Etc/GMT+11'
-    assert loc.pytz == pytz.timezone('Etc/GMT+11')  # Deprecated attribute.
 
     # Updating Location's tz updates read-only time-zone attributes.
     loc.tz = 7
     assert loc.tz == 'Etc/GMT-7'
-    assert loc.pytz == pytz.timezone('Etc/GMT-7')  # Deprecated attribute.
 
 
 @pytest.mark.parametrize(
@@ -99,8 +94,8 @@ def test_location_print_all():
     assert tus.__str__() == expected_str
 
 
-def test_location_print_pytz():
-    tus = Location(32.2, -111, pytz.timezone('US/Arizona'), 700, 'Tucson')
+def test_location_print():
+    tus = Location(32.2, -111, zoneinfo.ZoneInfo('US/Arizona'), 700, 'Tucson')
     expected_str = '\n'.join([
         'Location: ',
         '  name: Tucson',

@@ -557,3 +557,31 @@ def test_calc_surface_orientation_special():
         # in a modulo-360 sense.
         np.testing.assert_allclose(np.round(out['surface_azimuth'], 4) % 360,
                                    expected_azimuths, rtol=1e-5, atol=1e-5)
+
+
+@pytest.mark.parametrize('shape', [(3, 5), (1, 7), (4, 1), (2, 3, 4)])
+def test_calc_surface_orientation_2d(shape):
+    # Regression test for GH#2747: calc_surface_orientation must accept
+    # tracker_theta of arbitrary rank, not just 1-D.  Compare the >1-D result
+    # to the 1-D result computed on the flattened input.
+    rotations_flat = np.linspace(-90, 90, int(np.prod(shape)))
+    rotations_nd = rotations_flat.reshape(shape)
+
+    out_1d = tracking.calc_surface_orientation(rotations_flat,
+                                               axis_tilt=20,
+                                               axis_azimuth=180)
+    out_nd = tracking.calc_surface_orientation(rotations_nd,
+                                               axis_tilt=20,
+                                               axis_azimuth=180)
+
+    assert out_nd['surface_tilt'].shape == shape
+    assert out_nd['surface_azimuth'].shape == shape
+    np.testing.assert_allclose(out_nd['surface_tilt'].reshape(-1),
+                               out_1d['surface_tilt'])
+    np.testing.assert_allclose(out_nd['surface_azimuth'].reshape(-1),
+                               out_1d['surface_azimuth'])
+
+    # _unit_normal must preserve the input rank, appending a trailing axis
+    # of length 3.
+    unorm = tracking._unit_normal(180., 20., rotations_nd)
+    assert unorm.shape == shape + (3,)

@@ -18,6 +18,10 @@ Bug fixes
   data type integer, users can expect modeled cell temperature values to
   increase slightly.
   (:issue:`2608`, :pull:`2745`)
+* Fixes a regression in :py:func:`pvlib.tracking.calc_surface_orientation`
+  introduced in v0.15.1 (:pull:`2702`) that caused a broadcasting
+  ``ValueError`` when ``tracker_theta`` was a 2-D (or higher rank) array.
+  (:issue:`2747`, :pull:`2749`)
 
 Enhancements
 ~~~~~~~~~~~~
@@ -53,3 +57,4 @@ Contributors
 ~~~~~~~~~~~~
 * :ghuser:`Omesh37`
 * Cliff Hansen (:ghuser:`cwhanse`)
+* Arthur Onno (:ghuser:`ArthurOnnoTerabase`)

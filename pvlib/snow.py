@@ -295,7 +295,7 @@ def loss_townsend(snow_total, snow_events, surface_tilt, relative_humidity,
         25°-55° avalanching slope angles. [deg]
 
     front_side_fraction : numeric or array-like, default 1.0
-        Fraction of monthly energy from front-side insolation (unitless).
+        Fraction of monthly energy from front-side insolation. [unitless]
         Multiplies the calculated loss fraction. For example,
         use 0.9 when 90% of monthly energy is from the front side
         of a bifacial system and 10% is from the rear side.

@@ -50,8 +50,10 @@ def _unshaded_ground_fraction(tracker_rotation, phi, gcr, height=None,
         Tracker rotation angle as a right-handed rotation around
         the same axis as ``phi``. [degree]
     phi : numeric
-        Projected solar zenith angle, defined as a right-handed rotation
-        around the same axis as ``tracker_rotation``. [degree].
+        The angle between (1) the sun vector projected onto the plane
+        perpendicular to the PV rows and (2) the vector normal to the plane
+        containing the PV rows.
+        See :py:func:`pvlib.shading.projected_solar_zenith_angle`. [degree]
     gcr : float
         Ground coverage ratio, which is the ratio of row slant length to row
         spacing (pitch). [unitless]

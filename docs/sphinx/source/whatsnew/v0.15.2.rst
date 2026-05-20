@@ -26,7 +26,7 @@ Bug fixes
 Enhancements
 ~~~~~~~~~~~~
 * Added mapping of the parameter ``"albedo"`` in
-  ~:py:func:``pvlib.iotools.get_nasa_power` when ``map_variables=True``
+  :py:func:`~pvlib.iotools.get_nasa_power` when ``map_variables=True``
   (:pull:`2753`)
 
 

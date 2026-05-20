@@ -282,7 +282,7 @@ def vf_ground_sky_2d_integ(tracker_rotation, gcr, height, pitch, g0=0, g1=1,
         .. deprecated:: 0.15.2
 
            This parameter has no effect; calculations are now vectorized
-           with no memory usage penality.
+           with no memory usage penalty.
            This parameter will be removed in the future.
 
     Returns

@@ -30,7 +30,11 @@ Bug fixes
   data type integer, users can expect modeled cell temperature values to
   increase slightly.
   (:issue:`2608`, :pull:`2745`)
-  
+* Fixes a regression in :py:func:`pvlib.tracking.calc_surface_orientation`
+  introduced in v0.15.1 (:pull:`2702`) that caused a broadcasting
+  ``ValueError`` when ``tracker_theta`` was a 2-D (or higher rank) array.
+  (:issue:`2747`, :pull:`2749`)
+
 
 Enhancements
 ~~~~~~~~~~~~
@@ -42,6 +46,9 @@ Enhancements
 * Accelerate :py:func:`~pvlib.bifacial.utils.vf_ground_sky_2d_integ` by one or
   two orders of magnitude. This also makes :py:mod:`pvlib.bifacial.infinite_sheds` faster.
   (:pull:`2740`)
+* Added mapping of the parameter ``"albedo"`` in
+  :py:func:`~pvlib.iotools.get_nasa_power` when ``map_variables=True``
+  (:pull:`2753`)
 
 
 Documentation
@@ -74,3 +81,5 @@ Contributors
 ~~~~~~~~~~~~
 * :ghuser:`Omesh37`
 * Cliff Hansen (:ghuser:`cwhanse`)
+* Arthur Onno (:ghuser:`ArthurOnnoTerabase`)
+* Adam R. Jensen (:ghuser:`AdamRJensen`)

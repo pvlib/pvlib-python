@@ -694,4 +694,5 @@ def _dist(p1, p2):
 
 
 def _angle(p1, p2):
+    # polar angle of the ray from p1 to p2
     return np.arctan2(p2[1] - p1[1], p2[0] - p1[0])

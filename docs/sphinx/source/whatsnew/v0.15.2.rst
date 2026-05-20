@@ -21,10 +21,11 @@ Bug fixes
 
 Enhancements
 ~~~~~~~~~~~~
-* Added the ``front_side_fraction`` parameter to
+* Add the ``front_side_fraction`` parameter to
   :py:func:`pvlib.snow.loss_townsend` to support bifacial Townsend snow-loss
   workflows where the calculated loss is scaled by the front-side energy
-  fraction. (:pull:`2756`) (:ghuser:`shethkajal7`)
+  fraction. (:issue:`2755`, :pull:`2756`)
+  
 
 Documentation
 ~~~~~~~~~~~~~

@@ -11,7 +11,7 @@ Breaking Changes
 Deprecations
 ~~~~~~~~~~~~
 * ``Location.pytz`` is deprecated. Use ``Location.tz`` instead.
-  (:ghuser:`JoLo90`, :pull:`2757`)
+  (:issue:`2343`, :pull:`2757`)
 
 
 Bug fixes
@@ -64,3 +64,5 @@ Contributors
 * Cliff Hansen (:ghuser:`cwhanse`)
 * Arthur Onno (:ghuser:`ArthurOnnoTerabase`)
 * Adam R. Jensen (:ghuser:`AdamRJensen`)
+* :ghuser:`JoLo90`
+

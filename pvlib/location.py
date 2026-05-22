@@ -27,6 +27,8 @@ class Location:
 
         * ``tz`` is an IANA time-zone string.
 
+    .. deprecated:: 0.15.2
+
        The ``pytz`` attribute is deprecated. Use ``tz`` instead.
 
     Location objects support the print method.

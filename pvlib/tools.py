@@ -136,7 +136,7 @@ def localize_to_utc(time, location):
     """
     if isinstance(time, dt.datetime):
         if time.tzinfo is None:
-            time = time.replace(tzinfo=location._zoneinfo)
+            time = time.replace(tzinfo=zoneinfo.ZoneInfo(location.tz))
         time_utc = time.astimezone(timezone.utc)
     else:
         try:

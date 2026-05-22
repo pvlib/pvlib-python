@@ -132,7 +132,7 @@ class Location:
     def pytz(self):  # pragma: no cover
         """The location's pytz time zone (read only).
 
-        .. deprecated::
+        .. deprecated:: 0.15.2
             The ``pytz`` attribute is deprecated. Use the ``tz`` property
             instead.
         """

@@ -5,7 +5,8 @@ import zoneinfo
 import numpy as np
 from numpy import nan
 import pandas as pd
-from .conftest import assert_frame_equal, assert_index_equal, fail_on_pvlib_version
+from .conftest import (assert_frame_equal, assert_index_equal,
+                       fail_on_pvlib_version)
 from pvlib._deprecation import pvlibDeprecationWarning
 
 import pytest
@@ -20,6 +21,7 @@ from .conftest import requires_ephem
 
 def test_location_required():
     Location(32.2, -111)
+
 
 @pytest.fixture()
 def some_location() -> Location:

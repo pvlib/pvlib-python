@@ -23,9 +23,7 @@ class Location:
     time zone, and altitude data associated with a particular geographic
     location. You can also assign a name to a location object.
 
-    Location objects have a time-zone attribute:
-
-        * ``tz`` is an IANA time-zone string.
+    Location objects have a time-zone attribute ``tz``, an IANA time-zone string.
 
     .. deprecated:: 0.15.2
 

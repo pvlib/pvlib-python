@@ -5,7 +5,8 @@ import zoneinfo
 import numpy as np
 from numpy import nan
 import pandas as pd
-from .conftest import assert_frame_equal, assert_index_equal
+from .conftest import assert_frame_equal, assert_index_equal, fail_on_pvlib_version
+from pvlib._deprecation import pvlibDeprecationWarning
 
 import pytest
 
@@ -20,9 +21,9 @@ from .conftest import requires_ephem
 def test_location_required():
     Location(32.2, -111)
 
-
-def test_location_all():
-    Location(32.2, -111, 'US/Arizona', 700, 'Tucson')
+@pytest.fixture()
+def some_location() -> Location:
+    return Location(32.2, -111, 'US/Arizona', 700, 'Tucson')
 
 
 @pytest.mark.parametrize(
@@ -390,3 +391,9 @@ def test_location_lookup_altitude(mocker):
     tus = Location(32.2, -111, 'US/Arizona')
     location.lookup_altitude.assert_called_once_with(32.2, -111)
     assert tus.altitude == location.lookup_altitude(32.2, -111)
+
+
+@fail_on_pvlib_version('0.17.0')
+def test_location_pytz_warning(some_location):
+    with pytest.warns(pvlibDeprecationWarning):
+        assert str(some_location.pytz) == 'US/Arizona'

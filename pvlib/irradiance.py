@@ -1983,6 +1983,9 @@ def dirint(ghi, solar_zenith, times, pressure=101325., use_delta_kt_prime=True,
        SERI/TR-215-3087, Golden, CO: Solar Energy Research Institute, 1987.
     """
 
+    if use_delta_kt_prime and len(times) < 2:
+        raise ValueError('The DIRINT model requires at least two times')
+
     disc_out = disc(ghi, solar_zenith, times, pressure=pressure,
                     min_cos_zenith=min_cos_zenith, max_zenith=max_zenith)
     airmass = disc_out['airmass']

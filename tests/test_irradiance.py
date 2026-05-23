@@ -1142,7 +1142,6 @@ def test_dirindex_min_cos_zenith_max_zenith():
 
 def test_dirint_array_inputs():
     """np.array and pd.Series inputs work correctly. GH #2751"""
-    # dirint requires >= 2 time points
     times = pd.date_range('2023-06-21 10:00', periods=2, freq='h', tz='UTC')
 
     # np.array input → should return pd.Series
@@ -1165,14 +1164,24 @@ def test_dirint_array_inputs():
     assert isinstance(result2, pd.Series)
     assert (result2 >= 0).all()
 
-    # single time point → ValueError regardless of use_delta_kt_prime
+    # single time point + use_delta_kt_prime=True → ValueError
     times_single = pd.DatetimeIndex(['2023-06-21 12:00'], tz='UTC')
     with pytest.raises(ValueError, match="requires at least two times"):
         irradiance.dirint(
             ghi=np.array([500.0]),
             solar_zenith=np.array([45.0]),
-            times=times_single
+            times=times_single,
+            use_delta_kt_prime=True
         )
+
+    # single time point + use_delta_kt_prime=False → no error
+    result3 = irradiance.dirint(
+        ghi=np.array([500.0]),
+        solar_zenith=np.array([45.0]),
+        times=times_single,
+        use_delta_kt_prime=False
+    )
+    assert isinstance(result3, pd.Series)
 
 
 def test_dni():

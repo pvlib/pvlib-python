@@ -1965,8 +1965,7 @@ def dirint(ghi, solar_zenith, times, pressure=101325., use_delta_kt_prime=True,
     Returns
     -------
     dni : pd.Series
-        Estimated direct normal irradiance. Returns float if all inputs
-        are scalar, pd.Series otherwise. [Wm⁻²]
+        Estimated direct normal irradiance. [Wm⁻²]
 
     Notes
     -----

@@ -2108,9 +2108,6 @@ def _dirint_bins(times, kt_prime, zenith, w, delta_kt_prime):
     -------
     tuple of kt_prime_bin, zenith_bin, w_bin, delta_kt_prime_bin
     """
-    # Ensure scalar inputs are converted to Series so that boolean masks
-    # produce a boolean Series rather than a scalar bool.
-    # Scalar bools cause KeyError in pandas >= 2.0. GH #XXXX
 
     # @wholmgren: the following bin assignments use MATLAB's 1-indexing.
     # Later, we'll subtract 1 to conform to Python's 0-indexing.

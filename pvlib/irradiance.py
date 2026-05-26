@@ -132,7 +132,9 @@ def _handle_extra_radiation_types(datetime_or_doy, epoch_year):
     # a better way to do it.
     if isinstance(datetime_or_doy, pd.DatetimeIndex):
         to_doy = tools._pandas_to_doy  # won't be evaluated unless necessary
-        def to_datetimeindex(x): return x                       # noqa: E306
+
+        def to_datetimeindex(x):
+            return x                       # noqa: E306
         to_output = partial(pd.Series, index=datetime_or_doy)
     elif isinstance(datetime_or_doy, pd.Timestamp):
         to_doy = tools._pandas_to_doy
@@ -146,12 +148,14 @@ def _handle_extra_radiation_types(datetime_or_doy, epoch_year):
             tools._datetimelike_scalar_to_datetimeindex
         to_output = tools._scalar_out
     elif np.isscalar(datetime_or_doy):  # ints and floats of various types
-        def to_doy(x): return x                                 # noqa: E306
+        def to_doy(x):
+            return x                                 # noqa: E306
         to_datetimeindex = partial(tools._doy_to_datetimeindex,
                                    epoch_year=epoch_year)
         to_output = tools._scalar_out
     else:  # assume that we have an array-like object of doy
-        def to_doy(x): return x                                 # noqa: E306
+        def to_doy(x):
+            return x                                 # noqa: E306
         to_datetimeindex = partial(tools._doy_to_datetimeindex,
                                    epoch_year=epoch_year)
         to_output = tools._array_out
@@ -1969,9 +1973,9 @@ def dirint(ghi, solar_zenith, times, pressure=101325., use_delta_kt_prime=True,
 
     Notes
     -----
-    DIRINT model requires time series data (ie. one of the inputs must
-   The DIRINT model was developed for time series data with length > 2. The implementation
-   in pvlib assumes the data are periodic which may affect the first and last DNI values.
+    The DIRINT model was developed for time series data with length > 2.
+    The implementation in pvlib assumes the data are periodic which may
+    affect the first and last DNI values.
 
     References
     ----------
@@ -1983,7 +1987,6 @@ def dirint(ghi, solar_zenith, times, pressure=101325., use_delta_kt_prime=True,
        Global Horizontal to Direct Normal Insolation", Technical Report No.
        SERI/TR-215-3087, Golden, CO: Solar Energy Research Institute, 1987.
     """
-
 
     disc_out = disc(ghi, solar_zenith, times, pressure=pressure,
                     min_cos_zenith=min_cos_zenith, max_zenith=max_zenith)

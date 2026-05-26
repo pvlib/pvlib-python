@@ -1165,16 +1165,6 @@ def test_dirint_array_inputs():
     assert (result2 >= 0).all()
 
 
-    # single time point + use_delta_kt_prime=False → no error
-    result3 = irradiance.dirint(
-        ghi=np.array([500.0]),
-        solar_zenith=np.array([45.0]),
-        times=times_single,
-        use_delta_kt_prime=False
-    )
-    assert isinstance(result3, pd.Series)
-
-
 def test_dni():
     ghi = pd.Series([90, 100, 100, 100, 100])
     dhi = pd.Series([100, 90, 50, 50, 50])

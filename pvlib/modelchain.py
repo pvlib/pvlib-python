@@ -665,9 +665,6 @@ class ModelChain:
             self.results.dc,
             unwrap=False
         )
-        self.results.dc = tuple(dc.fillna(0) for dc in self.results.dc)
-        # If the system has one Array, unwrap the single return value
-        # to preserve the original behavior of ModelChain
         if self.system.num_arrays == 1:
             self.results.diode_params = self.results.diode_params[0]
             self.results.dc = self.results.dc[0]

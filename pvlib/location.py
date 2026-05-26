@@ -43,11 +43,11 @@ class Location:
 
     tz : time zone as str, int, float, or datetime.tzinfo, default 'UTC'.
         See http://en.wikipedia.org/wiki/List_of_tz_database_time_zones for a
-        list of valid name strings. An `int` or `float` must be a whole-number
-        hour offsets from UTC that can be converted to the IANA-supported
-        'Etc/GMT-N' format. (Note the limited range of the offset N and its
-        sign-change convention.) Time zones from the zoneinfo packages may also
-        be passed here.
+        list of valid name strings. An ``int`` or ``float`` must be a
+        whole-number hour offsets from UTC that can be converted to the
+        IANA-supported 'Etc/GMT-N' format. (Note the limited range of the
+        offset N and its sign-change convention.) Time zones from the
+        ``zoneinfo`` packages may also be passed.
 
         The `tz` attribute is represented as a valid IANA time zone name
         string.

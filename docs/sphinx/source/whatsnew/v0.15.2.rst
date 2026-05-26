@@ -10,7 +10,7 @@ Breaking Changes
 
 Deprecations
 ~~~~~~~~~~~~
-* ``Location.pytz`` is deprecated. Use ``Location.tz`` instead.
+* :py:attr:`pvlib.location.Location.pytz` is deprecated and will be removed in a future release. Use :py:attr:`~pvlib.location.Location.tz` instead.
   (:issue:`2343`, :pull:`2757`)
 
 

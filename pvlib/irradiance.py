@@ -1970,7 +1970,8 @@ def dirint(ghi, solar_zenith, times, pressure=101325., use_delta_kt_prime=True,
     Notes
     -----
     DIRINT model requires time series data (ie. one of the inputs must
-    be a vector of length > 2).
+   The DIRINT model was developed for time series data with length > 2. The implementation
+   in pvlib assumes the data are periodic which may affect the first and last DNI values.
 
     References
     ----------

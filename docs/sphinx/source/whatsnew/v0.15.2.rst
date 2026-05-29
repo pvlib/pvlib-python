@@ -25,6 +25,10 @@ Bug fixes
 
 Enhancements
 ~~~~~~~~~~~~
+* Add the ``front_side_fraction`` parameter to
+  :py:func:`pvlib.snow.loss_townsend` to support Townsend snow-loss
+  workflows for bifacial systems. (:issue:`2755`, :pull:`2756`)
+  
 * Added mapping of the parameter ``"albedo"`` in
   :py:func:`~pvlib.iotools.get_nasa_power` when ``map_variables=True``
   (:pull:`2753`)
@@ -60,5 +64,6 @@ Contributors
 ~~~~~~~~~~~~
 * :ghuser:`Omesh37`
 * Cliff Hansen (:ghuser:`cwhanse`)
+* :ghuser:`shethkajal7`
 * Arthur Onno (:ghuser:`ArthurOnnoTerabase`)
 * Adam R. Jensen (:ghuser:`AdamRJensen`)

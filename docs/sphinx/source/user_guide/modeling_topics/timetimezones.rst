@@ -16,7 +16,8 @@ General functionality
 pvlib makes extensive use of pandas due to its excellent time series
 functionality. Take the time to become familiar with pandas' `Time
 Series / Date functionality page
-<http://pandas.pydata.org/pandas-docs/version/0.18.0/timeseries.html>`_.
+functionality. Take the time to become familiar with pandas'
+:external+pandas:doc:`Time Series / Date functionality page <user_guide/timeseries>`.
 It is also worthwhile to become familiar with pure Python's
 :py:mod:`python:datetime` module, although we usually recommend
 using the corresponding pandas functionality where possible.

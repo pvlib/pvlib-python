@@ -271,3 +271,4 @@ def test_loss_townsend_front_side_fraction():
         front_side_fraction=front_side_fraction)
 
     np.testing.assert_allclose(adjusted, unadjusted * front_side_fraction)
+

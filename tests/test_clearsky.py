@@ -8,13 +8,15 @@ from scipy.linalg import hankel
 
 import pytest
 from numpy.testing import assert_allclose
-from .conftest import assert_frame_equal, assert_series_equal
+from .conftest import (assert_frame_equal, assert_series_equal,
+                       fail_on_pvlib_version)
 
 from pvlib.location import Location
 from pvlib import clearsky
 from pvlib import solarposition
 from pvlib import atmosphere
 from pvlib import irradiance
+from pvlib._deprecation import pvlibDeprecationWarning
 
 from .conftest import TESTS_DATA_DIR
 
@@ -892,5 +894,13 @@ def test_bird():
     # XXX: testdata starts at 1am so noon is at index = 11
     np.allclose(
         [Eb3, Ebh3, Gh3, Dh3],
-        testdata2[['Direct Beam', 'Direct Hz', 'Global Hz', 'Dif Hz']].iloc[11],
+        testdata2[['Direct Beam', 'Direct Hz',
+                   'Global Hz', 'Dif Hz']].iloc[11],
         rtol=1e-3)
+
+
+@fail_on_pvlib_version('0.17.0')
+def test_is_leap_year_deprecation():
+    with pytest.warns(pvlibDeprecationWarning,
+                      match='will be removed in 0.17.0.'):
+        clearsky._is_leap_year(2020)

@@ -14,6 +14,7 @@ from pvlib import irradiance, albedo
 from .conftest import (
     assert_frame_equal,
     assert_series_equal,
+    fail_on_pvlib_version,
     requires_ephem,
     requires_numba,
 )
@@ -1454,3 +1455,11 @@ def test_diffuse_par_spitters():
         0.99591, 0.99576, 0.99472, 0.99270, 0.99283, 0.99406, 0.99581, 0.99591,
     ])  # fmt: skip
     assert_allclose(result, expected, atol=1e-5)
+
+
+@fail_on_pvlib_version('0.17.0')
+def test_liujordan_deprecation():
+    zenith = pd.Series([45.0, 50.0, 55.0])
+    with pytest.warns(pvlibDeprecationWarning,
+                      match='will be removed in 0.17.0.'):
+        irradiance._liujordan(zenith, transmittance=0.7, airmass=1.5)

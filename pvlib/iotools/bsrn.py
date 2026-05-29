@@ -465,5 +465,5 @@ def read_bsrn(filename, logical_records=('0100',)):
     return content
 
 
-parse_bsrn = deprecated(since="0.13.0", name="parse_bsrn",
+parse_bsrn = deprecated(since="0.13.0",  removal="0.17.0", name="parse_bsrn",
                         alternative="read_bsrn")(read_bsrn)

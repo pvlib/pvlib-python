@@ -14,6 +14,7 @@ import h5py
 
 from pvlib import atmosphere, tools
 from pvlib.tools import _degrees_to_index
+from pvlib._deprecation import deprecated
 
 
 def ineichen(apparent_zenith, airmass_absolute, linke_turbidity,
@@ -220,6 +221,13 @@ def lookup_linke_turbidity(time, latitude, longitude, filepath=None,
     return linke_turbidity
 
 
+@deprecated(
+    since="0.15.2",
+    removal="0.17.0",
+    name="_is_leap_year",
+    alternative=None,
+    addendum=None,
+)
 def _is_leap_year(year):
     """Determine if a year is leap year.
 

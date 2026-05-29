@@ -18,6 +18,7 @@ import pvlib  # used to avoid dni name collision in complete_irradiance
 
 from pvlib._deprecation import pvlibDeprecationWarning
 import warnings
+from pvlib._deprecation import deprecated
 
 
 # Deprecation warning based on https://peps.python.org/pep-0562/
@@ -3087,7 +3088,14 @@ def campbell_norman(zenith, transmittance, pressure=101325.0,
     return irrads
 
 
-def _liujordan(zenith, transmittance, airmass, dni_extra=1367.0):
+@deprecated(
+    since="0.15.2",
+    removal="0.17.0",
+    name="_liujordan",
+    addendum=None,
+)
+def _liujordan(zenith: pd.Series, transmittance: float,
+               airmass: float, dni_extra=1367.0) -> pd.DataFrame:
     '''
     Determine DNI, DHI, GHI from extraterrestrial flux, transmittance,
     and optical air mass number.
@@ -3106,11 +3114,11 @@ def _liujordan(zenith, transmittance, airmass, dni_extra=1367.0):
     transmittance: float
         Atmospheric transmittance between 0 and 1.
 
-    pressure: float, default 101325.0
-        Air pressure
+    airmass: float
+        Absolute airmass.
 
     dni_extra: float, default 1367.0
-        Direct irradiance incident at the top of the atmosphere.
+        Direct irradiance incident at the top of the atmosphere. [W/m²]
 
     Returns
     -------
@@ -3126,6 +3134,11 @@ def _liujordan(zenith, transmittance, airmass, dni_extra=1367.0):
     .. [2] Liu, B. Y., R. C. Jordan, (1960). "The interrelationship and
        characteristic distribution of direct, diffuse, and total solar
        radiation".  Solar Energy 4:1-19
+
+    .. deprecated:: 0.15.2
+        The ``_liujordan`` function is deprecated and will be
+        removed in 0.17.0.
+        Use the ``liujordan`` function instead.
     '''
 
     tau = transmittance

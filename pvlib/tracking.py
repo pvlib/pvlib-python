@@ -233,10 +233,11 @@ def _unit_normal(axis_azimuth, axis_tilt, theta):
     Returns
     -------
     ndarray
-        Shape (N,3) where theta has length N
+        Shape ``theta.shape + (3,)``, with a minimum rank of 2.  For 1-D
+        ``theta`` of length N this is ``(N, 3)``.
     """
 
-    theta = np.asarray(theta)
+    theta = np.atleast_1d(np.asarray(theta))
 
     cA, sA = cosd(-axis_azimuth), sind(-axis_azimuth)
     cT, sT = cosd(-axis_tilt), sind(-axis_tilt)
@@ -248,7 +249,7 @@ def _unit_normal(axis_azimuth, axis_tilt, theta):
     y = sA * sTh - cA * sT * cTh
     z = cT * cTh
 
-    result = np.column_stack((x, y, z))
+    result = np.stack((x, y, z), axis=-1)
 
     return result
 
@@ -296,7 +297,7 @@ def calc_surface_orientation(tracker_theta, axis_tilt=0, axis_azimuth=0):
 
     # project unit_normal to x-y plane to calculate azimuth
     surface_azimuth = np.degrees(
-        np.arctan2(unit_normal[:, 0], unit_normal[:, 1]))
+        np.arctan2(unit_normal[..., 0], unit_normal[..., 1]))
 
     surface_azimuth = np.where(surface_tilt == 0., axis_azimuth - 90.,
                                surface_azimuth)

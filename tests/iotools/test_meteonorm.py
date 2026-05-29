@@ -34,11 +34,11 @@ def expected_meta():
             'description': 'Global horizontal irradiance',
             'name': 'global_horizontal_irradiance',
             'unit': {
-                'description': 'Watt per square meter', 'name': 'W/m**2'}},
+                'description': 'watt per square meter', 'name': 'W/m**2'}},
            {'aggregation_method': 'average',
             'description': 'Global horizontal irradiance with shading taken into account',  # noqa: E501
             'name': 'global_horizontal_irradiance_with_shading',
-            'unit': {'description': 'Watt per square meter',
+            'unit': {'description': 'watt per square meter',
                      'name': 'W/m**2'}},
         ],
         'surface_azimuth': 180,
@@ -245,7 +245,7 @@ def expected_meteonorm_tmy_meta():
             'aggregation_method': 'average',
             'description': 'Diffuse horizontal irradiance',
             'name': 'diffuse_horizontal_irradiance',
-            'unit': {'description': 'Watt per square meter',
+            'unit': {'description': 'watt per square meter',
                      'name': 'W/m**2'},
         }],
         'surface_azimuth': 90,

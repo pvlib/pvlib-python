@@ -14,11 +14,18 @@ VARIABLE_MAP = {
     'ALLSKY_SFC_SW_DWN': 'ghi',
     'ALLSKY_SFC_SW_DIFF': 'dhi',
     'ALLSKY_SFC_SW_DNI': 'dni',
+    'ALLSKY_SRF_ALB': 'albedo',
+    'ALLSKY_SFC_LW_DWN': 'longwave_down',
+    'CLRSKY_SFC_SW_DIFF': 'dhi_clear',
     'CLRSKY_SFC_SW_DWN': 'ghi_clear',
+    'PS': 'pressure',
+    'RH2M': 'relative_humidity',
     'T2M': 'temp_air',
+    'T2MDEW': 'temp_dew',
+    'TQV': 'precipitable_water',
+    'TOA_SW_DWN': 'ghi_extra',
     'WS2M': 'wind_speed_2m',
     'WS10M': 'wind_speed',
-    'ALLSKY_SRF_ALB': 'albedo',
 }
 
 
@@ -75,7 +82,10 @@ def get_nasa_power(latitude, longitude, start, end,
         include a site elevation with the request.
     map_variables: bool, default True
         When true, renames columns of the Dataframe to pvlib variable names
-        where applicable. See variable :const:`VARIABLE_MAP`.
+        where applicable. See variable :const:`VARIABLE_MAP`. Note that the
+        following unit conversions are applied after renaming: pressure is
+        converted from kPa to Pa, and precipitable water is converted from
+        kg/m\u00b2 (mm) to cm.
 
     Raises
     ------
@@ -150,5 +160,14 @@ def get_nasa_power(latitude, longitude, start, end,
     # Rename according to pvlib convention
     if map_variables:
         df = df.rename(columns=VARIABLE_MAP)
+        # NASA POWER returns PS in kPa; pvlib convention is Pa.
+        # Conversion required for pvlib.atmosphere.pres2alt, alt2pres,
+        # get_absolute_airmass, and other pressure-dependent functions.
+        if 'pressure' in df.columns:
+            df['pressure'] = df['pressure'] * 1000
+        # NASA POWER returns TQV in kg/m^2 (=mm); pvlib convention is cm.
+        # Required for pvlib.atmosphere.kasten96_lt and other clear-sky models.
+        if 'precipitable_water' in df.columns:
+            df['precipitable_water'] = df['precipitable_water'] / 10
 
     return df, meta

@@ -176,10 +176,10 @@ def test_get_nasa_power_pressure_unit_conversion():
         map_variables=True,
     )
     mean_pressure = data['pressure'].mean()
-    # Anywhere on earth, surface pressure in Pa is between ~50_000 and ~110_000.
+    # Anywhere on earth, surface pressure in Pa is between ~50k and ~110k.
     # If the conversion is missing, value will be ~100 (kPa) and fail this.
     assert 50_000 < mean_pressure < 110_000, (
-        f"PS not converted from kPa to Pa; got mean={mean_pressure}"
+        f"PS not converted from kPa to Pa. Got mean={mean_pressure}"
     )
 
 
@@ -204,5 +204,5 @@ def test_get_nasa_power_precipitable_water_unit_conversion():
     # pvlib precipitable_water is in cm. Tropical column is <~7 cm.
     # Missing /10 conversion would give 10-70 (kg/m^2 = mm).
     assert 0 < mean_pw < 10, (
-        f"TQV not converted from kg/m^2 to cm; got mean={mean_pw}"
+        f"TQV not converted from kg/m^2 to cm. Got mean={mean_pw}"
     )

@@ -293,7 +293,8 @@ def get_irradiance(tracker_rotation, axis_azimuth, solar_zenith, solar_azimuth,
     evenly spaced rows on flat or uniformly sloped ground. Rows can be on fixed
     racking or single axis trackers. The model calculates irradiance at a
     location far from the ends of any rows, in effect, assuming that the
-    rows (sheds) are infinitely long.
+    rows (sheds) are infinitely long, and parallel to the (potentially sloped)
+    ground surface.
 
     The model accounts for the following effects:
 

@@ -244,16 +244,14 @@ def vf_ground_sky_2d_integ(tracker_rotation, gcr, height, pitch, g0=0, g1=1,
                            max_rows=10, npoints=None, vectorize=None):
     """
     Integrated view factor to the sky from the ground underneath
-    interior rows of the array.
+    interior rows of the array.  Row height above the ground is assumed
+    to be uniform along the row's length.
 
     Parameters
     ----------
     tracker_rotation : numeric
-        Tracker rotation angle as a right-handed rotation around
-        the axis defined by ``axis_tilt`` and ``axis_azimuth``.  For example,
-        with ``axis_tilt=0`` and ``axis_azimuth=180``, ``tracker_theta > 0``
-        results in ``surface_azimuth`` to the West while ``tracker_theta < 0``
-        results in ``surface_azimuth`` to the East. [degree]
+        Tracker rotation angle.  Positive rotations indicate raising the
+        row's right edge.  [degree]
     gcr : float
         Ratio of row slant length to row spacing (pitch). [unitless]
     height : float
@@ -291,7 +289,7 @@ def vf_ground_sky_2d_integ(tracker_rotation, gcr, height, pitch, g0=0, g1=1,
     -------
     fgnd_sky : numeric
         Integration of view factor over the length between adjacent, interior
-        rows.  Shape matches that of ``surface_tilt``. [unitless]
+        rows.  Shape matches that of ``tracker_rotation``. [unitless]
     """
     if npoints is not None or vectorize is not None:
         msg = (

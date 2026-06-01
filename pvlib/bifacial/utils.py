@@ -87,10 +87,9 @@ def _unshaded_ground_fraction(tracker_rotation, phi, gcr, height=None,
 
     References
     ----------
-    .. [1] Mikofski, M., Darawali, R., Hamer, M., Neubert, A., and Newmiller,
-       J. "Bifacial Performance Modeling in Large Arrays". 2019 IEEE 46th
-       Photovoltaic Specialists Conference (PVSC), 2019, pp. 1282-1287.
-       :doi:`10.1109/PVSC40753.2019.8980572`.
+    .. [1] K. S. Anderson, A. R. Jensen, and C. W. Hansen, "A Bifacial View
+           Factor Model Considering Terrain Slope and Nonuniform Albedo,"
+           IEEE JPV, 2026. :doi:`10.1109/JPHOTOV.2026.3677506`
     """
     if np.isscalar(g0) and g0 == 0 and np.isscalar(g1) and g1 == 1:
         # height and pitch have no effect, so set to arbitrary values so
@@ -290,6 +289,12 @@ def vf_ground_sky_2d_integ(tracker_rotation, gcr, height, pitch, g0=0, g1=1,
     fgnd_sky : numeric
         Integration of view factor over the length between adjacent, interior
         rows.  Shape matches that of ``tracker_rotation``. [unitless]
+
+    References
+    ----------
+    .. [1] K. S. Anderson, A. R. Jensen, and C. W. Hansen, "A Bifacial View
+           Factor Model Considering Terrain Slope and Nonuniform Albedo,"
+           IEEE JPV, 2026. :doi:`10.1109/JPHOTOV.2026.3677506`
     """
     if npoints is not None or vectorize is not None:
         msg = (
@@ -448,6 +453,11 @@ def vf_row_sky_2d_integ(surface_tilt, gcr, x0=0, x1=1):
         Average fraction of the sky dome visible from points in the segment
         from x0 to x1. [unitless]
 
+    References
+    ----------
+    .. [1] K. S. Anderson, A. R. Jensen, and C. W. Hansen, "A Bifacial View
+           Factor Model Considering Terrain Slope and Nonuniform Albedo,"
+           IEEE JPV, 2026. :doi:`10.1109/JPHOTOV.2026.3677506`
     '''
     # keep track of scalar inputs so that we can have output match at the end
     squeeze = []
@@ -556,6 +566,11 @@ def vf_row_ground_2d_integ(surface_tilt, gcr, height=None, pitch=None,
         Integrated view factor to the visible ground on the interval (x0, x1).
         [unitless]
 
+    References
+    ----------
+    .. [1] K. S. Anderson, A. R. Jensen, and C. W. Hansen, "A Bifacial View
+           Factor Model Considering Terrain Slope and Nonuniform Albedo,"
+           IEEE JPV, 2026. :doi:`10.1109/JPHOTOV.2026.3677506`
     '''
     if all(np.isscalar(x) for x in [x0, x1, g0, g1]) and (
             g0 == 0 and g1 == 1 and x0 == 0 and x1 == 1):

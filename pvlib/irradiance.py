@@ -1075,7 +1075,7 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
     airmass : numeric
         Relative (not pressure-corrected) airmass values. If AM is a
         DataFrame it must be of the same size as all other DataFrame
-        inputs. AM must be >=0 (careful using the 1/sec(z) model of AM
+        inputs. AM must be >=0 (careful using the 1/cos(z) model of AM
         generation). [unitless]
 
     model : string, default 'allsitescomposite1990'
@@ -1335,7 +1335,7 @@ def perez_driesse(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
     airmass : numeric, optional
         Relative (not pressure-corrected) airmass values. If ``airmass`` is a
         DataFrame it must be of the same size as all other DataFrame
-        inputs. AM must be >=0 (careful using the 1/sec(z) model of AM
+        inputs. AM must be >=0 (careful using the 1/cos(z) model of AM
         generation). [unitless]
 
     return_components: bool (optional, default=False)

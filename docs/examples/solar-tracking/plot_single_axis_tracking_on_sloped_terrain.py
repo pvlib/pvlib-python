@@ -77,7 +77,7 @@ Modeling backtracking for single-axis tracker arrays on sloped terrain.
 # ---------------
 #
 # Now, let's plot the simple case where the tracker axes are at right angles
-# to the direction of the slope.  In this case, the cross-axis tilt angle
+# to the direction of the slope.  In this case, the cross-axis slope angle
 # is the same as the slope of the terrain and the tracker axis itself is
 # horizontal.
 
@@ -110,7 +110,7 @@ for cross_axis_slope in [0, 5, 10]:
 
     # tracker rotation is undefined at night
     backtracking_position = tracker_data['tracker_theta'].fillna(0)
-    label = 'cross-axis tilt: {}°'.format(cross_axis_slope)
+    label = 'cross-axis slope: {}°'.format(cross_axis_slope)
     backtracking_position.plot(label=label, ax=ax)
 
 plt.legend()
@@ -129,8 +129,8 @@ plt.show()
 # with north-south axes on terrain that slopes down to the south-south-east.
 # Assuming the axes are installed parallel to the ground, the northern ends
 # of the axes will be higher than the southern ends. But because the slope
-# isn't purely parallel or perpendicular to the axes, the axis tilt and
-# cross-axis tilt angles are not immediately obvious. We can use pvlib
+# isn't purely parallel or perpendicular to the axes, the axis slope and
+# cross-axis slope angles are not immediately obvious. We can use pvlib
 # to calculate them for us:
 
 # terrain slopes 10 degrees downward to the south-south-east. note: because
@@ -140,15 +140,15 @@ slope_azimuth = 155
 slope_tilt = 10
 axis_azimuth = 180  # tracker axis is still N-S
 
-# calculate the tracker axis tilt, assuming that the axis follows the terrain:
+# calculate the tracker axis slope, assuming that the axis follows the terrain:
 axis_slope = tracking.calc_axis_slope(slope_azimuth, slope_tilt, axis_azimuth)
 
-# calculate the cross-axis tilt:
+# calculate the cross-axis slope:
 cross_axis_slope = tracking.calc_cross_axis_slope(slope_azimuth, slope_tilt,
                                                   axis_azimuth, axis_slope)
 
-print('Axis tilt:', '{:0.01f}°'.format(axis_slope))
-print('Cross-axis tilt:', '{:0.01f}°'.format(cross_axis_slope))
+print('Axis slope:', '{:0.01f}°'.format(axis_slope))
+print('Cross-axis slope:', '{:0.01f}°'.format(cross_axis_slope))
 
 # %%
 # And now we can pass use these values to generate the tracker curve as
@@ -167,7 +167,7 @@ tracker_data = tracking.singleaxis(
 backtracking_position = tracker_data['tracker_theta'].fillna(0)
 backtracking_position.plot()
 
-title_template = 'Axis tilt: {:0.01f}°   Cross-axis tilt: {:0.01f}°'
+title_template = 'Axis slope: {:0.01f}°   Cross-axis slope: {:0.01f}°'
 plt.title(title_template.format(axis_slope, cross_axis_slope))
 plt.show()
 

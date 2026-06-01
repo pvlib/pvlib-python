@@ -265,9 +265,9 @@ def projected_solar_zenith_angle(solar_zenith, solar_azimuth,
     solar_azimuth : numeric
         Sun's azimuth in degrees.
     axis_slope : numeric
-        Axis tilt angle in degrees. From horizontal plane to array plane.
+        Axis slope angle in degrees. From horizontal plane to array plane.
 
-        .. versionchanged:: 0.14.0
+        .. versionchanged:: 0.16.0
             Renamed from ``axis_tilt`` to ``axis_slope``
 
     axis_azimuth : numeric
@@ -325,7 +325,7 @@ def projected_solar_zenith_angle(solar_zenith, solar_azimuth,
     """
     # Assume the tracker reference frame is right-handed. Positive y-axis is
     # oriented along tracking axis; from north, the y-axis is rotated clockwise
-    # by the axis azimuth and tilted from horizontal by the axis tilt. The
+    # by the axis azimuth and tilted from horizontal by the axis slope. The
     # positive x-axis is 90 deg clockwise from the y-axis and parallel to
     # horizontal (e.g., if the y-axis is south, the x-axis is west); the
     # positive z-axis is normal to the x and y axes, pointed upward.
@@ -416,17 +416,16 @@ def shaded_fraction1d(
     axis_slope : numeric, default 0
         Tilt of the rows axis from horizontal. In degrees :math:`^{\circ}`.
 
-        .. versionchanged:: 0.14.0
+        .. versionchanged:: 0.16.0
             Renamed from ``axis_tilt`` to ``axis_slope``
 
     surface_to_axis_offset : numeric, default 0
         Distance between the rotating axis and the collector surface.
         May be used to account for a torque tube offset.
     cross_axis_slope : numeric, default 0
-        In degrees :math:`^{\circ}`.
-        See :term:`cross_axis_slope`.
+        See :term:`cross_axis_slope`. In degrees :math:`^{\circ}`.
 
-        .. versionchanged:: 0.14.0
+        .. versionchanged:: 0.16.0
             Renamed from ``cross_axis_tilt`` to ``cross_axis_slope``
 
     shading_row_rotation : numeric, optional

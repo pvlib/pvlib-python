@@ -1473,7 +1473,7 @@ class SingleAxisTrackerMount(AbstractMount):
         The tilt of the axis of rotation (i.e, the y-axis defined by
         axis_azimuth) with respect to horizontal. [degrees]
 
-        .. versionchanged:: 0.14.0
+        .. versionchanged:: 0.16.0
             Renamed from ``axis_tilt`` to ``axis_slope``.
 
     axis_azimuth : float, default 180
@@ -1510,10 +1510,9 @@ class SingleAxisTrackerMount(AbstractMount):
         provided, a gcr of 2/7 is default. gcr must be <=1. [unitless]
 
     cross_axis_slope : float, default 0.0
-        In degrees :math:`^{\circ}`.
-        See :term:`cross_axis_slope`.
+        See :term:`cross_axis_slope`. [degrees]
 
-        .. versionchanged:: 0.14.0
+        .. versionchanged:: 0.16.0
             Renamed from ``cross_axis_tilt`` to ``cross_axis_slope``.
 
     racking_model : str, optional

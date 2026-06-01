@@ -93,15 +93,7 @@ def singleaxis(apparent_zenith, solar_azimuth,
         2/7 is default. ``gcr`` must be <=1.
         
     cross_axis_slope : float, default 0.0
-        The angle, relative to horizontal, of the line formed by the
-        intersection between the slope containing the tracker axes and a plane
-        perpendicular to the tracker axes. The cross-axis tilt should be
-        specified using a right-handed convention. For example, trackers with
-        ``axis_azimuth`` of 180 degrees (heading south) will have a negative
-        cross-axis tilt if the tracker axes plane slopes down to the east and
-        positive cross-axis tilt if the tracker axes plane slopes down to the
-        west. Use :func:`~pvlib.tracking.calc_cross_axis_tilt` to calculate
-        ``cross_axis_tilt``. [degrees]
+        See :term:`cross_axis_slope`. [degrees]
 
         .. versionchanged:: 0.16.0
             Renamed from ``cross_axis_tilt`` to ``cross_axis_slope``.
@@ -174,7 +166,7 @@ def singleaxis(apparent_zenith, solar_azimuth,
     # Account for backtracking
     if backtrack:
         # distance between rows in terms of rack lengths relative to cross-axis
-        # tilt
+        # slope
         axes_distance = 1/(gcr * cosd(cross_axis_slope))
 
         # NOTE: account for rare angles below array, see GH 824
@@ -335,8 +327,8 @@ def calc_surface_orientation(tracker_theta, axis_slope=0, axis_azimuth=0):
 
 def calc_axis_slope(slope_azimuth, slope_tilt, axis_azimuth):
     """
-    Calculate tracker axis tilt in the global reference frame when on a sloped
-    plane. Axis tilt is the inclination of the tracker rotation axis with
+    Calculate tracker axis slope in the global reference frame when on a sloped
+    plane. Axis slope is the inclination of the tracker rotation axis with
     respect to horizontal, ranging from 0 degrees (horizontal axis) to 90
     degrees (vertical axis).
 
@@ -386,7 +378,7 @@ def _calc_tracker_norm(ba, bg, dg):
     Parameters
     ----------
     ba : float
-        axis tilt [degrees]
+        axis slope [degrees]
     bg : float
         ground tilt [degrees]
     dg : float
@@ -409,7 +401,7 @@ def _calc_tracker_norm(ba, bg, dg):
 
 def _calc_beta_c(v, dg, ba):
     """
-    Calculate the cross-axis tilt angle.
+    Calculate the cross-axis slope angle.
 
     Parameters
     ----------
@@ -418,12 +410,12 @@ def _calc_beta_c(v, dg, ba):
     dg : float
         delta gamma, difference between axis and ground azimuths [degrees]
     ba : float
-        axis tilt [degrees]
+        axis slope [degrees]
 
     Returns
     -------
     beta_c : float
-        cross-axis tilt angle [radians]
+        cross-axis slope angle [radians]
     """
     vnorm = np.sqrt(np.dot(v, v))
     beta_c = np.arcsin(
@@ -443,12 +435,12 @@ def calc_cross_axis_slope(
     intersection between the slope containing the tracker axes and a plane
     perpendicular to the tracker axes.
 
-    Use the cross-axis tilt to avoid row-to-row shade when backtracking on a
-    slope not parallel with the axis azimuth. Cross-axis tilt should be
+    Use the cross-axis slope to avoid row-to-row shade when backtracking on a
+    slope not parallel with the axis azimuth. Cross-axis slope should be
     specified using a right-handed convention. For example, trackers with axis
-    azimuth of 180 degrees (heading south) will have a negative cross-axis tilt
-    if the tracker axes plane slopes down to the east and positive cross-axis
-    tilt if the tracker axes plane slopes down to the west.
+    azimuth of 180 degrees (heading south) will have a negative cross-axis
+    slope if the tracker axes plane slopes down to the east and positive
+    cross-axis slope if the tracker axes plane slopes down to the west.
 
     .. versionchanged:: 0.16.0
         Renamed function ``calc_cross_axis_tilt`` to ``calc_cross_axis_slope``.
@@ -472,9 +464,7 @@ def calc_cross_axis_slope(
     Returns
     -------
     cross_axis_slope : float
-        angle, relative to horizontal, of the line formed by the intersection
-        between the slope containing the tracker axes and a plane perpendicular
-        to the tracker axes [degrees]
+        See :term:`cross_axis_slope`. [degrees]
 
     See also
     --------

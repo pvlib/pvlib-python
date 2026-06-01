@@ -394,7 +394,7 @@ def test_calc_axis_slope():
     axis_slope = tracking.calc_axis_slope(
         slope_azimuth, slope_tilt, axis_azimuth=axis_azimuth)
     assert np.isclose(axis_slope, expected_axis_slope)
-    # calculate cross-axis tilt and relative rotation
+    # calculate cross-axis slope and relative rotation
     cross_axis_slope = tracking.calc_cross_axis_slope(
         slope_azimuth, slope_tilt, axis_azimuth, axis_slope)
     assert np.isclose(cross_axis_slope, expected_side_slope)
@@ -515,7 +515,7 @@ def test_calc_surface_orientation_types():
 
 
 def test_calc_surface_orientation_kwargs():
-    # non-default axis tilt & azimuth
+    # non-default axis slope & azimuth
     rotations = np.array([-10, 0, 10])
     expected_tilts = np.array([22.2687445, 20.0, 22.2687445])
     expected_azimuths = np.array([152.72683041, 180.0, 207.27316959])

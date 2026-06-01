@@ -39,8 +39,8 @@ def _solar_projection_tangent(solar_zenith, solar_azimuth, surface_azimuth):
 
 
 def _unshaded_ground_fraction(tracker_rotation, phi, gcr, height=None,
-                              pitch=None, g0=0, g1=1, max_rows=10,
-                              max_zenith=85):
+                              pitch=None, max_rows=10, max_zenith=85,
+                              g0=0, g1=1):
     r"""
     Calculate the fraction of the ground with incident direct irradiance.
 
@@ -64,6 +64,12 @@ def _unshaded_ground_fraction(tracker_rotation, phi, gcr, height=None,
     pitch : float, optional
         Distance between centers of adjacent rows; must be in the same units
         as ``height``. Required if ``g0`` is not zero or ``g1`` is not one.
+    max_rows : int, default 10
+        Maximum number of rows to consider on either side of the left and
+        right rows. [unitless]
+    max_zenith : numeric, default 85
+        Maximum zenith angle. For solar_zenith > max_zenith, unshaded ground
+        fraction is set to 0. [degree]
     g0 : numeric, default 0
         Left position on the ground surface, as a fraction of the row-to-row
         spacing. ``g0=0`` corresponds to ground underneath the center of the
@@ -72,12 +78,6 @@ def _unshaded_ground_fraction(tracker_rotation, phi, gcr, height=None,
         Right position on the ground surface, as a fraction of the row-to-row
         spacing. ``g1=1`` corresponds to ground underneath the center of the
         right row. ``g1`` should be greater than ``g0``. [unitless]
-    max_rows : int, default 10
-        Maximum number of rows to consider on either side of the left and
-        right rows. [unitless]
-    max_zenith : numeric, default 85
-        Maximum zenith angle. For solar_zenith > max_zenith, unshaded ground
-        fraction is set to 0. [degree]
 
     Returns
     -------
@@ -239,8 +239,8 @@ def vf_ground_sky_2d(rotation, gcr, x, pitch, height, max_rows=10):
 
 
 @renamed_kwarg_warning("0.15.2", "surface_tilt", "tracker_rotation")
-def vf_ground_sky_2d_integ(tracker_rotation, gcr, height, pitch, g0=0, g1=1,
-                           max_rows=10, npoints=None, vectorize=None):
+def vf_ground_sky_2d_integ(tracker_rotation, gcr, height, pitch, max_rows=10,
+                           npoints=None, vectorize=None, g0=0, g1=1):
     """
     Integrated view factor to the sky from the ground underneath
     interior rows of the array.  Row height above the ground is assumed
@@ -258,14 +258,6 @@ def vf_ground_sky_2d_integ(tracker_rotation, gcr, height, pitch, g0=0, g1=1,
         same units as ``pitch``.
     pitch : float
         Distance between two rows. Must be in the same units as ``height``.
-    g0 : numeric, default 0
-        Position on the ground surface, as a fraction of the row-to-row
-        spacing. ``g0=0`` corresponds to ground underneath the middle of the
-        left row. ``g0`` should be less than ``g1``. [unitless]
-    g1 : numeric, default 1
-        Position on the ground surface, as a fraction of the row-to-row
-        spacing. ``g1=1`` corresponds to ground underneath the middle of the
-        right row. ``g1`` should be greater than ``g0``. [unitless]
     max_rows : int, default 10
         Maximum number of rows to consider in front and behind the current row.
     npoints : int, optional
@@ -283,6 +275,15 @@ def vf_ground_sky_2d_integ(tracker_rotation, gcr, height, pitch, g0=0, g1=1,
            This parameter has no effect; calculations are now vectorized
            with no memory usage penalty.
            This parameter will be removed in the future.
+
+    g0 : numeric, default 0
+        Position on the ground surface, as a fraction of the row-to-row
+        spacing. ``g0=0`` corresponds to ground underneath the middle of the
+        left row. ``g0`` should be less than ``g1``. [unitless]
+    g1 : numeric, default 1
+        Position on the ground surface, as a fraction of the row-to-row
+        spacing. ``g1=1`` corresponds to ground underneath the middle of the
+        right row. ``g1`` should be greater than ``g0``. [unitless]
 
     Returns
     -------
@@ -518,7 +519,7 @@ def vf_row_ground_2d(surface_tilt, gcr, x):
 
 
 def vf_row_ground_2d_integ(surface_tilt, gcr, height=None, pitch=None,
-                           x0=0, x1=1, g0=0, g1=1, max_rows=20):
+                           x0=0, x1=1, max_rows=20, g0=0, g1=1):
     r'''
     Calculate the average view factor to the ground from a segment of the row
     surface between x0 and x1.
@@ -549,6 +550,8 @@ def vf_row_ground_2d_integ(surface_tilt, gcr, height=None, pitch=None,
     x1 : numeric, default 1.
         Position on the row's slant length, as a fraction of the slant length.
         ``x1`` should be greater than ``x0``. [unitless]
+    max_rows : int, default 20
+        Maximum number of rows to consider in front and behind the current row.
     g0 : numeric, default 0
         Position on the ground surface, as a fraction of the row-to-row
         spacing. ``g0=0`` corresponds to ground underneath the middle of the
@@ -557,8 +560,6 @@ def vf_row_ground_2d_integ(surface_tilt, gcr, height=None, pitch=None,
         Position on the ground surface, as a fraction of the row-to-row
         spacing. ``g1=0`` corresponds to ground underneath the middle of the
         right row. ``g1`` should be greater than ``g0``. [unitless]
-    max_rows : int, default 20
-        Maximum number of rows to consider in front and behind the current row.
 
     Returns
     -------

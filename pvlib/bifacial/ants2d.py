@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 from pvlib.tools import cosd, sind, tand, acosd
 from pvlib.bifacial import utils
-from pvlib.irradiance import aoi_projection, haydavies, perez
+from pvlib.irradiance import aoi_projection, haydavies, perez, perez_driesse
 from pvlib.shading import projected_solar_zenith_angle, shaded_fraction1d
 from pvlib.tracking import calc_surface_orientation
 
@@ -211,7 +211,7 @@ def _ants2d_singleside(tracker_rotation, cos_aoi, phi, gcr, height, pitch,
 def _apply_sky_diffuse_model(dni, dhi, model, solar_zenith, solar_azimuth,
                              dni_extra, airmass):
 
-    if model in ['haydavies', 'perez']:
+    if model in ['haydavies', 'perez', 'perez_driesse']:
         # determine circumsolar irradiance, add it to DNI
 
         if model == 'haydavies':
@@ -220,12 +220,15 @@ def _apply_sky_diffuse_model(dni, dhi, model, solar_zenith, solar_azimuth,
             diffuse_model_func = haydavies
             extra_kwargs = {}
 
-        elif model == 'perez':
+        elif model in ['perez', 'perez_driesse']:
             # note: horizon brightening is ignored
             if dni_extra is None or airmass is None:
                 raise ValueError(
                     f'Must supply dni_extra and airmass for {model} model')
-            diffuse_model_func = perez
+            if model == 'perez':
+                diffuse_model_func = perez
+            else:
+                diffuse_model_func = perez_driesse
             extra_kwargs = {'airmass': airmass}
 
         kwargs = dict(
@@ -339,12 +342,15 @@ def get_irradiance(tracker_rotation, axis_azimuth, solar_zenith, solar_azimuth,
         timestamps.  Otherwise, must be specified as an array with shape
         (``n_ground_segments``, ``len(tracker_rotation)``). [unitless]
     model : str, default 'perez'
-        Irradiance model - can be one of 'isotropic', 'haydavies', or 'perez'.
+        Irradiance model - can be one of 'isotropic', 'haydavies', 'perez',
+        or 'perez_driesse'.
     dni_extra : numeric, optional
         Extraterrestrial direct normal irradiance. Required when
-        ``model='haydavies'`` or ``model='perez'``. [Wm⁻²]
+        ``model='haydavies'``, ``model='perez'``, or ``model='perez_driese'``.
+        [Wm⁻²]
     airmass : numeric, optional
-        Relative airmass. Required when ``model='perez'``. [unitless]
+        Relative airmass. Required when ``model='perez'`` or
+        ``model='perez_driese'``. [unitless]
     row_segments : int or list of pairs, default 1
         If ``row_segments`` is an int, it defines the number of equal-length
         segments the row width is divided into.  Otherwise, it must be a list
@@ -424,6 +430,11 @@ def get_irradiance(tracker_rotation, axis_azimuth, solar_zenith, solar_azimuth,
           [Wm⁻²]
         - ``ground_diffuse``: diffuse irradiance incident on the ground
           surface. [Wm⁻²]
+
+    Notes
+    -----
+    - ``model='perez_driesse'`` was not evaluated in [1]_ and is included
+      in this implementation as an extension.
 
     References
     ----------

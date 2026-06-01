@@ -82,15 +82,18 @@ def get_nasa_power(latitude, longitude, start, end,
         include a site elevation with the request.
     map_variables: bool, default True
         When true, renames columns of the Dataframe to pvlib variable names
-        where applicable. See variable :const:`VARIABLE_MAP`. Note that the
-        following unit conversions are applied after renaming: pressure is
-        converted from kPa to Pa, and precipitable water is converted from
-        kg/m\u00b2 (mm) to cm.
+        where applicable. See variable :const:`VARIABLE_MAP`.
 
     Raises
     ------
     requests.HTTPError
         Raises an error when an incorrect request is made.
+
+    Notes
+    -----
+    The following unit conversions are applied after renaming:
+    pressure is converted from kPa to Pa, and precipitable water
+    is converted from kg/m\u00b2 (mm) to cm.
 
     Returns
     -------
@@ -160,13 +163,10 @@ def get_nasa_power(latitude, longitude, start, end,
     # Rename according to pvlib convention
     if map_variables:
         df = df.rename(columns=VARIABLE_MAP)
-        # NASA POWER returns PS in kPa; pvlib convention is Pa.
-        # Conversion required for pvlib.atmosphere.pres2alt, alt2pres,
-        # get_absolute_airmass, and other pressure-dependent functions.
+        # PS is returned in kPa; convert to Pa for pvlib compatibility.
         if 'pressure' in df.columns:
             df['pressure'] = df['pressure'] * 1000
-        # NASA POWER returns TQV in kg/m^2 (=mm); pvlib convention is cm.
-        # Required for pvlib.atmosphere.kasten96_lt and other clear-sky models.
+        # TQV is returned in kg/m^2 (=mm); convert to cm for pvlib compatibility.
         if 'precipitable_water' in df.columns:
             df['precipitable_water'] = df['precipitable_water'] / 10
 

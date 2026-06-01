@@ -9,8 +9,6 @@ import numpy as np
 import pandas as pd
 from scipy.integrate import trapezoid
 
-from warnings import warn
-
 
 def calc_spectral_mismatch_field(sr, e_sun, e_ref=None):
     """

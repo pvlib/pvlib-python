@@ -1,6 +1,5 @@
 import pandas as pd
 import pytest
-import pytz
 
 from pvlib.iotools import midc
 from tests.conftest import TESTS_DATA_DIR, RERUNS, RERUNS_DELAY
@@ -34,7 +33,7 @@ def test_midc__format_index():
     start = start.tz_localize("MST")
     end = pd.Timestamp("20181014 23:59")
     end = end.tz_localize("MST")
-    assert type(data.index) == pd.DatetimeIndex
+    assert isinstance(data.index, pd.DatetimeIndex)
     assert data.index[0] == start
     assert data.index[-1] == end
 

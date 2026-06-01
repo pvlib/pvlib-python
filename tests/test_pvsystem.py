@@ -1298,18 +1298,18 @@ def test_v_from_i(fixture_v_from_i, method, atol):
     Rsh = fixture_v_from_i['Rsh']
     Rs = fixture_v_from_i['Rs']
     nNsVth = fixture_v_from_i['nNsVth']
-    I = fixture_v_from_i['I']
+    Iop = fixture_v_from_i['I']
     I0 = fixture_v_from_i['I0']
     IL = fixture_v_from_i['IL']
     V_expected = fixture_v_from_i['V_expected']
 
-    V = pvsystem.v_from_i(I, IL, I0, Rs, Rsh, nNsVth, method=method)
+    Vop = pvsystem.v_from_i(Iop, IL, I0, Rs, Rsh, nNsVth, method=method)
 
-    assert isinstance(V, type(V_expected))
-    if isinstance(V, np.ndarray):
-        assert isinstance(V.dtype, type(V_expected.dtype))
-        assert V.shape == V_expected.shape
-    assert_allclose(V, V_expected, atol=atol)
+    assert isinstance(Vop, type(V_expected))
+    if isinstance(Vop, np.ndarray):
+        assert isinstance(Vop.dtype, type(V_expected.dtype))
+        assert Vop.shape == V_expected.shape
+    assert_allclose(Vop, V_expected, atol=atol)
 
 
 def test_i_from_v_from_i(fixture_v_from_i):

@@ -472,8 +472,8 @@ def heliocentric_longitude(jme):
 
     l_rad = (l0 + l1 * jme + l2 * jme**2 + l3 * jme**3 + l4 * jme**4 +
              l5 * jme**5)/10**8
-    l = np.rad2deg(l_rad)
-    return l % 360
+    l_deg = np.rad2deg(l_rad)
+    return l_deg % 360
 
 @jcompile('float64(float64)', nopython=True)
 def heliocentric_latitude(jme):

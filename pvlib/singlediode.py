@@ -768,12 +768,12 @@ def _lambertw_v_from_i(current, photocurrent, saturation_current,
     # Ensure that we are working with read-only views of numpy arrays
     # Turns Series into arrays so that we don't have to worry about
     #  multidimensional broadcasting failing
-    I, IL, I0, Rs, Gsh, a = \
+    Iop, IL, I0, Rs, Gsh, a = \
         np.broadcast_arrays(current, photocurrent, saturation_current,
                             resistance_series, conductance_shunt, nNsVth)
 
-    # Intitalize output V (I might not be float64)
-    V = np.full_like(I, np.nan, dtype=np.float64)
+    # Intitalize output Vop (Iop might not be float64)
+    Vop = np.full_like(Iop, np.nan, dtype=np.float64)
 
     # Determine indices where 0 < Gsh requires implicit model solution
     idx_p = 0. < Gsh
@@ -783,14 +783,14 @@ def _lambertw_v_from_i(current, photocurrent, saturation_current,
 
     # Explicit solutions where Gsh=0
     if np.any(idx_z):
-        V[idx_z] = a[idx_z] * np.log1p((IL[idx_z] - I[idx_z]) / I0[idx_z]) - \
-                   I[idx_z] * Rs[idx_z]
+        Vop[idx_z] = a[idx_z] * np.log1p((IL[idx_z] - Iop[idx_z]) / I0[idx_z]) - \
+                     Iop[idx_z] * Rs[idx_z]
 
     # Only compute using LambertW if there are cases with Gsh>0
     if np.any(idx_p):
 
         # use only the relevant subset for what follows
-        I = I[idx_p]
+        Iop = Iop[idx_p]
         IL = IL[idx_p]
         I0 = I0[idx_p]
         Rs = Rs[idx_p]
@@ -800,7 +800,7 @@ def _lambertw_v_from_i(current, photocurrent, saturation_current,
         # LambertW argument, cannot be float128, may overflow to np.inf
         # overflow is explicitly handled below, so ignore warnings here
         with np.errstate(over='ignore'):
-            argW = I0 / (Gsh * a) * np.exp((-I + IL + I0) / (Gsh * a))
+            argW = I0 / (Gsh * a) * np.exp((-Iop + IL + I0) / (Gsh * a))
 
         lambertwterm = np.zeros_like(argW)
 
@@ -814,19 +814,19 @@ def _lambertw_v_from_i(current, photocurrent, saturation_current,
             # Calculate using log(argW) in case argW is really big
             logargW = (np.log(I0[idx_inf]) - np.log(Gsh[idx_inf]) -
                        np.log(a[idx_inf]) +
-                       (-I[idx_inf] + IL[idx_inf] + I0[idx_inf]) /
+                       (-Iop[idx_inf] + IL[idx_inf] + I0[idx_inf]) /
                        (Gsh[idx_inf] * a[idx_inf]))
             lambertwterm[idx_inf] = _log_lambertw(logargW)
 
         # Eqn. 3 in Jain and Kapoor, 2004
         #  V = -I*(Rs + Rsh) + IL*Rsh - a*lambertwterm + I0*Rsh
         # Recast in terms of Gsh=1/Rsh for better numerical stability.
-        V[idx_p] = (IL + I0 - I) / Gsh - I * Rs - a * lambertwterm
+        Vop[idx_p] = (IL + I0 - Iop) / Gsh - Iop * Rs - a * lambertwterm
 
     if output_is_scalar:
-        return V.item()
+        return Vop.item()
     else:
-        return V
+        return Vop
 
 
 def _lambertw_i_from_v(voltage, photocurrent, saturation_current,

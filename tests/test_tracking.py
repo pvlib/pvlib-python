@@ -24,7 +24,7 @@ def test_solar_noon():
                                        gcr=2.0/7.0)
 
     expect = pd.DataFrame({'tracker_theta': 0, 'aoi': 10,
-                           'surface_azimuth': 90, 'surface_tilt': 0},
+                           'surface_azimuth': 270, 'surface_tilt': 0},
                           index=index, dtype=np.float64)
     expect = expect[SINGLEAXIS_COL_ORDER]
 
@@ -39,7 +39,7 @@ def test_scalars():
                                        max_angle=90, backtrack=True,
                                        gcr=2.0/7.0)
     assert isinstance(tracker_data, dict)
-    expect = {'tracker_theta': 0, 'aoi': 10, 'surface_azimuth': 90,
+    expect = {'tracker_theta': 0, 'aoi': 10, 'surface_azimuth': 270,
               'surface_tilt': 0}
     for k, v in expect.items():
         assert np.isclose(tracker_data[k], v)
@@ -53,7 +53,7 @@ def test_arrays():
                                        max_angle=90, backtrack=True,
                                        gcr=2.0/7.0)
     assert isinstance(tracker_data, dict)
-    expect = {'tracker_theta': 0, 'aoi': 10, 'surface_azimuth': 90,
+    expect = {'tracker_theta': 0, 'aoi': 10, 'surface_azimuth': 270,
               'surface_tilt': 0}
     for k, v in expect.items():
         assert_allclose(tracker_data[k], v, atol=1e-7)
@@ -69,7 +69,7 @@ def test_nans():
                                            gcr=2.0/7.0)
     expect = {'tracker_theta': np.array([0, nan, nan]),
               'aoi': np.array([10, nan, nan]),
-              'surface_azimuth': np.array([90, nan, nan]),
+              'surface_azimuth': np.array([270, nan, nan]),
               'surface_tilt': np.array([0, nan, nan])}
     for k, v in expect.items():
         assert_allclose(tracker_data[k], v, atol=1e-7)
@@ -83,7 +83,7 @@ def test_nans():
                                            max_angle=90, backtrack=True,
                                            gcr=2.0/7.0)
     expect = pd.DataFrame(np.array(
-        [[ 0., 10., 90.,  0.],
+        [[ 0., 10., 270.,  0.],
          [nan, nan, nan, nan],
          [nan, nan, nan, nan]]),
         columns=['tracker_theta', 'aoi', 'surface_azimuth', 'surface_tilt'])
@@ -196,6 +196,54 @@ def test_backtrack():
     assert_frame_equal(expect, tracker_data)
 
 
+def test__unit_normal():
+    # with scalar input
+    unorm = tracking._unit_normal(180., 45., 45.)
+    assert_allclose(unorm, np.array([[-np.sqrt(2)/2, -0.5, 0.5]]))
+    # with vector input
+    az = np.array([0., 90., 180., 270.,
+                   0., 90., 180., 270.,
+                   180., 180., 180, 180.,
+                   180., 180., 180., 180,
+                   0., 90., 180., 270.,
+                   ])
+    tilt = np.array([30., 30., 30., 30.,
+                     0., 0., 0., 0.,
+                     -30., -90., 90., 180.,
+                     0., 0., 0., 0.,
+                     30., 30., 30., 30,
+                     ])
+    theta = np.array([0., 0., 0., 0.,
+                      0., 0., 0., 0.,
+                      0., 0., 0., 0.,
+                      -30., 30., -90., 90.,
+                      30., 30., 30., 30.,
+                      ])
+    expected = np.array(
+        [[ 0., 0.5, 0.8660254],
+         [ 0.5, 0., 0.8660254],
+         [ 0., -0.5, 0.8660254],
+         [-0.5, -0., 0.8660254],
+         [ 0., 0., 1.],
+         [ 0., 0., 1.],
+         [ 0., -0., 1.],
+         [-0., 0., 1.],
+         [-0., 0.5, 0.8660254],
+         [-0., 1., 0.],
+         [ 0., -1., 0.],
+         [ 0., -0., -1.],
+         [ 0.5, 0., 0.8660254],
+         [-0.5, -0.,  0.8660254],
+         [ 1., 0., 0.],
+         [-1., -0., 0.],
+         [ 0.5, 0.4330127, 0.75],
+         [ 0.4330127, -0.5, 0.75],
+         [-0.5, -0.4330127, 0.75],
+         [-0.4330127, 0.5, 0.75]])
+    unorms = tracking._unit_normal(az, tilt, theta)
+    assert np.allclose(unorms, expected)
+
+
 def test_axis_slope():
     apparent_zenith = pd.Series([30])
     apparent_azimuth = pd.Series([135])
@@ -227,6 +275,7 @@ def test_axis_slope():
 
 
 def test_axis_azimuth():
+    # sun to the east, horizontal east-oriented tracker
     apparent_zenith = pd.Series([30])
     apparent_azimuth = pd.Series([90])
 
@@ -235,13 +284,30 @@ def test_axis_azimuth():
                                        max_angle=90, backtrack=True,
                                        gcr=2.0/7.0)
 
-    expect = pd.DataFrame({'aoi': 30, 'surface_azimuth': 180,
+    expect = pd.DataFrame({'aoi': 30, 'surface_azimuth': 0,
                            'surface_tilt': 0, 'tracker_theta': 0},
                           index=[0], dtype=np.float64)
     expect = expect[SINGLEAXIS_COL_ORDER]
 
     assert_frame_equal(expect, tracker_data)
 
+    # sun to the east, horizontal south-oriented tracker
+    apparent_zenith = pd.Series([30])
+    apparent_azimuth = pd.Series([90])
+
+    tracker_data = tracking.singleaxis(apparent_zenith, apparent_azimuth,
+                                       axis_slope=0, axis_azimuth=180,
+                                       max_angle=90, backtrack=True,
+                                       gcr=2.0/7.0)
+
+    expect = pd.DataFrame({'aoi': 0, 'surface_azimuth': 90,
+                           'surface_tilt': 30, 'tracker_theta': -30},
+                          index=[0], dtype=np.float64)
+    expect = expect[SINGLEAXIS_COL_ORDER]
+
+    assert_frame_equal(expect, tracker_data)
+
+    # sun to the south, horizontal east-oriented tracker
     apparent_zenith = pd.Series([30])
     apparent_azimuth = pd.Series([180])
 
@@ -270,7 +336,7 @@ def test_horizon_flat():
                               axis_azimuth=180, backtrack=False, max_angle=180)
     expected = pd.DataFrame(np.array(
         [[ nan,  nan,  nan,  nan],
-         [  0.,  45., 270.,   0.],
+         [  0.,  45., 90.,   0.],
          [ nan,  nan,  nan,  nan]]),
         columns=['tracker_theta', 'aoi', 'surface_azimuth', 'surface_tilt'])
     assert_frame_equal(out, expected)
@@ -295,7 +361,7 @@ def test_horizon_tilted():
 def test_low_sun_angles():
     # GH 656, 824
     result = tracking.singleaxis(
-        apparent_zenith=80, solar_azimuth=338, axis_tilt=30,
+        apparent_zenith=80, solar_azimuth=338, axis_slope=30,
         axis_azimuth=180, max_angle=60, backtrack=True, gcr=0.35)
     expected = {
         'tracker_theta': np.array([60.0]),
@@ -346,7 +412,7 @@ def test_calc_axis_slope():
 
 def test_slope_aware_backtracking():
     """
-    Test validation data set from https://www.nrel.gov/docs/fy20osti/76626.pdf
+    Test validation data set from https://doi.org/10.2172/1660126
     """
     index = pd.date_range('2019-01-01T08:00', '2019-01-01T17:00', freq='h')
     index = index.tz_localize('Etc/GMT+5')
@@ -390,6 +456,23 @@ def test_slope_aware_backtracking():
                         check_less_precise=True)
 
 
+def test_singleaxis_neg_axis_slope():
+    ''' Check equivalence of (negative tilt, axis azimuth) and
+    (positive tilt, axis azimuth + 180)
+    '''
+    params = dict(apparent_zenith=45, solar_azimuth=270)
+
+    tr_pos = pvlib.tracking.singleaxis(axis_slope=10, axis_azimuth=0,
+                                       **params)
+    tr_neg = pvlib.tracking.singleaxis(axis_slope=-10, axis_azimuth=180,
+                                       **params)
+
+    tr_neg['tracker_theta'] *= -1  # expect tracker_theta to be negated
+
+    for key in tr_pos:
+        assert_allclose(tr_pos[key], tr_neg[key])
+
+
 def test_singleaxis_aoi_gh1221():
     # vertical tracker
     loc = pvlib.location.Location(40.1134, -88.3695)
@@ -409,7 +492,8 @@ def test_calc_surface_orientation_types():
     # numpy arrays
     rotations = np.array([-10, 0, 10])
     expected_tilts = np.array([10, 0, 10], dtype=float)
-    expected_azimuths = np.array([270, 90, 90], dtype=float)
+    expected_azimuths = np.array([270, 270, 90], dtype=float)
+    # defaults to axis_azimuth=0
     out = tracking.calc_surface_orientation(tracker_theta=rotations)
     np.testing.assert_allclose(expected_tilts, out['surface_tilt'])
     np.testing.assert_allclose(expected_azimuths, out['surface_azimuth'])
@@ -446,7 +530,8 @@ def test_calc_surface_orientation_special():
     # special cases for rotations
     rotations = np.array([-180, -90, -0, 0, 90, 180])
     expected_tilts = np.array([180, 90, 0, 0, 90, 180], dtype=float)
-    expected_azimuths = [270, 270, 90, 90, 90, 90]
+    expected_azimuths = [270, 270, 270, 270, 90, 90]
+    # defaults to axis_azimuth=0
     out = tracking.calc_surface_orientation(rotations)
     np.testing.assert_allclose(out['surface_tilt'], expected_tilts)
     np.testing.assert_allclose(out['surface_azimuth'], expected_azimuths)
@@ -455,6 +540,7 @@ def test_calc_surface_orientation_special():
     rotations = np.array([-10, 0, 10])
     expected_tilts = np.array([90, 90, 90], dtype=float)
     expected_azimuths = np.array([350, 0, 10], dtype=float)
+    # defaults to axis_azimuth=0
     out = tracking.calc_surface_orientation(rotations, axis_slope=90)
     np.testing.assert_allclose(out['surface_tilt'], expected_tilts)
     np.testing.assert_allclose(out['surface_azimuth'], expected_azimuths)
@@ -462,7 +548,7 @@ def test_calc_surface_orientation_special():
     # special cases for axis_azimuth
     rotations = np.array([-10, 0, 10])
     expected_tilts = np.array([10, 0, 10], dtype=float)
-    expected_azimuth_offsets = np.array([-90, 90, 90], dtype=float)
+    expected_azimuth_offsets = np.array([-90, -90, 90], dtype=float)
     for axis_azimuth in [0, 90, 180, 270, 360]:
         expected_azimuths = (axis_azimuth + expected_azimuth_offsets) % 360
         out = tracking.calc_surface_orientation(rotations,
@@ -475,6 +561,7 @@ def test_calc_surface_orientation_special():
 
 
 def test_singleaxis_renamed_tilt_to_slope():
+    # renamed parameters axis_tilt & cross_axis_tilt to *_slope
     with (pytest.warns(pvlibDeprecationWarning, match="axis_slope"),
           pytest.warns(pvlibDeprecationWarning, match="cross_axis_slope")):
         tracking.singleaxis(
@@ -482,13 +569,13 @@ def test_singleaxis_renamed_tilt_to_slope():
         )
 
 
-def test_calc_surface_orientation_tilt_to_slope():
+def test_calc_surface_orientation_renamed_tilt_to_slope():
     with pytest.warns(pvlibDeprecationWarning, match="axis_slope"):
         tracking.calc_surface_orientation(10, axis_tilt=10, axis_azimuth=10)
 
 
 def test_deprecated_calc_axis_tilt():
-    # renamed to calc_axis_slope
+    # calc_axis_tilt renamed to calc_axis_slope
     with pytest.warns(pvlibDeprecationWarning, match="calc_axis_slope"):
         tracking.calc_axis_tilt(slope_azimuth=1, slope_tilt=1, axis_azimuth=1)
 
@@ -512,3 +599,31 @@ def test_deprecated_calc_cross_axis_tilt_and_param_tilt_to_slope():
     ):  # somehow this order is important, the other way around fails
         tracking.calc_cross_axis_tilt(slope_azimuth=1, slope_tilt=1,
                                       axis_azimuth=1, axis_tilt=1)
+
+
+@pytest.mark.parametrize('shape', [(3, 5), (1, 7), (4, 1), (2, 3, 4)])
+def test_calc_surface_orientation_2d(shape):
+    # Regression test for GH#2747: calc_surface_orientation must accept
+    # tracker_theta of arbitrary rank, not just 1-D.  Compare the >1-D result
+    # to the 1-D result computed on the flattened input.
+    rotations_flat = np.linspace(-90, 90, int(np.prod(shape)))
+    rotations_nd = rotations_flat.reshape(shape)
+
+    out_1d = tracking.calc_surface_orientation(rotations_flat,
+                                               axis_slope=20,
+                                               axis_azimuth=180)
+    out_nd = tracking.calc_surface_orientation(rotations_nd,
+                                               axis_slope=20,
+                                               axis_azimuth=180)
+
+    assert out_nd['surface_tilt'].shape == shape
+    assert out_nd['surface_azimuth'].shape == shape
+    np.testing.assert_allclose(out_nd['surface_tilt'].reshape(-1),
+                               out_1d['surface_tilt'])
+    np.testing.assert_allclose(out_nd['surface_azimuth'].reshape(-1),
+                               out_1d['surface_azimuth'])
+
+    # _unit_normal must preserve the input rank, appending a trailing axis
+    # of length 3.
+    unorm = tracking._unit_normal(180., 20., rotations_nd)
+    assert unorm.shape == shape + (3,)

@@ -471,14 +471,14 @@ def _degrees_to_index(degrees, coordinate):
         inputmax = 180
         outputmax = 4320
     else:
-        raise IndexError("coordinate must be 'latitude' or 'longitude'.")
+        raise ValueError("coordinate must be 'latitude' or 'longitude'.")
 
     inputrange = inputmax - inputmin
     scale = outputmax/inputrange  # number of indices per degree
     center = inputmin + 1 / scale / 2  # shift to center of index
     outputmax -= 1  # shift index to zero indexing
     index = (degrees - center) * scale
-    err = IndexError('Input, %g, is out of range (%g, %g).' %
+    err = ValueError('Input, %g, is out of range (%g, %g).' %
                      (degrees, inputmin, inputmax))
 
     # If the index is still out of bounds after rounding, raise an error.

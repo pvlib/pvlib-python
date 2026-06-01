@@ -179,7 +179,7 @@ A solar radiation network in the USA, run by NOAA.
 MIDC
 ^^^^
 
-A solar radiation network in the USA, run by NREL.
+A solar radiation network in the USA, run by NLR (known as NREL prior to December 2025).
 
 .. autosummary::
    :toctree: generated/
@@ -233,7 +233,6 @@ lower quality.
 
    iotools.read_crn
 
-
 ECMWF ERA5
 ^^^^^^^^^^
 
@@ -243,6 +242,17 @@ A global reanalysis dataset providing weather and solar resource data.
    :toctree: generated/
 
    iotools.get_era5
+
+MERRA-2
+^^^^^^^
+
+A global reanalysis dataset providing weather, aerosol, and solar irradiance
+data.
+
+.. autosummary::
+   :toctree: generated/
+
+   iotools.get_merra2
 
 
 Generic data file readers

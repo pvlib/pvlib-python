@@ -135,7 +135,7 @@ def power_mismatch_deline(
     --------
     `solarfactors <https://github.com/pvlib/solarfactors/>`_
         Calculate the irradiance at different points of the module.
-    `bifacial_radiance <https://github.com/NREL/bifacial_radiance>`_
+    `bifacial_radiance <https://github.com/NatLabRockies/bifacial_radiance>`_
         Calculate the irradiance at different points of the module.
 
     References

@@ -57,18 +57,18 @@ def test_fit_sandia_simple_bad_iv(get_bad_iv_curves):
     (np.array([3., 2.9, 2.8, 2.7, 2.6, 2.5, 2.4, 1.7, 0.8, 0.]),
      np.array([0., 0.2, 0.4, 0.6, 0.8, 1., 1.2, 1.4, 1.45, 1.5]),
      10.,
-     (2.3392, 11.6865, -.232, -.2596, -.7119)),
+     (2.3392, 11.6865, -.2596, -.232, -.7119)),
     (np.array(
         [5., 4.9, 4.8, 4.7, 4.6, 4.5, 4.4, 4.3, 4.2, 4.1, 4., 3.8, 3.5, 1.7,
          0.]),
      np.array(
         [0., .1, .2, .3, .4, .5, .6, .7, .8, .9, 1., 1.1, 1.18, 1.2, 1.22]),
      15.,
-     (-22.0795, 27.1196, -4.2076, -.0056, -.0498))])
+     (-22.0795, 27.1196, -.0056, -4.2076, -.0498))])
 def test__fit_sandia_cocontent(i, v, nsvth, expected):
     # test confirms agreement with Matlab code. The returned parameters
     # are nonsense
-    iph, io, rsh, rs, n = sde._fit_sandia_cocontent(v, i, nsvth)
+    iph, io, rs, rsh, n = sde._fit_sandia_cocontent(v, i, nsvth)
     np.testing.assert_allclose(iph, np.array(expected[0]), atol=.0001)
     np.testing.assert_allclose(io, np.array([expected[1]]), atol=.0001)
     np.testing.assert_allclose(rs, np.array([expected[2]]), atol=.0001)

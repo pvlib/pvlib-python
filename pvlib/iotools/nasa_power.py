@@ -18,6 +18,7 @@ VARIABLE_MAP = {
     'T2M': 'temp_air',
     'WS2M': 'wind_speed_2m',
     'WS10M': 'wind_speed',
+    'ALLSKY_SRF_ALB': 'albedo',
 }
 
 

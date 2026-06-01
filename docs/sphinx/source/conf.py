@@ -388,8 +388,8 @@ suppress_warnings = ['ref.footnote']
 sphinx_gallery_conf = {
     'examples_dirs': ['../../examples'],  # location of gallery scripts
     'gallery_dirs': ['gallery'],  # location of generated output
-    # execute all scripts except for ones in the "system-models" directory:
-    'filename_pattern': '^((?!system-models).)*$',
+    # execute only files starting with plot_
+    'filename_pattern': 'plot_',
 
     # directory where function/class granular galleries are stored
     'backreferences_dir': 'reference/generated/gallery_backreferences',

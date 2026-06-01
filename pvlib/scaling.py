@@ -196,7 +196,7 @@ def latlon_to_xy(coordinates):
     m_per_deg_lon = r_earth * np.cos(np.pi/180 * meanlat) * np.pi/180
 
     # Conversion
-    pos = coordinates * np.array(m_per_deg_lat, m_per_deg_lon)
+    pos = coordinates * np.array([m_per_deg_lat, m_per_deg_lon])
 
     # reshape as (x,y) pairs to return
     try:

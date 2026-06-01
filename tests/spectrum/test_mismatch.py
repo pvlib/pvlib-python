@@ -288,3 +288,90 @@ def test_spectral_factor_jrc_supplied_ambiguous():
     with pytest.raises(ValueError, match='No valid input provided'):
         spectrum.spectral_factor_jrc(1.0, 0.8, module_type=None,
                                      coefficients=None)
+
+
+@pytest.mark.parametrize("module_type,expected", [
+    ('cdte', np.array(
+        [0.992801, 1.00004, 1.011576, 0.995003, 0.950156, 0.975665])),
+    ('monosi', np.array(
+        [1.000152, 0.969588, 0.984636, 1.015405, 1.024238, 1.005061])),
+    ('cigs', np.array(
+        [1.004621, 0.956719, 0.971668, 1.0254, 1.060066, 1.020196])),
+    ('asi', np.array(
+        [0.986968, 1.049725, 1.051978, 0.957968, 0.842258, 0.941927])),
+])
+def test_spectral_factor_polo(module_type, expected):
+    pws = np.array([0.96, 0.96, 1.85, 1.88, 0.66, 0.66])
+    aods = np.array([0.085, 0.085, 0.16, 0.19, 0.088, 0.088])
+    ams = np.array([1.34, 1.34, 2.2, 2.2, 2.6, 2.6])
+    aois = np.array([46.0, 76.0, 74.0, 28.0, 24.0, 55.0])
+    pressure = np.array([101300, 101400, 100500, 101325, 80000, 120000])
+    alb = np.array([0.15, 0.2, 0.3, 0.18, 0.32, 0.26])
+    out = spectrum.spectral_factor_polo(
+        pws, ams, aods, aois, pressure, module_type=module_type, albedo=alb)
+    np.testing.assert_allclose(out, expected, atol=1e-6)
+
+
+@pytest.fixture
+def polo_inputs():
+    return {'precipitable_water': 0.96,
+            'airmass_absolute': 1.34,
+            'aod500': 0.085,
+            'aoi': 76,
+            'pressure': 101400,
+            'albedo': 0.2}
+
+
+def test_spectral_factor_polo_coefficients(polo_inputs):
+    # test that supplying custom coefficients works as expected
+    coefficients = (
+        (0.0027, 10.34, 9.48, 0.31, 0.00077, 0.006)  # base Si coeffs
+        + (0, -0.003, 1.0)  # Si albedo correction coeffs
+    )
+    out = spectrum.spectral_factor_polo(**polo_inputs,
+                                        coefficients=coefficients)
+    np.testing.assert_allclose(out, 0.969588, atol=1e-6)
+
+
+def test_spectral_factor_polo_errors(polo_inputs):
+    with pytest.raises(ValueError, match='Must provide either'):
+        spectrum.spectral_factor_polo(**polo_inputs)
+    with pytest.raises(ValueError, match='Only one of'):
+        spectrum.spectral_factor_polo(**polo_inputs, module_type='CdTe',
+                                      coefficients=(1, 1, 1, 1, 1, 1))
+
+
+def test_spectral_factor_polo_types(polo_inputs):
+    # float:
+    out = spectrum.spectral_factor_polo(**polo_inputs, module_type='monosi')
+    assert isinstance(out, float)
+    np.testing.assert_allclose(out, 0.969588, atol=1e-6)
+
+    # array:
+    arrays = {k: np.array([v, v]) for k, v in polo_inputs.items()}
+    out = spectrum.spectral_factor_polo(**arrays, module_type='monosi')
+    assert isinstance(out, np.ndarray)
+    np.testing.assert_allclose(out, [0.969588]*2, atol=1e-6)
+
+    # series:
+    series = {k: pd.Series(v) for k, v in arrays.items()}
+    out = spectrum.spectral_factor_polo(**series, module_type='monosi')
+    assert isinstance(out, pd.Series)
+    pd.testing.assert_series_equal(out, pd.Series([0.969588]*2), atol=1e-6)
+
+
+def test_spectral_factor_polo_NaN(polo_inputs):
+    # nan in -> nan out
+    for key in polo_inputs:
+        inputs = polo_inputs.copy()
+        inputs[key] = np.nan
+        out = spectrum.spectral_factor_polo(**inputs, module_type='monosi')
+        assert np.isnan(out)
+
+
+def test_spectral_factor_polo_aoi_gt_90(polo_inputs):
+    polo_inputs['aoi'] = 95
+    out95 = spectrum.spectral_factor_polo(**polo_inputs, module_type='monosi')
+    polo_inputs['aoi'] = 90
+    out90 = spectrum.spectral_factor_polo(**polo_inputs, module_type='monosi')
+    assert out95 == out90

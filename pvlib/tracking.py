@@ -1,19 +1,19 @@
 import numpy as np
 import pandas as pd
 
-from pvlib.tools import cosd, sind, tand, acosd, asind
+from pvlib.tools import cosd, sind, tand, acosd
 from pvlib import irradiance
 from pvlib import shading
 from pvlib._deprecation import renamed_kwarg_warning, deprecated
 
 
 @renamed_kwarg_warning(
-    since="0.14.0",
+    since="0.16.0",
     old_param_name="axis_tilt",
     new_param_name="axis_slope",
 )
 @renamed_kwarg_warning(
-    since="0.14.0",
+    since="0.16.0",
     old_param_name="cross_axis_tilt",
     new_param_name="cross_axis_slope",
 )
@@ -53,10 +53,12 @@ def singleaxis(apparent_zenith, solar_azimuth,
 
     axis_slope : float, default 0
         The tilt of the axis of rotation (i.e, the y-axis defined by
-        ``axis_azimuth``) with respect to horizontal.
-        ``axis_slope`` must be >= 0 and <= 90. [degrees]
+        ``axis_azimuth``) with respect to horizontal (degrees). Positive
+        ``axis_slope`` is *downward* in the direction of ``axis_azimuth``. For
+        example, for a tracker with ``axis_azimuth=180`` and ``axis_slope=10``,
+        the north end is higher than the south end of the axis.
 
-        .. versionchanged:: 0.14.0
+        .. versionchanged:: 0.16.0
             Renamed from ``axis_tilt`` to ``axis_slope``.
 
     axis_azimuth : float, default 0
@@ -75,9 +77,7 @@ def singleaxis(apparent_zenith, solar_azimuth,
         y-axis of the tracker coordinate system. For example, for a tracker
         with ``axis_azimuth`` oriented to the south, a rotation to
         ``max_angle`` is towards the west, and a rotation toward ``-max_angle``
-        is in the opposite direction, toward the east. Hence, a ``max_angle``
-        of 180 degrees (equivalent to max_angle = (-180, 180)) allows the
-        tracker to achieve its full rotation capability.
+        is in the opposite direction, toward the east.
 
     backtrack : bool, default True
         Controls whether the tracker has the capability to "backtrack"
@@ -91,12 +91,19 @@ def singleaxis(apparent_zenith, solar_azimuth,
         centered on the tracking axis, with 6 meters between the tracking axes
         has a ``gcr`` of 2/6=0.333. If ``gcr`` is not provided, a ``gcr`` of
         2/7 is default. ``gcr`` must be <=1.
-
+        
     cross_axis_slope : float, default 0.0
-        In degrees :math:`^{\circ}`.
-        See :term:`cross_axis_slope`.
+        The angle, relative to horizontal, of the line formed by the
+        intersection between the slope containing the tracker axes and a plane
+        perpendicular to the tracker axes. The cross-axis tilt should be
+        specified using a right-handed convention. For example, trackers with
+        ``axis_azimuth`` of 180 degrees (heading south) will have a negative
+        cross-axis tilt if the tracker axes plane slopes down to the east and
+        positive cross-axis tilt if the tracker axes plane slopes down to the
+        west. Use :func:`~pvlib.tracking.calc_cross_axis_tilt` to calculate
+        ``cross_axis_tilt``. [degrees]
 
-        .. versionchanged:: 0.14.0
+        .. versionchanged:: 0.16.0
             Renamed from ``cross_axis_tilt`` to ``cross_axis_slope``.
 
     Returns
@@ -109,9 +116,10 @@ def singleaxis(apparent_zenith, solar_azimuth,
           rotated panel surface. [degrees]
         * `surface_tilt`: The angle between the panel surface and the earth
           surface, accounting for panel rotation. [degrees]
-        * `surface_azimuth`: The azimuth of the rotated panel, determined by
-          projecting the vector normal to the panel's surface to the earth's
-          surface. [degrees]
+        * `surface_azimuth`: The azimuth of the rotated panel (degrees),
+          determined by projecting the vector normal to the panel's surface to
+          the earth's surface. Where ``surface_tilt``=0, ``surface_azimuth``
+          is set equal to ``axis_azimuth`` - 90.
 
     See also
     --------
@@ -123,7 +131,7 @@ def singleaxis(apparent_zenith, solar_azimuth,
     ----------
     .. [1] Anderson, K., and Mikofski, M., "Slope-Aware Backtracking for
        Single-Axis Trackers", Technical Report NREL/TP-5K00-76626, July 2020.
-       https://www.nrel.gov/docs/fy20osti/76626.pdf
+       :doi:`10.2172/1660126`
     .. [2] Lorenzo, E., Narvarte, L., and Muñoz, J. (2011). Tracking and
        back-tracking 19(6), 747–753. :doi:`10.1002/pip.1085`
     """
@@ -219,8 +227,51 @@ def singleaxis(apparent_zenith, solar_azimuth,
     return out
 
 
+def _unit_normal(axis_azimuth, axis_tilt, theta):
+    """
+    Unit normal to rotated tracker surface, in global E-N-Up coordinates,
+    given by R*(0, 0, 1).T, where:
+
+        R = Rz(-axis_azimuth) Rx(-axis_tilt) Ry(theta)
+
+    Rz is a rotation by -axis_azimuth about the z-axis (axis_azimuth
+    is negated to convert from an azimuth angle to a rotation angle). Rx is a
+    rotation by -axis_tilt about the x-axis, where axis_tilt is negated
+    because pvlib's convention is that the positive y-axis is tilted
+    downwards. Ry is a rotation by theta about the y-axis.
+
+    Parameters
+    ----------
+    axis_azimuth : scalar
+    axis_tilt    : scalar
+    theta        : scalar or array-like
+
+    Returns
+    -------
+    ndarray
+        Shape ``theta.shape + (3,)``, with a minimum rank of 2.  For 1-D
+        ``theta`` of length N this is ``(N, 3)``.
+    """
+
+    theta = np.atleast_1d(np.asarray(theta))
+
+    cA, sA = cosd(-axis_azimuth), sind(-axis_azimuth)
+    cT, sT = cosd(-axis_tilt), sind(-axis_tilt)
+
+    cTh = cosd(theta)
+    sTh = sind(theta)
+
+    x = sA * sT * cTh + cA * sTh
+    y = sA * sTh - cA * sT * cTh
+    z = cT * cTh
+
+    result = np.stack((x, y, z), axis=-1)
+
+    return result
+
+
 @renamed_kwarg_warning(
-    since="0.14.0",
+    since="0.16.0",
     old_param_name="axis_tilt",
     new_param_name="axis_slope",
 )
@@ -236,13 +287,8 @@ def calc_surface_orientation(tracker_theta, axis_slope=0, axis_azimuth=0):
         with ``axis_slope=0`` and ``axis_azimuth=180``, ``tracker_theta > 0``
         results in ``surface_azimuth`` to the West while ``tracker_theta < 0``
         results in ``surface_azimuth`` to the East. [degree]
-    axis_slope : float, default 0
-        The tilt of the axis of rotation with respect to horizontal.
-        ``axis_slope`` must be >= 0 and <= 90.  [degree]
-
-        .. versionchanged:: 0.14.0
-            Renamed from ``axis_tilt`` to ``axis_slope``.
-
+    axis_tilt : float, default 0
+        The tilt of the axis of rotation with respect to horizontal. [degree]
     axis_azimuth : float, default 0
         [degrees] [degree]
 
@@ -251,7 +297,9 @@ def calc_surface_orientation(tracker_theta, axis_slope=0, axis_azimuth=0):
     dict or DataFrame
         Contains keys ``'surface_tilt'`` and ``'surface_azimuth'`` representing
         the module orientation accounting for tracker rotation and axis
-        orientation. [degree]
+        orientation (degree).
+        Where ``surface_tilt``=0, ``surface_azimuth`` is set equal to
+        ``axis_azimuth`` - 90.
 
     References
     ----------
@@ -259,19 +307,22 @@ def calc_surface_orientation(tracker_theta, axis_slope=0, axis_azimuth=0):
        Tracking of One-Axis Trackers", Technical Report NREL/TP-6A20-58891,
        July 2013. :doi:`10.2172/1089596`
     """
+    # from [1], Eq. 1
     with np.errstate(invalid='ignore', divide='ignore'):
         surface_tilt = acosd(cosd(tracker_theta) * cosd(axis_slope))
 
-        # clip(..., -1, +1) to prevent arcsin(1 + epsilon) issues:
-        azimuth_delta = asind(np.clip(sind(tracker_theta) / sind(surface_tilt),
-                                      a_min=-1, a_max=1))
-        # Combine Eqs 2, 3, and 4:
-        azimuth_delta = np.where(abs(tracker_theta) < 90,
-                                 azimuth_delta,
-                                 -azimuth_delta + np.sign(tracker_theta) * 180)
-        # handle surface_tilt=0 case:
-        azimuth_delta = np.where(sind(surface_tilt) != 0, azimuth_delta, 90)
-        surface_azimuth = (axis_azimuth + azimuth_delta) % 360
+    # for surface azimuth deviate from [1] to allow for negative tilt.
+    # unit normal to rotated tracker surface
+    unit_normal = _unit_normal(axis_azimuth, axis_slope, tracker_theta)
+
+    # project unit_normal to x-y plane to calculate azimuth
+    surface_azimuth = np.degrees(
+        np.arctan2(unit_normal[..., 0], unit_normal[..., 1]))
+
+    surface_azimuth = np.where(surface_tilt == 0., axis_azimuth - 90.,
+                               surface_azimuth)
+    # constrain angles to [0, 360)
+    surface_azimuth = np.mod(surface_azimuth, 360.0)
 
     out = {
         'surface_tilt': surface_tilt,
@@ -289,7 +340,7 @@ def calc_axis_slope(slope_azimuth, slope_tilt, axis_azimuth):
     respect to horizontal, ranging from 0 degrees (horizontal axis) to 90
     degrees (vertical axis).
 
-    .. versionchanged:: 0.14.0
+    .. versionchanged:: 0.16.0
         Renamed function ``calc_axis_tilt`` to ``calc_axis_slope``.
 
     Parameters
@@ -319,7 +370,7 @@ def calc_axis_slope(slope_azimuth, slope_tilt, axis_azimuth):
     ----------
     .. [1] Kevin Anderson and Mark Mikofski, "Slope-Aware Backtracking for
        Single-Axis Trackers", Technical Report NREL/TP-5K00-76626, July 2020.
-       https://www.nrel.gov/docs/fy20osti/76626.pdf
+       :doi:`10.2172/1660126`
     """
     delta_gamma = axis_azimuth - slope_azimuth
     # equations 18-19
@@ -381,7 +432,7 @@ def _calc_beta_c(v, dg, ba):
 
 
 @renamed_kwarg_warning(
-    since="0.14.0",
+    since="0.16.0",
     old_param_name="axis_tilt",
     new_param_name="axis_slope",
 )
@@ -399,24 +450,23 @@ def calc_cross_axis_slope(
     if the tracker axes plane slopes down to the east and positive cross-axis
     tilt if the tracker axes plane slopes down to the west.
 
-    .. versionchanged:: 0.14.0
+    .. versionchanged:: 0.16.0
         Renamed function ``calc_cross_axis_tilt`` to ``calc_cross_axis_slope``.
 
     Parameters
     ----------
     slope_azimuth : float
         direction of the normal to the slope containing the tracker axes, when
-        projected on the horizontal [degrees]
+        projected on the horizontal. [degrees]
     slope_tilt : float
-        angle of the slope containing the tracker axes, relative to horizontal
+        angle of the slope containing the tracker axes, relative to horizontal.
         [degrees]
     axis_azimuth : float
         direction of tracker axes projected on the horizontal [degrees]
     axis_slope : float
-        tilt of trackers relative to horizontal.  ``axis_slope`` must be >= 0
-        and <= 90. [degree]
+        tilt of trackers relative to horizontal. [degrees]
 
-        .. versionchanged:: 0.14.0
+        .. versionchanged:: 0.16.0
             Renamed from ``axis_tilt`` to ``axis_slope``.
 
     Returns
@@ -439,7 +489,7 @@ def calc_cross_axis_slope(
     ----------
     .. [1] Kevin Anderson and Mark Mikofski, "Slope-Aware Backtracking for
        Single-Axis Trackers", Technical Report NREL/TP-5K00-76626, July 2020.
-       https://www.nrel.gov/docs/fy20osti/76626.pdf
+       :doi:`10.2172/1660126`
     """
     # delta-gamma, difference between axis and slope azimuths
     delta_gamma = axis_azimuth - slope_azimuth
@@ -452,13 +502,13 @@ def calc_cross_axis_slope(
 
 # allow deprecated names of calc_cross_axis_slope and calc_axis_slope
 calc_axis_tilt = deprecated(
-    since="0.14.0",
+    since="0.16.0",
     name="calc_axis_tilt",  # else it uses calc_axis_slope by introspection
     alternative="pvlib.tracking.calc_axis_slope"
 )(calc_axis_slope)
 
 calc_cross_axis_tilt = deprecated(
-    since="0.14.0",
+    since="0.16.0",
     name="calc_cross_axis_tilt",  # else it uses calc_cross_axis_slope
     alternative="pvlib.tracking.calc_cross_axis_slope"
 )(calc_cross_axis_slope)

@@ -86,20 +86,22 @@ skip_windows = pytest.mark.skipif(platform_is_windows,
 
 
 @pytest.fixture(scope="module")
-def nrel_api_key():
-    """Supplies pvlib-python's NREL Developer Network API key.
+def nlr_api_key():
+    """Supplies pvlib-python's NLR Developer Network API key.
 
-    pvlib's CI utilizes a secret variable set to NREL_API_KEY
-    to mitigate failures associated with using the default key of
-    "DEMO_KEY". A user is capable of using their own key this way if
-    desired however the default key should suffice for testing purposes.
+    pvlib's CI utilizes a secret variable set to NLR_API_KEY
+    (formerly NREL_API_KEY) to mitigate failures associated with
+    using the default key of "DEMO_KEY". A user is capable of using
+    their own key this way if desired however the default key should
+    suffice for testing purposes.
     """
     try:
-        demo_key = os.environ["NREL_API_KEY"]
+        demo_key = os.environ["NLR_API_KEY"]
     except KeyError:
         warnings.warn(
-            "WARNING: NREL API KEY environment variable not set! "
-            "Using DEMO_KEY instead. Unexpected failures may occur."
+            "WARNING: NLR_API_KEY (formerly NREL_API_KEY) environment "
+            "variable not set! Using DEMO_KEY instead. "
+            "Unexpected failures may occur."
         )
         demo_key = 'DEMO_KEY'
     return demo_key
@@ -141,6 +143,20 @@ except KeyError:
 requires_ecmwf_credentials = pytest.mark.skipif(
     not has_ecmwf_credentials,
     reason='requires ECMWF credentials')
+
+
+try:
+    # Attempt to load NASA EarthData credentials used for testing
+    # pvlib.iotools.get_merra2
+    earthdata_username = os.environ["EARTHDATA_USERNAME"]
+    earthdata_password = os.environ["EARTHDATA_PASSWORD"]
+    has_earthdata_credentials = True
+except KeyError:
+    has_earthdata_credentials = False
+
+requires_earthdata_credentials = pytest.mark.skipif(
+    not has_earthdata_credentials,
+    reason='requires EarthData credentials')
 
 
 try:

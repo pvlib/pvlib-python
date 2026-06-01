@@ -2,9 +2,8 @@ import numpy as np
 
 from scipy import constants
 from scipy import optimize
-from scipy.special import lambertw
 
-from pvlib.ivtools.utils import rectify_iv_curve
+from pvlib.ivtools.utils import rectify_iv_curve, _lambertw_pvlib
 from pvlib.ivtools.sde import _fit_sandia_cocontent
 
 from pvlib.ivtools.sdm._fit_desoto_pvsyst_sandia import (
@@ -454,7 +453,7 @@ def fit_desoto_batzelis(v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc):
     # Equation numbers refer to [1]
     t0 = 298.15  # K
     del0 = (1 - beta_voc * t0) / (50.1 - alpha_sc * t0)  # Eq 9
-    w0 = np.real(lambertw(np.exp(1/del0 + 1)))
+    w0 = _lambertw_pvlib(np.exp(1/del0 + 1))
 
     # Eqs 11-15
     a0 = del0 * v_oc

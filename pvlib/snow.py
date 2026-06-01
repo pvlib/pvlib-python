@@ -159,7 +159,7 @@ def coverage_nrel(snowfall, poa_irradiance, temp_air, surface_tilt,
         # All slides off if snow on the ground is less than threshold_depth.
         # Described in [2] to avoid non-sliding snow for low-tilt systems.
         # Default threshold_depth of 1cm is from [2[ and SAM's implementation.
-        # https://github.com/NREL/ssc/issues/1265
+        # https://github.com/NatLabRockies/ssc/issues/1265
         slide_amt[snow_depth < threshold_depth] = 1.
 
     # build time series of cumulative slide amounts
@@ -211,7 +211,7 @@ def dc_loss_nrel(snow_coverage, num_strings):
     ----------
     .. [1] Gilman, P. et al., (2018). "SAM Photovoltaic Model Technical
        Reference Update", NREL Technical Report NREL/TP-6A20-67399.
-       Available at https://www.nrel.gov/docs/fy18osti/67399.pdf
+       Available at https://www.nlr.gov/docs/fy18osti/67399.pdf
     '''
     return np.ceil(snow_coverage * num_strings) / num_strings
 
@@ -248,7 +248,8 @@ def _townsend_effective_snow(snow_total, snow_events):
 
 def loss_townsend(snow_total, snow_events, surface_tilt, relative_humidity,
                   temp_air, poa_global, slant_height, lower_edge_height,
-                  string_factor=1.0, angle_of_repose=40):
+                  string_factor=1.0, angle_of_repose=40,
+                  front_side_fraction=1.0):
     '''
     Calculates monthly snow loss based on the Townsend monthly snow loss
     model.
@@ -293,6 +294,12 @@ def loss_townsend(snow_total, snow_events, surface_tilt, relative_humidity,
         Piled snow angle, assumed to stabilize at 40°, the midpoint of
         25°-55° avalanching slope angles. [deg]
 
+    front_side_fraction : numeric or array-like, default 1.0
+        Fraction of monthly energy from front-side insolation. [unitless]
+        Multiplies the calculated loss fraction. For example,
+        use 0.9 when 90% of monthly energy is from the front side
+        of a bifacial system and 10% is from the rear side.
+
     Returns
     -------
     loss : array-like
@@ -310,6 +317,10 @@ def loss_townsend(snow_total, snow_events, surface_tilt, relative_humidity,
     publication of [1]_, as described in [2]_.
     The definition for snow events documented above is based on [3]_.
 
+    For bifacial systems, [2]_ recommends including both front-side and
+    rear-side insolation in ``poa_global``. The resulting loss is
+    scaled by the front-side energy fraction ``front_side_fraction``.
+
     References
     ----------
     .. [1] Townsend, Tim & Powers, Loren. (2011). Photovoltaics and snow: An
@@ -320,7 +331,7 @@ def loss_townsend(snow_total, snow_events, surface_tilt, relative_humidity,
         Uses of the Townsend Snow Model. In "Photovoltaic Reliability
         Workshop (PVRW) 2023 Proceedings: Posters.", ed. Silverman,
         T. J. Dec. 2023. NREL/CP-5900-87918.
-        Available at: https://www.nrel.gov/docs/fy25osti/90585.pdf
+        Available at: https://www.osti.gov/biblio/2229734
     .. [3] Townsend, T. (2013). Predicting PV Energy Loss Caused by Snow.
         Solar Power International, Chicago IL.
         :doi:`10.13140/RG.2.2.14299.68647`
@@ -383,5 +394,7 @@ def loss_townsend(snow_total, snow_events, surface_tilt, relative_humidity,
         / poa_global_kWh**0.67
         * string_factor
     )
+
+    loss_fraction = loss_fraction * front_side_fraction
 
     return np.clip(loss_fraction, 0, 1)

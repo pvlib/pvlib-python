@@ -12,6 +12,7 @@ VARIABLE_MAP = {
     'sp': 'pressure',
     'ssrd': 'ghi',
     'tp': 'precipitation',
+    'strd': 'longwave_down',
 
     # long names
     '2m_dewpoint_temperature': 'temp_dew',
@@ -19,6 +20,7 @@ VARIABLE_MAP = {
     'surface_pressure': 'pressure',
     'surface_solar_radiation_downwards': 'ghi',
     'total_precipitation': 'precipitation',
+    'surface_thermal_radiation_downwards': 'longwave_down',
 }
 
 
@@ -35,7 +37,7 @@ def _j_to_w(j):
 
 
 def _m_to_cm(m):
-    return m / 100
+    return m * 100
 
 
 UNITS = {

@@ -38,7 +38,7 @@ def expected_solpos_multi():
 
 @pytest.fixture()
 def expected_rise_set_spa():
-    # for Golden, CO, from NREL SPA website
+    # for Golden, CO, from NLR SPA website
     times = pd.DatetimeIndex([datetime.datetime(2015, 1, 2),
                               datetime.datetime(2015, 8, 2),
                               ]).tz_localize('MST')
@@ -86,8 +86,8 @@ def expected_rise_set_ephem():
                         index=times)
 
 
-# the physical tests are run at the same time as the NREL SPA test.
-# pyephem reproduces the NREL result to 2 decimal places.
+# the physical tests are run at the same time as the NLR SPA test.
+# pyephem reproduces the NLR result to 2 decimal places.
 # this doesn't mean that one code is better than the other.
 
 @requires_spa_c
@@ -142,20 +142,15 @@ def test_spa_python_numpy_physical_dst(expected_solpos, golden):
 
 @pytest.mark.parametrize('delta_t', [65.0, None, np.array([65, 65])])
 def test_sun_rise_set_transit_spa(expected_rise_set_spa, golden, delta_t):
-    # solution from NREL SAP web calculator
+    # solution from NLR SPA web calculator
     south = Location(-35.0, 0.0, tz='UTC')
-    times = pd.DatetimeIndex([datetime.datetime(1996, 7, 5, 0),
-                              datetime.datetime(2004, 12, 4, 0)]
-                             ).tz_localize('UTC')
-    sunrise = pd.DatetimeIndex([datetime.datetime(1996, 7, 5, 7, 8, 15),
-                                datetime.datetime(2004, 12, 4, 4, 38, 57)]
-                               ).tz_localize('UTC').tolist()
-    sunset = pd.DatetimeIndex([datetime.datetime(1996, 7, 5, 17, 1, 4),
-                               datetime.datetime(2004, 12, 4, 19, 2, 3)]
-                              ).tz_localize('UTC').tolist()
-    transit = pd.DatetimeIndex([datetime.datetime(1996, 7, 5, 12, 4, 36),
-                                datetime.datetime(2004, 12, 4, 11, 50, 22)]
-                               ).tz_localize('UTC').tolist()
+    times = pd.to_datetime(["1996-07-05", "2004-12-04"], utc=True)
+    sunrise = pd.to_datetime(["1996-07-05 07:08:15", "2004-12-04 04:38:57"],
+                             utc=True)
+    sunset = pd.to_datetime(["1996-07-05 17:01:04", "2004-12-04 19:02:03"],
+                            utc=True)
+    transit = pd.to_datetime(["1996-07-05 12:04:36", "2004-12-04 11:50:22"],
+                             utc=True)
     frame = pd.DataFrame({'sunrise': sunrise,
                           'sunset': sunset,
                           'transit': transit}, index=times)
@@ -169,9 +164,11 @@ def test_sun_rise_set_transit_spa(expected_rise_set_spa, golden, delta_t):
     for col, data in result.items():
         result_rounded[col] = data.dt.round('1s')
 
-    assert_frame_equal(frame, result_rounded)
+    assert_frame_equal(frame, result_rounded,
+                       check_dtype=False  # ignore us/ns dtypes
+                       )
 
-    # test for Golden, CO compare to NREL SPA
+    # test for Golden, CO compare to NLR SPA
     result = solarposition.sun_rise_set_transit_spa(
         expected_rise_set_spa.index, golden.latitude, golden.longitude,
         delta_t=delta_t)
@@ -182,7 +179,9 @@ def test_sun_rise_set_transit_spa(expected_rise_set_spa, golden, delta_t):
     for col, data in result.items():
         result_rounded[col] = data.dt.round('s').tz_convert('MST')
 
-    assert_frame_equal(expected_rise_set_spa, result_rounded)
+    assert_frame_equal(expected_rise_set_spa, result_rounded,
+                       check_dtype=False  # ignore us/ns dtypes
+                       )
 
 
 @requires_ephem
@@ -673,7 +672,7 @@ def test_analytical_azimuth():
 def test_hour_angle():
     """
     Test conversion from hours to hour angles in degrees given the following
-    inputs from NREL SPA calculator at Golden, CO
+    inputs from NLR SPA calculator at Golden, CO
     date,times,eot,sunrise,sunset
     1/2/2015,7:21:55,-3.935172,-70.699400,70.512721
     1/2/2015,16:47:43,-4.117227,-70.699400,70.512721
@@ -688,7 +687,7 @@ def test_hour_angle():
     eot = np.array([-3.935172, -4.117227, -4.026295])
     hourangle = solarposition.hour_angle(times, longitude, eot)
     expected = (-70.682338, 70.72118825000001, 0.000801250)
-    # FIXME: there are differences from expected NREL SPA calculator values
+    # FIXME: there are differences from expected NLR SPA calculator values
     # sunrise: 4 seconds, sunset: 48 seconds, transit: 0.2 seconds
     # but the differences may be due to other SPA input parameters
     assert np.allclose(hourangle, expected)
@@ -726,7 +725,10 @@ def test_hour_angle_with_tricky_timezones():
         '2014-09-07 02:00:00',
     ]).tz_localize('America/Santiago', nonexistent='shift_forward')
 
-    with pytest.raises(pytz.exceptions.NonExistentTimeError):
+    with pytest.raises((
+        pytz.exceptions.NonExistentTimeError,  # pandas 1.x, 2.x
+        ValueError,  # pandas 3.x
+    )):
         times.normalize()
 
     # should not raise `pytz.exceptions.NonExistentTimeError`
@@ -740,7 +742,10 @@ def test_hour_angle_with_tricky_timezones():
         '2014-11-02 02:00:00',
     ]).tz_localize('America/Havana', ambiguous=[True, True, False, False])
 
-    with pytest.raises(pytz.exceptions.AmbiguousTimeError):
+    with pytest.raises((
+        pytz.exceptions.AmbiguousTimeError,  # pandas 1.x, 2.x
+        ValueError,  # pandas 3.x
+    )):
         solarposition.hour_angle(times, longitude, eot)
 
 
@@ -798,8 +803,13 @@ def test_sun_rise_set_transit_geometric(expected_rise_set_spa, golden_mst):
 @pytest.mark.parametrize('tz', [None, 'utc', 'US/Eastern'])
 def test__datetime_to_unixtime(tz):
     # for pandas < 2.0 where "unit" doesn't exist in pd.date_range. note that
-    # unit of ns is the only option in pandas<2, and the default in pandas 2.x
-    times = pd.date_range(start='2019-01-01', freq='h', periods=3, tz=tz)
+    # unit of ns is the only option in pandas<2, and the default in pandas 2.x,
+    # but the default is us in pandas 3.x
+    kwargs = dict(start='2019-01-01', freq='h', periods=3, tz=tz)
+    try:
+        times = pd.date_range(**kwargs, unit='ns')  # pandas 2.x, 3.x
+    except TypeError:
+        times = pd.date_range(**kwargs)  # pandas 1.x
     expected = times.view(np.int64)/10**9
     actual = solarposition._datetime_to_unixtime(times)
     np.testing.assert_equal(expected, actual)

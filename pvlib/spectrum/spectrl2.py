@@ -203,7 +203,7 @@ def spectrl2(apparent_zenith, aoi, surface_tilt, ground_albedo,
         Surface pressure. [Pa]
     relative_airmass : numeric
         Relative airmass. The airmass model used in [1]_ is the `'kasten1966'`
-        model, while a later implementation by NREL uses the
+        model, while a later implementation by NREL used the
         `'kastenyoung1989'` model. [unitless]
     precipitable_water : numeric
         Atmospheric water vapor content. [cm]
@@ -245,7 +245,7 @@ def spectrl2(apparent_zenith, aoi, surface_tilt, ground_albedo,
 
     Notes
     -----
-    NREL's C implementation ``spectrl2_2.c`` [2]_ of the model differs in
+    NLR's C implementation ``spectrl2_2.c`` [2]_ of the model differs in
     several ways from the original report [1]_.  The report itself also has
     a few differences between the in-text equations and the code appendix.
     The list of known differences is shown below.  Note that this
@@ -273,7 +273,7 @@ def spectrl2(apparent_zenith, aoi, surface_tilt, ground_albedo,
        earth's surface for cloudless atmospheres", NREL Technical Report
        TR-215-2436 :doi:`10.2172/5986936`.
     .. [2] Bird Simple Spectral Model: spectrl2_2.c.
-       https://www.nrel.gov/grid/solar-resource/spectral.html
+       https://www.nlr.gov/grid/solar-resource/spectral.html
     """
     # values need to be np arrays for broadcasting, so unwrap Series if needed:
     is_pandas = isinstance(apparent_zenith, pd.Series)

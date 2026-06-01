@@ -12,6 +12,27 @@ contributors from novice to expert. Don't worry if you don't (yet)
 understand parts of it.
 
 
+.. _core-guidelines:
+
+Core guidelines
+~~~~~~~~~~~~~~~
+While we welcome new contributors, reviewer capacity is limited. Therefore,
+following these core guidelines is essential:
+
+* Pull requests (PRs) should address one or more open issues. Context should
+  be provided, e.g. a link to the relevant discussion.
+* GSoC: For Google Summer of Code, we invite applications only from those with
+  PV modeling experience and who are motivated to join the pvlib maintenance
+  team.
+* pvlib-python is an advanced scientific modeling toolbox. A background
+  in solar energy and/or experience in pvlib-python is required to
+  address some issues effectively. It is not always clear which issues
+  fall into this bucket. Don't be offended if maintainers close your PR for
+  this reason.
+* Maintainers reserve the right to close PRs that do not comply with the
+  contributing guidelines.
+
+
 .. _easy-ways-to-contribute:
 
 Easy ways to contribute

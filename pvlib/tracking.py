@@ -91,7 +91,7 @@ def singleaxis(apparent_zenith, solar_azimuth,
         centered on the tracking axis, with 6 meters between the tracking axes
         has a ``gcr`` of 2/6=0.333. If ``gcr`` is not provided, a ``gcr`` of
         2/7 is default. ``gcr`` must be <=1.
-        
+
     cross_axis_slope : float, default 0.0
         See :term:`cross_axis_slope`. [degrees]
 

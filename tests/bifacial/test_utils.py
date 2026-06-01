@@ -13,6 +13,19 @@ from pvlib._deprecation import pvlibDeprecationWarning
 
 @pytest.fixture
 def test_system_fixed_tilt():
+    """
+ row -1                   row 0                   row 1                  row 2
+-                       -                       -                       -
+  -                       -                       -                       -
+    -                       -                       -                       -
+    | -                     | -                     | -                     |
+    |   -                   |   -                   |   -                   |
+    |                       |                       |                       |
+    |                       |                       |                       |
+    |                       |                       |                       |
+----------------------------x-----------x-----------x--------------------------
+                            0           1           2
+    """
     syst = {'height': 1.0,
             'pitch': 2.,
             'surface_tilt': 30.,
@@ -20,26 +33,34 @@ def test_system_fixed_tilt():
             'axis_azimuth': None,
             'rotation': -30.}
     syst['gcr'] = 1.0 / syst['pitch']
+
     # view factors from 3 points on the ground between rows to the sky
     pts = np.linspace(0, 1, num=3)
     sqr3 = np.sqrt(3) / 4
-    # c_i,j = cos(angle from point i to edge of row j), j=0 is row = -1
-    # c_i,j = cos(angle from point i to edge of row j), j=0 is row = -1
-    c00 = (-2 - sqr3) / np.sqrt(1.25**2 + (2 + sqr3)**2)  # right edge row -1
-    c01 = -sqr3 / np.sqrt(1.25**2 + sqr3**2)  # right edge row 0
-    c02 = sqr3 / np.sqrt(0.75**2 + sqr3**2)  # left edge of row 0
-    c03 = (2 - sqr3) / np.sqrt(1.25**2 + (2 - sqr3)**2)  # right edge of row 1
+    
+    # c_ij = cos(angle from point i to a row edge, from left to right)
+    c00 = (-2 - sqr3) / np.sqrt(1.25**2 + (2 + sqr3)**2)  # left edge row -1
+    c01 = -sqr3 / np.sqrt(1.25**2 + sqr3**2)  # left edge row 0
+    c02 = sqr3 / np.sqrt(0.75**2 + sqr3**2)  # right edge of row 0
+    c03 = (2 - sqr3) / np.sqrt(1.25**2 + (2 - sqr3)**2)  # left edge of row 1
+    # cannot see sky between rows 1 and 2
     vf_0 = 0.5 * (c03 - c02 + c01 - c00)  # vf at point 0
-    c10 = (-3 - sqr3) / np.sqrt(1.25**2 + (3 + sqr3)**2)  # right edge row -1
-    c11 = (-1 - sqr3) / np.sqrt(1.25**2 + (1 + sqr3)**2)  # right edge row 0
-    c12 = (-1 + sqr3) / np.sqrt(0.75**2 + (-1 + sqr3)**2)  # left edge row 0
-    c13 = (1 - sqr3) / np.sqrt(1.25**2 + (1 - sqr3)**2)  # right edge row
-    vf_1 = 0.5 * (c13 - c12 + c11 - c10)  # vf at point 1
-    c20 = -(4 + sqr3) / np.sqrt(1.25**2 + (4 + sqr3)**2)  # right edge row -1
-    c21 = (-2 + sqr3) / np.sqrt(0.75**2 + (-2 + sqr3)**2)  # left edge row 0
-    c22 = (-2 - sqr3) / np.sqrt(1.25**2 + (2 + sqr3)**2)  # right edge row 0
-    c23 = (0 - sqr3) / np.sqrt(1.25**2 + (0 - sqr3)**2)  # right edge row 1
-    vf_2 = 0.5 * (c23 - c22 + c21 - c20)  # vf at point 1
+
+    c10 = (-3 - sqr3) / np.sqrt(1.25**2 + (3 + sqr3)**2)  # left edge row -1
+    c11 = (-1 - sqr3) / np.sqrt(1.25**2 + (1 + sqr3)**2)  # left edge row 0
+    c12 = (-1 + sqr3) / np.sqrt(0.75**2 + (-1 + sqr3)**2)  # right edge row 0
+    c13 = (1 - sqr3) / np.sqrt(1.25**2 + (1 - sqr3)**2)  # left edge row 1
+    c14 = (1 + sqr3) / np.sqrt(0.75**2 + (1 + sqr3)**2)  # right edge row 1
+    c15 = (3 - sqr3) / np.sqrt(1.25**2 + (3 - sqr3)**2)  # left edge row 2
+    vf_1 = 0.5 * (c15 - c14 + c13 - c12 + c11 - c10)  # vf at point 1
+
+    c20 = -(4 + sqr3) / np.sqrt(1.25**2 + (4 + sqr3)**2)  # left edge row -1
+    c21 = (-2 + sqr3) / np.sqrt(0.75**2 + (-2 + sqr3)**2)  # right edge row 0
+    c22 = (-2 - sqr3) / np.sqrt(1.25**2 + (2 + sqr3)**2)  # left edge row 0
+    c23 = (0 - sqr3) / np.sqrt(1.25**2 + (0 - sqr3)**2)  # left edge row 1
+    c24 = (0 + sqr3) / np.sqrt(0.75**2 + (0 + sqr3)**2)  # right edge row 1
+    c25 = (2 - sqr3) / np.sqrt(1.25**2 + (2 - sqr3)**2)  # left edge row 2
+    vf_2 = 0.5 * (c25 - c24 + c23 - c22 + c21 - c20)  # vf at point 1
     vfs_ground_sky = np.array([[vf_0], [vf_1], [vf_2]])
     return syst, pts, vfs_ground_sky
 

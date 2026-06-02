@@ -42,6 +42,9 @@ Documentation
 * Clarifies how Linke turbidity values can be provided to
  :py:func:`pvlib.clearsky.ineichen` via
  :py:func:`pvlib.clearsky.lookup_linke_turbidity` (:issue:`2598`, :pull:`2746`)
+* Documented that timestamps returned by :py:func:`~pvlib.iotools.get_era5`
+  represent the end of the averaging interval, consistent with ERA5
+  conventions. (:issue:`2772`, :pull:`2773`)
 
 
 Testing

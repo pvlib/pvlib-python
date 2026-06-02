@@ -26,6 +26,10 @@ Bug fixes
   represent the end of the averaging interval, consistent with ERA5
   conventions. (:issue:`2772`, :pull:`2773`)
 
+* :py:func:`pvlib.iotools.read_nsrdb_psm4` now parses the file header with the
+  :py:mod:`csv` module instead of a naive ``str.split(',')``, so quoted column
+  names containing commas (e.g. the material names in spectral-on-demand files)
+  are no longer split into spurious columns. (:issue:`2736`, :pull:`2771`)
 
 Enhancements
 ~~~~~~~~~~~~
@@ -67,6 +71,7 @@ Maintenance
 Contributors
 ~~~~~~~~~~~~
 * :ghuser:`Omesh37`
+* :ghuser:`gaoflow`
 * Cliff Hansen (:ghuser:`cwhanse`)
 * :ghuser:`shethkajal7`
 * Arthur Onno (:ghuser:`ArthurOnnoTerabase`)

@@ -877,7 +877,7 @@ def haydavies(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
 
 
 def reindl(surface_tilt, surface_azimuth, dhi, dni, ghi, dni_extra,
-           solar_zenith, solar_azimuth):
+           solar_zenith, solar_azimuth, return_components=False):
     r'''
     Determine the diffuse irradiance from the sky on a tilted surface using
     the Reindl (1990) model.
@@ -915,6 +915,10 @@ def reindl(surface_tilt, surface_azimuth, dhi, dni, ghi, dni_extra,
 
     solar_azimuth : numeric
         Solar azimuth angles. See :term:`solar_azimuth`. [°]
+
+    return_components : bool, default False
+        Flag used to decide whether to return the calculated diffuse components
+        or not.
 
     Returns
     -------
@@ -977,16 +981,32 @@ def reindl(surface_tilt, surface_azimuth, dhi, dni, ghi, dni_extra,
     HB = dni * cos_solar_zenith
     HB = np.maximum(HB, 0)
 
-    # these are the () and [] sub-terms of the second term of eqn 8
-    term1 = 1 - AI
-    term2 = 0.5 * (1 + tools.cosd(surface_tilt))
+    I = (1 + tools.cosd(surface_tilt)) / 2
+
     with np.errstate(invalid='ignore', divide='ignore'):
         hb_to_ghi = np.where(ghi == 0, 0, np.divide(HB, ghi))
-    term3 = 1 + np.sqrt(hb_to_ghi) * (tools.sind(0.5 * surface_tilt)**3)
-    sky_diffuse = dhi * (AI * Rb + term1 * term2 * term3)
-    sky_diffuse = np.maximum(sky_diffuse, 0)
+    h = np.sqrt(hb_to_ghi) * (tools.sind(surface_tilt / 2) ** 3)
 
-    return sky_diffuse
+    term1 = (1 - AI) * I
+    term2 = AI * Rb
+    term3 = (1 - AI) * I * h
+
+    sky_diffuse = dhi * (term1 + term2 + term3)
+
+    if return_components:
+        diffuse_components = OrderedDict()
+        diffuse_components['poa_sky_diffuse'] = sky_diffuse
+
+        # Calculate the individual components
+        diffuse_components['poa_isotropic'] = dhi * term1
+        diffuse_components['poa_circumsolar'] = dhi * term2
+        diffuse_components['poa_horizon'] = dhi * term3
+
+        if isinstance(sky_diffuse, pd.Series):
+            diffuse_components = pd.DataFrame(diffuse_components)
+        return diffuse_components
+    else:
+        return sky_diffuse
 
 
 def king(surface_tilt, dhi, ghi, solar_zenith):

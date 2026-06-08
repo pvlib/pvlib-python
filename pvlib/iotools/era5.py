@@ -102,7 +102,7 @@ def get_era5(latitude, longitude, start, end, variables, api_key,
     Returns
     -------
     data : pd.DataFrame
-        Time series data. The index corresponds to the start of the interval.
+        Time series data. The index corresponds to the end of the interval.
     meta : dict
         Metadata.
 

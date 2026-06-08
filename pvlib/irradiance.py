@@ -918,8 +918,21 @@ def reindl(surface_tilt, surface_azimuth, dhi, dni, ghi, dni_extra,
 
     Returns
     -------
-    poa_sky_diffuse : numeric
-        The sky diffuse component of the solar radiation. [Wm⁻²]
+    numeric, OrderedDict, or DataFrame
+        Return type controlled by ``return_components`` argument.
+        If ``return_components=False``, `sky_diffuse` is returned.
+        If ``return_components=True``, `diffuse_components` is returned.
+
+    sky_diffuse : numeric
+        The sky diffuse component of the solar radiation on a tilted
+        surface.
+
+    diffuse_components : OrderedDict (array input) or DataFrame (Series input)
+        Keys/columns are:
+            * poa_sky_diffuse: Total sky diffuse
+            * poa_isotropic
+            * poa_circumsolar
+            * poa_horizon
 
     Notes
     -----
@@ -943,8 +956,9 @@ def reindl(surface_tilt, surface_azimuth, dhi, dni, ghi, dni_extra,
     Implementation is based on Loutzenhiser et al.
     (2007) [3]_, Equation 8. The beam and ground reflectance portion of the
     equation have been removed, therefore the model described here generates
-    ONLY the diffuse radiation from the sky and circumsolar, so the form of the
-    equation varies slightly from Equation 8 in [3]_.
+    ONLY the diffuse radiation from the sky, circumsolar, and horizon
+    brightening, so the form of the equation varies slightly from Equation 8
+    in [3]_.
 
     References
     ----------

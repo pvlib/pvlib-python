@@ -108,28 +108,27 @@ def test_get_nasa_power_all_variable_map_parameters_valid():
     live API. A typo or stale name (e.g. CLRSKY_DIFF vs CLRSKY_SFC_SW_DIFF)
     causes the API to return an HTTPError, which would fail this test.
 
-    NASA POWER allows max 15 parameters per request; VARIABLE_MAP fits within
-    that. If the map grows past 15, split this test into batches.
+    NASA POWER allows max 15 parameters per request; VARIABLE_MAP is split
+    into two batches to stay within that limit.
     """
     from pvlib.iotools.nasa_power import VARIABLE_MAP
     nasa_params = list(VARIABLE_MAP.keys())
-    assert len(nasa_params) <= 15, (
-        "VARIABLE_MAP exceeds NASA POWER's 15-parameter-per-request limit; "
-        "split this test into batches."
-    )
+    # Split into two batches; API limit is 15.
+    half = (len(nasa_params) + 1) // 2
+    batch1 = nasa_params[:half]
+    batch2 = nasa_params[half:]
 
-    data, meta = pvlib.iotools.get_nasa_power(
-        latitude=44.76,
-        longitude=7.64,
-        start='2025-02-02',
-        end='2025-02-02',
-        parameters=nasa_params,
-        map_variables=False,
-    )
-
-    # Every requested NASA parameter must come back as a column.
-    missing = set(nasa_params) - set(data.columns)
-    assert not missing, f"NASA POWER did not return: {sorted(missing)}"
+    for batch in [batch1, batch2]:
+        data, meta = pvlib.iotools.get_nasa_power(
+            latitude=44.76,
+            longitude=7.64,
+            start='2025-02-02',
+            end='2025-02-02',
+            parameters=batch,
+            map_variables=False,
+        )
+        missing = set(batch) - set(data.columns)
+        assert not missing, f"NASA POWER did not return: {sorted(missing)}"
 
 
 @pytest.mark.remote_data

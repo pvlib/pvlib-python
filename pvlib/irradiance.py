@@ -918,7 +918,11 @@ def reindl(surface_tilt, surface_azimuth, dhi, dni, ghi, dni_extra,
 
     Returns
     -------
+<<<<<<< HEAD
     numeric, Dict, or DataFrame
+=======
+    numeric, OrderedDict, or DataFrame
+>>>>>>> 3cbc4adc (Update docstrings for Reindl)
         Return type controlled by ``return_components`` argument.
         If ``return_components=False``, `sky_diffuse` is returned.
         If ``return_components=True``, `diffuse_components` is returned.
@@ -927,7 +931,11 @@ def reindl(surface_tilt, surface_azimuth, dhi, dni, ghi, dni_extra,
         The sky diffuse component of the solar radiation on a tilted
         surface.
 
+<<<<<<< HEAD
     diffuse_components : Dict (array input) or DataFrame (Series input)
+=======
+    diffuse_components : OrderedDict (array input) or DataFrame (Series input)
+>>>>>>> 3cbc4adc (Update docstrings for Reindl)
         Keys/columns are:
             * poa_sky_diffuse: Total sky diffuse
             * poa_isotropic
@@ -961,7 +969,7 @@ def reindl(surface_tilt, surface_azimuth, dhi, dni, ghi, dni_extra,
     in [3]_.
 
     For clarity, the horizon component in `reindl` corresponds to the term
-    added on top of the `hay–davies` formulation, on which `reindl` builds.
+    added on top of the `haydavies` formulation, on which `reindl` builds.
 
     References
     ----------

@@ -92,9 +92,9 @@ def get_nasa_power(latitude, longitude, start, end,
 
     Notes
     -----
-    The following unit conversions are applied after renaming:
+    When ``map_variables=True`` the following unit conversions are applied:
     pressure is converted from kPa to Pa, and precipitable water
-    is converted from kg/m\u00b2 (mm) to cm.
+    is converted from kg/m² (mm) to cm.
 
     Returns
     -------

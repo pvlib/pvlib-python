@@ -17,6 +17,7 @@ VARIABLE_MAP = {
     'ALLSKY_SRF_ALB': 'albedo',
     'ALLSKY_SFC_LW_DWN': 'longwave_down',
     'CLRSKY_SFC_SW_DIFF': 'dhi_clear',
+    'CLRSKY_SFC_SW_DNI': 'dni_clear',
     'CLRSKY_SFC_SW_DWN': 'ghi_clear',
     'PS': 'pressure',
     'RH2M': 'relative_humidity',

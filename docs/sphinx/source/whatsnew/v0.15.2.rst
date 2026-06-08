@@ -22,6 +22,10 @@ Bug fixes
   introduced in v0.15.1 (:pull:`2702`) that caused a broadcasting
   ``ValueError`` when ``tracker_theta`` was a 2-D (or higher rank) array.
   (:issue:`2747`, :pull:`2749`)
+* Document that timestamps returned by :py:func:`~pvlib.iotools.get_era5`
+  represent the end of the averaging interval, consistent with ERA5
+  conventions. (:issue:`2772`, :pull:`2773`)
+
 
 Enhancements
 ~~~~~~~~~~~~
@@ -42,9 +46,6 @@ Documentation
 * Clarifies how Linke turbidity values can be provided to
  :py:func:`pvlib.clearsky.ineichen` via
  :py:func:`pvlib.clearsky.lookup_linke_turbidity` (:issue:`2598`, :pull:`2746`)
-* Documented that timestamps returned by :py:func:`~pvlib.iotools.get_era5`
-  represent the end of the averaging interval, consistent with ERA5
-  conventions. (:issue:`2772`, :pull:`2773`)
 
 
 Testing

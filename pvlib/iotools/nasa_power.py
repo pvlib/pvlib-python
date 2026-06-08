@@ -167,7 +167,7 @@ def get_nasa_power(latitude, longitude, start, end,
         # PS is returned in kPa; convert to Pa for pvlib compatibility.
         if 'pressure' in df.columns:
             df['pressure'] = df['pressure'] * 1000
-        # TQV is returned in kg/m^2 (=mm); convert to cm for pvlib compatibility.
+        # TQV is returned in kg/m^2 (=mm); convert to cm for compatibility
         if 'precipitable_water' in df.columns:
             df['precipitable_water'] = df['precipitable_water'] / 10
 

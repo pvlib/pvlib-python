@@ -841,6 +841,13 @@ def test_ghi_from_poa_driesse(mocker):
     assert bisect_spy.call_args[1]["xtol"] == xtol
 
 
+def test_ghi_from_poa_driesse_2023_deprecated():
+    with pytest.warns(pvlibDeprecationWarning,
+                      match="ghi_from_poa_driesse_2024"):
+        irradiance.ghi_from_poa_driesse_2023(
+            30, 180, 20, 180, 500, dni_extra=1366.1)
+
+
 def test_gti_dirint():
     times = pd.DatetimeIndex(
         ['2014-06-24T06-0700', '2014-06-24T09-0700', '2014-06-24T12-0700'])

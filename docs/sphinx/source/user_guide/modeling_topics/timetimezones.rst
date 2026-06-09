@@ -5,7 +5,7 @@ Time and time zones
 
 Dealing with time and time zones can be a frustrating experience in any
 programming language and for any application. pvlib-python relies on
-:py:mod:`pandas` and `pytz <http://pythonhosted.org/pytz/>`_ to handle
+:py:mod:`pandas` and the builtin :py:mod:`python:zoneinfo` to handle
 time and time zones. Therefore, the vast majority of the information in
 this document applies to any time series analysis using pandas and is
 not specific to pvlib-python.
@@ -16,7 +16,8 @@ General functionality
 pvlib makes extensive use of pandas due to its excellent time series
 functionality. Take the time to become familiar with pandas' `Time
 Series / Date functionality page
-<http://pandas.pydata.org/pandas-docs/version/0.18.0/timeseries.html>`_.
+functionality. Take the time to become familiar with pandas'
+:external+pandas:doc:`Time Series / Date functionality page <user_guide/timeseries>`.
 It is also worthwhile to become familiar with pure Python's
 :py:mod:`python:datetime` module, although we usually recommend
 using the corresponding pandas functionality where possible.
@@ -27,39 +28,41 @@ time and time zone functionality in python and pvlib.
 .. ipython:: python
 
     import datetime
+    import zoneinfo
     import pandas as pd
-    import pytz
 
 
 Finding a time zone
 *******************
 
-pytz is based on the Olson time zone database. You can obtain a list of
-all valid time zone strings with ``pytz.all_timezones``. It's a long
-list, so we only print every 20th time zone.
+``zoneinfo`` is based on the IANA (Olson) time zone database. You can obtain
+a set of all valid time zone strings with ``zoneinfo.available_timezones()``.
+It's a large set, so we only print every 20th time zone (sorted for
+consistency).
 
 .. ipython:: python
 
-    len(pytz.all_timezones)
-    pytz.all_timezones[::20]
+    len(zoneinfo.available_timezones())
+    sorted(zoneinfo.available_timezones())[::20]
 
 Wikipedia's `List of tz database time zones
 <https://en.wikipedia.org/wiki/List_of_tz_database_time_zones>`_ is also
 good reference.
 
-The ``pytz.country_timezones`` function is useful, too.
+You can filter the available time zones using Python's built-in
+:py:func:`python:filter` function.
 
 .. ipython:: python
 
-    pytz.country_timezones('US')
+    sorted(filter(lambda x: 'America' in x, zoneinfo.available_timezones()))
 
-And don't forget about Python's :py:func:`python:filter` function.
+And you can also filter for GMT-based fixed offset zones:
 
 .. ipython:: python
 
-    list(filter(lambda x: 'GMT' in x, pytz.all_timezones))
+    sorted(filter(lambda x: 'GMT' in x, zoneinfo.available_timezones()))
 
-Note that while pytz has ``'EST'`` and ``'MST'``, it does not have
+Note that while the IANA database has ``'EST'`` and ``'MST'``, it does not have
 ``'PST'``. Use ``'Etc/GMT+8'`` instead, or see :ref:`fixedoffsets`.
 
 Timestamps
@@ -125,7 +128,7 @@ vs. the UTC offset in summer...
     pd.Timestamp('2015-6-1 00:00').tz_localize('US/Mountain')
     pd.Timestamp('2015-6-1 00:00').tz_localize('Etc/GMT+7')
 
-pandas and pytz make this time zone handling possible because pandas
+pandas makes this time zone handling possible because pandas
 stores all times as integer nanoseconds since January 1, 1970.
 Here is the pandas time representation of the integers 1 and 1e9.
 
@@ -174,12 +177,13 @@ specifications, but watch out for the counter-intuitive sign convention.
 
     pd.Timestamp('2015-1-1 00:00', tz='Etc/GMT-2')
 
-Fixed offset time zones can also be specified as offset minutes
-from UTC using ``pytz.FixedOffset``.
+Fixed offset time zones can also be specified using
+:py:class:`python:datetime.timezone` with a
+:py:class:`python:datetime.timedelta` offset.
 
 .. ipython:: python
 
-    pd.Timestamp('2015-1-1 00:00', tz=pytz.FixedOffset(120))
+    pd.Timestamp('2015-1-1 00:00', tz=datetime.timezone(datetime.timedelta(hours=2)))
 
 You can also specify the fixed offset directly in the ``tz_localize``
 method, however, be aware that this is not documented and that the
@@ -216,8 +220,8 @@ expected.
     # tz naive pandas Timestamp object
     pd.Timestamp(naive_python_dt)
 
-    # tz aware python datetime.datetime object
-    aware_python_dt = pytz.timezone('US/Mountain').localize(naive_python_dt)
+    # tz aware python datetime.datetime object using zoneinfo
+    aware_python_dt = naive_python_dt.replace(tzinfo=zoneinfo.ZoneInfo('US/Mountain'))
 
     # tz aware pandas Timestamp object
     pd.Timestamp(aware_python_dt)
@@ -234,13 +238,14 @@ passed to ``Timestamp``.
     # tz naive pandas Timestamp object (time=midnight)
     pd.Timestamp(naive_python_date)
 
-You cannot localize a native Python date object.
+You cannot localize a native Python date object directly; you must first
+convert it to a :py:class:`python:datetime.datetime`.
 
 .. ipython:: python
    :okexcept:
 
-    # fail
-    pytz.timezone('US/Mountain').localize(naive_python_date)
+    # fail: datetime.date has no tzinfo support via replace
+    naive_python_date.replace(tzinfo=zoneinfo.ZoneInfo('US/Mountain'))
 
 
 pvlib-specific functionality
@@ -348,7 +353,7 @@ UTC, and then convert it to the desired time zone.
 
 .. ipython:: python
 
-    fixed_tz = pytz.FixedOffset(tmy3_metadata['TZ'] * 60)
+    fixed_tz = datetime.timezone(datetime.timedelta(hours=tmy3_metadata['TZ']))
     solar_position_hack = solar_position_notz.tz_localize('UTC').tz_convert(fixed_tz)
 
     solar_position_hack.index

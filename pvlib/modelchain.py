@@ -1257,7 +1257,7 @@ class ModelChain:
             self.results.solar_position['azimuth'])
         self.results.tracking['surface_tilt'] = (
             self.results.tracking['surface_tilt']
-                .fillna(self.system.axis_tilt))
+                .fillna(self.system.axis_slope))
         self.results.tracking['surface_azimuth'] = (
             self.results.tracking['surface_azimuth']
                 .fillna(self.system.axis_azimuth))

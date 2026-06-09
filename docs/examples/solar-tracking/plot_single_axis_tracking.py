@@ -34,7 +34,7 @@ solpos = solarposition.get_solarposition(times, lat, lon)
 truetracking_angles = tracking.singleaxis(
     apparent_zenith=solpos['apparent_zenith'],
     solar_azimuth=solpos['azimuth'],
-    axis_tilt=0,
+    axis_slope=0,
     axis_azimuth=180,
     max_angle=90,
     backtrack=False,  # for true-tracking
@@ -62,7 +62,7 @@ for gcr in [0.2, 0.4, 0.6]:
     backtracking_angles = tracking.singleaxis(
         apparent_zenith=solpos['apparent_zenith'],
         solar_azimuth=solpos['azimuth'],
-        axis_tilt=0,
+        axis_slope=0,
         axis_azimuth=180,
         max_angle=90,
         backtrack=True,

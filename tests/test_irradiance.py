@@ -828,7 +828,7 @@ def test_ghi_from_poa_driesse(mocker):
     poa_global = pd.Series([20, 300, 1000], index=times)
     # test exception
     xtol = -3.14159  # negative value raises exception in scipy.optimize.bisect
-    with pytest.raises(ValueError, match=rf"xtol too small \({xtol:g} <= 0\)"):
+    with pytest.raises(ValueError, match=rf"xtol too small \({xtol} <= 0\)"):
         output = irradiance.ghi_from_poa_driesse_2024(
             surface_tilt, surface_azimuth, zenith, azimuth,
             poa_global, dni_extra=1366.1, xtol=xtol)

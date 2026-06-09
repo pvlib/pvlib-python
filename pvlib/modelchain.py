@@ -63,7 +63,7 @@ SAPM_CONFIG = dict(
 
 @deprecated(
     since="0.13.1",
-    removal="",
+    removal="0.17.0",
     name="pvlib.modelchain.get_orientation",
     alternative=None,
     addendum=None,
@@ -84,6 +84,10 @@ def get_orientation(strategy, **kwargs):
     Returns
     -------
     surface_tilt, surface_azimuth
+
+    .. deprecated:: 0.15.2
+        The ``get_orientation`` function is deprecated and will be removed
+        in 0.17.0.
     """
     if strategy == 'south_at_latitude_tilt':
         surface_azimuth = 180
@@ -1248,6 +1252,13 @@ class ModelChain:
             model=self.airmass_model)
         return self
 
+    @deprecated(
+        since="0.15.2",
+        removal="0.17.0",
+        name="Modelchain._prep_inputs_tracking",
+        alternative=None,
+        addendum=None,
+    )
     def _prep_inputs_tracking(self):
         """
         Calculate tracker position and AOI

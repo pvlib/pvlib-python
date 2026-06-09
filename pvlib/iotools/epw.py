@@ -311,5 +311,5 @@ def _parse_epw(csvdata, coerce_year=None):
     return data, meta
 
 
-parse_epw = deprecated(since="0.13.0", name="parse_epw",
+parse_epw = deprecated(since="0.13.0", removal="0.17.0", name="parse_epw",
                        alternative="read_epw")(read_epw)

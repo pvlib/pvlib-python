@@ -10,6 +10,15 @@ Breaking Changes
 
 Deprecations
 ~~~~~~~~~~~~
+* The function :py:func:`pvlib.clearsky._is_leap_year` is deprecated and will be
+  removed in v0.17.0. Use :py:func:`pandas.Timestamp.is_leap_year` instead.
+  (:issue: `2764`, :pull:`2766`)
+* The function :py:func:`pvlib.irradiance._liujordan` is deprecated and will be
+  removed in v0.17.0. (:issue: `2764`, :pull:`2766`)
+* The function :py:func:`pvlib.modelchain.get_orientation` is deprecated and will
+  be removed in v0.17.0. (:issue: `2764`, :pull:`2766`)
+* The method :py:meth:`pvlib.modelchain.ModelChain._prep_inputs_tracking` is
+  deprecated and will be removed in v0.17.0. (:issue: `2764`, :pull:`2766`)
 
 
 Bug fixes
@@ -76,3 +85,4 @@ Contributors
 * :ghuser:`shethkajal7`
 * Arthur Onno (:ghuser:`ArthurOnnoTerabase`)
 * Adam R. Jensen (:ghuser:`AdamRJensen`)
+* :ghuser:`JoLo90`

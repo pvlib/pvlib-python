@@ -16,7 +16,7 @@ from scipy.optimize import bisect
 from pvlib import atmosphere, solarposition, tools
 import pvlib  # used to avoid dni name collision in complete_irradiance
 
-from pvlib._deprecation import pvlibDeprecationWarning
+from pvlib._deprecation import pvlibDeprecationWarning, deprecated
 import warnings
 
 
@@ -1442,7 +1442,7 @@ def _poa_from_ghi(surface_tilt, surface_azimuth,
     Transposition function that includes decomposition of GHI using the
     continuous Erbs-Driesse model.
 
-    Helper function for ghi_from_poa_driesse_2023.
+    Helper function for ghi_from_poa_driesse_2024.
     '''
     # Contributed by Anton Driesse (@adriesse), PV Performance Labs. Nov., 2023
 
@@ -1468,7 +1468,7 @@ def _ghi_from_poa(surface_tilt, surface_azimuth,
     '''
     Reverse transposition function that uses the scalar bisection from scipy.
 
-    Helper function for ghi_from_poa_driesse_2023.
+    Helper function for ghi_from_poa_driesse_2024.
     '''
     # Contributed by Anton Driesse (@adriesse), PV Performance Labs. Nov., 2023
 
@@ -1512,7 +1512,7 @@ def _ghi_from_poa(surface_tilt, surface_azimuth,
     return ghi, conv, niter
 
 
-def ghi_from_poa_driesse_2023(surface_tilt, surface_azimuth,
+def ghi_from_poa_driesse_2024(surface_tilt, surface_azimuth,
                               solar_zenith, solar_azimuth,
                               poa_global,
                               dni_extra, airmass=None, albedo=0.25,
@@ -1612,6 +1612,14 @@ def ghi_from_poa_driesse_2023(surface_tilt, surface_azimuth,
         return ghi, conv, niter
     else:
         return ghi
+
+
+ghi_from_poa_driesse_2023 = deprecated(
+    since="0.15.2",
+    name="pvlib.irradiance.ghi_from_poa_driesse_2023",
+    alternative="pvlib.irradiance.ghi_from_poa_driesse_2024",
+    removal="0.17.0",
+)(ghi_from_poa_driesse_2024)
 
 
 def clearsky_index(ghi, ghi_clear, max_clearsky_index=2.0):

@@ -792,7 +792,7 @@ def test_ghi_from_poa_driesse(mocker):
     surface_azimuth = 180
 
     # test core function
-    output = irradiance.ghi_from_poa_driesse_2023(
+    output = irradiance.ghi_from_poa_driesse_2024(
         surface_tilt, surface_azimuth, zenith, azimuth,
         poa_global, dni_extra=1366.1)
 
@@ -802,7 +802,7 @@ def test_ghi_from_poa_driesse(mocker):
     # test series output
     poa_global = pd.Series([20, 300, 1000], index=times)
 
-    output = irradiance.ghi_from_poa_driesse_2023(
+    output = irradiance.ghi_from_poa_driesse_2024(
         surface_tilt, surface_azimuth, zenith, azimuth,
         poa_global, dni_extra=1366.1)
 
@@ -811,7 +811,7 @@ def test_ghi_from_poa_driesse(mocker):
     # test full_output option and special cases
     poa_global = np.array([0, 1500, np.nan])
 
-    ghi, conv, niter = irradiance.ghi_from_poa_driesse_2023(
+    ghi, conv, niter = irradiance.ghi_from_poa_driesse_2024(
         surface_tilt, surface_azimuth, zenith, azimuth,
         poa_global, dni_extra=1366.1, full_output=True)
 
@@ -829,13 +829,13 @@ def test_ghi_from_poa_driesse(mocker):
     # test exception
     xtol = -3.14159  # negative value raises exception in scipy.optimize.bisect
     with pytest.raises(ValueError, match=rf"xtol too small \({xtol:g} <= 0\)"):
-        output = irradiance.ghi_from_poa_driesse_2023(
+        output = irradiance.ghi_from_poa_driesse_2024(
             surface_tilt, surface_azimuth, zenith, azimuth,
             poa_global, dni_extra=1366.1, xtol=xtol)
     # test propagation
     xtol = 3.141592
     bisect_spy = mocker.spy(irradiance, "bisect")
-    output = irradiance.ghi_from_poa_driesse_2023(
+    output = irradiance.ghi_from_poa_driesse_2024(
         surface_tilt, surface_azimuth, zenith, azimuth,
         poa_global, dni_extra=1366.1, xtol=xtol)
     assert bisect_spy.call_args[1]["xtol"] == xtol

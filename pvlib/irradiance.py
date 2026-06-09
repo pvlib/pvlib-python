@@ -16,7 +16,7 @@ from scipy.optimize import bisect
 from pvlib import atmosphere, solarposition, tools
 import pvlib  # used to avoid dni name collision in complete_irradiance
 
-from pvlib._deprecation import pvlibDeprecationWarning
+from pvlib._deprecation import deprecated, pvlibDeprecationWarning
 import warnings
 
 
@@ -984,7 +984,12 @@ def reindl(surface_tilt, surface_azimuth, dhi, dni, ghi, dni_extra,
 
     return sky_diffuse
 
-
+@deprecated(
+    since="0.16.0",
+    removal="",
+    name="pvlib.irradiance.king",
+    alternative="other diffuse transposition models in pvlib.irradiance",
+)
 def king(surface_tilt, dhi, ghi, solar_zenith):
     '''
     Determine diffuse irradiance from the sky on a tilted surface using

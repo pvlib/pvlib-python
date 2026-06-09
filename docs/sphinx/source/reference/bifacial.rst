@@ -11,6 +11,7 @@ Functions for calculating front and back surface irradiance
    bifacial.pvfactors.pvfactors_timeseries
    bifacial.infinite_sheds.get_irradiance
    bifacial.infinite_sheds.get_irradiance_poa
+   bifacial.ants2d.get_irradiance
 
 Loss models that are specific to bifacial PV systems
 

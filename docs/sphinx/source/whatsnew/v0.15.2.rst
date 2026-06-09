@@ -10,10 +10,22 @@ Breaking Changes
 
 Deprecations
 ~~~~~~~~~~~~
+* Parameters ``npoints`` and ``vectorize`` in the following functions
+  are now unnecessary and are deprecated (:pull:`2740`):
+
+  - :py:func:`pvlib.bifacial.infinite_sheds.get_irradiance`
+  - :py:func:`pvlib.bifacial.infinite_sheds.get_irradiance_poa`
+  - :py:func:`pvlib.bifacial.utils.vf_ground_sky_2d_integ`
+
+* Parameter ``surface_tilt`` is deprecated and renamed to ``tracker_rotation``
+  in :py:func:`pvlib.bifacial.utils.vf_ground_sky_2d_integ` (:pull:`2740`).
 
 
 Bug fixes
 ~~~~~~~~~
+* Fix asymmetry in how ``max_rows`` is interpreted in
+  :py:func:`~pvlib.bifacial.utils.vf_ground_sky_2d`. The difference
+  should be negligible for typical simulations. (:issue:`1867`, :pull:`2740`)
 * Corrects a bug in :py:func:`pvlib.temperature.fuentes`. If inputs were
   data type integer, users can expect modeled cell temperature values to
   increase slightly.
@@ -31,12 +43,23 @@ Bug fixes
   names containing commas (e.g. the material names in spectral-on-demand files)
   are no longer split into spurious columns. (:issue:`2736`, :pull:`2771`)
 
+
 Enhancements
 ~~~~~~~~~~~~
 * Add the ``front_side_fraction`` parameter to
   :py:func:`pvlib.snow.loss_townsend` to support Townsend snow-loss
   workflows for bifacial systems. (:issue:`2755`, :pull:`2756`)
-  
+* Added mapping of the parameter ``"albedo"`` in
+  :py:func:`~pvlib.iotools.get_nasa_power` when ``map_variables=True``
+  (:pull:`2753`)
+* Implement the ANTS-2D bifacial irradiance model in
+  :py:func:`pvlib.bifacial.ants2d.get_irradiance`. (:pull:`2740`)
+* Add parameters ``g0`` and ``g1`` to allow segmented ground surfaces in
+  :py:func:`~pvlib.bifacial.utils.vf_ground_sky_2d_integ` and
+  :py:func:`~pvlib.bifacial.utils.vf_row_ground_2d_integ`. (:pull:`2740`)
+* Accelerate :py:func:`~pvlib.bifacial.utils.vf_ground_sky_2d_integ` by one or
+  two orders of magnitude. This also makes :py:mod:`pvlib.bifacial.infinite_sheds` faster.
+  (:pull:`2740`)
 * Added mapping of the parameter ``"albedo"`` in
   :py:func:`~pvlib.iotools.get_nasa_power` when ``map_variables=True``
   (:pull:`2753`)

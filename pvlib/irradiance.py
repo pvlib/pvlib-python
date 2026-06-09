@@ -595,7 +595,7 @@ def get_ground_diffuse(surface_tilt, ghi, albedo=.25, surface_type=None):
     return diffuse_irrad
 
 
-def isotropic(surface_tilt, dhi):
+def isotropic(surface_tilt, dhi, return_components=False):
     r'''
     Determine diffuse irradiance from the sky on a tilted surface using
     the isotropic sky model.
@@ -619,10 +619,26 @@ def isotropic(surface_tilt, dhi):
     dhi : numeric
         Diffuse horizontal irradiance, must be >=0. See :term:`dhi`.
 
+    return_components : bool, default `False`
+        If `False`, ``sky_diffuse`` is returned.
+        If `True`, ``diffuse_components`` is returned.
+        For this model, return_components does not add more information,
+        but it is included for consistency with the other sky diffuse models.
+
     Returns
     -------
-    diffuse : numeric
+    numeric, OrderedDict, or DataFrame
+        Return type controlled by ``return_components`` argument.
+        If `False`, ``sky_diffuse`` is returned.
+        If `True`, ``diffuse_components`` is returned.
+    
+    sky_diffuse : numeric
         The sky diffuse component of the solar radiation. [Wm⁻²]
+
+    diffuse_components : OrderedDict (array input) or DataFrame (Series input)
+        Keys/columns are:
+            * poa_sky_diffuse: Total sky diffuse
+            * poa_isotropic
 
     References
     ----------
@@ -638,7 +654,17 @@ def isotropic(surface_tilt, dhi):
     '''
     sky_diffuse = dhi * (1 + tools.cosd(surface_tilt)) * 0.5
 
-    return sky_diffuse
+    if return_components:
+        diffuse_components = OrderedDict()
+        diffuse_components['poa_sky_diffuse'] = sky_diffuse
+        diffuse_components['poa_isotropic'] = sky_diffuse
+
+        if isinstance(sky_diffuse, pd.Series):
+            diffuse_components = pd.DataFrame(diffuse_components)
+
+        return diffuse_components
+    else:
+        return sky_diffuse
 
 
 def klucher(surface_tilt, surface_azimuth, dhi, ghi, solar_zenith,

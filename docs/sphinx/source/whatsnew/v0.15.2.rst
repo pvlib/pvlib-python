@@ -10,6 +10,11 @@ Breaking Changes
 
 Deprecations
 ~~~~~~~~~~~~
+* Rename :py:func:`~pvlib.irradiance.ghi_from_poa_driesse_2023` to
+  :py:func:`~pvlib.irradiance.ghi_from_poa_driesse_2024`. The year now reflects
+  the publication data. The old name will be removed in v0.17.0.
+  (:issue:`2774`, :pull:`2777`)
+
 
 
 Bug fixes
@@ -62,3 +67,4 @@ Contributors
 * Cliff Hansen (:ghuser:`cwhanse`)
 * Arthur Onno (:ghuser:`ArthurOnnoTerabase`)
 * Adam R. Jensen (:ghuser:`AdamRJensen`)
+* Rajiv Daxini (:ghuser:`RDaxini`)

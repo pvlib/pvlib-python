@@ -10,11 +10,10 @@ Breaking Changes
 
 Deprecations
 ~~~~~~~~~~~~
-* Rename :py:func:`~pvlib.irradiance.ghi_from_poa_driesse_2023` to
+* Rename :py:func:`!pvlib.irradiance.ghi_from_poa_driesse_2023` to
   :py:func:`~pvlib.irradiance.ghi_from_poa_driesse_2024`. The year now reflects
-  the publication data. The old name will be removed in v0.17.0.
+  the publication date. The old name will be removed in v0.17.0.
   (:issue:`2774`, :pull:`2777`)
-
 
 
 Bug fixes

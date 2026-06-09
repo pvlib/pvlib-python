@@ -797,8 +797,7 @@ def haydavies(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
             * poa_sky_diffuse: Total sky diffuse
             * poa_isotropic
             * poa_circumsolar
-            * poa_horizon (always zero, not accounted for by the
-              Hay-Davies model)
+        The model does not support a horizon brightening component.
 
     Notes
     ------
@@ -862,8 +861,6 @@ def haydavies(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
         # Calculate the individual components
         diffuse_components['poa_isotropic'] = poa_isotropic
         diffuse_components['poa_circumsolar'] = poa_circumsolar
-        diffuse_components['poa_horizon'] = np.where(
-            np.isnan(diffuse_components['poa_isotropic']), np.nan, 0.)
 
         if isinstance(sky_diffuse, pd.Series):
             diffuse_components = pd.DataFrame(diffuse_components)

@@ -1818,19 +1818,6 @@ def test_get_orientation_deprecation():
     assert surface_azimuth == 180
 
 
-@fail_on_pvlib_version('0.17.0')
-def test_prep_inputs_tracking_deprecation(sapm_dc_snl_ac_system, location):
-    mc = ModelChain(sapm_dc_snl_ac_system, location)
-    # Set up mock results and system attributes required by the method
-    mc.results = MagicMock()
-    mc.system.singleaxis = MagicMock()
-    mc.system.axis_tilt = 0.0
-    mc.system.axis_azimuth = 180.0
-    with pytest.warns(pvlibDeprecationWarning,
-                      match='will be removed in 0.17.0.'):
-        mc._prep_inputs_tracking()
-
-
 # tests for PVSystem with multiple Arrays
 def test_with_sapm_pvsystem_arrays(sapm_dc_snl_ac_system_Array, location,
                                    weather):

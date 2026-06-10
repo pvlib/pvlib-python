@@ -1252,13 +1252,6 @@ class ModelChain:
             model=self.airmass_model)
         return self
 
-    @deprecated(
-        since="0.15.2",
-        removal="0.17.0",
-        name="Modelchain._prep_inputs_tracking",
-        alternative=None,
-        addendum=None,
-    )
     def _prep_inputs_tracking(self):
         """
         Calculate tracker position and AOI

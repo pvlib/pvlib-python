@@ -1147,6 +1147,31 @@ def test_dirindex_min_cos_zenith_max_zenith():
     assert_series_equal(out, expected)
 
 
+def test_dirint_array_inputs():
+    """np.array and pd.Series inputs work correctly. GH #2751"""
+    times = pd.date_range('2023-06-21 10:00', periods=2, freq='h', tz='UTC')
+
+    # np.array input → should return pd.Series
+    result = irradiance.dirint(
+        ghi=np.array([500.0, 400.0]),
+        solar_zenith=np.array([45.0, 50.0]),
+        times=times,
+        use_delta_kt_prime=False
+    )
+    assert isinstance(result, pd.Series)
+    assert result.iloc[0] > 0
+
+    # pd.Series input → should return pd.Series
+    times2 = pd.date_range('2023-06-21 10:00', periods=3, freq='h', tz='UTC')
+    result2 = irradiance.dirint(
+        ghi=pd.Series([400, 500, 300], index=times2),
+        solar_zenith=pd.Series([50, 40, 60], index=times2),
+        times=times2
+    )
+    assert isinstance(result2, pd.Series)
+    assert (result2 >= 0).all()
+
+
 def test_dni():
     ghi = pd.Series([90, 100, 100, 100, 100])
     dhi = pd.Series([100, 90, 50, 50, 50])

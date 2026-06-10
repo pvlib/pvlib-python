@@ -18,6 +18,9 @@ Deprecations
 
 Bug fixes
 ~~~~~~~~~
+* Added test coverage for :py:func:`pvlib.irradiance.dirint` with
+  ``np.array`` and ``pd.Series`` inputs. 
+  (:issue:`2751`, :pull:`2752`)
 * Corrects a bug in :py:func:`pvlib.temperature.fuentes`. If inputs were
   data type integer, users can expect modeled cell temperature values to
   increase slightly.

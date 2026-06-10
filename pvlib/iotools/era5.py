@@ -69,7 +69,7 @@ def get_era5(latitude, longitude, start, end, variables, api_key,
     This API [2]_ provides a subset of parameters of the full ERA5 datasets,
     see [3]_ for available variables. A comparison of ERA5 and ERA5-land is
     available in [4]_.
-    
+
     Parameters
     ----------
     latitude : float

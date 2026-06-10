@@ -88,9 +88,6 @@ There is a convention on consistent variable names throughout the library:
     eta_inv_ref
         Reference inverter efficiency
 
-    g_poa_effective
-        Broadband plane of array effective irradiance
-
     gamma_pdc
         Module temperature coefficient. Typically in units of 1/C.
 

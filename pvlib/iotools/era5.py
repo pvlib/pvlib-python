@@ -58,6 +58,7 @@ UNITS = {
 
 
 def get_era5(latitude, longitude, start, end, variables, api_key,
+             dataset="reanalysis-era5-single-levels-timeseries",
              map_variables=True, timeout=60,
              url='https://cds.climate.copernicus.eu/api/retrieve/v1/'):
     """
@@ -84,6 +85,10 @@ def get_era5(latitude, longitude, start, end, variables, api_key,
         See [1]_ for additional options.
     api_key : str
         ECMWF CDS API key.
+    dataset : str, default "reanalysis-era5-single-levels-timeseries"
+        The dataset to query.  May be either
+        "reanalysis-era5-single-levels-timeseries" or
+        "reanalysis-era5-land-timeseries".
     map_variables : bool, default True
         When true, renames columns of the DataFrame to pvlib variable names
         where applicable. Also converts units of some variables. See variable
@@ -137,7 +142,7 @@ def get_era5(latitude, longitude, start, end, variables, api_key,
             "data_format": "csv"
         }
     }
-    slug = "processes/reanalysis-era5-single-levels-timeseries/execution"
+    slug = f"processes/{dataset}/execution"
     response = requests.post(url + slug, json=params, headers=headers,
                              timeout=timeout)
     submission_response = response.json()

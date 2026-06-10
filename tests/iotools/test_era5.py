@@ -55,8 +55,8 @@ def test_get_era5(params, expected):
 def test_get_era5_land(params, expected):
     params['dataset'] = "reanalysis-era5-land-timeseries"
     df, meta = pvlib.iotools.get_era5(**params)
-    assert meta['longitude'] == -80.0
-    assert meta['latitude'] == 40.0
+    assert np.isclose(meta['longitude'], -80.0)
+    assert np.isclose(meta['latitude'], 40.0)
     assert pd.testing.assert_index_equal(df.index, expected.index)
 
 

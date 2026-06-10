@@ -66,9 +66,10 @@ def get_era5(latitude, longitude, start, end, variables, api_key,
 
     A CDS API key is needed to access this API.  Register for one at [1]_.
 
-    This API [2]_ provides a subset of the full ERA5 dataset.  See [3]_ for
-    the available variables.  Data are available on a 0.25° x 0.25° grid.
-
+    This API [2]_ provides a subset of parameters of the full ERA5 datasets,
+    see [3]_ for available variables. A comparison of ERA5 and ERA5-land is
+    available in [4]_.
+    
     Parameters
     ----------
     latitude : float
@@ -116,6 +117,7 @@ def get_era5(latitude, longitude, start, end, variables, api_key,
     .. [1] https://cds.climate.copernicus.eu/
     .. [2] https://cds.climate.copernicus.eu/datasets/reanalysis-era5-single-levels-timeseries?tab=overview
     .. [3] https://confluence.ecmwf.int/pages/viewpage.action?pageId=505390919
+    .. [4] https://confluence.ecmwf.int/display/CKB/The+family+of+ERA5+datasets
     """  # noqa: E501
 
     def _to_utc_dt_notz(dt):

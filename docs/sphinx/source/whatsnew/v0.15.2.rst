@@ -37,6 +37,9 @@ Bug fixes
   :py:mod:`csv` module instead of a naive ``str.split(',')``, so quoted column
   names containing commas (e.g. the material names in spectral-on-demand files)
   are no longer split into spurious columns. (:issue:`2736`, :pull:`2771`)
+* Remove ``data_version`` parameter from
+  :py:func:`~pvlib.iotools.get_meteonorm_tmy` as this parameter is no longer
+  supported and results in an error. (:pull:`2781`)
 
 Enhancements
 ~~~~~~~~~~~~

@@ -53,6 +53,14 @@ Documentation
 * Clarify how Linke turbidity values can be provided to
   :py:func:`pvlib.clearsky.ineichen` via
   :py:func:`pvlib.clearsky.lookup_linke_turbidity`. (:issue:`2598`, :pull:`2746`)
+* Clarifies how Linke turbidity values can be provided to
+ :py:func:`pvlib.clearsky.ineichen` via
+ :py:func:`pvlib.clearsky.lookup_linke_turbidity` (:issue:`2598`, :pull:`2746`)
+* Clarifies the variable naming, comments and references in
+  :py:func:`pvlib.atmosphere.rh_from_tdew` (and the related comments in
+  :py:func:`pvlib.atmosphere.tdew_from_rh`) so the actual and saturation vapor
+  pressures are no longer swapped in the source. The returned values are
+  unchanged. (:issue:`2734`, :pull:`2782`)
 
 
 Testing

@@ -3,6 +3,7 @@ tests for pvlib/iotools/era5.py
 """
 
 import pandas as pd
+import numpy as np
 import pytest
 import pvlib
 import requests

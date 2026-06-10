@@ -10,10 +10,17 @@ Breaking Changes
 
 Deprecations
 ~~~~~~~~~~~~
+* Rename :py:func:`!pvlib.irradiance.ghi_from_poa_driesse_2023` to
+  :py:func:`~pvlib.irradiance.ghi_from_poa_driesse_2024`. The year now reflects
+  the publication date. The old name will be removed in v0.17.0.
+  (:issue:`2774`, :pull:`2777`)
 
 
 Bug fixes
 ~~~~~~~~~
+* Added test coverage for :py:func:`pvlib.irradiance.dirint` with
+  ``np.array`` and ``pd.Series`` inputs. 
+  (:issue:`2751`, :pull:`2752`)
 * Corrects a bug in :py:func:`pvlib.temperature.fuentes`. If inputs were
   data type integer, users can expect modeled cell temperature values to
   increase slightly.
@@ -22,6 +29,14 @@ Bug fixes
   introduced in v0.15.1 (:pull:`2702`) that caused a broadcasting
   ``ValueError`` when ``tracker_theta`` was a 2-D (or higher rank) array.
   (:issue:`2747`, :pull:`2749`)
+* Document that timestamps returned by :py:func:`~pvlib.iotools.get_era5`
+  represent the end of the averaging interval, consistent with ERA5
+  conventions. (:issue:`2772`, :pull:`2773`)
+
+* :py:func:`pvlib.iotools.read_nsrdb_psm4` now parses the file header with the
+  :py:mod:`csv` module instead of a naive ``str.split(',')``, so quoted column
+  names containing commas (e.g. the material names in spectral-on-demand files)
+  are no longer split into spurious columns. (:issue:`2736`, :pull:`2771`)
 
 Enhancements
 ~~~~~~~~~~~~
@@ -61,7 +76,10 @@ Maintenance
 Contributors
 ~~~~~~~~~~~~
 * :ghuser:`Omesh37`
+* :ghuser:`gaoflow`
 * Cliff Hansen (:ghuser:`cwhanse`)
+* :ghuser:`shethkajal7`
 * Arthur Onno (:ghuser:`ArthurOnnoTerabase`)
 * Adam R. Jensen (:ghuser:`AdamRJensen`)
 * Karl Hill (:ghuser:`karlhillx`)
+* Rajiv Daxini (:ghuser:`RDaxini`)

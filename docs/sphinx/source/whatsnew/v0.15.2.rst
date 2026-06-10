@@ -28,6 +28,13 @@ Enhancements
 * Added mapping of the parameter ``"albedo"`` in
   :py:func:`~pvlib.iotools.get_nasa_power` when ``map_variables=True``
   (:pull:`2753`)
+* :py:func:`~pvlib.iotools.get_nasa_power` now maps additional NASA POWER
+  parameters to pvlib variable names when ``map_variables=True``:
+  ``temp_dew`` (T2MDEW), ``precipitable_water`` (TQV),
+  ``relative_humidity`` (RH2M), ``ghi_extra`` (TOA_SW_DWN), ``dhi_clear`` (CLRSKY_SFC_SW_DIFF), and
+  ``longwave_down`` (ALLSKY_SFC_LW_DWN). Surface pressure (PS) is
+  converted from kPa to Pa, and precipitable water (TQV) from kg/m² to cm.
+  (:issue:`2731`, :pull:`2762`)
 
 
 Documentation

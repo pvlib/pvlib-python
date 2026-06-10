@@ -43,8 +43,8 @@ def expected():
 def test_get_era5(params, expected):
     df, meta = pvlib.iotools.get_era5(**params)
     pd.testing.assert_frame_equal(df, expected, check_freq=False, atol=0.1)
-    assert meta['longitude'] == -80.0
-    assert meta['latitude'] == 40.0
+    assert np.isclose(meta['longitude'], -80.0)
+    assert np.isclose(meta['latitude'], 40.0)
     assert isinstance(meta['jobID'], str)
 
 

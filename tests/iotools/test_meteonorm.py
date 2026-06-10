@@ -302,7 +302,6 @@ def test_get_meteonorm_tmy(
         turbidity=[5.2, 4, 3, 3.1, 3.0, 2.8, 3.14, 3.0, 3, 3, 4, 5],
         random_seed=100,
         clear_sky_radiation_model='solis',
-        data_version='v9.0',  # fix version
         future_scenario='ssp1_26',
         future_year=2030,
         interval_index=True,

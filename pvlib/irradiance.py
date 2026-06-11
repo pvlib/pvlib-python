@@ -995,15 +995,15 @@ def reindl(surface_tilt, surface_azimuth, dhi, dni, ghi, dni_extra,
     HB = dni * cos_solar_zenith
     HB = np.maximum(HB, 0)
 
-    I = (1 + tools.cosd(surface_tilt)) / 2
+    SVF = (1 + tools.cosd(surface_tilt)) / 2
 
     with np.errstate(invalid='ignore', divide='ignore'):
         hb_to_ghi = np.where(ghi == 0, 0, np.divide(HB, ghi))
     h = np.sqrt(hb_to_ghi) * (tools.sind(surface_tilt / 2) ** 3)
 
-    term1 = (1 - AI) * I
+    term1 = (1 - AI) * SVF
     term2 = AI * Rb
-    term3 = (1 - AI) * I * h
+    term3 = (1 - AI) * SVF * h
 
     sky_diffuse = dhi * (term1 + term2 + term3)
 

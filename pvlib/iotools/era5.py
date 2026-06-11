@@ -86,10 +86,10 @@ def get_era5(latitude, longitude, start, end, variables, api_key,
         See [1]_ for additional options.
     api_key : str
         ECMWF CDS API key.
-    dataset : str, default "reanalysis-era5-single-levels-timeseries"
+    dataset : str, default ``"reanalysis-era5-single-levels-timeseries"``
         The dataset to query.  May be either
-        "reanalysis-era5-single-levels-timeseries" or
-        "reanalysis-era5-land-timeseries".
+        ``"reanalysis-era5-single-levels-timeseries"`` or
+        ``"reanalysis-era5-land-timeseries"``. See [4]_ for details.
     map_variables : bool, default True
         When true, renames columns of the DataFrame to pvlib variable names
         where applicable. Also converts units of some variables. See variable

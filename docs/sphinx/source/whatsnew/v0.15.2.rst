@@ -40,12 +40,17 @@ Bug fixes
 
 Enhancements
 ~~~~~~~~~~~~
+* Add the ``front_side_fraction`` parameter to
+  :py:func:`pvlib.snow.loss_townsend` to support Townsend snow-loss
+  workflows for bifacial systems. (:issue:`2755`, :pull:`2756`)  
+* Add ``dataset`` parameter to :py:func:`~pvlib.iotools.get_era5`
+  allowing for choosing between ERA5 and ERA5-Land datasets.
+  (pull:`2780`)
 * Add the following parameters to :py:func:`~pvlib.iotools.get_nasa_power`
   when ``map_variables=True``: ``temp_dew``, ``precipitable_water``,
   ``relative_humidity``, ``ghi_extra``, ``dhi_clear``, ``longwave_down``,
   and ``albedo``.
   (:issue:`2731`, :pull:`2753`, :pull:`2762`)
-
 
 Documentation
 ~~~~~~~~~~~~~

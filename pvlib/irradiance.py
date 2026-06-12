@@ -877,7 +877,7 @@ def haydavies(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
 
 
 def reindl(surface_tilt, surface_azimuth, dhi, dni, ghi, dni_extra,
-           solar_zenith, solar_azimuth):
+           solar_zenith, solar_azimuth, return_components=False):
     r'''
     Determine the diffuse irradiance from the sky on a tilted surface using
     the Reindl (1990) model.
@@ -916,10 +916,27 @@ def reindl(surface_tilt, surface_azimuth, dhi, dni, ghi, dni_extra,
     solar_azimuth : numeric
         Solar azimuth angles. See :term:`solar_azimuth`. [°]
 
+    return_components : bool, default False
+        Flag used to decide whether to return the calculated diffuse components
+        or not.
+
     Returns
     -------
-    poa_sky_diffuse : numeric
-        The sky diffuse component of the solar radiation. [Wm⁻²]
+    numeric, Dict, or DataFrame
+        Return type controlled by ``return_components`` argument.
+        If ``return_components=False``, `sky_diffuse` is returned.
+        If ``return_components=True``, `diffuse_components` is returned.
+
+    sky_diffuse : numeric
+        The sky diffuse component of the solar radiation on a tilted
+        surface.
+
+    diffuse_components : Dict (array input) or DataFrame (Series input)
+        Keys/columns are:
+            * poa_sky_diffuse: Total sky diffuse
+            * poa_isotropic
+            * poa_circumsolar
+            * poa_horizon
 
     Notes
     -----
@@ -943,8 +960,12 @@ def reindl(surface_tilt, surface_azimuth, dhi, dni, ghi, dni_extra,
     Implementation is based on Loutzenhiser et al.
     (2007) [3]_, Equation 8. The beam and ground reflectance portion of the
     equation have been removed, therefore the model described here generates
-    ONLY the diffuse radiation from the sky and circumsolar, so the form of the
-    equation varies slightly from Equation 8 in [3]_.
+    ONLY the diffuse radiation from the sky, circumsolar, and horizon
+    brightening, so the form of the equation varies slightly from Equation 8
+    in [3]_.
+
+    For clarity, the horizon component in `reindl` corresponds to the term
+    added on top of the `hay–davies` formulation, on which `reindl` builds.
 
     References
     ----------
@@ -977,16 +998,31 @@ def reindl(surface_tilt, surface_azimuth, dhi, dni, ghi, dni_extra,
     HB = dni * cos_solar_zenith
     HB = np.maximum(HB, 0)
 
-    # these are the () and [] sub-terms of the second term of eqn 8
-    term1 = 1 - AI
-    term2 = 0.5 * (1 + tools.cosd(surface_tilt))
+    SVF = (1 + tools.cosd(surface_tilt)) / 2
+
     with np.errstate(invalid='ignore', divide='ignore'):
         hb_to_ghi = np.where(ghi == 0, 0, np.divide(HB, ghi))
-    term3 = 1 + np.sqrt(hb_to_ghi) * (tools.sind(0.5 * surface_tilt)**3)
-    sky_diffuse = dhi * (AI * Rb + term1 * term2 * term3)
-    sky_diffuse = np.maximum(sky_diffuse, 0)
+    h = np.sqrt(hb_to_ghi) * (tools.sind(surface_tilt / 2) ** 3)
 
-    return sky_diffuse
+    term1 = (1 - AI) * SVF
+    term2 = AI * Rb
+    term3 = (1 - AI) * SVF * h
+
+    sky_diffuse = dhi * (term1 + term2 + term3)
+
+    if return_components:
+        diffuse_components = {
+            'poa_sky_diffuse': sky_diffuse,
+            'poa_isotropic': dhi * term1,
+            'poa_circumsolar': dhi * term2,
+            'poa_horizon': dhi * term3
+        }
+
+        if isinstance(sky_diffuse, pd.Series):
+            diffuse_components = pd.DataFrame(diffuse_components)
+        return diffuse_components
+    else:
+        return sky_diffuse
 
 
 def king(surface_tilt, dhi, ghi, solar_zenith):

@@ -1008,13 +1008,12 @@ def reindl(surface_tilt, surface_azimuth, dhi, dni, ghi, dni_extra,
     sky_diffuse = dhi * (term1 + term2 + term3)
 
     if return_components:
-        diffuse_components = Dict()
-        diffuse_components['poa_sky_diffuse'] = sky_diffuse
-
-        # Calculate the individual components
-        diffuse_components['poa_isotropic'] = dhi * term1
-        diffuse_components['poa_circumsolar'] = dhi * term2
-        diffuse_components['poa_horizon'] = dhi * term3
+        diffuse_components = {
+            'poa_sky_diffuse': sky_diffuse,
+            'poa_isotropic': dhi * term1,
+            'poa_circumsolar': dhi * term2,
+            'poa_horizon': dhi * term3
+        }
 
         if isinstance(sky_diffuse, pd.Series):
             diffuse_components = pd.DataFrame(diffuse_components)

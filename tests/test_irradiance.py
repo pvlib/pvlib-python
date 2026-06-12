@@ -279,8 +279,10 @@ def test_reindl_components(irrad_data, ephem_data, dni_et):
     # scalar
     result = irradiance.reindl(
         40, 180, irrad_data['dhi'].values[-1], irrad_data['dni'].values[-1],
-        irrad_data['ghi'].values[-1], dni_et[-1], ephem_data['apparent_zenith'].values[-1],
-        ephem_data['azimuth'].values[-1], return_components=True)
+        irrad_data['ghi'].values[-1], dni_et[-1],
+        ephem_data['apparent_zenith'].values[-1],
+        ephem_data['azimuth'].values[-1],
+        return_components=True)
     for key in keys:
         assert_allclose(result[key], expected[key].iloc[-1], atol=1e-4)
     assert isinstance(result, dict)

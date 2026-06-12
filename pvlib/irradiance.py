@@ -960,6 +960,9 @@ def reindl(surface_tilt, surface_azimuth, dhi, dni, ghi, dni_extra,
     brightening, so the form of the equation varies slightly from Equation 8
     in [3]_.
 
+    For clarity, the horizon component in `reindl` corresponds to the term
+    added on top of the `hay–davies` formulation, on which `reindl` builds.
+
     References
     ----------
     .. [1] Reindl, D. T., Beckmann, W. A., Duffie, J. A., 1990a. Diffuse

@@ -878,6 +878,7 @@ def haydavies(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
 
 def reindl(surface_tilt, surface_azimuth, dhi, dni, ghi, dni_extra,
            solar_zenith, solar_azimuth, return_components=False):
+           solar_zenith, solar_azimuth, return_components=False):
     r'''
     Determine the diffuse irradiance from the sky on a tilted surface using
     the Reindl (1990) model.
@@ -915,6 +916,10 @@ def reindl(surface_tilt, surface_azimuth, dhi, dni, ghi, dni_extra,
 
     solar_azimuth : numeric
         Solar azimuth angles. See :term:`solar_azimuth`. [°]
+
+    return_components : bool, default False
+        Flag used to decide whether to return the calculated diffuse components
+        or not.
 
     return_components : bool, default False
         Flag used to decide whether to return the calculated diffuse components
@@ -997,6 +1002,8 @@ def reindl(surface_tilt, surface_azimuth, dhi, dni, ghi, dni_extra,
     # DNI projected onto horizontal
     HB = dni * cos_solar_zenith
     HB = np.maximum(HB, 0)
+
+    SVF = (1 + tools.cosd(surface_tilt)) / 2
 
     SVF = (1 + tools.cosd(surface_tilt)) / 2
 

@@ -251,6 +251,41 @@ def test_reindl(irrad_data, ephem_data, dni_et):
     assert_allclose(result, [0., 27.9412, 104.1317, 34.1663], atol=1e-4)
 
 
+def test_reindl_components(irrad_data, ephem_data, dni_et):
+    keys = ['poa_sky_diffuse', 'poa_isotropic', 'poa_circumsolar',
+            'poa_horizon']
+    expected = pd.DataFrame(np.array(
+        [[0, 27.941170, 104.131724, 34.166258],
+         [0, 27.177514, 30.181807, 27.983728],
+         [0, 0, 72.813055, 5.207138],
+         [0, 0.763656, 1.136862, 0.975393]]).T,
+        columns=keys,
+        index=irrad_data.index
+    )
+    # pandas
+    result = irradiance.reindl(
+        40, 180, irrad_data['dhi'], irrad_data['dni'], irrad_data['ghi'],
+        dni_et, ephem_data['apparent_zenith'], ephem_data['azimuth'],
+        return_components=True)
+    assert_frame_equal(result, expected, check_less_precise=4)
+    # numpy
+    result = irradiance.reindl(
+        40, 180, irrad_data['dhi'].values, irrad_data['dni'].values,
+        irrad_data['ghi'].values, dni_et, ephem_data['apparent_zenith'].values,
+        ephem_data['azimuth'].values, return_components=True)
+    for key in keys:
+        assert_allclose(result[key], expected[key], atol=1e-4)
+    assert isinstance(result, dict)
+    # scalar
+    result = irradiance.reindl(
+        40, 180, irrad_data['dhi'].values[-1], irrad_data['dni'].values[-1],
+        irrad_data['ghi'].values[-1], dni_et[-1], ephem_data['apparent_zenith'].values[-1],
+        ephem_data['azimuth'].values[-1], return_components=True)
+    for key in keys:
+        assert_allclose(result[key], expected[key].iloc[-1], atol=1e-4)
+    assert isinstance(result, dict)
+
+
 def test_king(irrad_data, ephem_data):
     result = irradiance.king(40, irrad_data['dhi'], irrad_data['ghi'],
                              ephem_data['apparent_zenith'])

@@ -370,8 +370,8 @@ def rh_from_tdew(temp_air, temp_dew, coeff=(6.112, 17.62, 243.12)):
     saturation vapor pressure ``es`` is evaluated at the air temperature, both
     from the Magnus equation ``A * exp(B * T / (C + T))``. The default
     coefficients ``(A, B, C) = (6.112, 17.62, 243.12)`` are the WMO-recommended
-    Magnus form [1]_, valid for saturation over liquid water (see [2]_ for the
-    approximation and its temperature range).
+    Magnus form for saturation over liquid water, valid for temperatures from
+    -45 to +60 °C [1]_; see [2]_ for the approximation and its accuracy.
 
     References
     ----------

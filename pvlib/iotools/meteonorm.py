@@ -493,6 +493,7 @@ def get_meteonorm_tmy(
        <https://docs.meteonorm.com/docs/getting-started>`_
     .. [3] `Meteonorm API reference
        <https://docs.meteonorm.com/api>`_
+    """
     if data_version is not None:
         msg = (
             "This parameter was removed from the Meteonorm API "

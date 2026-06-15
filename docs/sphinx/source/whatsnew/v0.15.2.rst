@@ -10,6 +10,8 @@ Breaking Changes
 
 Deprecations
 ~~~~~~~~~~~~
+* :py:attr:`pvlib.location.Location.pytz` is deprecated and will be removed in a future release. Use :py:attr:`~pvlib.location.Location.tz` instead.
+  (:issue:`2343`, :pull:`2757`)
 * Rename :py:func:`!pvlib.irradiance.ghi_from_poa_driesse_2023` to
   :py:func:`~pvlib.irradiance.ghi_from_poa_driesse_2024`. The year now reflects
   the publication date. The old name will be removed in v0.17.0.
@@ -81,5 +83,6 @@ Contributors
 * :ghuser:`shethkajal7`
 * Arthur Onno (:ghuser:`ArthurOnnoTerabase`)
 * Adam R. Jensen (:ghuser:`AdamRJensen`)
+* :ghuser:`JoLo90`
 * Karl Hill (:ghuser:`karlhillx`)
 * Rajiv Daxini (:ghuser:`RDaxini`)

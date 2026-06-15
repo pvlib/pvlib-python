@@ -5,6 +5,8 @@ import requests
 from urllib.parse import urljoin
 from pandas._libs.tslibs.parsing import DateParseError
 
+from pvlib._deprecation import warn_deprecated
+
 URL = "https://api.meteonorm.com/v1/"
 
 VARIABLE_MAP = {

@@ -5,6 +5,8 @@ import pvlib
 from tests.conftest import RERUNS, RERUNS_DELAY
 from requests.exceptions import HTTPError
 
+from pvlib._deprecation import pvlibDeprecationWarning
+
 
 @pytest.fixture
 def demo_api_key():
@@ -314,3 +316,14 @@ def test_get_meteonorm_tmy(
     # calls.  so we allow a small amount of variation with atol.
     pd.testing.assert_frame_equal(data.iloc[:12], expected_meteonorm_tmy_data,
                                   check_exact=False, atol=1)
+
+
+@fail_on_pvlib_version('0.17.0')
+def test_get_meteonorm_tmy_data_version_deprecation(demo_api_key):
+    with pytest.warns(pvlibDeprecationWarning):
+        _ = pvlib.iotools.get_meteonorm_tmy(
+            latitude,
+            longitude,
+            api_key=demo_api_key,
+            data_version="latest",
+        )

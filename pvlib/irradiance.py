@@ -948,15 +948,18 @@ def reindl(surface_tilt, surface_azimuth, dhi, dni, ghi, dni_extra,
 
     References
     ----------
-    .. [1] Reindl, D. T., Beckmann, W. A., Duffie, J. A., 1990a. Diffuse
-       fraction correlations. Solar Energy 45(1), 1-7.
-       :doi:`10.1016/0038-092X(90)90060-P`
-    .. [2] Reindl, D. T., Beckmann, W. A., Duffie, J. A., 1990b. Evaluation of
-       hourly tilted surface radiation models. Solar Energy 45(1), 9-17.
+    .. [1] D. T. Reindl, "Estimating diffuse radiation on horizontal surfaces
+       and total radiation on tilted surfaces," M.S. thesis, University of
+       Wisconsin-Madison, Madison, WI, USA, 1988. Available:
+       https://web.archive.org/web/20240709013622/https://minds.wisconsin.edu/bitstream/handle/1793/47852/0001.pdf
+    .. [2] D. T. Reindl, W. A. Beckmann, and J. A. Duffie, "Evaluation of
+       hourly tilted surface radiation models," Solar Energy, vol. 45,
+       no. 1, pp. 9–17, 1990.
        :doi:`10.1016/0038-092X(90)90061-G`
-    .. [3] Loutzenhiser P. G. et. al., 2007. Empirical validation of models to
+    .. [3] P. G. Loutzenhiser, H. Manz, C. Felsmann, P. A. Strachan,
+       T. Frank, and G. M. Maxwell, "Empirical validation of models to
        compute solar irradiance on inclined surfaces for building energy
-       simulation. Solar Energy 81(2), 254-267
+       simulation," Solar Energy, vol. 81, no. 2, pp. 254–267, 2007.
        :doi:`10.1016/j.solener.2006.03.009`
     '''
 

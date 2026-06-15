@@ -321,11 +321,12 @@ def test_get_meteonorm_tmy(
 @fail_on_pvlib_version('0.17.0')
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
-def test_get_meteonorm_tmy_data_version_deprecation(demo_api_key):
+def test_get_meteonorm_tmy_data_version_deprecation(demo_url, demo_api_key):
     with pytest.warns(pvlibDeprecationWarning):
         _ = pvlib.iotools.get_meteonorm_tmy(
             latitude=50,
             longitude=10,
             api_key=demo_api_key,
             data_version="latest",
+            url=demo_url
         )

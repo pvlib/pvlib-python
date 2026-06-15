@@ -185,6 +185,31 @@ def test_read_nsrdb_psm4_map_variables():
     assert_index_equal(data.columns, pd.Index(columns_mapped))
 
 
+def test_read_nsrdb_psm4_quoted_columns_with_commas():
+    """spectral-on-demand files have quoted column names containing commas;
+    these must not be split into spurious columns (GH #2736)"""
+    # Minimal NSRDB file whose column header (3rd line) has quoted material
+    # names with embedded commas, which is valid CSV. A naive str.split(',')
+    # would break these into extra columns and raise on read.
+    content = (
+        "Source,Location ID,City,State,Country,Latitude,Longitude,Time Zone,"
+        "Elevation,Local Time Zone,Version\n"
+        "NSRDB,1,-,-,-,40.0,-105.0,-7,1600,-7,4.0.1\n"
+        'Year,Month,Day,Hour,Minute,GHI,"GaAs (Bauhuis et al., 2009)",'
+        '"InGaP (Gray, 2008)"\n'
+        "2023,1,1,0,0,0,0.1,0.2\n"
+        "2023,1,1,1,0,5,0.3,0.4\n"
+    )
+    data, metadata = psm4.read_nsrdb_psm4(StringIO(content),
+                                          map_variables=False)
+    assert list(data.columns) == [
+        'Year', 'Month', 'Day', 'Hour', 'Minute', 'GHI',
+        'GaAs (Bauhuis et al., 2009)', 'InGaP (Gray, 2008)']
+    assert data.shape == (2, 8)
+    # the embedded-comma data columns round-trip as floats
+    assert data['GaAs (Bauhuis et al., 2009)'].tolist() == [0.1, 0.3]
+
+
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_get_nsrdb_psm4_aggregated_parameter_mapping(nlr_api_key):

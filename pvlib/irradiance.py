@@ -984,8 +984,9 @@ def reindl(surface_tilt, surface_azimuth, dhi, dni, ghi, dni_extra,
 
     return sky_diffuse
 
+
 @deprecated(
-    since="0.16.0",
+    since="0.15.2",
     removal="",
     name="pvlib.irradiance.king",
     alternative="other diffuse transposition models in pvlib.irradiance",

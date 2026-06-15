@@ -14,13 +14,11 @@ General functionality
 ---------------------
 
 pvlib makes extensive use of pandas due to its excellent time series
-functionality. Take the time to become familiar with pandas' `Time
-Series / Date functionality page
 functionality. Take the time to become familiar with pandas'
 :external+pandas:doc:`Time Series / Date functionality page <user_guide/timeseries>`.
 It is also worthwhile to become familiar with pure Python's
-:py:mod:`python:datetime` module, although we usually recommend
-using the corresponding pandas functionality where possible.
+:py:mod:`python:datetime` module, although we usually recommend using the
+corresponding pandas functionality where possible.
 
 First, we'll import the libraries that we'll use to explore the basic
 time and time zone functionality in python and pvlib.

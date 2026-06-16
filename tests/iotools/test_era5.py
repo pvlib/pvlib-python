@@ -3,6 +3,7 @@ tests for pvlib/iotools/era5.py
 """
 
 import pandas as pd
+import numpy as np
 import pytest
 import pvlib
 import requests
@@ -43,9 +44,20 @@ def expected():
 def test_get_era5(params, expected):
     df, meta = pvlib.iotools.get_era5(**params)
     pd.testing.assert_frame_equal(df, expected, check_freq=False, atol=0.1)
-    assert meta['longitude'] == -80.0
-    assert meta['latitude'] == 40.0
+    assert np.isclose(meta['longitude'], -80.0)
+    assert np.isclose(meta['latitude'], 40.0)
     assert isinstance(meta['jobID'], str)
+
+
+@requires_ecmwf_credentials
+@pytest.mark.remote_data
+@pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
+def test_get_era5_land(params, expected):
+    params['dataset'] = "reanalysis-era5-land-timeseries"
+    df, meta = pvlib.iotools.get_era5(**params)
+    assert np.isclose(meta['longitude'], -80.0)
+    assert np.isclose(meta['latitude'], 40.0)
+    assert pd.testing.assert_index_equal(df.index, expected.index)
 
 
 @requires_ecmwf_credentials

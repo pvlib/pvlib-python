@@ -318,7 +318,7 @@ def test_get_meteonorm_tmy(
                                   check_exact=False, atol=1)
 
 
-@fail_on_pvlib_version('0.17.0')
+@fail_on_pvlib_version('0.16.0')
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_get_meteonorm_tmy_data_version_deprecation(demo_url, demo_api_key):

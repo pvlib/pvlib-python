@@ -1,9 +1,6 @@
 .. _whatsnew_0_15_2:
 
 
-
-Breaking Changes
-~~~~~~~~~~~~~~~~
 v0.15.2 (June 16, 2026)
 -----------------------
 
@@ -34,7 +31,6 @@ Bug fixes
 * Document that timestamps returned by :py:func:`~pvlib.iotools.get_era5`
   represent the end of the averaging interval, consistent with ERA5
   conventions. (:issue:`2772`, :pull:`2773`)
-
 * :py:func:`pvlib.iotools.read_nsrdb_psm4` now parses the file header with the
   :py:mod:`csv` module instead of a naive ``str.split(',')``, so quoted column
   names containing commas (e.g. the material names in spectral-on-demand files)
@@ -42,6 +38,7 @@ Bug fixes
 * Update :py:func:`~pvlib.iotools.get_meteonorm_tmy` to comply
   with the updated Meteonorm API.  As part of this, the ``data_version``
   parameter now has no effect and will be removed in the future. (:pull:`2781`)
+
 
 Enhancements
 ~~~~~~~~~~~~
@@ -60,22 +57,6 @@ Documentation
 * Clarifies how Linke turbidity values can be provided to
  :py:func:`pvlib.clearsky.ineichen` via
  :py:func:`pvlib.clearsky.lookup_linke_turbidity` (:issue:`2598`, :pull:`2746`)
-
-
-Testing
-~~~~~~~
-
-
-Benchmarking
-~~~~~~~~~~~~
-
-
-Requirements
-~~~~~~~~~~~~
-
-
-Maintenance
-~~~~~~~~~~~
 
 
 Contributors

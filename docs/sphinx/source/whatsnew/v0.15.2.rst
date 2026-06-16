@@ -1,11 +1,11 @@
 .. _whatsnew_0_15_2:
 
 
-v0.15.2 (Anticipated June 2026)
--------------------------------
 
 Breaking Changes
 ~~~~~~~~~~~~~~~~
+v0.15.2 (June 16, 2026)
+-----------------------
 
 
 Deprecations

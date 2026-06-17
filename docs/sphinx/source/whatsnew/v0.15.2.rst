@@ -7,15 +7,6 @@ v0.15.2 (June 16, 2026)
 
 Deprecations
 ~~~~~~~~~~~~
-* Parameters ``npoints`` and ``vectorize`` in the following functions
-  are now unnecessary and are deprecated (:pull:`2740`):
-
-  - :py:func:`pvlib.bifacial.infinite_sheds.get_irradiance`
-  - :py:func:`pvlib.bifacial.infinite_sheds.get_irradiance_poa`
-  - :py:func:`pvlib.bifacial.utils.vf_ground_sky_2d_integ`
-
-* Parameter ``surface_tilt`` is deprecated and renamed to ``tracker_rotation``
-  in :py:func:`pvlib.bifacial.utils.vf_ground_sky_2d_integ` (:pull:`2740`).
 * Deprecate :py:attr:`pvlib.location.Location.pytz`.
   Use :py:attr:`~pvlib.location.Location.tz` instead. (:issue:`2343`, :pull:`2757`)
 * Rename :py:func:`!pvlib.irradiance.ghi_from_poa_driesse_2023` to
@@ -26,9 +17,6 @@ Deprecations
 
 Bug fixes
 ~~~~~~~~~
-* Fix asymmetry in how ``max_rows`` is interpreted in
-  :py:func:`~pvlib.bifacial.utils.vf_ground_sky_2d`. The difference
-  should be negligible for typical simulations. (:issue:`1867`, :pull:`2740`)
 * Corrects a bug in :py:func:`pvlib.temperature.fuentes`. If inputs were
   data type integer, users can expect modeled cell temperature values to
   increase slightly.
@@ -60,14 +48,6 @@ Enhancements
 * Added mapping of the parameter ``"albedo"`` in
   :py:func:`~pvlib.iotools.get_nasa_power` when ``map_variables=True``
   (:pull:`2753`)
-* Implement the ANTS-2D bifacial irradiance model in
-  :py:func:`pvlib.bifacial.ants2d.get_irradiance`. (:pull:`2740`)
-* Add parameters ``g0`` and ``g1`` to allow segmented ground surfaces in
-  :py:func:`~pvlib.bifacial.utils.vf_ground_sky_2d_integ` and
-  :py:func:`~pvlib.bifacial.utils.vf_row_ground_2d_integ`. (:pull:`2740`)
-* Accelerate :py:func:`~pvlib.bifacial.utils.vf_ground_sky_2d_integ` by one or
-  two orders of magnitude. This also makes :py:mod:`pvlib.bifacial.infinite_sheds` faster.
-  (:pull:`2740`)
 * Added mapping of the parameter ``"albedo"`` in
   :py:func:`~pvlib.iotools.get_nasa_power` when ``map_variables=True``
   (:pull:`2753`)

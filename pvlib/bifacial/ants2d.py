@@ -368,7 +368,7 @@ def get_irradiance(tracker_rotation, axis_azimuth, solar_zenith, solar_azimuth,
         Tilt of the axis of rotation with respect to horizontal. [degree]
     cross_axis_slope : numeric, default 0
         The angle, relative to horizontal, of the line formed by the
-        intersection between the slope containing the tracker axes and a plane
+        intersection between the plane containing the tracker axes and a plane
         perpendicular to the tracker axes. The cross-axis slope should be
         specified using a right-handed convention. For example, trackers with
         axis azimuth of 180 degrees (heading south) will have a negative

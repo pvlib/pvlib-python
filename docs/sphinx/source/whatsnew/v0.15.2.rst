@@ -17,11 +17,6 @@ Deprecations
 
 Bug fixes
 ~~~~~~~~~
-* Corrects a bug in :py:func:`pvlib.temperature.fuentes`. If inputs were
-  data type integer, users can expect modeled cell temperature values to
-  increase slightly.
-  (:issue:`2608`, :pull:`2745`)
-* Fixes a regression in :py:func:`pvlib.tracking.calc_surface_orientation`
 * Fix :py:func:`pvlib.temperature.fuentes` truncating the output if `poa_global` input was
   data type integer. Users can expect modeled cell temperature values to
   increase slightly. (:issue:`2608`, :pull:`2745`)
@@ -39,18 +34,11 @@ Bug fixes
   parameter now has no effect and will be removed in the future. (:pull:`2781`)
 
 
-
 Enhancements
 ~~~~~~~~~~~~
 * Add the ``front_side_fraction`` parameter to
   :py:func:`pvlib.snow.loss_townsend` to support Townsend snow-loss
   workflows for bifacial systems. (:issue:`2755`, :pull:`2756`)
-* Added mapping of the parameter ``"albedo"`` in
-  :py:func:`~pvlib.iotools.get_nasa_power` when ``map_variables=True``
-  (:pull:`2753`)
-* Added mapping of the parameter ``"albedo"`` in
-  :py:func:`~pvlib.iotools.get_nasa_power` when ``map_variables=True``
-  (:pull:`2753`)
 * Add the following parameters to :py:func:`~pvlib.iotools.get_nasa_power`
   when ``map_variables=True``: ``temp_dew``, ``precipitable_water``,
   ``relative_humidity``, ``ghi_extra``, ``dhi_clear``, ``longwave_down``,

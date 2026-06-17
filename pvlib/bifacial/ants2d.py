@@ -13,8 +13,13 @@ from pvlib.tracking import calc_surface_orientation
 
 def _shaded_fraction(tracker_rotation, phi, gcr, x0=0, x1=1):
     """
-    Calculate fraction (from the bottom) of row slant height that is shaded
+    Calculate fraction of row slant height interal (x0, x1) that is shaded
     from direct irradiance by the row in front toward the sun.
+
+    The array is assumed to be installed on horizontal terrain, with
+    ``tracker_rotation`` and ``phi`` having their zero points facing
+    vertically.  Inputs ``tracker_rotation``, ``phi``, and ``gcr`` must be
+    adjusted to account for terrain slope, if necessary.
 
     Parameters
     ----------

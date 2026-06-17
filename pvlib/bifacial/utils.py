@@ -589,8 +589,6 @@ def vf_row_ground_2d_integ(surface_tilt, gcr, height=None, pitch=None,
     if np.isscalar(surface_tilt):
         squeeze.append(2)
 
-    # dimensions: k/max_rows, ground segment, row segment, time
-
     # cheat a little to prevent numerical issues with surface_tilt==180, -180
     surface_tilt = np.where(surface_tilt == 180, 179.9999, surface_tilt)
     surface_tilt = np.where(surface_tilt == -180, -179.9999, surface_tilt)
@@ -598,6 +596,7 @@ def vf_row_ground_2d_integ(surface_tilt, gcr, height=None, pitch=None,
     surface_tilt = \
         np.atleast_1d(surface_tilt)[np.newaxis, np.newaxis, np.newaxis, :]
 
+    # dimensions: k/max_rows, ground segment, row segment, time
     x0 = np.atleast_1d(x0)[np.newaxis, np.newaxis, :, np.newaxis]
     x1 = np.atleast_1d(x1)[np.newaxis, np.newaxis, :, np.newaxis]
     g0 = np.atleast_1d(g0)[np.newaxis, :, np.newaxis, np.newaxis]

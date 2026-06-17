@@ -219,6 +219,8 @@ def _ants2d_singleside(tracker_rotation, cos_aoi, phi, gcr, height, pitch,
 def _apply_sky_diffuse_model(dni, dhi, model, solar_zenith, solar_azimuth,
                              dni_extra, airmass):
 
+    # Section II.C.2
+
     if model in ['haydavies', 'perez', 'perez_driesse']:
         # determine circumsolar irradiance, add it to DNI
 
@@ -268,6 +270,9 @@ def _apply_sky_diffuse_model(dni, dhi, model, solar_zenith, solar_azimuth,
 def _apply_ground_slope(height, pitch, gcr, tracker_rotation, ghi, dni, dhi,
                         solar_zenith, solar_azimuth, axis_tilt, axis_azimuth,
                         cross_axis_slope):
+    # Section II.C.3, equations 14-19
+    # transform all inputs to the rotated ANTS-2D frame, where the terrain
+    # is horizontal
     slope_azimuth = axis_azimuth + np.degrees(
         np.arctan2(sind(cross_axis_slope),
                    cosd(cross_axis_slope) * sind(axis_tilt))

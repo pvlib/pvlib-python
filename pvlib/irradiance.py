@@ -1106,7 +1106,7 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
 
     Returns
     --------
-    numeric, OrderedDict, or DataFrame
+    numeric, Dict, or DataFrame
         Return type controlled by `return_components` argument.
         If ``return_components=False``, `sky_diffuse` is returned.
         If ``return_components=True``, `diffuse_components` is returned.
@@ -1115,7 +1115,7 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
         The sky diffuse component of the solar radiation on a tilted
         surface.
 
-    diffuse_components : OrderedDict (array input) or DataFrame (Series input)
+    diffuse_components : Dict (array input) or DataFrame (Series input)
         Keys/columns are:
             * poa_sky_diffuse: Total sky diffuse
             * poa_isotropic
@@ -1202,13 +1202,12 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
         sky_diffuse = np.where(np.isnan(airmass), 0, sky_diffuse)
 
     if return_components:
-        diffuse_components = OrderedDict()
-        diffuse_components['poa_sky_diffuse'] = sky_diffuse
-
-        # Calculate the different components
-        diffuse_components['poa_isotropic'] = dhi * term1
-        diffuse_components['poa_circumsolar'] = dhi * term2
-        diffuse_components['poa_horizon'] = dhi * term3
+        diffuse_components = {
+            'poa_sky_diffuse': sky_diffuse,
+            'poa_isotropic': dhi * term1,
+            'poa_circumsolar': dhi * term2,
+            'poa_horizon': dhi * term3
+        }
 
         # Set values of components to 0 when sky_diffuse is 0
         mask = sky_diffuse == 0
@@ -1348,7 +1347,7 @@ def perez_driesse(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
 
     Returns
     --------
-    numeric, OrderedDict, or DataFrame
+    numeric, Dict, or DataFrame
         Return type controlled by `return_components` argument.
         If ``return_components=False``, `sky_diffuse` is returned.
         If ``return_components=True``, `diffuse_components` is returned.
@@ -1357,7 +1356,7 @@ def perez_driesse(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
         The sky diffuse component of the solar radiation on a tilted
         surface.
 
-    diffuse_components : OrderedDict (array input) or DataFrame (Series input)
+    diffuse_components : Dict (array input) or DataFrame (Series input)
         Keys/columns are:
             * poa_sky_diffuse: Total sky diffuse
             * poa_isotropic
@@ -1422,13 +1421,12 @@ def perez_driesse(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
     sky_diffuse = np.maximum(dhi * (term1 + term2 + term3), 0)
 
     if return_components:
-        diffuse_components = OrderedDict()
-        diffuse_components['poa_sky_diffuse'] = sky_diffuse
-
-        # Calculate the different components
-        diffuse_components['poa_isotropic'] = dhi * term1
-        diffuse_components['poa_circumsolar'] = dhi * term2
-        diffuse_components['poa_horizon'] = dhi * term3
+        diffuse_components = {
+            'poa_sky_diffuse': sky_diffuse,
+            'poa_isotropic': dhi * term1,
+            'poa_circumsolar': dhi * term2,
+            'poa_horizon': dhi * term3
+        }
 
         if isinstance(sky_diffuse, pd.Series):
             diffuse_components = pd.DataFrame(diffuse_components)

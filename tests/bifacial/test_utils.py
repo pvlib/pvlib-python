@@ -37,7 +37,7 @@ def test_system_fixed_tilt():
     # view factors from 3 points on the ground between rows to the sky
     pts = np.linspace(0, 1, num=3)
     sqr3 = np.sqrt(3) / 4
-    
+
     # c_ij = cos(angle from point i to a row edge, from left to right)
     c00 = (-2 - sqr3) / np.sqrt(1.25**2 + (2 + sqr3)**2)  # left edge row -1
     c01 = -sqr3 / np.sqrt(1.25**2 + sqr3**2)  # left edge row 0

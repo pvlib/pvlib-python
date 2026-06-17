@@ -479,8 +479,8 @@ def get_irradiance(tracker_rotation, axis_azimuth, solar_zenith, solar_azimuth,
         airmass = get_relative_airmass(solar_zenith)
 
     if (dni_extra is None and
-        model in ['perez', 'perez_driesse', 'haydavies'] and
-        pd_index is not None and isinstance(pd_index, pd.DatetimeIndex)):
+            model in ['perez', 'perez_driesse', 'haydavies'] and
+            pd_index is not None and isinstance(pd_index, pd.DatetimeIndex)):
         dni_extra = get_extra_radiation(pd_index)
 
     dni, dhi = _apply_sky_diffuse_model(dni, dhi, model, solar_zenith,

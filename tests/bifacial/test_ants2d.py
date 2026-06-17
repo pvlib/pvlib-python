@@ -206,6 +206,22 @@ def ants_params():
     return inputs
 
 
+@pytest.mark.parametrize('model', ['haydavies', 'perez', 'perez_driesse'])
+def test_get_irradiance_airmass_dniextra(model, ants_params):
+    # verify that airmass, dni_extra are computed internally if not provided
+    ants_params.pop('dni_extra')
+    ants_params.pop('airmass')
+    # no error:
+    _ = ants2d.get_irradiance(**ants_params, model=model)
+
+    # yes error (can't compute dni_extra without a datetime index):
+    for k, v in ants_params.items():
+        if isinstance(v, pd.Series):
+            ants_params[k].index = [1, 2]
+    with pytest.raises(ValueError, match='Must supply dni_extra'):
+        _ = ants2d.get_irradiance(**ants_params, model=model)
+
+
 def test_get_irradiance_return_type(ants_params):
     # verify pandas in -> pandas out, and shapes of numpy outputs
     out = ants2d.get_irradiance(**ants_params, row_segments=1)

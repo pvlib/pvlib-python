@@ -5,8 +5,11 @@ Functions for the ANTS 2D bifacial irradiance model.
 import numpy as np
 import pandas as pd
 from pvlib.tools import cosd, sind, tand, acosd
+from pvlib.atmosphere import get_relative_airmass
 from pvlib.bifacial import utils
-from pvlib.irradiance import aoi_projection, haydavies, perez, perez_driesse
+from pvlib.irradiance import (
+    aoi_projection, haydavies, perez, perez_driesse, get_extra_radiation
+)
 from pvlib.shading import projected_solar_zenith_angle, shaded_fraction1d
 from pvlib.tracking import calc_surface_orientation
 
@@ -352,10 +355,11 @@ def get_irradiance(tracker_rotation, axis_azimuth, solar_zenith, solar_azimuth,
     dni_extra : numeric, optional
         Extraterrestrial direct normal irradiance. Required when
         ``model='haydavies'``, ``model='perez'``, or ``model='perez_driese'``.
-        [Wm⁻²]
+        Computed from the datetime index of the inputs if not provided. [Wm⁻²]
     airmass : numeric, optional
         Relative airmass. Required when ``model='perez'`` or
-        ``model='perez_driese'``. [unitless]
+        ``model='perez_driese'``. Computed from ``solar_zenith`` if needed.
+        [unitless]
     row_segments : int or list of pairs, default 1
         If ``row_segments`` is an int, it defines the number of equal-length
         segments the row width is divided into.  Otherwise, it must be a list
@@ -465,6 +469,14 @@ def get_irradiance(tracker_rotation, axis_azimuth, solar_zenith, solar_azimuth,
         pd_index = None  # no pandas inputs
 
     # preparation steps
+
+    if airmass is None and model in ['perez', 'perez_driesse']:
+        airmass = get_relative_airmass(solar_zenith)
+
+    if (dni_extra is None and
+        model in ['perez', 'perez_driesse', 'haydavies'] and
+        pd_index is not None and isinstance(pd_index, pd.DatetimeIndex)):
+        dni_extra = get_extra_radiation(pd_index)
 
     dni, dhi = _apply_sky_diffuse_model(dni, dhi, model, solar_zenith,
                                         solar_azimuth, dni_extra, airmass)

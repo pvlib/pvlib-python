@@ -171,8 +171,8 @@ def test_martin_ruiz_diffuse():
 
 def test_iam_interp():
 
-    aoi_meas = [0.0, 45.0, 65.0, 75.0]
-    iam_meas = [1.0,  0.9,  0.8,  0.6]
+    aoi_meas = np.array([0.0, 45.0, 65.0, 75.0])
+    iam_meas = np.array([1.0,  0.9,  0.8,  0.6])
 
     # simple default linear method
     aoi = 55.0
@@ -200,18 +200,52 @@ def test_iam_interp():
     assert_series_equal(iam, expected)
 
     # check beyond reference values
-    aoi = [-45, 0, 45, 85, 90, 95, 100, 105, 110]
-    expected = [0.9, 1.0, 0.9, 0.4, 0.3, 0.2, 0.1, 0.0, 0.0]
+    aoi = np.array([-45, 0, 45, 85, 90, 95, 100, 105, 110])
+    expected = np.array([0.9, 1.0, 0.9, 0.4, 0.3, 0.2, 0.1, 0.0, 0.0])
     iam = _iam.interp(aoi, aoi_meas, iam_meas)
     assert_allclose(iam, expected)
 
     # check exception clause
     with pytest.raises(ValueError):
-        _iam.interp(0.0, [0], [1])
+        _iam.interp(0.0, np.array([0]), np.array([1]))
 
     # check exception clause
     with pytest.raises(ValueError):
-        _iam.interp(0.0, [0, 90], [1, -1])
+        _iam.interp(0.0, np.array([0, 90]), np.array([1, -1]))
+
+    # check linear after updating interp1d
+    theta_ref = np.array([0, 60, 90])
+    iam_ref = np.array([1.0, 0.8, 0.0])
+
+    aoi = np.array([0, 30, 60])
+    iam = _iam.interp(
+        aoi, theta_ref, iam_ref,
+        method="linear", normalize=False)
+    expected = np.array([1.0, 0.9, 0.8])
+    np.testing.assert_allclose(iam, expected)
+
+    # check quadratic
+    theta_ref = np.array([0, 30, 60, 90])
+    iam_ref = 1.0 - 1e-4 * theta_ref**2
+    aoi = np.array([15, 45, 75])
+    iam = _iam.interp(
+        aoi,
+        theta_ref,
+        iam_ref,
+        method="quadratic",
+        normalize=False
+    )
+
+    expected = 1.0 - 1e-4 * aoi**2
+    np.testing.assert_allclose(iam, expected, rtol=1e-12)
+
+    # check exception clause - list input for theta_ref
+    with pytest.raises(TypeError):
+        _iam.interp(0.0, [0, 60, 90], np.array([1.0, 0.8, 0.0]))
+
+    # check exception clause - list input for iam_ref
+    with pytest.raises(TypeError):
+        _iam.interp(0.0, np.array([0, 60, 90]), [1.0, 0.8, 0.0])
 
 
 @pytest.mark.parametrize('aoi,expected', [

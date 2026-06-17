@@ -122,12 +122,12 @@ def _ants2d_singleside(tracker_rotation, cos_aoi, phi, gcr, height, pitch,
         (n_ground_segments, n_timestamps). [unitless]
     x0 : numeric, default 0
         Position on the row's slant length, as a fraction of the slant length.
-        ``x0=0`` corresponds to the left side of the row.
+        ``x0=0`` corresponds to the left edge of the row.
         ``x0`` should be less than ``x1``.  If specified as array, it
         must have the same length as ``x1``. [unitless]
     x1 : numeric, default 1
         Position on the row's slant length, as a fraction of the slant length.
-        ``x1=1`` corresponds to the right side of the row.
+        ``x1=1`` corresponds to the right edge of the row.
         ``x1`` should be greater than ``x0``. If specified as array, it
         must have the same length as ``x0``. [unitless]
     g0 : numeric

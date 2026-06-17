@@ -168,6 +168,32 @@ def test_isotropic_series(irrad_data):
     assert_allclose(result, [0, 35.728402, 104.601328, 54.777191], atol=1e-4)
 
 
+def test_isotropic_components(irrad_data):
+    keys = ['poa_sky_diffuse', 'poa_isotropic']
+    expected = pd.DataFrame(np.array(
+        [[0, 35.728402, 104.601328, 54.777191],
+         [0, 35.728402, 104.601328, 54.777191]]).T,
+        columns=keys,
+        index=irrad_data.index
+    )
+    # pandas
+    result = irradiance.isotropic(
+        40, irrad_data['dhi'], return_components=True)
+    assert_frame_equal(result, expected, check_less_precise=4)
+    # numpy
+    result = irradiance.isotropic(
+        40, irrad_data['dhi'].values, return_components=True)
+    for key in keys:
+        assert_allclose(result[key], expected[key], atol=1e-4)
+    assert isinstance(result, dict)
+    # scalar
+    result = irradiance.isotropic(
+        40, irrad_data['dhi'].values[-1], return_components=True)
+    for key in keys:
+        assert_allclose(result[key], expected[key].iloc[-1], atol=1e-4)
+    assert isinstance(result, dict)
+
+
 def test_klucher_series_float():
     # klucher inputs
     surface_tilt, surface_azimuth = 40.0, 180.0

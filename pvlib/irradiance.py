@@ -631,7 +631,7 @@ def isotropic(surface_tilt, dhi, return_components=False):
         Return type controlled by ``return_components`` argument.
         If `False`, ``sky_diffuse`` is returned.
         If `True`, ``diffuse_components`` is returned.
-    
+
     sky_diffuse : numeric
         The sky diffuse component of the solar radiation. [Wm⁻²]
 

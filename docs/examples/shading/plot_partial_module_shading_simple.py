@@ -178,11 +178,8 @@ ax = plot_curves([cell_curve_full_sun, cell_curve_shaded],
 
 
 def interpolate(df, i):
-    """convenience wrapper around scipy.interpolate"""
-    f_interp = make_interp_spline(np.flipud(df['i']), np.flipud(df['v']), k=1)
-
-    return f_interp(i)
-
+    """convenience wrapper around numpy.interp"""
+    return np.interp(i,np.flipud(df['i']), np.flipud(df['v']))
 
 def combine_series(dfs):
     """

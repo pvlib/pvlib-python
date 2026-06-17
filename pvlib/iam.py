@@ -491,7 +491,9 @@ def interp(aoi, theta_ref, iam_ref, method='linear', normalize=True):
         interpolator = make_interp_spline(theta_ref, iam_ref, k=3)
 
     else:
-        raise ValueError(f"Interpolation method '{method}' is not supported in pvlib-python.")
+        raise ValueError(
+            f"Interpolation method '{method}' is not supported"
+            " in pvlib-python.")
 
     aoi_input = aoi
     aoi = np.asanyarray(aoi)

@@ -38,7 +38,6 @@ Example of modeling cell-to-cell mismatch loss from partial module shading.
 from pvlib import pvsystem, singlediode
 import pandas as pd
 import numpy as np
-from scipy.interpolate import make_interp_spline
 import matplotlib.pyplot as plt
 
 from scipy.constants import e as qe, k as kB
@@ -179,7 +178,8 @@ ax = plot_curves([cell_curve_full_sun, cell_curve_shaded],
 
 def interpolate(df, i):
     """convenience wrapper around numpy.interp"""
-    return np.interp(i,np.flipud(df['i']), np.flipud(df['v']))
+    return np.interp(i, np.flipud(df['i']), np.flipud(df['v']))
+
 
 def combine_series(dfs):
     """

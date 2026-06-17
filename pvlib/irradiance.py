@@ -627,7 +627,7 @@ def isotropic(surface_tilt, dhi, return_components=False):
 
     Returns
     -------
-    numeric, OrderedDict, or DataFrame
+    numeric, Dict, or DataFrame
         Return type controlled by ``return_components`` argument.
         If `False`, ``sky_diffuse`` is returned.
         If `True`, ``diffuse_components`` is returned.
@@ -635,7 +635,7 @@ def isotropic(surface_tilt, dhi, return_components=False):
     sky_diffuse : numeric
         The sky diffuse component of the solar radiation. [Wm⁻²]
 
-    diffuse_components : OrderedDict (array input) or DataFrame (Series input)
+    diffuse_components : Dict (array input) or DataFrame (Series input)
         Keys/columns are:
             * poa_sky_diffuse: Total sky diffuse
             * poa_isotropic
@@ -655,9 +655,10 @@ def isotropic(surface_tilt, dhi, return_components=False):
     sky_diffuse = dhi * (1 + tools.cosd(surface_tilt)) * 0.5
 
     if return_components:
-        diffuse_components = OrderedDict()
-        diffuse_components['poa_sky_diffuse'] = sky_diffuse
-        diffuse_components['poa_isotropic'] = sky_diffuse
+        diffuse_components = {
+            'poa_sky_diffuse': sky_diffuse,
+            'poa_isotropic': sky_diffuse
+        }
 
         if isinstance(sky_diffuse, pd.Series):
             diffuse_components = pd.DataFrame(diffuse_components)

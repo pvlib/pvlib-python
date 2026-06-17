@@ -1,6 +1,5 @@
 import pandas as pd
 import pytest
-import pytz
 
 from pvlib.iotools import midc
 from tests.conftest import TESTS_DATA_DIR, RERUNS, RERUNS_DELAY

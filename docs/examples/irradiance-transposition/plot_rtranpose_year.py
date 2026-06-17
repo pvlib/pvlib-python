@@ -21,7 +21,7 @@ Author: Anton Driesse
 # Recovering GHI from POA irradiance is termed "reverse transposition."
 #
 # In this example we start with a TMY file and calculate POA global irradiance.
-# Then we use :py:meth:`pvlib.irradiance.ghi_from_poa_driesse_2023` to estimate
+# Then we use :py:meth:`pvlib.irradiance.ghi_from_poa_driesse_2024` to estimate
 # the original GHI from POA global.  Details of the method found in [1]_.
 #
 # Another method for reverse tranposition called GTI-DIRINT is also
@@ -49,7 +49,7 @@ import pvlib
 from pvlib import iotools, location
 from pvlib.irradiance import (get_extra_radiation,
                               get_total_irradiance,
-                              ghi_from_poa_driesse_2023,
+                              ghi_from_poa_driesse_2024,
                               aoi,
                               )
 
@@ -114,7 +114,7 @@ solpos = solpos.reindex(df.index)
 
 start = time.process_time()
 
-df['ghi_rev'] = ghi_from_poa_driesse_2023(TILT, ORIENT,
+df['ghi_rev'] = ghi_from_poa_driesse_2024(TILT, ORIENT,
                                           solpos.apparent_zenith,
                                           solpos.azimuth,
                                           df.poa_global,

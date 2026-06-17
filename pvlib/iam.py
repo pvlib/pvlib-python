@@ -470,10 +470,6 @@ def interp(aoi, theta_ref, iam_ref, method='linear', normalize=True):
     pvlib.iam.sapm
     '''
     # Contributed by Anton Driesse (@adriesse), PV Performance Labs. July, 2019
-    if isinstance(theta_ref, list):
-        raise TypeError("theta_ref cannot be a list")
-    if isinstance(iam_ref, list):
-        raise TypeError("iam_ref cannot be a list")
     # Scipy doesn't give the clearest feedback, so check number of points here.
     MIN_REF_VALS = {'linear': 2, 'quadratic': 3, 'cubic': 4, 1: 2, 2: 3, 3: 4}
 
@@ -495,7 +491,7 @@ def interp(aoi, theta_ref, iam_ref, method='linear', normalize=True):
         interpolator = make_interp_spline(theta_ref, iam_ref, k=3)
 
     else:
-        raise ValueError(f"Invalid interpolation method '{method}'.")
+        raise ValueError(f"Interpolation method '{method}' is not supported in pvlib-python.")
 
     aoi_input = aoi
     aoi = np.asanyarray(aoi)

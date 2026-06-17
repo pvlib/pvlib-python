@@ -553,12 +553,12 @@ def vf_row_ground_2d_integ(surface_tilt, gcr, height=None, pitch=None,
     max_rows : int, default 20
         Maximum number of rows to consider in front and behind the current row.
     g0 : numeric, default 0
-        Position on the ground surface, as a fraction of the row-to-row
-        spacing. ``g0=0`` corresponds to ground underneath the middle of the
+        Position on the ground surface, as a fraction of the spacing between
+        adjacent rows. ``g0=0`` corresponds to ground underneath the middle of the
         left row. ``g0`` should be less than ``g1``. [unitless]
     g1 : numeric, default 1
-        Position on the ground surface, as a fraction of the row-to-row
-        spacing. ``g1=0`` corresponds to ground underneath the middle of the
+        Position on the ground surface, as a fraction of the spacing between
+        adjacent rows. ``g1=0`` corresponds to ground underneath the middle of the
         right row. ``g1`` should be greater than ``g0``. [unitless]
 
     Returns

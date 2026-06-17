@@ -521,8 +521,8 @@ def vf_row_ground_2d(surface_tilt, gcr, x):
 def vf_row_ground_2d_integ(surface_tilt, gcr, height=None, pitch=None,
                            x0=0, x1=1, max_rows=20, g0=0, g1=1):
     r'''
-    Calculate the average view factor to the ground from a segment of the row
-    surface between x0 and x1.
+    Calculate the view factor to the ground segment (g0, g1) from the row
+    surface segment (x0, x1).
 
     Assumes a PV system of infinitely long rows with uniform pitch on
     horizontal ground. The view to the ground is restricted by the row's

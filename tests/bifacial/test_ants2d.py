@@ -26,7 +26,7 @@ def test__shaded_fraction():
     assert 0 == ants2d._shaded_fraction(10, 20, 0.5)
     assert 0 == ants2d._shaded_fraction(-10, -20, 0.5)
 
-    # sun behind the modules (AOI > 90)
+    # front surface facing away from sun (AOI > 90)
     # (debatable whether this should be zero or one)
     assert 0 == ants2d._shaded_fraction(45, -50, 0.5)
     assert 0 == ants2d._shaded_fraction(-45, 50, 0.5)

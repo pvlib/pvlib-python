@@ -13,7 +13,7 @@ Colorado, United States.
 #
 # The system has public monitoring data available at the Open Energy Data
 # Initiative (OEDI) under `System ID
-# 9068 <https://data.openei.org/s3_viewer?bucket=oedi-data-lake&prefix=pvdaq%2F2023-solar-data-prize%2F9068_OEDI%2F>`__.
+# 9068 <https://data.openei.org/s3_viewer?bucket=oedi-data-lake&prefix=pvdaq%2F2023-solar-data-prize%2F9068_OEDI%2F>`__.  # noqa: E501
 # For more information about the system, see its `OEDI
 # page <https://openei.org/wiki/PVDAQ/Sites/SR_CO>`__.
 #

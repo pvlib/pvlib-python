@@ -22,7 +22,6 @@ import inspect
 
 # import distutils before calling pd.show_versions()
 # https://github.com/pypa/setuptools/issues/3044
-import distutils  # noqa: F401
 import pandas as pd
 
 pd.show_versions()
@@ -389,7 +388,7 @@ sphinx_gallery_conf = {
     'examples_dirs': ['../../examples'],  # location of gallery scripts
     'gallery_dirs': ['gallery'],  # location of generated output
     # execute only files starting with plot_
-    'filename_pattern': 'plot_',
+    'filename_pattern': r"^(?!NX_).*$",
 
     # directory where function/class granular galleries are stored
     'backreferences_dir': 'reference/generated/gallery_backreferences',

@@ -114,6 +114,19 @@ as additional ``dni`` for transposition and shading purposes.
 This model is influenced by the 2D model published by Marion, *et al.* in [2].
 
 
+ANTS-2D
+-------
+
+The ANTS-2D model is a 2-D model similar to the Infinite Sheds and pvfactors
+models.  However, it has additional inputs to allow modeling of arrays on
+sloped terrain and ground surfaces with nonuniform albedo.  It partitions the
+module and ground surfaces into a user-specified number of segments to better
+capture irradiance nonuniformity effects.  It is also computationally efficient
+relative to models of comparable capability like pvfactors.  Finally, it can
+compute and return irradiance components at the ground level, which may be
+useful for agriPV modeling.
+
+
 References
 ----------
 .. [1] Mikofski, M., Darawali, R., Hamer, M., Neubert, A., and Newmiller,

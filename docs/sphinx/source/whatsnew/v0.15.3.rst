@@ -38,7 +38,7 @@ Requirements
 
 Maintenance
 ~~~~~~~~~~~
-
+* Fix some gallery examples not being run. Now, gallery example whose filename begins with ``NX_`` will be exclusively excluded. (:issue:`2790`, :pull:`2792`)
 
 Contributors
 ~~~~~~~~~~~~

@@ -19,9 +19,9 @@ Colorado, United States.
 #
 # .. warning::
 #    This example requires user-provided credentials to be run at step
-#    :ref:`Fetch weather data <fetch_weather_data>`. Therefore, it is not executed as part of
-#    documentation build process and it's more susceptible to API changes.
-#    Please, report any issues you may find.
+#    :ref:`Fetch weather data <fetch_weather_data>`. Therefore, it is not
+#    executed as part of documentation build process and it's more
+#    susceptible to API changes. Please, report any issues you may find.
 
 # sphinx_gallery_thumbnail_path = "_images/OEDI_9068_daily_timeseries.png"
 import pvlib

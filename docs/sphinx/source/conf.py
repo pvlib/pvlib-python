@@ -387,8 +387,11 @@ suppress_warnings = ['ref.footnote']
 sphinx_gallery_conf = {
     'examples_dirs': ['../../examples'],  # location of gallery scripts
     'gallery_dirs': ['gallery'],  # location of generated output
-    # execute only files starting with plot_
-    'filename_pattern': r"^(?!NX_).*$",
+
+    # do not execute gallery examples that begin with NX_
+    # https://sphinx-gallery.github.io/stable/configuration.html#parsing-and-executing-examples-via-matching-patterns
+    # left & center ensure only start of filename as remaining group to match by right operand
+    'filename_pattern': "^.*" + os.path.sep + "((?!NX_).)*$",
 
     # directory where function/class granular galleries are stored
     'backreferences_dir': 'reference/generated/gallery_backreferences',

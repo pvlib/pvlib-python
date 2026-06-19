@@ -20,6 +20,9 @@ import warnings
 # for generating GH links with linenumbers
 import inspect
 
+# to escape special characters in sphinx-gallery OS-dependant regex
+import re
+
 # import distutils before calling pd.show_versions()
 # https://github.com/pypa/setuptools/issues/3044
 import pandas as pd
@@ -383,6 +386,7 @@ ipython_warning_is_error = False
 # https://github.com/pvlib/pvlib-python/issues/837
 suppress_warnings = ['ref.footnote']
 
+os_re_sep = re.escape(os.path.sep)
 # settings for sphinx-gallery
 sphinx_gallery_conf = {
     'examples_dirs': ['../../examples'],  # location of gallery scripts
@@ -392,7 +396,7 @@ sphinx_gallery_conf = {
     # first group + sep := match folders up to filename
     # negative lookahead + match anything but sep := match filename (if valid)
     # https://sphinx-gallery.github.io/stable/configuration.html#parsing-and-executing-examples-via-matching-patterns  # noqa: E501
-    'filename_pattern': rf"^(.*){os.path.sep}(?!NX_)([^{os.path.sep}]*)$",
+    'filename_pattern': rf"^(.*){os_re_sep}(?!NX_)([^{os_re_sep}]*)$",
 
     # directory where function/class granular galleries are stored
     'backreferences_dir': 'reference/generated/gallery_backreferences',

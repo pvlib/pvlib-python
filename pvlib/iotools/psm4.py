@@ -6,6 +6,7 @@ https://developer.nlr.gov/docs/solar/nsrdb/nsrdb-GOES-conus-v4-0-0-download/
 https://developer.nlr.gov/docs/solar/nsrdb/nsrdb-GOES-full-disc-v4-0-0-download/
 """
 
+import csv
 import io
 from urllib.parse import urljoin
 import requests
@@ -723,11 +724,16 @@ def read_nsrdb_psm4(filename, map_variables=True):
        <https://web.archive.org/web/20170207203107/https://sam.nrel.gov/sites/default/files/content/documents/pdf/wfcsv.pdf>`_
     """
     with tools._file_context_manager(filename) as fbuf:
+        # The first 3 header lines are parsed with the csv module rather than a
+        # naive str.split(',') so that quoted fields containing commas are kept
+        # intact.  Spectral-on-demand files, for instance, have column names
+        # like '"GaAs (Bauhuis et al., 2009)"' whose embedded commas would
+        # otherwise be split into spurious columns (see GH #2736).
         # The first 2 lines of the response are headers with metadata
-        metadata_fields = fbuf.readline().split(',')
-        metadata_values = fbuf.readline().split(',')
+        metadata_fields = next(csv.reader([fbuf.readline()]))
+        metadata_values = next(csv.reader([fbuf.readline()]))
         # get the column names so we can set the dtypes
-        columns = fbuf.readline().split(',')
+        columns = next(csv.reader([fbuf.readline()]))
         columns[-1] = columns[-1].strip()  # strip trailing newline
         # Since the header has so many columns, excel saves blank cols in the
         # data below the header lines.

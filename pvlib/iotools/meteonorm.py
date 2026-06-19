@@ -5,6 +5,8 @@ import requests
 from urllib.parse import urljoin
 from pandas._libs.tslibs.parsing import DateParseError
 
+from pvlib._deprecation import warn_deprecated
+
 URL = "https://api.meteonorm.com/v1/"
 
 VARIABLE_MAP = {
@@ -402,7 +404,7 @@ def get_meteonorm_tmy(
         surface_tilt=0, surface_azimuth=180,
         time_step="1h", horizon="auto", terrain_situation="open",
         albedo=None, turbidity="auto", random_seed=None,
-        clear_sky_radiation_model="esra", data_version="latest",
+        clear_sky_radiation_model="esra", data_version=None,
         future_scenario=None, future_year=None, interval_index=False,
         map_variables=True, url=URL):
     """
@@ -448,8 +450,8 @@ def get_meteonorm_tmy(
         with the same random seed will yield identical results.
     clear_sky_radiation_model : str, default : 'esra'
         Which clearsky model to use. Must be either `'esra'` or `'solis'`.
-    data_version : str, default : 'latest'
-        Version of Meteonorm climatological data to be used.
+    data_version : str, optional
+        Deprecated parameter.  Has no effect.
     future_scenario : str, optional
         Future climate scenario.
     future_year : int, optional
@@ -494,11 +496,17 @@ def get_meteonorm_tmy(
     .. [3] `Meteonorm API reference
        <https://docs.meteonorm.com/api>`_
     """
+    if data_version is not None:
+        msg = (
+            "This parameter was removed from the Meteonorm API "
+            "and now has no effect."
+        )
+        warn_deprecated(since="0.15.2", removal="0.16.0", name="data_version",
+                        addendum=msg)
     additional_params = {
         "situation": terrain_situation,
         "turbidity": turbidity,
         "clear_sky_radiation_model": clear_sky_radiation_model,
-        "data_version": data_version,
         "random_seed": random_seed,
         "future_scenario": future_scenario,
         "future_year": future_year,

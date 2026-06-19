@@ -20,7 +20,7 @@ from pathlib import Path
 import requests
 import numpy as np
 import pandas as pd
-import pytz
+import zoneinfo
 from pvlib.iotools import read_epw
 
 URL = 'https://re.jrc.ec.europa.eu/api/'
@@ -413,10 +413,10 @@ def _coerce_and_roll_tmy(tmy_data, tz, year):
     re-interpreted as zero / UTC.
     """
     if tz:
-        tzname = pytz.timezone(f'Etc/GMT{-tz:+d}')
+        tzname = zoneinfo.ZoneInfo(f'Etc/GMT{-tz:+d}')  # noqa: E231
     else:
         tz = 0
-        tzname = pytz.timezone('UTC')
+        tzname = zoneinfo.ZoneInfo('UTC')
     new_index = pd.DatetimeIndex([
         timestamp.replace(year=year, tzinfo=tzname)
         for timestamp in tmy_data.index],

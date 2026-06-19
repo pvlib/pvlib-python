@@ -1,21 +1,20 @@
 import calendar
 import datetime
+import math
 import warnings
+import zoneinfo
+from datetime import timezone
 
 import numpy as np
 import pandas as pd
-
-from .conftest import assert_frame_equal, assert_series_equal
-from numpy.testing import assert_allclose
 import pytest
-import pytz
+from numpy.testing import assert_allclose
 
-from pvlib.location import Location
 from pvlib import solarposition, spa
+from pvlib.location import Location
 
-from .conftest import (
-    requires_ephem, requires_spa_c, requires_numba, requires_pandas_2_0
-)
+from .conftest import (assert_frame_equal, assert_series_equal, requires_ephem,
+                       requires_numba, requires_pandas_2_0, requires_spa_c)
 
 # setup times and locations to be tested.
 times = pd.date_range(start=datetime.datetime(2014, 6, 24),
@@ -343,29 +342,26 @@ def test_pyephem_physical_dst(expected_solpos, golden):
 
 @requires_ephem
 def test_calc_time():
-    import pytz
-    import math
     # validation from USNO solar position calculator online
 
-    epoch = datetime.datetime(1970, 1, 1)
-    epoch_dt = pytz.utc.localize(epoch)
+    epoch = datetime.datetime(1970, 1, 1, tzinfo=timezone.utc)
 
     loc = tus
     loc.pressure = 0
-    actual_time = pytz.timezone(loc.tz).localize(
-        datetime.datetime(2014, 10, 10, 8, 30))
-    lb = pytz.timezone(loc.tz).localize(datetime.datetime(2014, 10, 10, tol))
-    ub = pytz.timezone(loc.tz).localize(datetime.datetime(2014, 10, 10, 10))
+    tz = zoneinfo.ZoneInfo(loc.tz)
+    actual_time = datetime.datetime(2014, 10, 10, 8, 30, tzinfo=tz)
+    lb = datetime.datetime(2014, 10, 10, tol, tzinfo=tz)
+    ub = datetime.datetime(2014, 10, 10, 10, tzinfo=tz)
     alt = solarposition.calc_time(lb, ub, loc.latitude, loc.longitude,
                                   'alt', math.radians(24.7))
     az = solarposition.calc_time(lb, ub, loc.latitude, loc.longitude,
                                  'az', math.radians(116.3))
-    actual_timestamp = (actual_time - epoch_dt).total_seconds()
+    actual_timestamp = (actual_time - epoch).total_seconds()
 
     assert_allclose((alt.replace(second=0, microsecond=0) -
-                     epoch_dt).total_seconds(), actual_timestamp)
+                     epoch).total_seconds(), actual_timestamp)
     assert_allclose((az.replace(second=0, microsecond=0) -
-                     epoch_dt).total_seconds(), actual_timestamp)
+                     epoch).total_seconds(), actual_timestamp)
 
 
 @requires_ephem
@@ -715,6 +711,15 @@ def test_hour_angle_with_tricky_timezones():
     # GH 2132
     # tests timezones that have a DST shift at midnight
 
+    try:  # transitive dependency to pytz through pandas < 3
+        import pytz
+        _NonExistentTimeError = pytz.exceptions.NonExistentTimeError
+        _AmbiguousTimeError = pytz.exceptions.AmbiguousTimeError
+    except ImportError:  # pragma: no cover
+        # pandas 3.x dropped pytz; these are now raised as ValueError
+        _NonExistentTimeError = ValueError
+        _AmbiguousTimeError = ValueError
+
     eot = np.array([-3.935172, -4.117227, -4.026295, -4.026295])
 
     longitude = 70.6693
@@ -726,7 +731,7 @@ def test_hour_angle_with_tricky_timezones():
     ]).tz_localize('America/Santiago', nonexistent='shift_forward')
 
     with pytest.raises((
-        pytz.exceptions.NonExistentTimeError,  # pandas 1.x, 2.x
+        _NonExistentTimeError,  # pandas 1.x, 2.x
         ValueError,  # pandas 3.x
     )):
         times.normalize()
@@ -743,7 +748,7 @@ def test_hour_angle_with_tricky_timezones():
     ]).tz_localize('America/Havana', ambiguous=[True, True, False, False])
 
     with pytest.raises((
-        pytz.exceptions.AmbiguousTimeError,  # pandas 1.x, 2.x
+        _AmbiguousTimeError,  # pandas 1.x, 2.x
         ValueError,  # pandas 3.x
     )):
         solarposition.hour_angle(times, longitude, eot)

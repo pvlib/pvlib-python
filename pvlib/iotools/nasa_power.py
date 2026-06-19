@@ -14,11 +14,19 @@ VARIABLE_MAP = {
     'ALLSKY_SFC_SW_DWN': 'ghi',
     'ALLSKY_SFC_SW_DIFF': 'dhi',
     'ALLSKY_SFC_SW_DNI': 'dni',
+    'ALLSKY_SRF_ALB': 'albedo',
+    'ALLSKY_SFC_LW_DWN': 'longwave_down',
+    'CLRSKY_SFC_SW_DIFF': 'dhi_clear',
+    'CLRSKY_SFC_SW_DNI': 'dni_clear',
     'CLRSKY_SFC_SW_DWN': 'ghi_clear',
+    'PS': 'pressure',
+    'RH2M': 'relative_humidity',
     'T2M': 'temp_air',
+    'T2MDEW': 'temp_dew',
+    'TQV': 'precipitable_water',
+    'TOA_SW_DWN': 'ghi_extra',
     'WS2M': 'wind_speed_2m',
     'WS10M': 'wind_speed',
-    'ALLSKY_SRF_ALB': 'albedo',
 }
 
 
@@ -81,6 +89,12 @@ def get_nasa_power(latitude, longitude, start, end,
     ------
     requests.HTTPError
         Raises an error when an incorrect request is made.
+
+    Notes
+    -----
+    When ``map_variables=True`` the following unit conversions are applied:
+    pressure is converted from kPa to Pa, and precipitable water
+    is converted from kg/m² (mm) to cm.
 
     Returns
     -------
@@ -150,5 +164,11 @@ def get_nasa_power(latitude, longitude, start, end,
     # Rename according to pvlib convention
     if map_variables:
         df = df.rename(columns=VARIABLE_MAP)
+        # PS is returned in kPa; convert to Pa for pvlib compatibility.
+        if 'pressure' in df.columns:
+            df['pressure'] = df['pressure'] * 1000
+        # TQV is returned in kg/m^2 (=mm); convert to cm for compatibility
+        if 'precipitable_water' in df.columns:
+            df['precipitable_water'] = df['precipitable_water'] / 10
 
     return df, meta

@@ -389,10 +389,9 @@ sphinx_gallery_conf = {
     'gallery_dirs': ['gallery'],  # location of generated output
 
     # do not execute gallery examples that begin with NX_
-    # left & center operands ensure only start of filename
-    # is the remaining group to be matched by right operand
+    # os.path.sep in negative lookahead ensures exclusive match of filename
     # https://sphinx-gallery.github.io/stable/configuration.html#parsing-and-executing-examples-via-matching-patterns  # noqa: E501
-    'filename_pattern': "^.*" + os.path.sep + "((?!NX_).)*$",
+    'filename_pattern': rf"^((?!{os.path.sep}NX_).)*$",
 
     # directory where function/class granular galleries are stored
     'backreferences_dir': 'reference/generated/gallery_backreferences',

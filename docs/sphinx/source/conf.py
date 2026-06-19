@@ -384,15 +384,15 @@ ipython_warning_is_error = False
 suppress_warnings = ['ref.footnote']
 
 # settings for sphinx-gallery
-sep = os.path.sep
 sphinx_gallery_conf = {
     'examples_dirs': ['../../examples'],  # location of gallery scripts
     'gallery_dirs': ['gallery'],  # location of generated output
 
-    # do not execute gallery examples that begin with NX_
-    # os.path.sep in negative lookahead ensures exclusive match of filename
+    # do not execute gallery examples filenames that begin with NX_
+    # first group + sep := match folders up to filename
+    # negative lookahead + match anything but sep := match filename (if valid)
     # https://sphinx-gallery.github.io/stable/configuration.html#parsing-and-executing-examples-via-matching-patterns  # noqa: E501
-    'filename_pattern': rf"^(?!{sep}.*?{sep})((?!{sep}NX_).)*$",
+    'filename_pattern': rf"^(.*){os.path.sep}(?!NX_)([^{os.path.sep}]*)$",
 
     # directory where function/class granular galleries are stored
     'backreferences_dir': 'reference/generated/gallery_backreferences',

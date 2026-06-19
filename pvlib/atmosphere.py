@@ -365,9 +365,9 @@ def rh_from_tdew(temp_air, temp_dew, coeff=(6.112, 17.62, 243.12)):
 
     Notes
     -----
-    Relative humidity is computed as ``100 * e / es``, where the actual vapor
-    pressure ``e`` is the saturation vapor pressure at the dew point and the
-    saturation vapor pressure ``es`` is evaluated at the air temperature, both
+    Relative humidity is computed as ``100 * e / es``, where ``e`` is the
+    saturation vapor pressure at the dew point temperature, and ``es``
+    is the saturation vapor pressure at the air temperature, both
     from the Magnus equation ``A * exp(B * T / (C + T))``. The default
     coefficients ``(A, B, C) = (6.112, 17.62, 243.12)`` are the WMO-recommended
     Magnus form for saturation over liquid water, valid for temperatures from

@@ -58,8 +58,8 @@ Documentation
  :py:func:`pvlib.clearsky.lookup_linke_turbidity` (:issue:`2598`, :pull:`2746`)
 * Clarifies the variable naming, comments and references in
   :py:func:`pvlib.atmosphere.rh_from_tdew` (and the related comments in
-  :py:func:`pvlib.atmosphere.tdew_from_rh`) so the actual and saturation vapor
-  pressures are no longer swapped in the source. The returned values are
+  :py:func:`pvlib.atmosphere.tdew_from_rh`) related to the actual
+  and saturation vapor pressures. Function output is
   unchanged. (:issue:`2734`, :pull:`2782`)
 
 

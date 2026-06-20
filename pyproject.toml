@@ -59,7 +59,7 @@ doc = [
     'matplotlib',
     'sphinx == 7.3.7',
     'pydata-sphinx-theme == 0.15.4',
-    'sphinx-gallery',
+    'sphinx-gallery == 0.21',
     'docutils == 0.21',
     'pillow',
     'sphinx-toggleprompt == 0.5.2',

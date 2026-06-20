@@ -25,6 +25,7 @@ import re
 
 # import distutils before calling pd.show_versions()
 # https://github.com/pypa/setuptools/issues/3044
+import distutils  # noqa: F401
 import pandas as pd
 
 pd.show_versions()

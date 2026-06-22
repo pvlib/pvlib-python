@@ -145,7 +145,8 @@ keys = ['ghi', 'dni', 'dhi', 'temp_air', 'wind_speed',
         'albedo', 'precipitable_water']
 psm3, psm3_metadata = pvlib.iotools.get_nsrdb_psm4_conus(latitude, longitude,
                                                          api_key, email,
-                                                         year=2019, interval=5,
+                                                         year=2019,
+                                                         time_step=5,
                                                          parameters=keys,
                                                          map_variables=True,
                                                          leap_day=True)

@@ -16,7 +16,7 @@ from scipy.optimize import bisect
 from pvlib import atmosphere, solarposition, tools
 import pvlib  # used to avoid dni name collision in complete_irradiance
 
-from pvlib._deprecation import pvlibDeprecationWarning
+from pvlib._deprecation import pvlibDeprecationWarning, deprecated
 import warnings
 
 
@@ -132,7 +132,9 @@ def _handle_extra_radiation_types(datetime_or_doy, epoch_year):
     # a better way to do it.
     if isinstance(datetime_or_doy, pd.DatetimeIndex):
         to_doy = tools._pandas_to_doy  # won't be evaluated unless necessary
-        def to_datetimeindex(x): return x                       # noqa: E306
+
+        def to_datetimeindex(x):
+            return x                       # noqa: E306
         to_output = partial(pd.Series, index=datetime_or_doy)
     elif isinstance(datetime_or_doy, pd.Timestamp):
         to_doy = tools._pandas_to_doy
@@ -146,12 +148,14 @@ def _handle_extra_radiation_types(datetime_or_doy, epoch_year):
             tools._datetimelike_scalar_to_datetimeindex
         to_output = tools._scalar_out
     elif np.isscalar(datetime_or_doy):  # ints and floats of various types
-        def to_doy(x): return x                                 # noqa: E306
+        def to_doy(x):
+            return x                                 # noqa: E306
         to_datetimeindex = partial(tools._doy_to_datetimeindex,
                                    epoch_year=epoch_year)
         to_output = tools._scalar_out
     else:  # assume that we have an array-like object of doy
-        def to_doy(x): return x                                 # noqa: E306
+        def to_doy(x):
+            return x                                 # noqa: E306
         to_datetimeindex = partial(tools._doy_to_datetimeindex,
                                    epoch_year=epoch_year)
         to_output = tools._array_out
@@ -971,15 +975,18 @@ def reindl(surface_tilt, surface_azimuth, dhi, dni, ghi, dni_extra,
 
     References
     ----------
-    .. [1] Reindl, D. T., Beckmann, W. A., Duffie, J. A., 1990a. Diffuse
-       fraction correlations. Solar Energy 45(1), 1-7.
-       :doi:`10.1016/0038-092X(90)90060-P`
-    .. [2] Reindl, D. T., Beckmann, W. A., Duffie, J. A., 1990b. Evaluation of
-       hourly tilted surface radiation models. Solar Energy 45(1), 9-17.
+    .. [1] D. T. Reindl, "Estimating diffuse radiation on horizontal surfaces
+       and total radiation on tilted surfaces," M.S. thesis, University of
+       Wisconsin-Madison, Madison, WI, USA, 1988. Available:
+       https://web.archive.org/web/20240709013622/https://minds.wisconsin.edu/bitstream/handle/1793/47852/0001.pdf
+    .. [2] D. T. Reindl, W. A. Beckmann, and J. A. Duffie, "Evaluation of
+       hourly tilted surface radiation models," Solar Energy, vol. 45,
+       no. 1, pp. 9–17, 1990.
        :doi:`10.1016/0038-092X(90)90061-G`
-    .. [3] Loutzenhiser P. G. et. al., 2007. Empirical validation of models to
+    .. [3] P. G. Loutzenhiser, H. Manz, C. Felsmann, P. A. Strachan,
+       T. Frank, and G. M. Maxwell, "Empirical validation of models to
        compute solar irradiance on inclined surfaces for building energy
-       simulation. Solar Energy 81(2), 254-267
+       simulation," Solar Energy, vol. 81, no. 2, pp. 254–267, 2007.
        :doi:`10.1016/j.solener.2006.03.009`
     '''
 
@@ -1469,7 +1476,7 @@ def _poa_from_ghi(surface_tilt, surface_azimuth,
     Transposition function that includes decomposition of GHI using the
     continuous Erbs-Driesse model.
 
-    Helper function for ghi_from_poa_driesse_2023.
+    Helper function for ghi_from_poa_driesse_2024.
     '''
     # Contributed by Anton Driesse (@adriesse), PV Performance Labs. Nov., 2023
 
@@ -1495,7 +1502,7 @@ def _ghi_from_poa(surface_tilt, surface_azimuth,
     '''
     Reverse transposition function that uses the scalar bisection from scipy.
 
-    Helper function for ghi_from_poa_driesse_2023.
+    Helper function for ghi_from_poa_driesse_2024.
     '''
     # Contributed by Anton Driesse (@adriesse), PV Performance Labs. Nov., 2023
 
@@ -1539,7 +1546,7 @@ def _ghi_from_poa(surface_tilt, surface_azimuth,
     return ghi, conv, niter
 
 
-def ghi_from_poa_driesse_2023(surface_tilt, surface_azimuth,
+def ghi_from_poa_driesse_2024(surface_tilt, surface_azimuth,
                               solar_zenith, solar_azimuth,
                               poa_global,
                               dni_extra, airmass=None, albedo=0.25,
@@ -1639,6 +1646,14 @@ def ghi_from_poa_driesse_2023(surface_tilt, surface_azimuth,
         return ghi, conv, niter
     else:
         return ghi
+
+
+ghi_from_poa_driesse_2023 = deprecated(
+    since="0.15.2",
+    name="pvlib.irradiance.ghi_from_poa_driesse_2023",
+    alternative="pvlib.irradiance.ghi_from_poa_driesse_2024",
+    removal="0.17.0",
+)(ghi_from_poa_driesse_2024)
 
 
 def clearsky_index(ghi, ghi_clear, max_clearsky_index=2.0):
@@ -1991,14 +2006,14 @@ def dirint(ghi, solar_zenith, times, pressure=101325., use_delta_kt_prime=True,
 
     Returns
     -------
-    dni : array-like
-        The modeled direct normal irradiance, as provided by the
-        DIRINT model. [Wm⁻²]
+    dni : pd.Series
+        Estimated direct normal irradiance. [Wm⁻²]
 
     Notes
     -----
-    DIRINT model requires time series data (ie. one of the inputs must
-    be a vector of length > 2).
+    The DIRINT model was developed for time series data with length > 2.
+    The implementation in pvlib assumes the data are periodic which may
+    affect the first and last DNI values.
 
     References
     ----------
@@ -2136,6 +2151,7 @@ def _dirint_bins(times, kt_prime, zenith, w, delta_kt_prime):
     -------
     tuple of kt_prime_bin, zenith_bin, w_bin, delta_kt_prime_bin
     """
+
     # @wholmgren: the following bin assignments use MATLAB's 1-indexing.
     # Later, we'll subtract 1 to conform to Python's 0-indexing.
 

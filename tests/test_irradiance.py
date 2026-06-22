@@ -818,7 +818,7 @@ def test_ghi_from_poa_driesse(mocker):
     surface_azimuth = 180
 
     # test core function
-    output = irradiance.ghi_from_poa_driesse_2023(
+    output = irradiance.ghi_from_poa_driesse_2024(
         surface_tilt, surface_azimuth, zenith, azimuth,
         poa_global, dni_extra=1366.1)
 
@@ -828,7 +828,7 @@ def test_ghi_from_poa_driesse(mocker):
     # test series output
     poa_global = pd.Series([20, 300, 1000], index=times)
 
-    output = irradiance.ghi_from_poa_driesse_2023(
+    output = irradiance.ghi_from_poa_driesse_2024(
         surface_tilt, surface_azimuth, zenith, azimuth,
         poa_global, dni_extra=1366.1)
 
@@ -837,7 +837,7 @@ def test_ghi_from_poa_driesse(mocker):
     # test full_output option and special cases
     poa_global = np.array([0, 1500, np.nan])
 
-    ghi, conv, niter = irradiance.ghi_from_poa_driesse_2023(
+    ghi, conv, niter = irradiance.ghi_from_poa_driesse_2024(
         surface_tilt, surface_azimuth, zenith, azimuth,
         poa_global, dni_extra=1366.1, full_output=True)
 
@@ -854,17 +854,24 @@ def test_ghi_from_poa_driesse(mocker):
     poa_global = pd.Series([20, 300, 1000], index=times)
     # test exception
     xtol = -3.14159  # negative value raises exception in scipy.optimize.bisect
-    with pytest.raises(ValueError, match=rf"xtol too small \({xtol:g} <= 0\)"):
-        output = irradiance.ghi_from_poa_driesse_2023(
+    with pytest.raises(ValueError, match=rf"xtol too small \({xtol} <= 0\)"):
+        output = irradiance.ghi_from_poa_driesse_2024(
             surface_tilt, surface_azimuth, zenith, azimuth,
             poa_global, dni_extra=1366.1, xtol=xtol)
     # test propagation
     xtol = 3.141592
     bisect_spy = mocker.spy(irradiance, "bisect")
-    output = irradiance.ghi_from_poa_driesse_2023(
+    output = irradiance.ghi_from_poa_driesse_2024(
         surface_tilt, surface_azimuth, zenith, azimuth,
         poa_global, dni_extra=1366.1, xtol=xtol)
     assert bisect_spy.call_args[1]["xtol"] == xtol
+
+
+def test_ghi_from_poa_driesse_2023_deprecated():
+    with pytest.warns(pvlibDeprecationWarning,
+                      match="ghi_from_poa_driesse_2024"):
+        irradiance.ghi_from_poa_driesse_2023(
+            30, 180, 20, 180, 500, dni_extra=1366.1)
 
 
 def test_gti_dirint():
@@ -1164,6 +1171,31 @@ def test_dirindex_min_cos_zenith_max_zenith():
                               times, min_cos_zenith=0, max_zenith=100)
     expected = pd.Series([nan, 5.], index=times)
     assert_series_equal(out, expected)
+
+
+def test_dirint_array_inputs():
+    """np.array and pd.Series inputs work correctly. GH #2751"""
+    times = pd.date_range('2023-06-21 10:00', periods=2, freq='h', tz='UTC')
+
+    # np.array input → should return pd.Series
+    result = irradiance.dirint(
+        ghi=np.array([500.0, 400.0]),
+        solar_zenith=np.array([45.0, 50.0]),
+        times=times,
+        use_delta_kt_prime=False
+    )
+    assert isinstance(result, pd.Series)
+    assert result.iloc[0] > 0
+
+    # pd.Series input → should return pd.Series
+    times2 = pd.date_range('2023-06-21 10:00', periods=3, freq='h', tz='UTC')
+    result2 = irradiance.dirint(
+        ghi=pd.Series([400, 500, 300], index=times2),
+        solar_zenith=pd.Series([50, 40, 60], index=times2),
+        times=times2
+    )
+    assert isinstance(result2, pd.Series)
+    assert (result2 >= 0).all()
 
 
 def test_dni():

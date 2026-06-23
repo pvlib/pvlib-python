@@ -10,10 +10,17 @@ Breaking Changes
 
 Deprecations
 ~~~~~~~~~~~~
+* Rename :py:func:`!pvlib.irradiance.ghi_from_poa_driesse_2023` to
+  :py:func:`~pvlib.irradiance.ghi_from_poa_driesse_2024`. The year now reflects
+  the publication date. The old name will be removed in v0.17.0.
+  (:issue:`2774`, :pull:`2777`)
 
 
 Bug fixes
 ~~~~~~~~~
+* Added test coverage for :py:func:`pvlib.irradiance.dirint` with
+  ``np.array`` and ``pd.Series`` inputs. 
+  (:issue:`2751`, :pull:`2752`)
 * Corrects a bug in :py:func:`pvlib.temperature.fuentes`. If inputs were
   data type integer, users can expect modeled cell temperature values to
   increase slightly.
@@ -26,16 +33,18 @@ Bug fixes
   represent the end of the averaging interval, consistent with ERA5
   conventions. (:issue:`2772`, :pull:`2773`)
 
+* :py:func:`pvlib.iotools.read_nsrdb_psm4` now parses the file header with the
+  :py:mod:`csv` module instead of a naive ``str.split(',')``, so quoted column
+  names containing commas (e.g. the material names in spectral-on-demand files)
+  are no longer split into spurious columns. (:issue:`2736`, :pull:`2771`)
 
 Enhancements
 ~~~~~~~~~~~~
-* Add the ``front_side_fraction`` parameter to
-  :py:func:`pvlib.snow.loss_townsend` to support Townsend snow-loss
-  workflows for bifacial systems. (:issue:`2755`, :pull:`2756`)
-  
-* Added mapping of the parameter ``"albedo"`` in
-  :py:func:`~pvlib.iotools.get_nasa_power` when ``map_variables=True``
-  (:pull:`2753`)
+* Add the following parameters to :py:func:`~pvlib.iotools.get_nasa_power`
+  when ``map_variables=True``: ``temp_dew``, ``precipitable_water``,
+  ``relative_humidity``, ``ghi_extra``, ``dhi_clear``, ``longwave_down``,
+  and ``albedo``.
+  (:issue:`2731`, :pull:`2753`, :pull:`2762`)
 
 
 Documentation
@@ -67,7 +76,10 @@ Maintenance
 Contributors
 ~~~~~~~~~~~~
 * :ghuser:`Omesh37`
+* :ghuser:`gaoflow`
 * Cliff Hansen (:ghuser:`cwhanse`)
 * :ghuser:`shethkajal7`
 * Arthur Onno (:ghuser:`ArthurOnnoTerabase`)
 * Adam R. Jensen (:ghuser:`AdamRJensen`)
+* Karl Hill (:ghuser:`karlhillx`)
+* Rajiv Daxini (:ghuser:`RDaxini`)

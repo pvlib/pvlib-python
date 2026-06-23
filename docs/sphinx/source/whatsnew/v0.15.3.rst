@@ -23,6 +23,9 @@ Enhancements
 Documentation
 ~~~~~~~~~~~~~
 
+* Fixed broken ``interval`` keyword argument in the ``oedi_9068`` gallery
+  example; the correct parameter name is ``time_step``. (:issue:`2791`)
+
 
 Testing
 ~~~~~~~
@@ -42,4 +45,5 @@ Maintenance
 
 Contributors
 ~~~~~~~~~~~~
+* Karl Hill (:ghuser:`karlhillx`)
 

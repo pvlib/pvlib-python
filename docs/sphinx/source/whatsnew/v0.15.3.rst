@@ -45,4 +45,5 @@ Maintenance
 
 Contributors
 ~~~~~~~~~~~~
+* Karl Hill (:ghuser:`karlhillx`)
 

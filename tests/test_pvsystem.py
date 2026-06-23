@@ -2422,10 +2422,10 @@ def test_PVSystem_single_array():
 
 
 def test_combine_loss_factors():
-    test_index = pd.date_range(start='1990/01/01T12:00', periods=365, freq='d')
+    test_index = pd.date_range(start='1990/01/01T12:00', periods=365, freq='D')
     loss_1 = pd.Series(.10, index=test_index)
     loss_2 = pd.Series(.05, index=pd.date_range(start='1990/01/01T12:00',
-                                                periods=365*2, freq='d'))
+                                                periods=365*2, freq='D'))
     loss_3 = pd.Series(.02, index=pd.date_range(start='1990/01/01',
                                                 periods=12, freq='MS'))
     expected = pd.Series(.1621, index=test_index)

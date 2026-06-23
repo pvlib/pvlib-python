@@ -252,8 +252,9 @@ def test_reindl(irrad_data, ephem_data, dni_et):
 
 
 def test_king(irrad_data, ephem_data):
-    result = irradiance.king(40, irrad_data['dhi'], irrad_data['ghi'],
-                             ephem_data['apparent_zenith'])
+    with pytest.warns(pvlibDeprecationWarning, match='king'):
+        result = irradiance.king(40, irrad_data['dhi'], irrad_data['ghi'],
+                                 ephem_data['apparent_zenith'])
     assert_allclose(result, [0, 44.629352, 115.182626, 79.719855], atol=1e-4)
 
 

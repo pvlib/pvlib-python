@@ -916,16 +916,16 @@ def reindl(surface_tilt, surface_azimuth, dhi, dni, ghi, dni_extra,
     solar_azimuth : numeric
         Solar azimuth angles. See :term:`solar_azimuth`. [°]
 
-    return_components : bool, default False
-        Flag used to decide whether to return the calculated diffuse components
-        or not.
+    return_components : bool, default ``False``
+        If ``False``, ``sky_diffuse`` is returned.
+        If ``True``, ``diffuse_components`` is returned.
 
     Returns
     -------
     numeric, Dict, or DataFrame
         Return type controlled by ``return_components`` argument.
-        If ``return_components=False``, `sky_diffuse` is returned.
-        If ``return_components=True``, `diffuse_components` is returned.
+        If ``return_components=False``, ``sky_diffuse`` is returned.
+        If ``return_components=True``, ``diffuse_components`` is returned.
 
     sky_diffuse : numeric
         The sky diffuse component of the solar radiation on a tilted
@@ -964,8 +964,8 @@ def reindl(surface_tilt, surface_azimuth, dhi, dni, ghi, dni_extra,
     brightening, so the form of the equation varies slightly from Equation 8
     in [3]_.
 
-    For clarity, the horizon component in `reindl` corresponds to the term
-    added on top of the `haydavies` formulation, on which `reindl` builds.
+    For clarity, the horizon component in ``reindl`` corresponds to the term
+    added on top of the ``haydavies`` formulation, on which ``reindl`` builds.
 
     References
     ----------

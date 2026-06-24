@@ -182,13 +182,13 @@ def test_isotropic_components(irrad_data):
     assert_frame_equal(result, expected, check_less_precise=4)
     # numpy
     result = irradiance.isotropic(
-        40, irrad_data['dhi'].values, return_components=True)
+        40, irrad_data['dhi'].to_numpy(), return_components=True)
     for key in keys:
         assert_allclose(result[key], expected[key], atol=1e-4)
     assert isinstance(result, dict)
     # scalar
     result = irradiance.isotropic(
-        40, irrad_data['dhi'].values[-1], return_components=True)
+        40, irrad_data['dhi'].to_numpy()[-1], return_components=True)
     for key in keys:
         assert_allclose(result[key], expected[key].iloc[-1], atol=1e-4)
     assert isinstance(result, dict)

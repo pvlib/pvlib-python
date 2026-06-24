@@ -623,18 +623,18 @@ def isotropic(surface_tilt, dhi, return_components=False):
     dhi : numeric
         Diffuse horizontal irradiance, must be >=0. See :term:`dhi`.
 
-    return_components : bool, default `False`
-        If `False`, ``sky_diffuse`` is returned.
-        If `True`, ``diffuse_components`` is returned.
-        For this model, return_components does not add more information,
+    return_components : bool, default ``False``
+        If ``False``, ``sky_diffuse`` is returned.
+        If ``True``, ``diffuse_components`` is returned.
+        For this model, `` return_components`` does not add more information,
         but it is included for consistency with the other sky diffuse models.
 
     Returns
     -------
     numeric, Dict, or DataFrame
         Return type controlled by ``return_components`` argument.
-        If `False`, ``sky_diffuse`` is returned.
-        If `True`, ``diffuse_components`` is returned.
+        If ``False``, ``sky_diffuse`` is returned.
+        If ``True``, ``diffuse_components`` is returned.
 
     sky_diffuse : numeric
         The sky diffuse component of the solar radiation. [Wm⁻²]

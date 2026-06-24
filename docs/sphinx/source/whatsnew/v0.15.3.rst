@@ -18,6 +18,8 @@ Bug fixes
 
 Enhancements
 ~~~~~~~~~~~~
+* Add support for diffuse irradiance components to :py:func:`pvlib.irradiance.isotropic`
+  when ``return_components=True``. (:issue:`2750`, :pull:`2787`)
 
 
 Documentation

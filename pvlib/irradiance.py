@@ -281,7 +281,8 @@ def get_total_irradiance(surface_tilt, surface_azimuth,
                          dni, ghi, dhi, dni_extra=None, airmass=None,
                          albedo=0.25, surface_type=None,
                          model='isotropic',
-                         model_perez='allsitescomposite1990'):
+                         model_perez='allsitescomposite1990',
+                         diffuse_components=False):
     r"""
     Determine total in-plane irradiance and its beam, sky diffuse and ground
     reflected components, using the specified sky diffuse irradiance model.
@@ -332,10 +333,15 @@ def get_total_irradiance(surface_tilt, surface_azimuth,
         ``'perez-driesse'``.
     model_perez : str, default 'allsitescomposite1990'
         Used only if ``model='perez'``. See :py:func:`~pvlib.irradiance.perez`.
+    diffuse_components : bool, default False
+        If `True`, returns values for the different diffuse irradiance
+        components available from the selected model
+        (e.g., isotropic, circumsolar, horizon brightening).
+        If `False`, only the total diffuse irradiance is returned.
 
     Returns
     -------
-    total_irrad : OrderedDict or DataFrame
+    total_irrad : Dict or DataFrame
         Contains keys/columns ``'poa_global', 'poa_direct', 'poa_diffuse',
         'poa_sky_diffuse', 'poa_ground_diffuse'``. [Wm⁻²]
 
@@ -353,7 +359,7 @@ def get_total_irradiance(surface_tilt, surface_azimuth,
     poa_sky_diffuse = get_sky_diffuse(
         surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
         dni, ghi, dhi, dni_extra=dni_extra, airmass=airmass, model=model,
-        model_perez=model_perez)
+        model_perez=model_perez, return_components=diffuse_components)
 
     poa_ground_diffuse = get_ground_diffuse(surface_tilt, ghi, albedo,
                                             surface_type)
@@ -366,7 +372,8 @@ def get_sky_diffuse(surface_tilt, surface_azimuth,
                     solar_zenith, solar_azimuth,
                     dni, ghi, dhi, dni_extra=None, airmass=None,
                     model='isotropic',
-                    model_perez='allsitescomposite1990'):
+                    model_perez='allsitescomposite1990',
+                    return_components=False):
     r"""
     Determine in-plane sky diffuse irradiance component
     using the specified sky diffuse irradiance model.
@@ -408,11 +415,20 @@ def get_sky_diffuse(surface_tilt, surface_azimuth,
         ``'perez-driesse'``.
     model_perez : str, default 'allsitescomposite1990'
         Used only if ``model='perez'``. See :py:func:`~pvlib.irradiance.perez`.
+    return_components : bool, default False
+        If `True`, returns values for the different diffuse irradiance
+        components available from the selected model
+        (e.g., isotropic, circumsolar, horizon brightening).
+        If `False`, only the total diffuse irradiance is returned.
 
     Returns
     -------
-    poa_sky_diffuse : numeric
-        Sky diffuse irradiance in the plane of array. [Wm⁻²]
+    numeric, Dict, or DataFrame
+        Return type controlled by ``return_components`` argument.
+        If `False`, total sky diffuse irradiance in the plane of array
+        is returned (numeric). [Wm⁻²]
+        If `True`, the different diffuse components are returned
+        (Dict or DataFrame). [Wm⁻²]
 
     Raises
     ------
@@ -443,16 +459,19 @@ def get_sky_diffuse(surface_tilt, surface_azimuth,
         raise ValueError(f'dni_extra is required for model {model}')
 
     if model == 'isotropic':
-        sky = isotropic(surface_tilt, dhi)
+        sky = isotropic(surface_tilt, dhi, return_components=return_components)
     elif model == 'klucher':
         sky = klucher(surface_tilt, surface_azimuth, dhi, ghi,
-                      solar_zenith, solar_azimuth)
+                      solar_zenith, solar_azimuth,
+                      return_components=return_components)
     elif model == 'haydavies':
         sky = haydavies(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
-                        solar_zenith, solar_azimuth)
+                        solar_zenith, solar_azimuth,
+                        return_components=return_components)
     elif model == 'reindl':
         sky = reindl(surface_tilt, surface_azimuth, dhi, dni, ghi, dni_extra,
-                     solar_zenith, solar_azimuth)
+                     solar_zenith, solar_azimuth,
+                     return_components=return_components)
     elif model == 'king':
         sky = king(surface_tilt, dhi, ghi, solar_zenith)
     elif model == 'perez':
@@ -460,11 +479,12 @@ def get_sky_diffuse(surface_tilt, surface_azimuth,
             airmass = atmosphere.get_relative_airmass(solar_zenith)
         sky = perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
                     solar_zenith, solar_azimuth, airmass,
-                    model=model_perez)
+                    model=model_perez, return_components=return_components)
     elif model == 'perez-driesse':
         # perez_driesse will calculate its own airmass if needed
         sky = perez_driesse(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
-                            solar_zenith, solar_azimuth, airmass)
+                            solar_zenith, solar_azimuth, airmass,
+                            return_components=return_components)
     else:
         raise ValueError(f'invalid model selection {model}')
 
@@ -488,7 +508,7 @@ def poa_components(aoi, dni, poa_sky_diffuse, poa_ground_diffuse):
         Direct normal irradiance, as measured from a TMY file or
         calculated with a clearsky model. See :term:`dni`. [Wm⁻²]
 
-    poa_sky_diffuse : numeric
+    poa_sky_diffuse : numeric, Dict or DataFrame
         Diffuse irradiance in the plane of the modules, as
         calculated by a diffuse irradiance translation function. [Wm⁻²]
 
@@ -499,7 +519,7 @@ def poa_components(aoi, dni, poa_sky_diffuse, poa_ground_diffuse):
 
     Returns
     -------
-    irrads : OrderedDict or DataFrame
+    irrads : Dict or DataFrame
         Contains the following keys:
 
         * ``poa_global`` : Total in-plane irradiance. [Wm⁻²]
@@ -508,22 +528,38 @@ def poa_components(aoi, dni, poa_sky_diffuse, poa_ground_diffuse):
         * ``poa_sky_diffuse`` : In-plane diffuse irradiance from sky. [Wm⁻²]
         * ``poa_ground_diffuse`` : In-plane diffuse irradiance from ground.
           [Wm⁻²]
+        
+        If ``poa_sky_diffuse`` is a Dict or DataFrame, ``irrads`` will
+        contain additional keys for each of the diffuse components returned by
+        the selected diffuse irradiance model.
 
     Notes
     ------
     Negative beam irradiation due to AOI > 90° or AOI < 0° is set to zero.
     '''
 
+    if isinstance(poa_sky_diffuse, dict):
+        sky_components = poa_sky_diffuse.copy()
+        total_poa_sky_diffuse = sky_components.pop('poa_sky_diffuse')
+    elif isinstance(poa_sky_diffuse, pd.DataFrame):
+        sky_components = poa_sky_diffuse.to_dict(orient='series')
+        total_poa_sky_diffuse = sky_components.pop('poa_sky_diffuse')
+    else:
+        sky_components = {}
+        total_poa_sky_diffuse = poa_sky_diffuse
+
     poa_direct = np.maximum(dni * np.cos(np.radians(aoi)), 0)
-    poa_diffuse = poa_sky_diffuse + poa_ground_diffuse
+    poa_diffuse = total_poa_sky_diffuse + poa_ground_diffuse
     poa_global = poa_direct + poa_diffuse
 
-    irrads = OrderedDict()
-    irrads['poa_global'] = poa_global
-    irrads['poa_direct'] = poa_direct
-    irrads['poa_diffuse'] = poa_diffuse
-    irrads['poa_sky_diffuse'] = poa_sky_diffuse
-    irrads['poa_ground_diffuse'] = poa_ground_diffuse
+    irrads = {
+        'poa_global': poa_global,
+        'poa_direct': poa_direct,
+        'poa_diffuse': poa_diffuse,
+        'poa_sky_diffuse': total_poa_sky_diffuse,
+        'poa_ground_diffuse': poa_ground_diffuse,
+        **sky_components
+    }
 
     if isinstance(poa_direct, pd.Series):
         irrads = pd.DataFrame(irrads)

@@ -528,7 +528,7 @@ def poa_components(aoi, dni, poa_sky_diffuse, poa_ground_diffuse):
         * ``poa_sky_diffuse`` : In-plane diffuse irradiance from sky. [Wm⁻²]
         * ``poa_ground_diffuse`` : In-plane diffuse irradiance from ground.
           [Wm⁻²]
-        
+
         If ``poa_sky_diffuse`` is a Dict or DataFrame, ``irrads`` will
         contain additional keys for each of the diffuse components returned by
         the selected diffuse irradiance model.

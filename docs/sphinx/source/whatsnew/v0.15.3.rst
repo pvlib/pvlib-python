@@ -22,6 +22,7 @@ Enhancements
 
 Documentation
 ~~~~~~~~~~~~~
+* Replaced deprecated ``US/Eastern`` timezone alias with ``America/New_York`` in the discontinuous tracking example. :pull:``2798`` (:ghuser:``dgowdaan-cmyk``)
 
 
 Testing

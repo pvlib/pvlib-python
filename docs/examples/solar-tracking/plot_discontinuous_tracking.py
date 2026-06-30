@@ -50,7 +50,7 @@ class DiscontinuousTrackerMount(pvsystem.SingleAxisTrackerMount):
 # %%
 # Let's take a look at the tracker rotation curve it produces:
 
-times = pd.date_range('2019-06-01', '2019-06-02', freq='1min', tz='US/Eastern')
+times = pd.date_range('2019-06-01', '2019-06-02', freq='1min', tz='America/New_York')
 loc = location.Location(40, -80)
 solpos = loc.get_solarposition(times)
 mount = DiscontinuousTrackerMount(axis_azimuth=180, gcr=0.4)

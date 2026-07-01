@@ -1,0 +1,47 @@
+.. _whatsnew_0_16_0:
+
+
+v0.16.0
+-------------------------------------
+
+Breaking Changes
+~~~~~~~~~~~~~~~~
+* Change output type of :py:func:`pvlib.irradiance.perez` and
+:py:func:`pvlib.irradiance.perez_driesse` from OrderedDict to dict when
+``return_components=True`` to be consistent with other models. (:pull:`2789`)
+
+Deprecations
+~~~~~~~~~~~~
+
+
+Bug fixes
+~~~~~~~~~
+
+
+Enhancements
+~~~~~~~~~~~~
+
+
+Documentation
+~~~~~~~~~~~~~
+
+
+Testing
+~~~~~~~
+
+
+Benchmarking
+~~~~~~~~~~~~
+
+
+Requirements
+~~~~~~~~~~~~
+
+
+Maintenance
+~~~~~~~~~~~
+
+
+Contributors
+~~~~~~~~~~~~
+* Carolina Crespo (:ghuser:`cbcrespo`)

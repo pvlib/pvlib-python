@@ -338,6 +338,8 @@ def get_total_irradiance(surface_tilt, surface_azimuth,
         components available from the selected model
         (e.g., isotropic, circumsolar, horizon brightening).
         If `False`, only the total diffuse irradiance is returned.
+        This option is not available for the ``'klucher'`` and
+        ``'king'`` models.
 
     Returns
     -------
@@ -420,6 +422,8 @@ def get_sky_diffuse(surface_tilt, surface_azimuth,
         components available from the selected model
         (e.g., isotropic, circumsolar, horizon brightening).
         If `False`, only the total diffuse irradiance is returned.
+        This option is not available for the ``'klucher'`` and
+        ``'king'`` models.
 
     Returns
     -------
@@ -454,6 +458,10 @@ def get_sky_diffuse(surface_tilt, surface_azimuth,
 
     model = model.lower()
 
+    if return_components and model in {'klucher', 'king'}:
+        raise ValueError('return_components is not supported for'
+                         f' model {model}')
+
     if dni_extra is None and model in {'haydavies', 'reindl',
                                        'perez', 'perez-driesse'}:
         raise ValueError(f'dni_extra is required for model {model}')
@@ -462,8 +470,7 @@ def get_sky_diffuse(surface_tilt, surface_azimuth,
         sky = isotropic(surface_tilt, dhi, return_components=return_components)
     elif model == 'klucher':
         sky = klucher(surface_tilt, surface_azimuth, dhi, ghi,
-                      solar_zenith, solar_azimuth,
-                      return_components=return_components)
+                      solar_zenith, solar_azimuth)
     elif model == 'haydavies':
         sky = haydavies(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
                         solar_zenith, solar_azimuth,

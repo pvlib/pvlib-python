@@ -1,0 +1,48 @@
+.. _whatsnew_0_16_0:
+
+
+v0.16.0
+-----------------------
+
+Breaking Changes
+~~~~~~~~~~~~~~~~
+* Remove empty horizon component from the output of
+:py:func:`pvlib.irradiance.haydavies` when ``return_components=True``.
+(:pull:`2788`)
+
+
+Deprecations
+~~~~~~~~~~~~
+
+
+Bug fixes
+~~~~~~~~~
+
+
+Enhancements
+~~~~~~~~~~~~
+
+
+Documentation
+~~~~~~~~~~~~~
+
+
+Testing
+~~~~~~~
+
+
+Benchmarking
+~~~~~~~~~~~~
+
+
+Requirements
+~~~~~~~~~~~~
+
+
+Maintenance
+~~~~~~~~~~~
+
+
+Contributors
+~~~~~~~~~~~~
+

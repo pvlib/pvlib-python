@@ -18,6 +18,9 @@ Bug fixes
 
 Enhancements
 ~~~~~~~~~~~~
+* Add support for returning the individual diffuse irradiance components
+  from :py:func:`pvlib.irradiance.reindl` when ``return_components=True``.
+  (:issue:`2750`, :pull:`2775`)
 
 
 Documentation

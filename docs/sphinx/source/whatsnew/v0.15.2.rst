@@ -1,15 +1,14 @@
 .. _whatsnew_0_15_2:
 
 
-v0.15.2 (Anticipated June 2026)
--------------------------------
-
-Breaking Changes
-~~~~~~~~~~~~~~~~
+v0.15.2 (June 16, 2026)
+-----------------------
 
 
 Deprecations
 ~~~~~~~~~~~~
+* Deprecate :py:attr:`pvlib.location.Location.pytz`.
+  Use :py:attr:`~pvlib.location.Location.tz` instead. (:issue:`2343`, :pull:`2757`)
 * Rename :py:func:`!pvlib.irradiance.ghi_from_poa_driesse_2023` to
   :py:func:`~pvlib.irradiance.ghi_from_poa_driesse_2024`. The year now reflects
   the publication date. The old name will be removed in v0.17.0.
@@ -18,59 +17,48 @@ Deprecations
 
 Bug fixes
 ~~~~~~~~~
-* Added test coverage for :py:func:`pvlib.irradiance.dirint` with
-  ``np.array`` and ``pd.Series`` inputs. 
-  (:issue:`2751`, :pull:`2752`)
-* Corrects a bug in :py:func:`pvlib.temperature.fuentes`. If inputs were
-  data type integer, users can expect modeled cell temperature values to
-  increase slightly.
-  (:issue:`2608`, :pull:`2745`)
-* Fixes a regression in :py:func:`pvlib.tracking.calc_surface_orientation`
+* Fix :py:func:`pvlib.temperature.fuentes` truncating the output if `poa_global` input was
+  data type integer. Users can expect modeled cell temperature values to
+  increase slightly. (:issue:`2608`, :pull:`2745`)
+* Fix a regression in :py:func:`pvlib.tracking.calc_surface_orientation`
   introduced in v0.15.1 (:pull:`2702`) that caused a broadcasting
   ``ValueError`` when ``tracker_theta`` was a 2-D (or higher rank) array.
   (:issue:`2747`, :pull:`2749`)
 * Document that timestamps returned by :py:func:`~pvlib.iotools.get_era5`
   represent the end of the averaging interval, consistent with ERA5
   conventions. (:issue:`2772`, :pull:`2773`)
+* Fix header parsing in :py:func:`pvlib.iotools.read_nsrdb_psm4` with quoted
+  commas in column names. This allows spectral-on-demand files to be read. (:issue:`2736`, :pull:`2771`)
+* Update :py:func:`~pvlib.iotools.get_meteonorm_tmy` to comply
+  with the updated Meteonorm API.  As part of this, the ``data_version``
+  parameter now has no effect and will be removed in the future. (:pull:`2781`)
 
-* :py:func:`pvlib.iotools.read_nsrdb_psm4` now parses the file header with the
-  :py:mod:`csv` module instead of a naive ``str.split(',')``, so quoted column
-  names containing commas (e.g. the material names in spectral-on-demand files)
-  are no longer split into spurious columns. (:issue:`2736`, :pull:`2771`)
 
 Enhancements
 ~~~~~~~~~~~~
+* Add the ``front_side_fraction`` parameter to
+  :py:func:`pvlib.snow.loss_townsend` to support Townsend snow-loss
+  workflows for bifacial systems. (:issue:`2755`, :pull:`2756`)
 * Add the following parameters to :py:func:`~pvlib.iotools.get_nasa_power`
   when ``map_variables=True``: ``temp_dew``, ``precipitable_water``,
   ``relative_humidity``, ``ghi_extra``, ``dhi_clear``, ``longwave_down``,
-  and ``albedo``.
-  (:issue:`2731`, :pull:`2753`, :pull:`2762`)
+  and ``albedo``. (:issue:`2731`, :pull:`2753`, :pull:`2762`)
 
 
 Documentation
 ~~~~~~~~~~~~~
-* Clarifies that :py:func:`pvlib.soiling.hsu` has an implicit minimum
+* Clarify that :py:func:`pvlib.soiling.hsu` has an implicit minimum
   soiling ratio of approximately 0.6563 due to the mathematical form
   of the model. (:issue:`2534`, :pull:`2743`)
-* Clarifies how Linke turbidity values can be provided to
- :py:func:`pvlib.clearsky.ineichen` via
- :py:func:`pvlib.clearsky.lookup_linke_turbidity` (:issue:`2598`, :pull:`2746`)
+* Clarify how Linke turbidity values can be provided to
+  :py:func:`pvlib.clearsky.ineichen` via
+  :py:func:`pvlib.clearsky.lookup_linke_turbidity`. (:issue:`2598`, :pull:`2746`)
 
 
 Testing
 ~~~~~~~
-
-
-Benchmarking
-~~~~~~~~~~~~
-
-
-Requirements
-~~~~~~~~~~~~
-
-
-Maintenance
-~~~~~~~~~~~
+* Add test coverage for :py:func:`pvlib.irradiance.dirint` with
+  ``np.array`` and ``pd.Series`` inputs. (:issue:`2751`, :pull:`2752`)
 
 
 Contributors
@@ -81,5 +69,18 @@ Contributors
 * :ghuser:`shethkajal7`
 * Arthur Onno (:ghuser:`ArthurOnnoTerabase`)
 * Adam R. Jensen (:ghuser:`AdamRJensen`)
+* :ghuser:`JoLo90`
 * Karl Hill (:ghuser:`karlhillx`)
 * Rajiv Daxini (:ghuser:`RDaxini`)
+* Vincent Filter (:ghuser:`vfilter`)
+* Klaus Jäger (:ghuser:`solartube`)
+* Carolina Crespo (:ghuser:`cbcrespo`)
+* Ioannis Sifnaios (:ghuser:`IoannisSifnaios`)
+* Anton Driesse (:ghuser:`adriesse`)
+* Mark Mikofski (:ghuser:`mikofski`)
+* Rodrigo Amaro e Silva (:ghuser:`ramaroesilva`)
+* Will Hobbs (:ghuser:`williamhobbs`)
+* Echedey Luis (:ghuser:`echedey-ls`)
+* Cliff Hansen (:ghuser:`cwhanse`)
+* Will Holmgren (:ghuser:`wholmgren`)
+* Kevin Anderson (:ghuser:`kandersolar`)

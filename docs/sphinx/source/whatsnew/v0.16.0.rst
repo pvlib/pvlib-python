@@ -6,9 +6,9 @@ v0.16.0
 
 Breaking Changes
 ~~~~~~~~~~~~~~~~
-* Remove empty horizon component from the output of
-:py:func:`pvlib.irradiance.haydavies` when ``return_components=True``.
-(:pull:`2788`)
+* Remove empty ``poa_horizon`` component from the output of
+  :py:func:`pvlib.irradiance.haydavies` when ``return_components=True``.
+  (:pull:`2788`)
 
 
 Deprecations

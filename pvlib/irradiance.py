@@ -922,7 +922,7 @@ def reindl(surface_tilt, surface_azimuth, dhi, dni, ghi, dni_extra,
 
     Returns
     -------
-    numeric, Dict, or DataFrame
+    numeric, dict, or DataFrame
         Return type controlled by ``return_components`` argument.
         If ``return_components=False``, ``sky_diffuse`` is returned.
         If ``return_components=True``, ``diffuse_components`` is returned.
@@ -931,7 +931,7 @@ def reindl(surface_tilt, surface_azimuth, dhi, dni, ghi, dni_extra,
         The sky diffuse component of the solar radiation on a tilted
         surface.
 
-    diffuse_components : Dict (array input) or DataFrame (Series input)
+    diffuse_components : dict (array input) or DataFrame (Series input)
         Keys/columns are:
             * poa_sky_diffuse: Total sky diffuse
             * poa_isotropic

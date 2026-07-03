@@ -516,7 +516,7 @@ def sun_rise_set_transit_ephem(times, latitude, longitude,
 
     Parameters
     ----------
-    time : pandas.DatetimeIndex
+    times : pandas.DatetimeIndex
         Must be localized
     latitude : float
         Latitude in degrees, positive north of equator, negative to south

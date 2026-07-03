@@ -3122,8 +3122,8 @@ def _liujordan(zenith, transmittance, airmass, dni_extra=1367.0):
     transmittance: float
         Atmospheric transmittance between 0 and 1.
 
-    pressure: float, default 101325.0
-        Air pressure
+    airmass: numeric
+        Optical air mass number. [unitless]
 
     dni_extra: float, default 1367.0
         Direct irradiance incident at the top of the atmosphere.

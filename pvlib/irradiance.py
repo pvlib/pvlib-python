@@ -783,7 +783,7 @@ def haydavies(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
 
     Returns
     --------
-    numeric, Dict, or DataFrame
+    numeric, dict, or DataFrame
         Return type controlled by ``return_components`` argument.
         If `False`, ``sky_diffuse`` is returned.
         If `True`, ``diffuse_components`` is returned.
@@ -792,7 +792,7 @@ def haydavies(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
         The sky diffuse component of the solar radiation on a tilted
         surface. [Wm⁻²]
 
-    diffuse_components : Dict (array input) or DataFrame (Series input)
+    diffuse_components : dict (array input) or DataFrame (Series input)
         Keys/columns are:
             * poa_sky_diffuse: Total sky diffuse
             * poa_isotropic

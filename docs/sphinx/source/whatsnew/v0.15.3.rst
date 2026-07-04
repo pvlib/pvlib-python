@@ -22,6 +22,9 @@ Enhancements
 
 Documentation
 ~~~~~~~~~~~~~
+* Fix broken link in GitHub Contributing tab. (:issue:`2628`, :pull:`2806`)
+* Fixed broken ``interval`` keyword argument in the ``oedi_9068`` gallery
+  example; the correct parameter name is ``time_step``. (:issue:`2791`)
 
 
 Testing
@@ -43,3 +46,5 @@ Maintenance
 Contributors
 ~~~~~~~~~~~~
 * Eesh Saxena (:ghuser:`eeshsaxena`)
+* Karl Hill (:ghuser:`karlhillx`)
+* Yonry Zhu (:ghuser:`yonryzhu`)

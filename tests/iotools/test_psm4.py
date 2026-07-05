@@ -14,10 +14,12 @@ from io import StringIO
 
 TMY_TEST_DATA = TESTS_DATA_DIR / 'test_psm4_tmy-2023.csv'
 FULL_DISC_TEST_DATA = TESTS_DATA_DIR / 'test_psm4_full_disc_2023.csv'
+POLAR_TEST_DATA = TESTS_DATA_DIR / 'test_psm4_polar_2023.csv'
 YEAR_TEST_DATA = TESTS_DATA_DIR / 'test_psm4_2023.csv'
 YEAR_TEST_DATA_5MIN = TESTS_DATA_DIR / 'test_psm4_2023_5min.csv'
 MANUAL_TEST_DATA = TESTS_DATA_DIR / 'test_read_psm4.csv'
 LATITUDE, LONGITUDE = 40.5137, -108.5449
+LATITUDE_POLAR, LONGITUDE_POLAR = 64.84, -147.70
 METADATA_FIELDS = [
     'Source', 'Location ID', 'City', 'State', 'Country', 'Latitude',
     'Longitude', 'Time Zone', 'Elevation', 'Local Time Zone',
@@ -75,6 +77,21 @@ def test_get_nsrdb_psm4_full_disc(nlr_api_key):
                                                    leap_day=False,
                                                    map_variables=False)
     expected = pd.read_csv(FULL_DISC_TEST_DATA)
+    assert_psm4_equal(data, metadata, expected)
+
+
+@pytest.mark.remote_data
+@pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
+def test_get_nsrdb_psm4_polar(nlr_api_key):
+    """test get_nsrdb_psm4_polar with a single year"""
+    data, metadata = psm4.get_nsrdb_psm4_polar(
+        LATITUDE_POLAR, LONGITUDE_POLAR,
+        nlr_api_key, PVLIB_EMAIL,
+        year='2023',
+        leap_day=False,
+        parameters=["ghi"],
+        map_variables=False)
+    expected = pd.read_csv(POLAR_TEST_DATA)
     assert_psm4_equal(data, metadata, expected)
 
 

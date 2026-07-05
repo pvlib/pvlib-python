@@ -639,9 +639,10 @@ def get_nsrdb_psm4_polar(latitude, longitude, api_key, email,
     """
     Retrieve timeseries weather data from the PSM4 NSRDB Polar API.
 
-    The NSRDB is described in [1]_ and the NSRDB PSM4 NSRDB Polar v4 dataset is
-    described in [2]_, [3]_. The Polar dataset extends NSRDB coverage to high latitude
-    regions, that are outside the field of view of the geostationary satellites.
+    The NSRDB is described in [1]_ and the NSRDB PSM4 NSRDB Polar v4 dataset
+    is described in [2]_, [3]_. The Polar dataset extends NSRDB coverage to
+    high latitude regions, that are outside the field of view of the
+    geostationary satellites.
 
     The dataset provides data from 2013 onwards over the exclusive economic zone
     above 60 degrees north. The data have a spatial resolution of 4 km and a

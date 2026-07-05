@@ -398,12 +398,12 @@ def test_perez_zero_dhi_and_dni_scalar():
     args = (20, 180, 0.0, 0.0, 1366.1, 89.96, 256.28, 37.32)
 
     out = irradiance.perez(*args)
-    expected = 0.0
-    assert_equal(out, expected)
+    poa_sky_diffuse_expected = 0.0
+    assert_equal(out, poa_sky_diffuse_expected)
 
     out = irradiance.perez(*args, return_components=True)
     expected = {
-        "poa_sky_diffuse": 0.0,
+        "poa_sky_diffuse": poa_sky_diffuse_expected,
         "poa_isotropic": 0.0,
         "poa_circumsolar": 0.0,
         "poa_horizon": 0.0,
@@ -419,30 +419,31 @@ def test_perez_zero_dhi_and_dni_scalar():
 
 
 def test_perez_array_dhi_and_dni_combos():
-    # Divides zero by zero.
+    # Divides zero and non-zero by zero and various NaN division combos.
     args = (
-        20, 180, np.array([0.0, 10.0, np.nan, 0.0, np.nan]),
-        np.array([0.0, 0.0, 0.0, np.nan, np.nan]), 1366.1, 89.96, 256.28,
-        37.32
+        20, 180,
+        np.array([0.0, 10.0, np.nan, np.nan, 0.0, 100.0, np.nan]),
+        np.array([0.0, 0.0, 0.0, 100.0, np.nan, np.nan, np.nan]),
+        1366.1, 89.96, 256.28, 37.32
     )
 
     out = irradiance.perez(*args)
-    expected = np.array([0.0, 9.424924186619206, np.nan, np.nan, np.nan])
-    assert_allclose(out, expected)
+    poa_sky_diffuse_expected = np.array(
+        [0.0, 9.424924186619206, np.nan, np.nan, np.nan, np.nan, np.nan]
+    )
+    assert_allclose(out, poa_sky_diffuse_expected)
 
     out = irradiance.perez(*args, return_components=True)
     expected = {
-        "poa_sky_diffuse": np.array(
-            [0.0, 9.424924186619206, np.nan, np.nan, np.nan]
-        ),
+        "poa_sky_diffuse": poa_sky_diffuse_expected,
         "poa_isotropic": np.array(
-            [ 0.0, 9.162258932459126, np.nan, np.nan, np.nan]
+            [0.0, 9.162258932459126, np.nan, np.nan, np.nan, np.nan, np.nan]
         ),
         "poa_circumsolar": np.array(
-            [ 0.0, 0.5187450944545264, np.nan, np.nan, np.nan]
+            [0.0, 0.5187450944545264, np.nan, np.nan, np.nan, np.nan, np.nan]
         ),
         "poa_horizon": np.array(
-            [0.0, -0.2560798402944465, np.nan, np.nan, np.nan]
+            [0.0, -0.2560798402944465, np.nan, np.nan, np.nan, np.nan, np.nan]
         ),
     }
     assert len(out) == len(expected)

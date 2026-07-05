@@ -288,7 +288,6 @@ def test_perez_driesse_airmass(irrad_data, ephem_data, dni_et):
     out = irradiance.perez_driesse(40, 180, irrad_data['dhi'], dni,
                                    dni_et, ephem_data['apparent_zenith'],
                                    ephem_data['azimuth'], airmass=None)
-    print(out)
     expected = pd.Series(np.array(
         [0.,   29.991,  np.nan,   47.397]),
         index=irrad_data.index)
@@ -394,15 +393,15 @@ def test_perez_negative_horizon():
     assert_series_equal(sum_components, expected_for_sum, check_less_precise=2)
 
 
-def test_perez_zero_dhi_and_dni(dni_et):
-    out = irradiance.perez(20, 180, 0.0, 0.0, dni_et, 89.96, 256.28, 37.32)
+def test_perez_zero_dhi_and_dni_scalar():
+    # Divides zero by zero.
+    args = (20, 180, 0.0, 0.0, 1366.1, 89.96, 256.28, 37.32)
+
+    out = irradiance.perez(*args)
     expected = 0.0
     assert_equal(out, expected)
 
-    out = irradiance.perez(
-        20, 180, 0.0, 0.0, dni_et, 89.96, 256.28, 37.32,
-        return_components=True
-    )
+    out = irradiance.perez(*args, return_components=True)
     expected = {
         "poa_sky_diffuse": 0.0,
         "poa_isotropic": 0.0,
@@ -411,18 +410,65 @@ def test_perez_zero_dhi_and_dni(dni_et):
     }
     assert len(out) == len(expected)
     for key in expected.keys():
-        assert_equal(out[key], expected[key])
+        assert_equal(out[key], expected[key], err_msg=key)
+
+    assert_equal(
+        out["poa_sky_diffuse"],
+        out["poa_isotropic"] + out["poa_circumsolar"] + out["poa_horizon"],
+    )
 
 
-def test_perez_zero_dhi_nonzero_dni(dni_et):
+def test_perez_zero_dhi_and_dni_array():
+    # Divides zero by zero.
+    args = (
+        20, 180, np.array([0.0, 10.0, float("nan")]), 0.0, 1366.1, 89.96,
+        256.28, 37.32
+    )
+
+    out = irradiance.perez(*args)
+    expected = np.array([0.0, 9.424924186619206, float("nan")])
+    assert_allclose(out, expected)
+
+    out = irradiance.perez(*args, return_components=True)
+    expected = {
+        "poa_sky_diffuse": np.array([0.0, 9.424924186619206, float("nan")]),
+        "poa_isotropic": np.array([ 0.0, 9.162258932459126, float("nan")]),
+        "poa_circumsolar": np.array([ 0.0, 0.5187450944545264, float("nan")]),
+        "poa_horizon": np.array([0.0, -0.2560798402944465, float("nan")]),
+    }
+    assert len(out) == len(expected)
+    for key in expected.keys():
+        assert_allclose(out[key], expected[key], err_msg=key)
+
+    assert_almost_equal(
+        out["poa_sky_diffuse"],
+        out["poa_isotropic"] + out["poa_circumsolar"] + out["poa_horizon"],
+    )
+
+
+def test_perez_zero_dhi_nonzero_dni_scalar():
+    # Divides nonzero by zero.
+    args = (20, 180, 0.0, 100.0, 1366.1, 89.96, 256.28, 37.32)
+
     with assert_raises(FloatingPointError):
-        irradiance.perez(20, 180, 0.0, 100.0, dni_et, 89.96, 256.28, 37.32)
+        irradiance.perez(*args)
 
     with assert_raises(FloatingPointError):
-        irradiance.perez(
-            20, 180, 0.0, 100.0, dni_et, 89.96, 256.28, 37.32,
-            return_components=True
-        )
+        irradiance.perez(*args, return_components=True)
+
+
+def test_perez_zero_dhi_nonzero_dni_array():
+    # Divides nonzero by zero.
+    args = (
+        20, 180, np.array([0.0, 10.0, float("nan")]), 100.0, 1366.1, 89.96,
+        256.28, 37.32
+    )
+
+    with assert_raises(FloatingPointError):
+        irradiance.perez(*args)
+
+    with assert_raises(FloatingPointError):
+        irradiance.perez(*args, return_components=True)
 
 
 def test_perez_arrays(irrad_data, ephem_data, dni_et, relative_airmass):

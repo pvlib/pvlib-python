@@ -90,6 +90,7 @@ def test_get_nsrdb_psm4_polar(nlr_api_key):
         year='2023',
         leap_day=False,
         parameters=["ghi"],
+        utc=True,
         map_variables=False)
     expected = pd.read_csv(POLAR_TEST_DATA)
     assert_psm4_equal(data, metadata, expected)

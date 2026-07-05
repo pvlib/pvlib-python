@@ -1211,7 +1211,7 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
     B = np.maximum(B, tools.cosd(85))
 
     # Calculate Diffuse POA from sky dome
-    term1 = 0.5 * (1 - F1) * (1 + tools.cosd(surface_tilt)) # isotropic
+    term1 = 0.5 * (1 - F1) * (1 + tools.cosd(surface_tilt))  # isotropic
     term2 = F1 * A / B  # circumsolar
     term3 = F2 * tools.sind(surface_tilt)  # horizon
 

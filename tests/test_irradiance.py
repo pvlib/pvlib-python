@@ -400,7 +400,8 @@ def test_perez_zero_dhi_and_dni(dni_et):
     assert_equal(out, expected)
 
     out = irradiance.perez(
-        20, 180, 0.0, 0.0, dni_et, 89.96, 256.28, 37.32, return_components=True
+        20, 180, 0.0, 0.0, dni_et, 89.96, 256.28, 37.32,
+        return_components=True
     )
     expected = {
         "poa_sky_diffuse": 0.0,
@@ -419,7 +420,8 @@ def test_perez_zero_dhi_nonzero_dni(dni_et):
 
     with assert_raises(FloatingPointError):
         irradiance.perez(
-            20, 180, 0.0, 100.0, dni_et, 89.96, 256.28, 37.32, return_components=True
+            20, 180, 0.0, 100.0, dni_et, 89.96, 256.28, 37.32,
+            return_components=True
         )
 
 

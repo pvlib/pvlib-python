@@ -1211,18 +1211,19 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
     B = np.maximum(B, tools.cosd(85))
 
     # Calculate Diffuse POA from sky dome
-    term1 = 0.5 * (1 - F1) * (1 + tools.cosd(surface_tilt))
-    term2 = F1 * A / B
-    term3 = F2 * tools.sind(surface_tilt)
+    term1 = 0.5 * (1 - F1) * (1 + tools.cosd(surface_tilt)) # isotropic
+    term2 = F1 * A / B  # circumsolar
+    term3 = F2 * tools.sind(surface_tilt)  # horizon
 
     sky_diffuse = np.maximum(dhi * (term1 + term2 + term3), 0)
 
-    # we've preserved the input type until now, so don't ruin it!
+    # Use NaN airmass to coerce to zero values that are not otherwise NaN.
     airmass_nan_idx = np.logical_and(
         np.isnan(airmass), np.logical_not(
             np.logical_or(np.isnan(dhi), np.isnan(dni))
         )
     )
+    # we've preserved the input type until now, so don't ruin it!
     if isinstance(sky_diffuse, pd.Series):
         sky_diffuse[airmass_nan_idx] = 0
     else:

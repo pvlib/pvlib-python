@@ -109,7 +109,8 @@ def test_get_nsrdb_psm4_polar_tmy(nlr_api_key):
         parameters=["ghi"],
         utc=True,
         map_variables=False)
-    expected, _ = psm4.read_nsrdb_psm4(POLAR_TMY_TEST_DATA, map_variables=False)
+    expected, _ = psm4.read_nsrdb_psm4(
+        POLAR_TMY_TEST_DATA, map_variables=False)
     pd.testing.assert_frame_equal(data, expected)
 
 

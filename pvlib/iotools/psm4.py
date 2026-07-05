@@ -870,7 +870,8 @@ def get_nsrdb_psm4_polar_tmy(latitude, longitude, api_key, email, year='tmy',
     See Also
     --------
     pvlib.iotools.get_nsrdb_psm4_polar, pvlib.iotools.get_nsrdb_psm4_tmy,
-    pvlib.iotools.get_nsrdb_psm4_aggregated, pvlib.iotools.get_nsrdb_psm4_conus,
+    pvlib.iotools.get_nsrdb_psm4_aggregated,
+    pvlib.iotools.get_nsrdb_psm4_conus,
     pvlib.iotools.get_nsrdb_psm4_full_disc, pvlib.iotools.read_nsrdb_psm4
 
     References

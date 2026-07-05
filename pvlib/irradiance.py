@@ -1042,10 +1042,14 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
     Perez models determine the diffuse irradiance from the sky (ground
     reflected irradiance is not included in this algorithm) on a tilted
     surface using the surface tilt angle, surface azimuth angle, diffuse
-    horizontal irradiance, direct normal irradiance, extraterrestrial
-    irradiance, sun zenith angle, sun azimuth angle, and relative (not
-    pressure-corrected) airmass. Optionally a selector may be used to
-    use any of Perez's model coefficient sets.
+    horizontal irradiance (DHI), direct normal irradiance (DNI),
+    extraterrestrial irradiance, sun zenith angle, sun azimuth angle, and
+    relative (not pressure-corrected) airmass. Optionally a selector may be
+    used to use any of Perez's model coefficient sets. It is expected that if
+    DHI is zero, then DNI is also zero, otherwise a FloatingPointError is
+    raised due to a division of a nonzero (and not NaN) value by zero. It is
+    also expected that extraterrestrial irradiance is positive. If airmass
+    is NaN, then the total and all components are zero.
 
     Warning
     -------
@@ -1124,6 +1128,11 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
             * poa_isotropic
             * poa_circumsolar
             * poa_horizon
+
+    Raises
+    ------
+    FloatingPointError
+        If dni is zero when dhi is not zero and not NaN.
 
 
     References

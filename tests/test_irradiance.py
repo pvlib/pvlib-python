@@ -456,6 +456,45 @@ def test_perez_array_dhi_and_dni_combos():
     )
 
 
+def test_perez_array_dhi_and_dni_combos_nan_airmass():
+    # Divides zero and non-zero by zero and various NaN division combos, when
+    # airmass is NaN (e.g., for sun below horizon).
+    args = (
+        20, 180,
+        np.array([0.0, 10.0, np.nan, np.nan, 0.0, 100.0, np.nan]),
+        np.array([0.0, 0.0, 0.0, 100.0, np.nan, np.nan, np.nan]),
+        1366.1, 89.96, 256.28, np.nan
+    )
+
+    out = irradiance.perez(*args)
+    poa_sky_diffuse_expected = np.array(
+        [0.0, 0.0, np.nan, np.nan, np.nan, np.nan, np.nan]
+    )
+    assert_allclose(out, poa_sky_diffuse_expected)
+
+    out = irradiance.perez(*args, return_components=True)
+    expected = {
+        "poa_sky_diffuse": poa_sky_diffuse_expected,
+        "poa_isotropic": np.array(
+            [0.0, 9.162258932459126, np.nan, np.nan, np.nan, np.nan, np.nan]
+        ),
+        "poa_circumsolar": np.array(
+            [0.0, 0.5187450944545264, np.nan, np.nan, np.nan, np.nan, np.nan]
+        ),
+        "poa_horizon": np.array(
+            [0.0, -0.2560798402944465, np.nan, np.nan, np.nan, np.nan, np.nan]
+        ),
+    }
+    assert len(out) == len(expected)
+    for key in expected.keys():
+        assert_allclose(out[key], expected[key], err_msg=key)
+
+    assert_almost_equal(
+        out["poa_sky_diffuse"],
+        out["poa_isotropic"] + out["poa_circumsolar"] + out["poa_horizon"],
+    )
+
+
 def test_perez_zero_dhi_nonzero_dni_scalar():
     # Divides nonzero by zero.
     args = (20, 180, 0.0, 100.0, 1366.1, 89.96, 256.28, 37.32)

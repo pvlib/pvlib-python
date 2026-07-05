@@ -644,9 +644,9 @@ def get_nsrdb_psm4_polar(latitude, longitude, api_key, email,
     high latitude regions, that are outside the field of view of the
     geostationary satellites.
 
-    The dataset provides data from 2013 onwards over the exclusive economic zone
-    above 60 degrees north. The data have a spatial resolution of 4 km and a
-    temporal resolution of 1 hour.
+    The dataset provides data from 2013 onwards over the exclusive economic
+    zone above 60 degrees north. The data have a spatial resolution of 4 km
+    and a temporal resolution of 1 hour.
 
     Parameters
     ----------

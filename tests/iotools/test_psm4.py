@@ -87,13 +87,14 @@ def test_get_nsrdb_psm4_polar(nlr_api_key):
     data, metadata = psm4.get_nsrdb_psm4_polar(
         LATITUDE_POLAR, LONGITUDE_POLAR,
         nlr_api_key, PVLIB_EMAIL,
-        year='2023',
+        year=2023,
         leap_day=False,
         parameters=["ghi"],
         utc=True,
         map_variables=False)
-    expected = pd.read_csv(POLAR_TEST_DATA)
-    assert_psm4_equal(data, metadata, expected)
+    expected, _ = psm4.read_nsrdb_polar(POLAR_TEST_DATA)
+    #assert_psm4_equal(data, metadata, expected)
+    pd.testing.assert_frame_equal(data, expected)
 
 
 @pytest.mark.remote_data

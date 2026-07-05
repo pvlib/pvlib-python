@@ -1049,8 +1049,8 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
     DHI is zero, then DNI is also zero, otherwise a FloatingPointError is
     raised due to a division of a nonzero (and not NaN) value by zero. It is
     also expected that extraterrestrial irradiance is positive. If airmass
-    is NaN, then the total and all components are zero if they should not 
-    otherwise be NaN.
+    is NaN, then the total and all components are zero if they should not
+    otherwise be NaN because DHI or DNI was NaN.
 
     Warning
     -------
@@ -1218,10 +1218,15 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
     sky_diffuse = np.maximum(dhi * (term1 + term2 + term3), 0)
 
     # we've preserved the input type until now, so don't ruin it!
+    airmass_nan_idx = np.logical_and(
+        np.isnan(airmass), np.logical_not(
+            np.logical_or(np.isnan(dhi), np.isnan(dni))
+        )
+    )
     if isinstance(sky_diffuse, pd.Series):
-        sky_diffuse[np.isnan(airmass)] = 0
+        sky_diffuse[airmass_nan_idx] = 0
     else:
-        sky_diffuse = np.where(np.isnan(airmass), 0, sky_diffuse)
+        sky_diffuse = np.where(airmass_nan_idx, 0, sky_diffuse)
 
     if return_components:
         diffuse_components = OrderedDict()

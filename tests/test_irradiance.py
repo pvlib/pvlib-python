@@ -463,7 +463,7 @@ def test_perez_array_dhi_and_dni_combos_nan_airmass():
         20, 180,
         np.array([0.0, 10.0, np.nan, np.nan, 0.0, 100.0, np.nan]),
         np.array([0.0, 0.0, 0.0, 100.0, np.nan, np.nan, np.nan]),
-        1366.1, 89.96, 256.28, np.nan
+        1366.1, 91, 256.28, np.nan
     )
 
     out = irradiance.perez(*args)

@@ -1147,7 +1147,7 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
     kappa = 1.041  # for solar_zenith in radians
     z = np.radians(solar_zenith)  # convert to radians
 
-    # delta is the sky's "brightness", assumes dni_extra > 0
+    # delta is the sky's "brightness", NaN airmass ok, assumes dni_extra > 0
     delta = dhi * airmass / dni_extra
 
     # epsilon is the sky's "clearness". Preserves NaNs for dni or dhi.

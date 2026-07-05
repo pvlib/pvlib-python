@@ -418,23 +418,32 @@ def test_perez_zero_dhi_and_dni_scalar():
     )
 
 
-def test_perez_zero_dhi_and_dni_array():
+def test_perez_array_dhi_and_dni_combos():
     # Divides zero by zero.
     args = (
-        20, 180, np.array([0.0, 10.0, float("nan")]), 0.0, 1366.1, 89.96,
-        256.28, 37.32
+        20, 180, np.array([0.0, 10.0, np.nan, 0.0, np.nan]),
+        np.array([0.0, 0.0, 0.0, np.nan, np.nan]), 1366.1, 89.96, 256.28,
+        37.32
     )
 
     out = irradiance.perez(*args)
-    expected = np.array([0.0, 9.424924186619206, float("nan")])
+    expected = np.array([0.0, 9.424924186619206, np.nan, np.nan, np.nan])
     assert_allclose(out, expected)
 
     out = irradiance.perez(*args, return_components=True)
     expected = {
-        "poa_sky_diffuse": np.array([0.0, 9.424924186619206, float("nan")]),
-        "poa_isotropic": np.array([ 0.0, 9.162258932459126, float("nan")]),
-        "poa_circumsolar": np.array([ 0.0, 0.5187450944545264, float("nan")]),
-        "poa_horizon": np.array([0.0, -0.2560798402944465, float("nan")]),
+        "poa_sky_diffuse": np.array(
+            [0.0, 9.424924186619206, np.nan, np.nan, np.nan]
+        ),
+        "poa_isotropic": np.array(
+            [ 0.0, 9.162258932459126, np.nan, np.nan, np.nan]
+        ),
+        "poa_circumsolar": np.array(
+            [ 0.0, 0.5187450944545264, np.nan, np.nan, np.nan]
+        ),
+        "poa_horizon": np.array(
+            [0.0, -0.2560798402944465, np.nan, np.nan, np.nan]
+        ),
     }
     assert len(out) == len(expected)
     for key in expected.keys():
@@ -460,7 +469,7 @@ def test_perez_zero_dhi_nonzero_dni_scalar():
 def test_perez_zero_dhi_nonzero_dni_array():
     # Divides nonzero by zero.
     args = (
-        20, 180, np.array([0.0, 10.0, float("nan")]), 100.0, 1366.1, 89.96,
+        20, 180, np.array([0.0, 10.0, np.nan]), 100.0, 1366.1, 89.96,
         256.28, 37.32
     )
 

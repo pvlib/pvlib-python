@@ -1147,12 +1147,21 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
     kappa = 1.041  # for solar_zenith in radians
     z = np.radians(solar_zenith)  # convert to radians
 
-    # delta is the sky's "brightness"
+    # delta is the sky's "brightness", assumes dni_extra > 0
     delta = dhi * airmass / dni_extra
 
-    # epsilon is the sky's "clearness"
-    with np.errstate(invalid='ignore'):
-        eps = ((dhi + dni) / dhi + kappa * (z ** 3)) / (1 + kappa * (z ** 3))
+    # epsilon is the sky's "clearness". Preserves NaNs for dni or dhi.
+    # Assumes:
+    # - dni >=0 and dhi >= 0.
+    # - dni->0^+ faster than dhi->0^+.
+    irr_ratio = np.zeros(np.broadcast(dni, dhi).shape)
+    with np.errstate(divide="raise"):
+        irr_ratio = np.divide(
+            dni, dhi, out=irr_ratio, where=np.logical_not(
+                np.logical_and(dhi == 0, dni == 0)
+            )
+        )
+    eps = 1 + irr_ratio / (1 + kappa * (z ** 3))
 
     # numpy indexing below will not work with a Series
     if isinstance(eps, pd.Series):

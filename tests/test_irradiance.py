@@ -7,8 +7,9 @@ from numpy import array, nan
 import pandas as pd
 
 import pytest
-from numpy.testing import (assert_almost_equal,
-                           assert_allclose)
+from numpy.testing import (
+    assert_almost_equal, assert_allclose, assert_equal, assert_raises
+)
 from pvlib import irradiance, albedo
 
 from .conftest import (
@@ -391,6 +392,17 @@ def test_perez_negative_horizon():
 
     assert_frame_equal(out, expected, check_less_precise=2)
     assert_series_equal(sum_components, expected_for_sum, check_less_precise=2)
+
+
+def test_perez_zero_dhi_and_dni(dni_et):
+    out = irradiance.perez(20, 180, 0.0, 0.0, dni_et, 89.96, 256.28, 37.32)
+    expected = 0.0
+    assert_equal(out, expected)
+
+
+def test_perez_zero_dhi_nonzero_dni(dni_et):
+    with assert_raises(FloatingPointError):
+        irradiance.perez(20, 180, 0.0, 100.0, dni_et, 89.96, 256.28, 37.32)
 
 
 def test_perez_arrays(irrad_data, ephem_data, dni_et, relative_airmass):

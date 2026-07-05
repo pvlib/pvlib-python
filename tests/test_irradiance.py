@@ -399,10 +399,28 @@ def test_perez_zero_dhi_and_dni(dni_et):
     expected = 0.0
     assert_equal(out, expected)
 
+    out = irradiance.perez(
+        20, 180, 0.0, 0.0, dni_et, 89.96, 256.28, 37.32, return_components=True
+    )
+    expected = {
+        "poa_sky_diffuse": 0.0,
+        "poa_isotropic": 0.0,
+        "poa_circumsolar": 0.0,
+        "poa_horizon": 0.0,
+    }
+    assert len(out) == len(expected)
+    for key in expected.keys():
+        assert_equal(out[key], expected[key])
+
 
 def test_perez_zero_dhi_nonzero_dni(dni_et):
     with assert_raises(FloatingPointError):
         irradiance.perez(20, 180, 0.0, 100.0, dni_et, 89.96, 256.28, 37.32)
+
+    with assert_raises(FloatingPointError):
+        irradiance.perez(
+            20, 180, 0.0, 100.0, dni_et, 89.96, 256.28, 37.32, return_components=True
+        )
 
 
 def test_perez_arrays(irrad_data, ephem_data, dni_et, relative_airmass):

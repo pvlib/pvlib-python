@@ -81,6 +81,7 @@ Satellite-derived irradiance and weather data for the Americas.
    iotools.get_nsrdb_psm4_conus
    iotools.get_nsrdb_psm4_full_disc
    iotools.get_nsrdb_psm4_polar
+   iotools.get_nsrdb_psm4_polar_tmy
    iotools.read_nsrdb_psm4
 
 

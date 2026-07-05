@@ -15,6 +15,7 @@ from io import StringIO
 TMY_TEST_DATA = TESTS_DATA_DIR / 'test_psm4_tmy-2023.csv'
 FULL_DISC_TEST_DATA = TESTS_DATA_DIR / 'test_psm4_full_disc_2023.csv'
 POLAR_TEST_DATA = TESTS_DATA_DIR / 'test_psm4_polar_2023.csv'
+POLAR_TMY_TEST_DATA = TESTS_DATA_DIR / 'test_psm4_polar_tmy_2023.csv'
 YEAR_TEST_DATA = TESTS_DATA_DIR / 'test_psm4_2023.csv'
 YEAR_TEST_DATA_5MIN = TESTS_DATA_DIR / 'test_psm4_2023_5min.csv'
 MANUAL_TEST_DATA = TESTS_DATA_DIR / 'test_read_psm4.csv'
@@ -93,6 +94,22 @@ def test_get_nsrdb_psm4_polar(nlr_api_key):
         utc=True,
         map_variables=False)
     expected, _ = psm4.read_nsrdb_psm4(POLAR_TEST_DATA, map_variables=False)
+    pd.testing.assert_frame_equal(data, expected)
+
+
+@pytest.mark.remote_data
+@pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
+def test_get_nsrdb_psm4_polar_tmy(nlr_api_key):
+    """test get_nsrdb_psm4_polar_tmy with a single year"""
+    data, metadata = psm4.get_nsrdb_psm4_polar_tmy(
+        LATITUDE_POLAR, LONGITUDE_POLAR,
+        nlr_api_key, PVLIB_EMAIL,
+        year="tmy-2023",
+        leap_day=False,
+        parameters=["ghi"],
+        utc=True,
+        map_variables=False)
+    expected, _ = psm4.read_nsrdb_psm4(POLAR_TMY_TEST_DATA, map_variables=False)
     pd.testing.assert_frame_equal(data, expected)
 
 

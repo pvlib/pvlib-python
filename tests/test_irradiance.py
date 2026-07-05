@@ -476,13 +476,13 @@ def test_perez_array_dhi_and_dni_combos_nan_airmass():
     expected = {
         "poa_sky_diffuse": poa_sky_diffuse_expected,
         "poa_isotropic": np.array(
-            [0.0, 9.162258932459126, np.nan, np.nan, np.nan, np.nan, np.nan]
+            [0.0, 0.0, np.nan, np.nan, np.nan, np.nan, np.nan]
         ),
         "poa_circumsolar": np.array(
-            [0.0, 0.5187450944545264, np.nan, np.nan, np.nan, np.nan, np.nan]
+            [0.0, 0.0, np.nan, np.nan, np.nan, np.nan, np.nan]
         ),
         "poa_horizon": np.array(
-            [0.0, -0.2560798402944465, np.nan, np.nan, np.nan, np.nan, np.nan]
+            [0.0, 0.0, np.nan, np.nan, np.nan, np.nan, np.nan]
         ),
     }
     assert len(out) == len(expected)

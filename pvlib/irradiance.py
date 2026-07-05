@@ -1049,7 +1049,8 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
     DHI is zero, then DNI is also zero, otherwise a FloatingPointError is
     raised due to a division of a nonzero (and not NaN) value by zero. It is
     also expected that extraterrestrial irradiance is positive. If airmass
-    is NaN, then the total and all components are zero.
+    is NaN, then the total and all components are zero if they should not 
+    otherwise be NaN.
 
     Warning
     -------

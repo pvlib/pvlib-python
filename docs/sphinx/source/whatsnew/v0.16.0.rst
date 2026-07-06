@@ -7,7 +7,7 @@ v0.16.0
 Breaking Changes
 ~~~~~~~~~~~~~~~~
 * Remove empty ``poa_horizon`` key from the ``diffuse_components`` output of
-  :py:func:`pvlib.irradiance.haydavies` when ``return_components=True``.
+  :py:func:`pvlib.irradiance.haydavies`.
   (:pull:`2788`)
 
 

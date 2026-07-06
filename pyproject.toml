@@ -17,6 +17,7 @@ dependencies = [
     'requests',
     'scipy >= 1.7.2',
     'h5py',
+    'tzdata',
 ]
 license = "BSD-3-Clause"
 classifiers = [

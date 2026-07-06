@@ -797,7 +797,6 @@ def haydavies(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
             * poa_sky_diffuse: Total sky diffuse
             * poa_isotropic
             * poa_circumsolar
-        The model does not include a horizon brightening component.
 
     Notes
     ------

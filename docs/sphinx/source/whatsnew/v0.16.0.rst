@@ -2,10 +2,12 @@
 
 
 v0.16.0
------------------------
-
 Breaking Changes
 ~~~~~~~~~~~~~~~~
+* Change output type of :py:func:`pvlib.irradiance.perez` and
+  :py:func:`pvlib.irradiance.perez_driesse` from ``OrderedDict`` to ``dict`` when
+  ``return_components=True`` to be consistent with other models.
+  (:pull:`2789`)
 * Remove empty ``poa_horizon`` key from the ``diffuse_components`` output of
   :py:func:`pvlib.irradiance.haydavies`.
   (:pull:`2788`)
@@ -45,4 +47,4 @@ Maintenance
 
 Contributors
 ~~~~~~~~~~~~
-
+* Carolina Crespo (:ghuser:`cbcrespo`)

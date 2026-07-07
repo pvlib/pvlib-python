@@ -42,6 +42,7 @@ Requirements
 
 Maintenance
 ~~~~~~~~~~~
+* Removed unused internal function ``clearsky._is_leap_year`` (:issue:`2768`, :pull:`2813`)
 * Fix documentation builds on runner images lacking link-type timezones. (:issue:`2795`, :pull:`2809`)
 
 
@@ -50,3 +51,4 @@ Contributors
 * Eesh Saxena (:ghuser:`eeshsaxena`)
 * Karl Hill (:ghuser:`karlhillx`)
 * Yonry Zhu (:ghuser:`yonryzhu`)
+* Darshan Gowda (:ghuser:`dgowdaan-cmyk`)

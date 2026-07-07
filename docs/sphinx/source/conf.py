@@ -394,8 +394,8 @@ sphinx_gallery_conf = {
     # first group + sep := match folders up to filename
     # negative lookahead + match anything but sep := match filename (if valid)
     # https://sphinx-gallery.github.io/stable/configuration.html#parsing-and-executing-examples-via-matching-patterns  # noqa: E501
-    # unix: gallery_conf["filename_pattern"] = '^(.*)/(?!noplot_)([^/]*)$'
-    # windows: gallery_conf["filename_pattern"] = '^(.*)\\\\(?!noplot_)([^\\\\]*)$'
+    # unix: filename_pattern = '^(.*)/(?!noplot_)([^/]*)$'
+    # win: filename_pattern = '^(.*)\\\\(?!noplot_)([^\\\\]*)$'
     'filename_pattern': rf"^(.*){os_re_sep}(?!noplot_)([^{os_re_sep}]*)$",
 
     # directory where function/class granular galleries are stored

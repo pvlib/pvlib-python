@@ -14,11 +14,11 @@ Deprecations
 
 Bug fixes
 ~~~~~~~~~
-* Fix missing timezones by adding ``tzdata`` as a dependency. (:issue:`2795`)
 
 
 Enhancements
 ~~~~~~~~~~~~
+* Ensure all timezones are available in all OSs. (:issue:`2795`, :pull:`2809`)
 
 
 Documentation
@@ -42,6 +42,7 @@ Requirements
 
 Maintenance
 ~~~~~~~~~~~
+* Fix documentation builds on runner images lacking link-type timezones. (:issue:`2795`, :pull:`2809`)
 
 
 Contributors

@@ -18,6 +18,7 @@ Bug fixes
 
 Enhancements
 ~~~~~~~~~~~~
+* Ensure all timezones are available in all OSs. (:issue:`2795`, :pull:`2809`)
 
 
 Documentation
@@ -41,6 +42,7 @@ Requirements
 
 Maintenance
 ~~~~~~~~~~~
+* Fix documentation builds on runner images lacking link-type timezones. (:issue:`2795`, :pull:`2809`)
 
 
 Contributors

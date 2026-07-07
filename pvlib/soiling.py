@@ -205,10 +205,10 @@ def kimber(rainfall, cleaning_threshold=6, soiling_loss_rate=0.0015,
     soiling = pd.Series(soiling, index=rainfall.index, name='soiling')
 
     # rainfall events that clean the panels
-    rain_events = accumulated_rainfall > cleaning_threshold
+    rain_events = accumulated_rainfall >= cleaning_threshold
 
     # grace periods windows during which ground is assumed damp, so no soiling
-    grace_windows = rain_events.rolling(grace_period, closed='right').sum() > 0
+    grace_windows = rain_events.rolling(grace_period, closed='both').sum() > 0
 
     # clean panels by subtracting soiling for indices in grace period windows
     cleaning = pd.Series(float('NaN'), index=rainfall.index)

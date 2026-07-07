@@ -14,6 +14,9 @@ Deprecations
 
 Bug fixes
 ~~~~~~~~~
+* Fixed :py:func:`pvlib.soiling.kimber` so that rainfall equal to
+  ``cleaning_threshold`` triggers cleaning, and fixed an off-by-one
+  error in the grace period window. (:issue:`2796`)
 
 
 Enhancements

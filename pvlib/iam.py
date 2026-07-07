@@ -78,6 +78,16 @@ def ashrae(aoi, b=0.05):
     pvlib.iam.physical
     pvlib.iam.martin_ruiz
     pvlib.iam.interp
+
+    Examples
+    --------
+    >>> import pvlib
+    >>> pvlib.iam.ashrae(aoi=20)
+    0.9967911113762044
+
+    >>> import numpy as np
+    >>> pvlib.iam.ashrae(aoi=np.array([0, 30, 50, 90]))
+    array([1.        , 0.99226497, 0.97221381, 0.        ])
     """
 
     iam = 1 - b * (1 / np.cos(np.radians(aoi)) - 1)
@@ -686,7 +696,7 @@ def marion_integrate(function, surface_tilt, region, num=None):
     iam : numeric
         AOI diffuse correction factor for the specified region.
 
-    See Also
+    See Also 
     --------
     pvlib.iam.marion_diffuse
 
@@ -705,7 +715,7 @@ def marion_integrate(function, surface_tilt, region, num=None):
     >>> from functools import partial
     >>> f = partial(pvlib.iam.physical, n=1.3)
     >>> marion_integrate(f, [20, 30], 'sky')
-    array([0.96225034, 0.9653219 ])
+    >>> array([0.96225034, 0.9653219 ])
     """
 
     if num is None:

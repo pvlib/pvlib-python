@@ -1,23 +1,17 @@
-.. _whatsnew_0_15_3:
-
-
+﻿.. _whatsnew_0_15_3:
 v0.15.3 (Anticipated September, 2026)
 -------------------------------------
-
 Breaking Changes
 ~~~~~~~~~~~~~~~~
-
-
 Deprecations
 ~~~~~~~~~~~~
-
-
 Bug fixes
 ~~~~~~~~~
-
-
 Enhancements
 ~~~~~~~~~~~~
+Documentation
+~~~~~~~~~~~~~
+* Added ``Examples`` section to :py:func:`pvlib.iam.ashrae` docstring. :pull:`2797` (:ghuser:`dgowdaan-cmyk`)
 * Ensure all timezones are available in all OSs. (:issue:`2795`, :pull:`2809`)
 
 
@@ -30,18 +24,15 @@ Documentation
 
 Testing
 ~~~~~~~
-
-
 Benchmarking
 ~~~~~~~~~~~~
-
-
 Requirements
 ~~~~~~~~~~~~
-
-
 Maintenance
 ~~~~~~~~~~~
+Contributors
+~~~~~~~~~~~~
+* :ghuser:`dgowdaan-cmyk`
 * Fix documentation builds on runner images lacking link-type timezones. (:issue:`2795`, :pull:`2809`)
 
 

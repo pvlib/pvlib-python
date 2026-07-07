@@ -42,7 +42,7 @@ Requirements
 
 Maintenance
 ~~~~~~~~~~~
-* Fix some gallery examples not being run. Only gallery examples whose filename begins with ``NX_`` will be excluded. (:issue:`2790`, :pull:`2792`)
+* Fix some gallery examples not being run. Only gallery examples whose filename begins with ``noplot_`` will be excluded. (:issue:`2790`, :pull:`2792`)
 * Fix documentation builds on runner images lacking link-type timezones. (:issue:`2795`, :pull:`2809`)
 
 

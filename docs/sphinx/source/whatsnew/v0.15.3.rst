@@ -43,3 +43,4 @@ Maintenance
 Contributors
 ~~~~~~~~~~~~
 
+* Darshan Gowda (:ghuser:`dgowdaan-cmyk`)

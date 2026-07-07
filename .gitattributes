@@ -1,3 +1,4 @@
+# ensure right line ending normalization in all contributor setups
+* text=auto
 # reduce the number of merge conflicts
 docs/sphinx/source/whatsnew/* merge=union
-* text=auto

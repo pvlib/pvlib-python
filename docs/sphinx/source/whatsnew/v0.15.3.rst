@@ -38,7 +38,7 @@ Requirements
 
 Maintenance
 ~~~~~~~~~~~
-
+* Removed unused internal function ``clearsky._is_leap_year`` (:issue:`2768`, :pull:`XXXX`)
 
 Contributors
 ~~~~~~~~~~~~

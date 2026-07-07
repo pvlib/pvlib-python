@@ -787,7 +787,7 @@ def haydavies(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
 
     Returns
     --------
-    numeric, OrderedDict, or DataFrame
+    numeric, dict, or DataFrame
         Return type controlled by ``return_components`` argument.
         If `False`, ``sky_diffuse`` is returned.
         If `True`, ``diffuse_components`` is returned.
@@ -796,13 +796,11 @@ def haydavies(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
         The sky diffuse component of the solar radiation on a tilted
         surface. [Wm⁻²]
 
-    diffuse_components : OrderedDict (array input) or DataFrame (Series input)
+    diffuse_components : dict (array input) or DataFrame (Series input)
         Keys/columns are:
             * poa_sky_diffuse: Total sky diffuse
             * poa_isotropic
             * poa_circumsolar
-            * poa_horizon (always zero, not accounted for by the
-              Hay-Davies model)
 
     Notes
     ------
@@ -860,14 +858,11 @@ def haydavies(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
     sky_diffuse = poa_isotropic + poa_circumsolar
 
     if return_components:
-        diffuse_components = OrderedDict()
-        diffuse_components['poa_sky_diffuse'] = sky_diffuse
-
-        # Calculate the individual components
-        diffuse_components['poa_isotropic'] = poa_isotropic
-        diffuse_components['poa_circumsolar'] = poa_circumsolar
-        diffuse_components['poa_horizon'] = np.where(
-            np.isnan(diffuse_components['poa_isotropic']), np.nan, 0.)
+        diffuse_components = {
+            'poa_sky_diffuse': sky_diffuse,
+            'poa_isotropic': poa_isotropic,
+            'poa_circumsolar': poa_circumsolar
+        }
 
         if isinstance(sky_diffuse, pd.Series):
             diffuse_components = pd.DataFrame(diffuse_components)

@@ -14,7 +14,10 @@ Deprecations
 
 Bug fixes
 ~~~~~~~~~
-
+* Fix :py:func:`pvlib.irradiance.perez` to return 0 when both DHI and
+  DNI are zero. (:issue:`2801`, :pull:`2808`)
+* Fix :py:func:`pvlib.irradiance.perez` to return NaN when
+  airmass is NaN and either DHI or DNI are NaN. (:issue:`2801`, :pull:`2808`)
 
 Enhancements
 ~~~~~~~~~~~~
@@ -50,3 +53,4 @@ Contributors
 * Eesh Saxena (:ghuser:`eeshsaxena`)
 * Karl Hill (:ghuser:`karlhillx`)
 * Yonry Zhu (:ghuser:`yonryzhu`)
+* Mark Campanelli (:ghuser:`markcampanelli`)

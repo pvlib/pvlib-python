@@ -1042,10 +1042,15 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
     Perez models determine the diffuse irradiance from the sky (ground
     reflected irradiance is not included in this algorithm) on a tilted
     surface using the surface tilt angle, surface azimuth angle, diffuse
-    horizontal irradiance, direct normal irradiance, extraterrestrial
-    irradiance, sun zenith angle, sun azimuth angle, and relative (not
-    pressure-corrected) airmass. Optionally a selector may be used to
-    use any of Perez's model coefficient sets.
+    horizontal irradiance (DHI), direct normal irradiance (DNI),
+    extraterrestrial irradiance, sun zenith angle, sun azimuth angle, and
+    relative (not pressure-corrected) airmass. Optionally a selector may be
+    used to use any of Perez's model coefficient sets. It is expected that if
+    DHI is zero, then DNI is also zero, otherwise a FloatingPointError is
+    raised due to a division of a nonzero (and not NaN) value by zero. It is
+    also expected that extraterrestrial irradiance is positive. If airmass
+    is NaN, then the total and all components are zero if they should not
+    otherwise be NaN because DHI or DNI was NaN.
 
     Warning
     -------
@@ -1125,6 +1130,11 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
             * poa_circumsolar
             * poa_horizon
 
+    Raises
+    ------
+    FloatingPointError
+        If dni is zero when dhi is not zero and not NaN.
+
 
     References
     ----------
@@ -1147,12 +1157,21 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
     kappa = 1.041  # for solar_zenith in radians
     z = np.radians(solar_zenith)  # convert to radians
 
-    # delta is the sky's "brightness"
+    # delta is the sky's "brightness", NaN airmass ok, assumes dni_extra > 0
     delta = dhi * airmass / dni_extra
 
-    # epsilon is the sky's "clearness"
-    with np.errstate(invalid='ignore'):
-        eps = ((dhi + dni) / dhi + kappa * (z ** 3)) / (1 + kappa * (z ** 3))
+    # epsilon is the sky's "clearness". Preserves NaNs for dni or dhi.
+    # Assumes:
+    # - dni >=0 and dhi >= 0.
+    # - dni->0^+ faster than dhi->0^+.
+    irr_ratio = np.zeros(np.broadcast(dni, dhi).shape)
+    with np.errstate(divide="raise"):
+        irr_ratio = np.divide(
+            dni, dhi, out=irr_ratio, where=np.logical_not(
+                np.logical_and(dhi == 0, dni == 0)
+            )
+        )
+    eps = 1 + irr_ratio / (1 + kappa * (z ** 3))
 
     # numpy indexing below will not work with a Series
     if isinstance(eps, pd.Series):
@@ -1192,17 +1211,23 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
     B = np.maximum(B, tools.cosd(85))
 
     # Calculate Diffuse POA from sky dome
-    term1 = 0.5 * (1 - F1) * (1 + tools.cosd(surface_tilt))
-    term2 = F1 * A / B
-    term3 = F2 * tools.sind(surface_tilt)
+    term1 = 0.5 * (1 - F1) * (1 + tools.cosd(surface_tilt))  # isotropic
+    term2 = F1 * A / B  # circumsolar
+    term3 = F2 * tools.sind(surface_tilt)  # horizon
 
     sky_diffuse = np.maximum(dhi * (term1 + term2 + term3), 0)
 
+    # Use NaN airmass to coerce to zero values that are not otherwise NaN.
+    airmass_nan_idx = np.logical_and(
+        np.isnan(airmass), np.logical_not(
+            np.logical_or(np.isnan(dhi), np.isnan(dni))
+        )
+    )
     # we've preserved the input type until now, so don't ruin it!
     if isinstance(sky_diffuse, pd.Series):
-        sky_diffuse[np.isnan(airmass)] = 0
+        sky_diffuse[airmass_nan_idx] = 0
     else:
-        sky_diffuse = np.where(np.isnan(airmass), 0, sky_diffuse)
+        sky_diffuse = np.where(airmass_nan_idx, 0, sky_diffuse)
 
     if return_components:
         diffuse_components = OrderedDict()

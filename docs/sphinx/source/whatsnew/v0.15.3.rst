@@ -1,20 +1,25 @@
 .. _whatsnew_0_15_3:
 
+
 v0.15.3 (Anticipated September, 2026)
 -------------------------------------
 
 Breaking Changes
 ~~~~~~~~~~~~~~~~
 
+
 Deprecations
 ~~~~~~~~~~~~
+
 
 Bug fixes
 ~~~~~~~~~
 
+
 Enhancements
 ~~~~~~~~~~~~
 * Ensure all timezones are available in all OSs. (:issue:`2795`, :pull:`2809`)
+
 
 Documentation
 ~~~~~~~~~~~~~
@@ -22,19 +27,24 @@ Documentation
 * Fixed broken ``interval`` keyword argument in the ``oedi_9068`` gallery
   example; the correct parameter name is ``time_step``. (:issue:`2791`)
 
+
 Testing
 ~~~~~~~
+
 
 Benchmarking
 ~~~~~~~~~~~~
 
+
 Requirements
 ~~~~~~~~~~~~
+
 
 Maintenance
 ~~~~~~~~~~~
 * Removed unused internal function ``clearsky._is_leap_year`` (:issue:`2768`, :pull:`2813`)
 * Fix documentation builds on runner images lacking link-type timezones. (:issue:`2795`, :pull:`2809`)
+
 
 Contributors
 ~~~~~~~~~~~~

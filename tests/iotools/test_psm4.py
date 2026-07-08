@@ -217,6 +217,7 @@ def test_get_nsrdb_psm4_polar_tmy_errors(nlr_api_key):
             year="tmy-2023")
     assert "OVER_RATE_LIMIT" not in str(excinfo.value)
 
+
 @pytest.fixture
 def io_input(request):
     """file-like object for read_nsrdb_psm4"""

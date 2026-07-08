@@ -42,6 +42,7 @@ Requirements
 
 Maintenance
 ~~~~~~~~~~~
+* Fix some gallery examples not being run. Only gallery examples whose filename begins with ``noplot_`` will be excluded. (:issue:`2790`, :pull:`2792`)
 * Removed unused internal function ``clearsky._is_leap_year`` (:issue:`2768`, :pull:`2813`)
 * Fix documentation builds on runner images lacking link-type timezones. (:issue:`2795`, :pull:`2809`)
 

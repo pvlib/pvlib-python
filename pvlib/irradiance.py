@@ -1009,7 +1009,7 @@ def reindl(surface_tilt, surface_azimuth, dhi, dni, ghi, dni_extra,
 
     term1 = (1 - AI) * SVF
     term2 = AI * Rb
-    term3 = (1 - AI) * SVF * h
+    term3 = term1 * h
 
     sky_diffuse = dhi * (term1 + term2 + term3)
 

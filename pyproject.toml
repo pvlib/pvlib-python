@@ -17,6 +17,7 @@ dependencies = [
     'requests',
     'scipy >= 1.7.2',
     'h5py',
+    'tzdata', # ensure all timezones are available in all installs for consistency GH#2795
 ]
 license = "BSD-3-Clause"
 classifiers = [

@@ -14,7 +14,6 @@ import numpy as np
 import pandas as pd
 from numpy.polynomial.polynomial import polyfit  # different than np.polyfit
 from scipy.optimize import minimize
-import statsmodels.api as sm
 from pvlib._deprecation import deprecated
 
 
@@ -584,6 +583,11 @@ def _fit_sandia_field_a(pac, pdc, vdc, pac0, vdc0):
     dict
         Parameters Pdco, Pso and C0 for the Sandia inverter model.
     '''
+    try:
+        import statsmodels.api as sm
+    except ImportError:
+        raise ImportError(
+            'Parameter fitting requires statsmodels')
     # select data. Avoid very low power, clipping and DC voltage far from
     # nominal
     u = (pac > 0.05*pac0) & (pac < pac0) & (np.abs(vdc - vdc0)/vdc0 < 0.05)    

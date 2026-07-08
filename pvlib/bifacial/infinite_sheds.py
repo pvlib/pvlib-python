@@ -45,19 +45,6 @@ def _poa_sky_diffuse_pv(dhi, gcr, surface_tilt):
     Integrated view factors from the shaded and unshaded parts of
     the row slant height to the sky.
 
-    Parameters
-    ----------
-    f_x : numeric
-        Fraction of row slant height from the bottom that is shaded from
-        direct irradiance. [unitless]
-    surface_tilt : numeric
-        Surface tilt angle in degrees from horizontal, e.g., surface facing up
-        = 0, surface facing horizon = 90. [degree]
-    gcr : float
-        Ratio of row slant length to row spacing (pitch). [unitless]
-    npoints : int, default 100
-        Number of points for integration. [unitless]
-
     A detailed calculation would be
 
         dhi * (f_x * vf_shade_sky_integ + (1 - f_x) * vf_noshade_sky_integ)
@@ -73,9 +60,6 @@ def _poa_sky_diffuse_pv(dhi, gcr, surface_tilt):
 
     Parameters
     ----------
-    f_x : numeric
-        Fraction of row slant height from the bottom that is shaded from
-        direct irradiance. [unitless]
     dhi : numeric
         Diffuse horizontal irradiance (DHI). [W/m^2]
     gcr : float

@@ -15,7 +15,9 @@ Breaking Changes
 
 Deprecations
 ~~~~~~~~~~~~
-
+* Deprecate :py:attr:`pvlib.irradiance.king`.
+  Use other diffuse transposition models in :py:attr:`pvlib.irradiance` instead.
+  (:issue:`2636`, :pull:`2783`)
 
 Bug fixes
 ~~~~~~~~~

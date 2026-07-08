@@ -60,7 +60,7 @@ specific types may be used:
 
 * dict-like : dict, OrderedDict, pd.Series
 * numeric : scalar, np.array, pd.Series. Typically int or float dtype.
-* array-like : np.array, pd.Series. Typically int or float dtype.
+* array_like : np.array, pd.Series. Typically int or float dtype.
 
 Parameters that specify a specific type require that specific input type.
 
@@ -237,7 +237,7 @@ required for every function.
         ----------
         poa_global : numeric
             Plane-of-array global irradiance, see :term:`poa_global`. [Wm⁻²].
-        exponents : array-like
+        exponents : array_like
             A list of exponents. [x⁰¹²³⁴⁵⁶⁷⁸⁹⁻].
         degree_symbol : pandas.Series or pandas.DataFrame
             It's different from superscript zero. [°].

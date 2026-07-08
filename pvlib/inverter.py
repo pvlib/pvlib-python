@@ -590,7 +590,7 @@ def _fit_sandia_field_a(pac, pdc, vdc, pac0, vdc0):
             'Parameter fitting requires statsmodels')
     # select data. Avoid very low power, clipping and DC voltage far from
     # nominal
-    u = (pac > 0.05*pac0) & (pac < pac0) & (np.abs(vdc - vdc0)/vdc0 < 0.05)    
+    u = (pac > 0.05*pac0) & (pac < pac0) & (np.abs(vdc - vdc0)/vdc0 < 0.05)
     Y = pac[u]
     X = np.array([pdc[u]**2, pdc[u]]).T
     X = sm.add_constant(X)
@@ -616,10 +616,10 @@ def _f2(params, pac0, vdc0, pdc0, ps0, C0, vdc, pdc, pac):
     p['Vdco'] = vdc0  # DC V
     p['Pdco'] = pdc0  # DC power
     p['Pso'] = ps0  # DC power, small
-    p['C0'] = C0 # unitless, tiny
-    p['C1'] = params[0] # 1/V, tiny
+    p['C0'] = C0  # unitless, tiny
+    p['C1'] = params[0]  # 1/V, tiny
     p['C2'] = params[1]  # 1/V, tiny
-    p['C3'] = params[2] # 1/V tiny
+    p['C3'] = params[2]  # 1/V tiny
     diff = (_sandia_eff(vdc, pdc, p) - pac)
     return np.sqrt(np.dot(diff, diff))
 
@@ -653,7 +653,7 @@ def _fit_sandia_field_b(resid, pac, pdc, vdc, pac0, vdc0, pdc0, ps0, C0):
         Parameters for the Sandia inverter model including C1, C2 and C3.
     '''
     # select data. Avoid very low power and clipping
-    u = (pac > 0.05*pac0) & (pac < pac0)    
+    u = (pac > 0.05*pac0) & (pac < pac0)
 
     # initial guess
     x0 = np.array([0., 0., 0.])

@@ -207,7 +207,7 @@ def test_fit_sandia_lab(infilen, expected):
     curves = pd.read_csv(infilen)
     dc_power = curves['ac_power'] / curves['efficiency']
     result = inverter.fit_sandia_lab(
-        ac_power=curves['ac_power'], dc_power=dc_power, 
+        ac_power=curves['ac_power'], dc_power=dc_power,
         dc_voltage=curves['dc_voltage'],
         dc_voltage_level=curves['dc_voltage_level'],
         p_ac_0=expected['Paco'], p_nt=expected['Pnt'])
@@ -218,7 +218,7 @@ def test_fit_sandia_lab(infilen, expected):
 def test_fit_sandia_field():
     pdc = np.arange(start=100., stop=1300., step=100.)
     vdc = np.array([550., 600., 650, 550., 600., 650, 550., 600., 650,
-                550., 600., 650])
+                    550., 600., 650])
     params = {'Paco': 1200, 'Pdco': 1300, 'Pso': 10, 'C0': 1e-6, 'C1': 1e-7,
               'C2': 1e-7, 'C3': 1e-7, 'Vdco': 600}
     # pac was computed with pvlib.inverter._sandia_eff

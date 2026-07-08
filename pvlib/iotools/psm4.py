@@ -654,9 +654,11 @@ def get_nsrdb_psm4_polar(latitude, longitude, api_key, email,
     Parameters
     ----------
     latitude : float or int
-        in decimal degrees, between 60 and 90 degrees north
+        in decimal degrees, between 60 and 90 degrees north.
+        Location must be within the exclusive economic zone.
     longitude : float or int
-        in decimal degrees, between -180 and 180, east is positive
+        in decimal degrees, between -180 and 180, east is positive.
+        Location must be within the exclusive economic zone.
     api_key : str
         NLR Developer Network API key
     email : str
@@ -793,16 +795,18 @@ def get_nsrdb_psm4_polar_tmy(latitude, longitude, api_key, email, year='tmy',
     latitude polar regions, that are outside the field of view of the
     geostationary satellites.
 
-    The dataset provides typical year data over the exclusive economic zone
-    above 60 degrees north. The data have a spatial resolution of 4 km and a
-    temporal resolution of 1 hour.
+    The dataset provides typical meteorological year (TMY) data over the
+    exclusive economic zone above 60 degrees north. The data have a spatial
+    resolution of 4 km and a temporal resolution of 1 hour.
 
     Parameters
     ----------
     latitude : float or int
-        in decimal degrees, between 60 and 90 degrees north
+        in decimal degrees, between 60 and 90 degrees north.
+        Location must be within the exclusive economic zone.
     longitude : float or int
-        in decimal degrees, between -180 and 180, east is positive
+        in decimal degrees, between -180 and 180, east is positive.
+        Location must be within the exclusive economic zone.
     api_key : str
         NLR Developer Network API key
     email : str
@@ -845,7 +849,7 @@ def get_nsrdb_psm4_polar_tmy(latitude, longitude, api_key, email, year='tmy',
     data : pandas.DataFrame
         timeseries data from NLR PSM4 Polar TMY
     metadata : dict
-        metadata from NLR PSM4 about the record, see
+        metadata from NLR PSM4, see
         :func:`pvlib.iotools.read_nsrdb_psm4` for fields
 
     Raises

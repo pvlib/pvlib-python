@@ -13,6 +13,9 @@ naming pattern 'fit_<model name>', e.g., fit_sandia.
 import numpy as np
 import pandas as pd
 from numpy.polynomial.polynomial import polyfit  # different than np.polyfit
+from scipy.optimize import minimize
+import statsmodels.api as sm
+from pvlib._deprecation import deprecated
 
 
 def _sandia_eff(v_dc, p_dc, inverter):
@@ -445,9 +448,10 @@ def pvwatts_multi(pdc, pdc0, eta_inv_nom=0.96, eta_inv_ref=0.9637):
     return pvwatts(sum(pdc), pdc0, eta_inv_nom, eta_inv_ref)
 
 
-def fit_sandia(ac_power, dc_power, dc_voltage, dc_voltage_level, p_ac_0, p_nt):
+def fit_sandia_lab(ac_power, dc_power, dc_voltage, dc_voltage_level, p_ac_0,
+                   p_nt):
     r'''
-    Determine parameters for the Sandia inverter model.
+    Determine parameters for the Sandia inverter model from laboratory data.
 
     Parameters
     ----------
@@ -551,3 +555,162 @@ def fit_sandia(ac_power, dc_power, dc_voltage, dc_voltage_level, p_ac_0, p_nt):
     # prepare dict and return
     return {'Paco': p_ac_0, 'Pdco': p_dc0, 'Vdco': v_nom, 'Pso': p_s0,
             'C0': c0, 'C1': c1, 'C2': c2, 'C3': c3, 'Pnt': p_nt}
+
+
+fit_sandia = deprecated(since="0.15.3", name="fit_sandia",
+                        alternative="fit_sandia_lab")(fit_sandia_lab)
+
+
+def _fit_sandia_field_a(pac, pdc, vdc, pac0, vdc0):
+    r''' Estimate Pdco, Pso and C0 for the Sandia inverter model from
+    time-series data. Uses robust regression on data greater than 5% of rated
+    Pac and DC voltage near nominal voltage vdc0.
+
+    Parameters
+    ----------
+    pac : numeric
+        Measured AC power (W)
+    pdc : numeric
+        Measured DC input power (W)
+    vdc
+        Measured DC input voltage (V)
+    pac0 : float
+        Rated AC power (W)
+    vdc0 : float
+        Nominal DC input voltage (V)
+
+    Returns
+    -------
+    dict
+        Parameters Pdco, Pso and C0 for the Sandia inverter model.
+    '''
+    # select data. Avoid very low power, clipping and DC voltage far from
+    # nominal
+    u = (pac > 0.05*pac0) & (pac < pac0) & (np.abs(vdc - vdc0)/vdc0 < 0.05)    
+    Y = pac[u]
+    X = np.array([pdc[u]**2, pdc[u]]).T
+    X = sm.add_constant(X)
+    rlm_model = sm.RLM(Y, X)
+    rlm_results = rlm_model.fit()
+    rlmp = np.array(rlm_results.params)
+
+    p = {}
+    p['C0'] = rlmp[1]
+    p['Pso'] = (-rlmp[2] + np.sqrt(rlmp[2]**2 - 4*p['C0']*rlmp[0])) / \
+        (2 * p['C0'])
+    C = pac0 + rlmp[2]*p['Pso'] + p['C0']*p['Pso']**2
+    p['Pdco'] = (-rlmp[2] + np.sqrt(rlmp[2]**2 + 4*p['C0']*C)) / (2. * p['C0'])
+    return p
+
+
+def _f2(params, pac0, vdc0, pdc0, ps0, C0, vdc, pdc, pac):
+    # objective function for _fit_sandia_field. Assumes Pdco, Pso and C0
+    # are known. Returns the root sum of squared differences in AC power
+    # Input params = [C1, C2, C3]
+    p = {}
+    p['Paco'] = pac0  # AC power
+    p['Vdco'] = vdc0  # DC V
+    p['Pdco'] = pdc0  # DC power
+    p['Pso'] = ps0  # DC power, small
+    p['C0'] = C0 # unitless, tiny
+    p['C1'] = params[0] # 1/V, tiny
+    p['C2'] = params[1]  # 1/V, tiny
+    p['C3'] = params[2] # 1/V tiny
+    diff = (_sandia_eff(vdc, pdc, p) - pac)
+    return np.sqrt(np.dot(diff, diff))
+
+
+def _fit_sandia_field_b(resid, pac, pdc, vdc, pac0, vdc0, pdc0, ps0, C0):
+    r''' Estimate C1, C2, and C3 for the Sandia inverter model from time-series
+    data. Estimates are conditional on parameters Pdco, Pso and C0.
+
+    Parameters
+    ----------
+    pac : numeric
+        Measured AC power (W)
+    pdc : numeric
+        Measured DC input power (W)
+    vdc
+        Measured DC input voltage (V)
+    pac0 : float
+        Rated AC power (W)
+    vdc0 : float
+        Nominal DC input voltage (V)
+    pdc0 : float
+        DC input power that produces rated AC power at nominal voltage (W)
+    ps0 : float
+        Start-up DC power (W)
+    C0 : float
+        Empirical coefficient
+
+    Returns
+    -------
+    dict
+        Parameters for the Sandia inverter model including C1, C2 and C3.
+    '''
+    # select data. Avoid very low power and clipping
+    u = (pac > 0.05*pac0) & (pac < pac0)    
+
+    # initial guess
+    x0 = np.array([0., 0., 0.])
+
+    args = (pac0, vdc0, pdc0, ps0, C0, vdc[u], pdc[u], pac[u])
+    options = {}
+    options['gtol'] = 1e-5
+    result = minimize(_f2, x0, args=args,
+                      method='BFGS',
+                      options=options)
+
+    params = result.x
+    p = {}
+    p['Paco'] = pac0
+    p['Vdco'] = vdc0
+    p['Pdco'] = pdc0
+    p['Pso'] = ps0
+    p['C0'] = C0
+    p['C1'] = params[0]
+    p['C2'] = params[1]
+    p['C3'] = params[2]
+
+    return p
+
+
+def fit_sandia_field(pac, pdc, vdc, pac0, vdc0):
+    r''' Estimate parameters for the Sandia inverter model from time-series
+    data.
+
+    Parameters
+    ----------
+    pac : numeric
+        Measured AC power (W)
+    pdc : numeric
+        Measured DC input power (W)
+    vdc
+        Measured DC input voltage (V)
+    pac0 : float
+        Rated AC power (W)
+    vdc0 : float
+        Nominal DC input voltage (V)
+
+    Returns
+    -------
+    dict
+        Parameters for the Sandia inverter model.
+
+    References
+    ----------
+    .. [1] C. W. Hansen, K. S. Anderson, M. Theristis, "Fitting the Sandia
+       Inverter Model to Operational PV System Data", 54 IEEE Photovoltaic
+       Specialist Conference, New Orleans, USA. 2026
+    .. [2] D. King, S. Gonzalez, G. Galbraith, W. Boyson, "Performance Model
+       for Grid-Connected Photovoltaic Inverters", Sandia National
+       Laboratories, Albuquerque, N.M., USA, SAND2007-5036, Sept. 2007.
+       :doi:`10.2172/920449`
+
+    '''
+    # get Pdco, Pso and C0 first
+    p = _fit_sandia_field_a(pac, pdc, vdc, pac0, vdc0)
+    # add C1, C2, C3
+    p = _fit_sandia_field_b(_f2, pac, pdc, vdc, pac0, vdc0,
+                            p['Pdco'], p['Pso'], p['C0'])
+    return p

@@ -696,7 +696,7 @@ def get_nsrdb_psm4_polar(latitude, longitude, api_key, email,
     Returns
     -------
     data : pandas.DataFrame
-        timeseries data from NLR PSM4
+        timeseries data from NLR PSM4 Polar
     metadata : dict
         metadata from NLR PSM4 about the record, see
         :func:`pvlib.iotools.read_nsrdb_psm4` for fields
@@ -843,7 +843,7 @@ def get_nsrdb_psm4_polar_tmy(latitude, longitude, api_key, email, year='tmy',
     Returns
     -------
     data : pandas.DataFrame
-        timeseries data from NLR PSM4
+        timeseries data from NLR PSM4 Polar TMY
     metadata : dict
         metadata from NLR PSM4 about the record, see
         :func:`pvlib.iotools.read_nsrdb_psm4` for fields

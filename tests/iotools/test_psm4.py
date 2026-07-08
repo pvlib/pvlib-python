@@ -184,6 +184,39 @@ def test_get_nsrdb_psm4_aggregated_errors(
     assert "OVER_RATE_LIMIT" not in str(excinfo.value)
 
 
+@pytest.mark.remote_data
+@pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
+def test_get_nsrdb_psm4_polar_errors(nlr_api_key):
+    """Test get_nsrdb_psm4_polar() for bad input scenarios."""
+    # Bad latitude/longitude -> Coordinates were outside the polar area.
+    with pytest.raises(HTTPError) as excinfo:
+        psm4.get_nsrdb_psm4_polar(55, 0, nlr_api_key, PVLIB_EMAIL, year=2023)
+    # ensure the HTTPError caught isn't due to overuse of the API key
+    assert "OVER_RATE_LIMIT" not in str(excinfo.value)
+    # Bad API key -> HTTP 403 forbidden because api_key is rejected
+    with pytest.raises(HTTPError) as excinfo:
+        psm4.get_nsrdb_psm4_polar(
+            LATITUDE_POLAR, LONGITUDE_POLAR, "bad_key", PVLIB_EMAIL, year=2023)
+    assert "OVER_RATE_LIMIT" not in str(excinfo.value)
+
+
+@pytest.mark.remote_data
+@pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
+def test_get_nsrdb_psm4_polar_tmy_errors(nlr_api_key):
+    """Test get_nsrdb_psm4_polar_tmy() for bad input scenarios."""
+    # Bad latitude/longitude -> Coordinates were outside the polar area.
+    with pytest.raises(HTTPError) as excinfo:
+        psm4.get_nsrdb_psm4_polar_tmy(
+            55, 0, nlr_api_key, PVLIB_EMAIL, year="tmy-2023")
+    # ensure the HTTPError caught isn't due to overuse of the API key
+    assert "OVER_RATE_LIMIT" not in str(excinfo.value)
+    # Bad API key -> HTTP 403 forbidden because api_key is rejected
+    with pytest.raises(HTTPError) as excinfo:
+        psm4.get_nsrdb_psm4_polar_tmy(
+            LATITUDE_POLAR, LONGITUDE_POLAR, "bad_key", PVLIB_EMAIL,
+            year="tmy-2023")
+    assert "OVER_RATE_LIMIT" not in str(excinfo.value)
+
 @pytest.fixture
 def io_input(request):
     """file-like object for read_nsrdb_psm4"""

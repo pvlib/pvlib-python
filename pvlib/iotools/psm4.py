@@ -647,18 +647,18 @@ def get_nsrdb_psm4_polar(latitude, longitude, api_key, email,
     high latitude regions, that are outside the field of view of the
     geostationary satellites.
 
-    The dataset provides data from 2013 onwards over the exclusive economic
-    zone above 60 degrees north. The data have a spatial resolution of 4 km
+    The dataset provides data from 2013 onwards for the exclusive economic
+    zones above 60 degrees north. The data have a spatial resolution of 4 km
     and a temporal resolution of 1 hour.
 
     Parameters
     ----------
     latitude : float or int
         in decimal degrees, between 60 and 90 degrees north.
-        Location must be within the exclusive economic zone.
+        Location must be within an exclusive economic zone.
     longitude : float or int
         in decimal degrees, between -180 and 180, east is positive.
-        Location must be within the exclusive economic zone.
+        Location must be within an exclusive economic zone.
     api_key : str
         NLR Developer Network API key
     email : str
@@ -795,18 +795,18 @@ def get_nsrdb_psm4_polar_tmy(latitude, longitude, api_key, email, year='tmy',
     latitude polar regions, that are outside the field of view of the
     geostationary satellites.
 
-    The dataset provides typical meteorological year (TMY) data over the
-    exclusive economic zone above 60 degrees north. The data have a spatial
+    The dataset provides typical meteorological year (TMY) data for the
+    exclusive economic zones above 60 degrees north. The data have a spatial
     resolution of 4 km and a temporal resolution of 1 hour.
 
     Parameters
     ----------
     latitude : float or int
         in decimal degrees, between 60 and 90 degrees north.
-        Location must be within the exclusive economic zone.
+        Location must be within an exclusive economic zone.
     longitude : float or int
         in decimal degrees, between -180 and 180, east is positive.
-        Location must be within the exclusive economic zone.
+        Location must be within an exclusive economic zone.
     api_key : str
         NLR Developer Network API key
     email : str

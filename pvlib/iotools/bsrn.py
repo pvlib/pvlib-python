@@ -448,13 +448,13 @@ def read_bsrn(filename, logical_records=('0100',)):
     .. [1] `World Radiation Monitoring Center - Baseline Surface Radiation
         Network (BSRN)
         <https://bsrn.awi.de/>`_
-    .. [2] `Update of the Technical Plan for BSRN Data Management, 2013,
+    .. [2] `BSRN Data Retrieval via FTP
+       <https://bsrn.awi.de/data/data-retrieval-via-ftp/>`_
+    .. [3] `BSRN Data Release Guidelines
+       <https://bsrn.awi.de/data/conditions-of-data-release/>`_
+    .. [4] `Update of the Technical Plan for BSRN Data Management, 2013,
        Global Climate Observing System (GCOS) GCOS-174.
        <https://bsrn.awi.de/fileadmin/user_upload/bsrn.awi.de/Publications/gcos-174.pdf>`_
-    .. [3] `BSRN Data Retrieval via FTP
-       <https://bsrn.awi.de/data/data-retrieval-via-ftp/>`_
-    .. [4] `BSRN Data Release Guidelines
-       <https://bsrn.awi.de/data/conditions-of-data-release/>`_
     """  # noqa: E501
     if str(filename).endswith('.gz'):  # check if file is a gzipped (.gz) file
         open_func, mode = gzip.open, 'rt'

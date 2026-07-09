@@ -11,6 +11,7 @@ VARIABLE_MAP = {
     't2m': 'temp_air',
     'sp': 'pressure',
     'ssrd': 'ghi',
+    'fdir': 'dni',
     'tp': 'precipitation',
     'strd': 'longwave_down',
 
@@ -19,6 +20,7 @@ VARIABLE_MAP = {
     '2m_temperature': 'temp_air',
     'surface_pressure': 'pressure',
     'surface_solar_radiation_downwards': 'ghi',
+    'total_sky_direct_solar_radiation_at_surface': 'dni',
     'total_precipitation': 'precipitation',
     'surface_thermal_radiation_downwards': 'longwave_down',
 }

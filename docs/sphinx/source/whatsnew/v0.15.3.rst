@@ -26,6 +26,9 @@ Documentation
 * Fix broken link in GitHub Contributing tab. (:issue:`2628`, :pull:`2806`)
 * Fixed broken ``interval`` keyword argument in the ``oedi_9068`` gallery
   example; the correct parameter name is ``time_step``. (:issue:`2791`)
+* Fixed several broken/outdated links: NREL clear-sky and spectral data
+  pages, EnergyPlus documentation, git-scm.com, and a malformed Wikipedia
+  URL. (:issue:`2489`)
 
 
 Testing

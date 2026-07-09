@@ -53,3 +53,4 @@ Contributors
 * Eesh Saxena (:ghuser:`eeshsaxena`)
 * Karl Hill (:ghuser:`karlhillx`)
 * Yonry Zhu (:ghuser:`yonryzhu`)
+* Darshan Gowda (:ghuser:`dgowdaan-cmyk`)

@@ -251,7 +251,7 @@ def test_kimber_grace_period_one_day():
     cleaning_threshold = 10
     rainfall.iloc[0] = cleaning_threshold + 1  # comfortably above threshold
     soiling = kimber(rainfall, cleaning_threshold=cleaning_threshold,
-                      grace_period=1)
+                     grace_period=1)
     # 24 hours after the rain event: still within the grace day, should be
     # protected (soiling reset to ~0)
     assert soiling.iloc[24] < 1e-9

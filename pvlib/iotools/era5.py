@@ -54,6 +54,7 @@ UNITS = {
     'skt': _k_to_c,
     'sp': _same,
     'ssrd': _j_to_w,
+    'fdir': _j_to_w,
     'strd': _j_to_w,
     'tp': _m_to_cm,
 }

@@ -18,8 +18,7 @@ Bug fixes
 
 Enhancements
 ~~~~~~~~~~~~
-* Add support for diffuse irradiance components to :py:func:`pvlib.irradiance.isotropic`
-  when ``return_components=True``. (:issue:`2750`, :pull:`2787`)
+* Add ``return_components`` kwarg to :py:func:`pvlib.irradiance.isotropic`. (:issue:`2750`, :pull:`2787`)
 * Ensure all timezones are available in all OSs. (:issue:`2795`, :pull:`2809`)
 
 

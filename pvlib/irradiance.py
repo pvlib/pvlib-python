@@ -626,7 +626,7 @@ def isotropic(surface_tilt, dhi, return_components=False):
     return_components : bool, default ``False``
         If ``False``, ``sky_diffuse`` is returned.
         If ``True``, ``diffuse_components`` is returned.
-        For this model, `` return_components`` does not add more information,
+        For this model, `` return_components`` contains the same data as ``sky_diffuse``,
         but it is included for consistency with the other sky diffuse models.
 
     Returns
@@ -641,8 +641,8 @@ def isotropic(surface_tilt, dhi, return_components=False):
 
     diffuse_components : dict (array input) or DataFrame (Series input)
         Keys/columns are:
-            * poa_sky_diffuse: Total sky diffuse
-            * poa_isotropic
+            * poa_sky_diffuse: Total sky diffuse on the plane of array. [Wm⁻²]
+            * poa_isotropic: The portion of POA irradiance from the isotropic sky dome. [Wm⁻²]
 
     References
     ----------

@@ -719,6 +719,17 @@ def test_dirint_nans():
                         np.array([np.nan, np.nan, np.nan, np.nan, 893.1]), 1)
 
 
+def test_delta_kt_prime_interior_nan():
+    # regression test for gh-1847: an interior NaN in kt_prime must not
+    # halve the single valid neighbor difference.  When only one neighbor
+    # is available (Perez eqn 3) delta_kt_prime equals that difference.
+    times = pd.date_range(start='2020-01-01', periods=5, freq='1h')
+    kt_prime = pd.Series([0.5, 0.6, np.nan, 0.7, 0.4], index=times)
+    result = irradiance._delta_kt_prime_dirint(kt_prime, True, times)
+    expected = pd.Series([0.1, 0.1, np.nan, 0.3, 0.3], index=times)
+    assert_series_equal(result, expected)
+
+
 def test_dirint_tdew():
     times = pd.DatetimeIndex(['2014-06-24T12-0700', '2014-06-24T18-0700'])
     ghi = pd.Series([1038.62, 254.53], index=times)

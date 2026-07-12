@@ -19,6 +19,11 @@ Bug fixes
   timestamp, restoring the behavior from before v0.11.1. Evening-local
   timestamps, which fall on the next calendar day in UTC, previously
   returned the following day's values. (:issue:`2238`)
+~~~~~~~~
+
+* Fixed ``irradiance.dirint`` so that an interior missing value in the input
+  series no longer halves the single valid neighbor difference when computing
+  the stability index ``delta_kt_prime`` (Perez eqn 3). (:issue:`1847`)
 
 
 Enhancements
@@ -58,5 +63,6 @@ Contributors
 * Karl Hill (:ghuser:`karlhillx`)
 * Mathias Aschwanden (:ghuser:`maschwanden`)
 * Yonry Zhu (:ghuser:`yonryzhu`)
+* Aditya (:ghuser:`adi-IL`)
 * Darshan Gowda (:ghuser:`dgowdaan-cmyk`)
 * Leonardo Scappatura (:ghuser:`Leonard013`)

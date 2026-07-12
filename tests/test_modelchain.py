@@ -360,6 +360,42 @@ def test_run_model_with_irradiance(sapm_dc_snl_ac_system, location):
     assert_series_equal(ac, expected)
 
 
+def test_run_model_preserves_nan_inputs(cec_dc_snl_ac_system, location):
+    # regression test for gh-1409: genuine missing (NaN) values in the
+    # weather must not be silently replaced with zero in the DC results.
+    # Nighttime (zero irradiance) should still yield zero power.
+    mc = ModelChain(cec_dc_snl_ac_system, location, dc_model='cec')
+    times = pd.date_range('20160101 1200-0700', periods=3, freq='6h')
+    weather = pd.DataFrame(
+        {'ghi': [500, np.nan, 0], 'dni': [800, np.nan, 0],
+         'dhi': [100, np.nan, 0]},
+        index=times)
+    mc.run_model(weather)
+    dc = mc.results.dc
+    # a missing input is preserved as NaN ...
+    assert np.isnan(dc['p_mp'].iloc[1])
+    # ... while nighttime remains zero power, not NaN ...
+    assert dc['p_mp'].iloc[2] == pytest.approx(0)
+    # ... and the daytime value is a sensible positive number.
+    assert dc['p_mp'].iloc[0] > 0
+
+
+def test_pvwatts_inverter_preserves_nan_inputs(
+        pvwatts_dc_pvwatts_ac_system, location):
+    # regression test for gh-1409: the pvwatts inverter must not replace
+    # missing DC values with zero AC power.
+    mc = ModelChain(pvwatts_dc_pvwatts_ac_system, location,
+                    aoi_model='no_loss')
+    times = pd.date_range('20160101 1200-0700', periods=3, freq='6h')
+    weather = pd.DataFrame(
+        {'ghi': [500, np.nan, 0], 'dni': [800, np.nan, 0],
+         'dhi': [100, np.nan, 0]},
+        index=times)
+    ac = mc.run_model(weather).results.ac
+    assert np.isnan(ac.iloc[1])
+    assert ac.iloc[2] == pytest.approx(0)
+
+
 @pytest.fixture(scope='function')
 def multi_array_sapm_dc_snl_ac_system(
         sapm_temperature_cs5p_220m, sapm_module_params,

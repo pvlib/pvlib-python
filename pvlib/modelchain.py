@@ -665,7 +665,10 @@ class ModelChain:
             self.results.dc,
             unwrap=False
         )
-        self.results.dc = tuple(dc.fillna(0) for dc in self.results.dc)
+        # Missing (NaN) values in the inputs are intentionally preserved so
+        # that the result follows the "NaN in, NaN out" policy. At night the
+        # single diode model already returns zero power, so night is not
+        # affected by not filling NaNs here.
         # If the system has one Array, unwrap the single return value
         # to preserve the original behavior of ModelChain
         if self.system.num_arrays == 1:
@@ -766,7 +769,10 @@ class ModelChain:
 
     def pvwatts_inverter(self):
         ac = self.system.get_ac('pvwatts', self.results.dc)
-        self.results.ac = ac.fillna(0)
+        # Missing (NaN) values in the DC input are preserved so that the
+        # result follows the "NaN in, NaN out" policy instead of silently
+        # reporting zero AC for missing data.
+        self.results.ac = ac
         return self
 
     @property

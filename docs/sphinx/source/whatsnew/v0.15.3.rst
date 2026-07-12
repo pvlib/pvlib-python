@@ -14,6 +14,12 @@ Deprecations
 
 Bug fixes
 ~~~~~~~~~
+~~~~~~~~
+
+* Fixed ``ModelChain`` no longer replacing missing (NaN) values in the DC
+  and AC results with zero. Genuine gaps in the input now propagate as NaN,
+  following the "NaN in, NaN out" policy, while nighttime correctly remains
+  zero power. (:issue:`1409`)
 
 
 Enhancements

@@ -2035,12 +2035,8 @@ def _delta_kt_prime_dirint(kt_prime, use_delta_kt_prime, times):
     for use with :py:func:`_dirint_bins`.
     """
     if use_delta_kt_prime:
-        # Perez eqn 2 (interior points).  Perez eqn 3 (boundary points and
-        # interior gaps where one neighbor is missing) is handled by taking
-        # the row-wise mean, which averages zero, one, or two valid neighbor
-        # differences because pandas skips NaN values.  This avoids the
-        # previous behavior of halving a single valid difference when one
-        # neighbor is NaN (gh-1847).
+        # row-wise mean of neighbor abs-differences; pandas skips NaN so this
+        # covers 0/1/2 valid neighbors (Perez eqn 2 interior, eqn 3 boundary/gap)
         kt_next = kt_prime.shift(-1)
         kt_previous = kt_prime.shift(1)
         delta_kt_prime = pd.DataFrame({

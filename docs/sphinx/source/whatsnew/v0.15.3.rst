@@ -14,13 +14,12 @@ Deprecations
 
 Bug fixes
 ~~~~~~~~~
+
 * :py:func:`~pvlib.solarposition.sun_rise_set_transit_spa` now returns
   sunrise, sunset, and transit for the *local* calendar day of each input
   timestamp, restoring the behavior from before v0.11.1. Evening-local
   timestamps, which fall on the next calendar day in UTC, previously
   returned the following day's values. (:issue:`2238`)
-~~~~~~~~
-
 * Fixed ``irradiance.dirint`` so that an interior missing value in the input
   series no longer halves the single valid neighbor difference when computing
   the stability index ``delta_kt_prime`` (Perez eqn 3). (:issue:`1847`)

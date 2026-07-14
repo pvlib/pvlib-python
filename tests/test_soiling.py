@@ -229,3 +229,31 @@ def test_kimber_initial_soil(greensboro_rain, expected_kimber_initial_soil):
     norain = kimber(norain, initial_soiling=0.1)
     # test no rain, soiling reaches maximum
     assert np.allclose(norain.values, expected_kimber_initial_soil)
+
+
+def test_kimber_threshold_equal_cleans():
+    """Rainfall exactly equal to cleaning_threshold should trigger cleaning."""
+    dt = pd.date_range(start='1990-01-01', periods=48, freq='h')
+    rainfall = pd.Series(0.0, index=dt)
+    cleaning_threshold = 10
+    # exactly at the threshold, not above it
+    rainfall.iloc[0] = cleaning_threshold
+    soiling = kimber(rainfall, cleaning_threshold=cleaning_threshold,
+                     grace_period=1)
+    # soiling should be reset (near zero) right at the rain event
+    assert soiling.iloc[0] < 1e-9
+
+
+def test_kimber_grace_period_one_day():
+    """grace_period=1 should protect exactly 1 day after a rain event."""
+    dt = pd.date_range(start='1990-01-01', periods=72, freq='h')
+    rainfall = pd.Series(0.0, index=dt)
+    cleaning_threshold = 10
+    rainfall.iloc[0] = cleaning_threshold + 1  # comfortably above threshold
+    soiling = kimber(rainfall, cleaning_threshold=cleaning_threshold,
+                     grace_period=1)
+    # 24 hours after the rain event: still within the grace day, should be
+    # protected (soiling reset to ~0)
+    assert soiling.iloc[24] < 1e-9
+    # 48 hours after: grace period has ended, soiling should have built up
+    assert soiling.iloc[48] > 0

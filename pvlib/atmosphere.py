@@ -363,19 +363,34 @@ def rh_from_tdew(temp_air, temp_dew, coeff=(6.112, 17.62, 243.12)):
     numeric
         Relative humidity (0.0-100.0). [%]
 
+    Notes
+    -----
+    Relative humidity is computed as ``100 * e / es``, where ``e`` is the
+    saturation vapor pressure at the dew point temperature, and ``es``
+    is the saturation vapor pressure at the air temperature, both
+    from the Magnus equation ``A * exp(B * T / (C + T))``. The default
+    coefficients ``(A, B, C) = (6.112, 17.62, 243.12)`` are the WMO-recommended
+    Magnus form for saturation over liquid water, valid for temperatures from
+    -45 to +60 °C [1]_; see [2]_ for the approximation and its accuracy.
+
     References
     ----------
     .. [1] "Guide to Instruments and Methods of Observation",
        World Meteorological Organization, WMO-No. 8, 2023.
        https://library.wmo.int/idurl/4/68695
+    .. [2] O. A. Alduchov and R. E. Eskridge, "Improved Magnus Form
+       Approximation of Saturation Vapor Pressure", Journal of Applied
+       Meteorology, 35(4), pp. 601-609, 1996.
     """
 
-    # Calculate vapor pressure (e) and saturation vapor pressure (es)
-    e = coeff[0] * np.exp((coeff[1] * temp_air) / (coeff[2] + temp_air))
-    es = coeff[0] * np.exp((coeff[1] * temp_dew) / (coeff[2] + temp_dew))
+    # Actual vapor pressure ``e`` is the saturation vapor pressure at the dew
+    # point; the saturation vapor pressure ``es`` is taken at the air
+    # temperature. Both come from the Magnus equation.
+    e = coeff[0] * np.exp((coeff[1] * temp_dew) / (coeff[2] + temp_dew))
+    es = coeff[0] * np.exp((coeff[1] * temp_air) / (coeff[2] + temp_air))
 
-    # Calculate relative humidity as percentage
-    relative_humidity = 100 * (es / e)
+    # Relative humidity is their ratio, as a percentage.
+    relative_humidity = 100 * (e / es)
 
     return relative_humidity
 
@@ -406,17 +421,14 @@ def tdew_from_rh(temp_air, relative_humidity, coeff=(6.112, 17.62, 243.12)):
        World Meteorological Organization, WMO-No. 8, 2023.
        https://library.wmo.int/idurl/4/68695
     """
-    # Calculate the term inside the log
-    # From RH = 100 * (es/e), we get es = (RH/100) * e
-    # Substituting the Magnus equation and solving for dewpoint
-
-    # First calculate ln(es/A)
+    # Invert RH = 100 * (e / es): the actual vapor pressure is
+    # e = (RH / 100) * es, and the dew point is the temperature at which the
+    # saturation vapor pressure equals e. Substituting the Magnus equation for
+    # both and solving for the dew point gives the expression below.
     ln_term = (
         (coeff[1] * temp_air) / (coeff[2] + temp_air)
-        + np.log(relative_humidity/100)
+        + np.log(relative_humidity / 100)
     )
-
-    # Then solve for dewpoint
     dewpoint = coeff[2] * ln_term / (coeff[1] - ln_term)
 
     return dewpoint

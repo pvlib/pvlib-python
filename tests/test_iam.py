@@ -289,6 +289,60 @@ def test_marion_diffuse_invalid():
         _iam.marion_diffuse('not_a_model', 20)
 
 
+def test_marion_diffuse_tracking_list():
+    # tilt angles under 90
+    expected = {
+        'sky': [0.9523612, 0.95960858, 0.96198112],
+        'horizon': [0.0, 0.83290704, 0.89872877],
+        'ground': [0.0, 0.71982356, 0.81863602]
+    }
+    tilt = [0, 20, 30]
+    actual = _iam.marion_diffuse_tracking('ashrae', tilt)
+    for key, value in expected.items():
+        assert_allclose(actual[key], value)
+    # tilt angles above 90
+    expected = {
+        'sky': [0.9523612, 0.95960858, 0.94530815],
+        'horizon': [0.0, 0.83290704, 0.97141949],
+        'ground': [0.0, 0.71982356, 0.95735835]
+    }
+    tilt = [0, 20, 100]
+    actual = _iam.marion_diffuse_tracking('ashrae', tilt)
+    for key, values in expected.items():
+        assert_allclose(actual[key], values)
+
+
+def test_marion_diffuse_tracking_array():
+    expected = {
+        'sky': np.array([0.9523612, 0.95960858, 0.96198112]),
+        'horizon': np.array([0.0, 0.83290704, 0.89872877]),
+        'ground': np.array([0.0, 0.71982356, 0.81863602])
+    }
+    tilt = np.array([0, 20, 30])
+    actual = _iam.marion_diffuse_tracking('ashrae', tilt)
+    for key, value in expected.items():
+        assert_allclose(actual[key], value)
+
+
+def test_marion_diffuse_tracking_series():
+    expected = {
+        'sky': [0.9523612, 0.95960858, 0.96198112],
+        'horizon': [0.0, 0.83290704, 0.89872877],
+        'ground': [0.0, 0.71982356, 0.81863602]
+    }
+    idx = pd.date_range('2019-01-01', periods=3, freq='h')
+    tilt = pd.Series([0, 20, 30], index=idx)
+    actual = _iam.marion_diffuse_tracking('ashrae', tilt)
+    for key, values in expected.items():
+        expected_series = pd.Series(values, index=idx)
+        assert_series_equal(actual[key], expected_series)
+
+
+def test_marion_diffuse_tracking_invalid():
+    with pytest.raises(ValueError):
+        _iam.marion_diffuse_tracking('not_a_model', 20)
+
+
 @pytest.mark.parametrize('region,N,expected', [
     ('sky', 180, 0.9596085829811408),
     ('horizon', 1800, 0.8329070417832541),

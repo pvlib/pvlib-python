@@ -912,26 +912,29 @@ def reindl(surface_tilt, surface_azimuth, dhi, dni, ghi, dni_extra,
         Solar azimuth angles. See :term:`solar_azimuth`. [°]
 
     return_components : bool, default ``False``
-        If ``False``, ``sky_diffuse`` is returned.
+        If ``False``, ``poa_sky_diffuse`` is returned.
         If ``True``, ``diffuse_components`` is returned.
 
     Returns
     -------
     numeric, dict, or DataFrame
         Return type controlled by ``return_components`` argument.
-        If ``return_components=False``, ``sky_diffuse`` is returned.
+        If ``return_components=False``, ``poa_sky_diffuse`` is returned.
         If ``return_components=True``, ``diffuse_components`` is returned.
 
-    sky_diffuse : numeric
-        The sky diffuse component of the solar radiation on a tilted
-        surface.
+    poa_sky_diffuse : numeric
+        The sky diffuse component of irradiance on a tilted plane. [Wm⁻²]
 
     diffuse_components : dict (array input) or DataFrame (Series input)
         Keys/columns are:
-            * poa_sky_diffuse: Total sky diffuse
-            * poa_isotropic
-            * poa_circumsolar
-            * poa_horizon
+            * poa_sky_diffuse: The sky diffuse component of irradiance on a
+            tilted plane. [Wm⁻²]
+            * poa_isotropic: The portion of sky diffuse irradiance on a tilted
+            plane from the isotropic sky dome. [Wm⁻²]
+            * poa_circumsolar: The portion of sky diffuse irradiance on a
+            tilted plane from the circumsolar region. [Wm⁻²]
+            * poa_horizon: The portion of sky diffuse irradiance on a tilted
+            plane from the horizon. [Wm⁻²]
 
     Notes
     -----
@@ -1006,21 +1009,21 @@ def reindl(surface_tilt, surface_azimuth, dhi, dni, ghi, dni_extra,
     term2 = AI * Rb
     term3 = term1 * h
 
-    sky_diffuse = dhi * (term1 + term2 + term3)
+    poa_sky_diffuse = dhi * (term1 + term2 + term3)
 
     if return_components:
         diffuse_components = {
-            'poa_sky_diffuse': sky_diffuse,
+            'poa_sky_diffuse': poa_sky_diffuse,
             'poa_isotropic': dhi * term1,
             'poa_circumsolar': dhi * term2,
             'poa_horizon': dhi * term3
         }
 
-        if isinstance(sky_diffuse, pd.Series):
+        if isinstance(poa_sky_diffuse, pd.Series):
             diffuse_components = pd.DataFrame(diffuse_components)
         return diffuse_components
     else:
-        return sky_diffuse
+        return poa_sky_diffuse
 
 
 def king(surface_tilt, dhi, ghi, solar_zenith):

@@ -637,14 +637,15 @@ def isotropic(surface_tilt, dhi, return_components=False):
         If ``False``, ``sky_diffuse`` is returned.
         If ``True``, ``diffuse_components`` is returned.
 
-    sky_diffuse : numeric
-        The sky diffuse component of the solar radiation. [Wm⁻²]
+    poa_sky_diffuse : numeric
+        The sky diffuse component of irradiance on a tilted plane. [Wm⁻²]
 
     diffuse_components : dict (array input) or DataFrame (Series input)
         Keys/columns are:
-            * poa_sky_diffuse: Total sky diffuse on the plane of array. [Wm⁻²]
-            * poa_isotropic: The portion of POA irradiance from the isotropic
-            sky dome. [Wm⁻²]
+            * poa_sky_diffuse: The sky diffuse component of irradiance on a
+            tilted plane. [Wm⁻²]
+            * poa_isotropic: The portion of sky diffuse irradiance on a tilted
+            plane from the isotropic sky dome. [Wm⁻²]
 
     References
     ----------
@@ -658,20 +659,20 @@ def isotropic(surface_tilt, dhi, return_components=False):
        Energy vol. 201. pp. 8-12
        :doi:`10.1016/j.solener.2020.02.067`
     '''
-    sky_diffuse = dhi * (1 + tools.cosd(surface_tilt)) * 0.5
+    poa_sky_diffuse = dhi * (1 + tools.cosd(surface_tilt)) * 0.5
 
     if return_components:
         diffuse_components = {
-            'poa_sky_diffuse': sky_diffuse,
-            'poa_isotropic': sky_diffuse
+            'poa_sky_diffuse': poa_sky_diffuse,
+            'poa_isotropic': poa_sky_diffuse
         }
 
-        if isinstance(sky_diffuse, pd.Series):
+        if isinstance(poa_sky_diffuse, pd.Series):
             diffuse_components = pd.DataFrame(diffuse_components)
 
         return diffuse_components
     else:
-        return sky_diffuse
+        return poa_sky_diffuse
 
 
 def klucher(surface_tilt, surface_azimuth, dhi, ghi, solar_zenith,

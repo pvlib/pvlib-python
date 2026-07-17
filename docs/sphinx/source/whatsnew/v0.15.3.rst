@@ -18,8 +18,8 @@ Bug fixes
 
 Enhancements
 ~~~~~~~~~~~~
-* Add support for returning the individual diffuse irradiance components
-  from :py:func:`pvlib.irradiance.reindl` when ``return_components=True``.
+* Add  ``return_components`` kwarg to :py:func:`pvlib.irradiance.reindl` to
+  support returning the components of sky diffuse irradiance.
   (:issue:`2750`, :pull:`2775`)
 * Ensure all timezones are available in all OSs. (:issue:`2795`, :pull:`2809`)
 

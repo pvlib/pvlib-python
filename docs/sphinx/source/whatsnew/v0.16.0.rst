@@ -19,6 +19,9 @@ Deprecations
 
 Bug fixes
 ~~~~~~~~~
+* :py:func:`~pvlib.irradiance.perez` no longer raises ``ZeroDivisionError`` on
+  scalar ``dhi=0`` input (e.g. nighttime); the scalar path now returns the same
+  finite value as the array path. (:pull:`2826`)
 
 
 Enhancements
@@ -48,3 +51,4 @@ Maintenance
 Contributors
 ~~~~~~~~~~~~
 * Carolina Crespo (:ghuser:`cbcrespo`)
+* Andrew Chen (:ghuser:`chuenchen309`)

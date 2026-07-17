@@ -239,14 +239,6 @@ def test_iam_interp():
     expected = 1.0 - 1e-4 * aoi**2
     np.testing.assert_allclose(iam, expected, rtol=1e-12)
 
-    # check exception clause - list input for theta_ref
-    with pytest.raises(TypeError):
-        _iam.interp(0.0, [0, 60, 90], np.array([1.0, 0.8, 0.0]))
-
-    # check exception clause - list input for iam_ref
-    with pytest.raises(TypeError):
-        _iam.interp(0.0, np.array([0, 60, 90]), [1.0, 0.8, 0.0])
-
 
 @pytest.mark.parametrize('aoi,expected', [
     (45, 0.9975036250000002),

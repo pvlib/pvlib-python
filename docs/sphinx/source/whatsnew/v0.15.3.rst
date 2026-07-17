@@ -26,6 +26,8 @@ Documentation
 * Fix broken link in GitHub Contributing tab. (:issue:`2628`, :pull:`2806`)
 * Fixed broken ``interval`` keyword argument in the ``oedi_9068`` gallery
   example; the correct parameter name is ``time_step``. (:issue:`2791`)
+* Standardized diffuse component names and descriptions in the docstrings of
+  multiple functions in :py:mod:`pvlib.irradiance`. (:pull:`2827`)
 
 
 Testing

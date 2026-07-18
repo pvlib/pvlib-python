@@ -138,7 +138,7 @@ Follow these steps to obtain the library using git/GitHub:
 Please see GitHub's
 `Forking Projects <https://guides.github.com/activities/forking/>`_,
 `Fork A Repo <https://help.github.com/articles/fork-a-repo/>`_,
-and the `git-scm <https://git-scm.com/documentation>`_ for
+and the `git-scm <https://git-scm.com/doc>`_ for
 more details.
 
 .. _setupenvironment:

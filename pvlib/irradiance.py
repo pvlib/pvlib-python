@@ -1146,8 +1146,12 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
     delta = dhi * airmass / dni_extra
 
     # epsilon is the sky's "clearness"
-    with np.errstate(invalid='ignore'):
-        eps = ((dhi + dni) / dhi + kappa * (z ** 3)) / (1 + kappa * (z ** 3))
+    # np.true_divide so a Python-scalar dhi=0 yields inf/nan like the array
+    # path (handled below via digitize) instead of raising ZeroDivisionError,
+    # which np.errstate cannot suppress for native scalar division.
+    with np.errstate(invalid='ignore', divide='ignore'):
+        eps = (np.true_divide(dhi + dni, dhi) + kappa * (z ** 3)) \
+            / (1 + kappa * (z ** 3))
 
     # numpy indexing below will not work with a Series
     if isinstance(eps, pd.Series):

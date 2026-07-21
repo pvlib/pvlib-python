@@ -429,6 +429,16 @@ def test_perez_scalar():
     assert_allclose(out, 109.084332)
 
 
+def test_perez_scalar_dhi_zero():
+    # dhi=0 (e.g. nighttime) is documented-valid input (dhi >= 0). A native
+    # Python scalar division raised ZeroDivisionError (which np.errstate cannot
+    # suppress) while the array path returns a finite value; they must match.
+    out = irradiance.perez(30, 180, 0.0, 800.0, 1400.0, 40.0, 120.0, 1.5)
+    expected = irradiance.perez(30, 180, np.array([0.0]), np.array([800.0]),
+                                1400.0, 40.0, 120.0, np.array([1.5]))
+    assert_allclose(out, expected[0])
+
+
 def test_perez_driesse_scalar():
     # copied values from fixtures
     out = irradiance.perez_driesse(40, 180, 118.458, 939.954,

@@ -23,6 +23,11 @@ Bug fixes
 
 Enhancements
 ~~~~~~~~~~~~
+* Add iotools functions to retrieve irradiance and weather data from NSRDB PSM4 Polar,
+  which provides satellite-derived irradiance data above 60 degree latitude.
+  :py:func:`~pvlib.iotools.get_nsrdb_psm4_polar` and
+  :py:func:`~pvlib.iotools.get_nsrdb_psm4_polar_tmy`.
+  (:issue:`2639`, :pull:`2807`)
 * Ensure all timezones are available in all OSs. (:issue:`2795`, :pull:`2809`)
 
 
@@ -54,6 +59,8 @@ Maintenance
 
 Contributors
 ~~~~~~~~~~~~
+* Adam R. Jensen (:ghuser:`AdamRJensen`)
+* Erin Tonita (:ghuser:`etoni044`)
 * Eesh Saxena (:ghuser:`eeshsaxena`)
 * Karl Hill (:ghuser:`karlhillx`)
 * Mathias Aschwanden (:ghuser:`maschwanden`)

@@ -23,7 +23,9 @@ Bug fixes
 
 Enhancements
 ~~~~~~~~~~~~
-
+* Map beam horizontal irradiance to ``bhi`` when
+  :py:func:`~pvlib.iotools.get_era5` is called with ``map_variables=True``.
+  (:pull:`2819`)
 
 Documentation
 ~~~~~~~~~~~~~

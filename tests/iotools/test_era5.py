@@ -17,7 +17,9 @@ def params():
     return {
         'latitude': 40.01, 'longitude': -80.01,
         'start': '2020-06-01', 'end': '2020-06-01',
-        'variables': ['ghi', 'temp_air'],
+        # Test a mix of pvlib and ERA5 variable names
+        'variables': [
+            'ghi', 'temp_air', 'total_sky_direct_solar_radiation_at_surface'],
         'api_key': api_key,
     }
 
@@ -33,7 +35,11 @@ def expected():
     ghi = [153., 18.4, 0., 0., 0., 0., 0., 0., 0., 0., 0., 60., 229.5,
            427.8, 620.1, 785.5, 910.1, 984.2, 1005.9, 962.4, 844.1, 685.2,
            526.9, 331.4]
-    df = pd.DataFrame({'temp_air': temp_air, 'ghi': ghi}, index=index)
+    bhi = [102.6, 8.3, 0., 0., 0., 0., 0., 0., 0., 0., 0., 34.9, 167.8, 345.6,
+           524.3, 679.5, 796.1, 866.1, 893.4, 841.7, 724., 539.6, 415.1,
+           239.6]
+    df = pd.DataFrame({'temp_air': temp_air, 'ghi': ghi, 'bhi': bhi},
+                      index=index)
     return df
 
 
@@ -66,9 +72,11 @@ def test_get_era5_timezone(params, expected):
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_get_era5_map_variables(params, expected):
     df, meta = pvlib.iotools.get_era5(**params, map_variables=False)
-    expected = expected.rename(columns={'temp_air': 't2m', 'ghi': 'ssrd'})
+    expected = expected.rename(columns={
+        'temp_air': 't2m', 'ghi': 'ssrd', "bhi": "fdir"})
     df['t2m'] -= 273.15  # apply unit conversions manually
     df['ssrd'] /= 3600
+    df['fdir'] /= 3600
     pd.testing.assert_frame_equal(df, expected, check_freq=False, atol=0.1)
     assert meta['longitude'] == -80.0
     assert meta['latitude'] == 40.0

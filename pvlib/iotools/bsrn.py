@@ -379,7 +379,7 @@ def read_bsrn(filename, logical_records=('0100',)):
 
     BSRN files are freely available and can be accessed via FTP [3]_. The
     username and password for the BSRN FTP server can be obtained for free as
-    described in the BSRN's Data Release Guidelines [3]_.
+    described in the BSRN's Data Release Guidelines [4]_.
 
     Parameters
     ----------

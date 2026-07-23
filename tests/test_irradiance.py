@@ -250,8 +250,9 @@ def test_reindl(irrad_data, ephem_data, dni_et):
 
 
 def test_king(irrad_data, ephem_data):
-    result = irradiance.king(40, irrad_data['dhi'], irrad_data['ghi'],
-                             ephem_data['apparent_zenith'])
+    with pytest.warns(pvlibDeprecationWarning, match='king'):
+        result = irradiance.king(40, irrad_data['dhi'], irrad_data['ghi'],
+                                 ephem_data['apparent_zenith'])
     assert_allclose(result, [0, 44.629352, 115.182626, 79.719855], atol=1e-4)
 
 
@@ -439,7 +440,7 @@ def test_perez_driesse_scalar():
 
 
 @pytest.mark.parametrize('model', ['isotropic', 'klucher', 'haydavies',
-                                   'reindl', 'king', 'perez', 'perez-driesse'])
+                                   'reindl', 'perez', 'perez-driesse'])
 def test_sky_diffuse_zenith_close_to_90(model):
     # GH 432
     sky_diffuse = irradiance.get_sky_diffuse(
@@ -491,7 +492,7 @@ def test_campbell_norman():
 def test_get_total_irradiance(irrad_data, ephem_data, dni_et,
                               relative_airmass):
     models = ['isotropic', 'klucher',
-              'haydavies', 'reindl', 'king', 'perez', 'perez-driesse']
+              'haydavies', 'reindl', 'perez', 'perez-driesse']
 
     for model in models:
         total = irradiance.get_total_irradiance(
@@ -509,7 +510,7 @@ def test_get_total_irradiance(irrad_data, ephem_data, dni_et,
 
 
 @pytest.mark.parametrize('model', ['isotropic', 'klucher',
-                                   'haydavies', 'reindl', 'king',
+                                   'haydavies', 'reindl',
                                    'perez', 'perez-driesse'])
 def test_get_total_irradiance_albedo(
         irrad_data, ephem_data, dni_et, relative_airmass, model):
@@ -529,7 +530,7 @@ def test_get_total_irradiance_albedo(
 
 
 @pytest.mark.parametrize('model', ['isotropic', 'klucher',
-                                   'haydavies', 'reindl', 'king',
+                                   'haydavies', 'reindl',
                                    'perez', 'perez-driesse'])
 def test_get_total_irradiance_scalars(model):
     total = irradiance.get_total_irradiance(

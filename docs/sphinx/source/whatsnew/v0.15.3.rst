@@ -19,6 +19,8 @@ Bug fixes
 Enhancements
 ~~~~~~~~~~~~
 * Ensure all timezones are available in all OSs. (:issue:`2795`, :pull:`2809`)
+* Add support for :py:func:`pvlib.iam.schlick` to :py:class:`pvlib.modelchain.ModelChain`
+(:issue:`2828`)
 
 
 Documentation

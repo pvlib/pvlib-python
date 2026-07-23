@@ -1451,7 +1451,7 @@ def constant_aoi_loss(mc):
 
 
 @pytest.mark.parametrize('aoi_model', [
-    'sapm', 'ashrae', 'physical', 'martin_ruiz'
+    'sapm', 'ashrae', 'physical', 'martin_ruiz', 'schlick'
 ])
 def test_aoi_models(sapm_dc_snl_ac_system, location, aoi_model,
                     weather, mocker):
@@ -1467,7 +1467,7 @@ def test_aoi_models(sapm_dc_snl_ac_system, location, aoi_model,
 
 
 @pytest.mark.parametrize('aoi_model', [
-    'sapm', 'ashrae', 'physical', 'martin_ruiz'
+    'sapm', 'ashrae', 'physical', 'martin_ruiz', 'schlick'
 ])
 def test_aoi_models_singleon_weather_single_array(
         sapm_dc_snl_ac_system, location, aoi_model, weather):

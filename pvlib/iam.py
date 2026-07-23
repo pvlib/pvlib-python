@@ -645,7 +645,7 @@ def marion_diffuse(model, surface_tilt, **kwargs):
     return iam
 
 
-def marion_diffuse_tracking(model, surface_tilt, **kwargs):
+def marion_diffuse_tracking(model, surface_tilt, resolution=0.5, **kwargs):
     """
     Determine diffuse irradiance incidence angle modifiers using Marion's
     method of integrating over solid angle. This function is designed for
@@ -665,6 +665,10 @@ def marion_diffuse_tracking(model, surface_tilt, **kwargs):
         Surface tilt angles in decimal degrees.
         The tilt angle is defined as degrees from horizontal
         (e.g. surface facing up = 0, surface facing horizon = 90).
+
+    resolution : float, default 0.5
+        The resolution in degrees of the tilt angle vector used for
+        the integration.
 
     **kwargs
         Extra parameters passed to the IAM function.
@@ -713,7 +717,7 @@ def marion_diffuse_tracking(model, surface_tilt, **kwargs):
     iam = {}
     for region in ['sky', 'horizon', 'ground']:
         interpolator = _get_marion_interpolator(iam_function,
-                                                region, full_range)
+                                                region, resolution, full_range)
         iam_values = interpolator(surface_tilt)
         if isinstance(surface_tilt, pd.Series):
             iam_values = pd.Series(iam_values, index=surface_tilt.index)
@@ -725,16 +729,17 @@ def marion_diffuse_tracking(model, surface_tilt, **kwargs):
 
 
 @functools.cache
-def _get_marion_interpolator(iam_function, region, full_range=False):
+def _get_marion_interpolator(iam_function, region, resolution,
+                             full_range=False):
     """
     Cached interpolator for the Marion integration of an IAM function over
     solid angle. Helper function for :py:func:`marion_efficient` function
     to avoid repeated calculations leading to excessive memory use.
     """
     if full_range:
-        tilt = np.arange(0, 180.5, 0.5)
+        tilt = np.arange(0, 180.5, resolution)
     else:
-        tilt = np.arange(0, 90.5, 0.5)
+        tilt = np.arange(0, 90.5, resolution)
     iam = marion_integrate(iam_function, tilt, region)
     return PchipInterpolator(tilt, iam)
 

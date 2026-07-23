@@ -532,13 +532,13 @@ def poa_components(aoi, dni, poa_sky_diffuse, poa_ground_diffuse):
     irrads : Dict or DataFrame
         Contains the following keys:
 
-        * ``poa_global`` : Total diffuse irradiance on a tilted plane. [Wm⁻²]
+        * ``poa_global`` : Total irradiance on a tilted plane. [Wm⁻²]
         * ``poa_direct`` : Direct irradiance on a tilted plane. [Wm⁻²]
         * ``poa_diffuse`` : Diffuse irradiance on a tilted plane. [Wm⁻²]
         * ``poa_sky_diffuse`` : The sky diffuse component of irradiance on a
-        tilted plane. [Wm⁻²]
+          tilted plane. [Wm⁻²]
         * ``poa_ground_diffuse`` : The ground diffuse component of irradiance
-        on a tilted plane. [Wm⁻²]
+          on a tilted plane. [Wm⁻²]
 
         If ``poa_sky_diffuse`` is a Dict or DataFrame, ``irrads`` will
         contain additional keys for each of the diffuse components returned by

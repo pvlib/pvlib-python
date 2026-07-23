@@ -12,6 +12,7 @@ import numpy as np
 import pandas as pd
 import functools
 from scipy.optimize import minimize
+from scipy.interpolate import PchipInterpolator
 from pvlib.tools import cosd, sind, acosd
 
 # a dict of required parameter names for each IAM model
@@ -642,6 +643,105 @@ def marion_diffuse(model, surface_tilt, **kwargs):
         iam[region] = marion_integrate(iam_function, surface_tilt, region)
 
     return iam
+
+
+def marion_diffuse_tracking(model, surface_tilt, resolution=0.5, **kwargs):
+    """
+    Determine diffuse irradiance incidence angle modifiers using Marion's
+    method of integrating over solid angle. This function is designed for
+    trackers, where ``surface_tilt`` is a vector, to avoid the computational
+    burden of calling ``marion_integrate`` for each tilt angle.
+    Instead, the IAM function is integrated once for a range of tilt angles,
+    and then interpolated to the requested tilt angles. For fixed-tilt systems,
+    use :py:func:`marion_diffuse`.
+
+    Parameters
+    ----------
+    model : str
+        The IAM function to evaluate across solid angle. Must be one of
+        `'ashrae', 'physical', 'martin_ruiz', 'sapm', 'schlick'`.
+
+    surface_tilt : numeric
+        Surface tilt angles in decimal degrees.
+        The tilt angle is defined as degrees from horizontal
+        (e.g. surface facing up = 0, surface facing horizon = 90).
+
+    resolution : float, default 0.5
+        The resolution in degrees of the tilt angle vector used for
+        the integration.
+
+    **kwargs
+        Extra parameters passed to the IAM function.
+
+    Returns
+    -------
+    iam : dict
+        IAM values for each type of diffuse irradiance:
+
+        * 'sky': radiation from the sky dome (zenith <= 90)
+        * 'horizon': radiation from the region of the sky near the horizon
+          (89.5 <= zenith <= 90)
+        * 'ground': radiation reflected from the ground (zenith >= 90)
+
+        See [1]_ for a detailed description of each class.
+
+    See Also
+    --------
+    pvlib.iam.marion_diffuse
+    pvlib.iam.marion_integrate
+
+    References
+    ----------
+    .. [1] B. Marion "Numerical method for angle-of-incidence correction
+       factors for diffuse radiation incident photovoltaic modules",
+       Solar Energy, Volume 147, Pages 344-348. 2017.
+       :doi:`10.1016/j.solener.2017.03.027`
+    """
+
+    models = {
+        'physical': physical,
+        'ashrae': ashrae,
+        'sapm': sapm,
+        'martin_ruiz': martin_ruiz,
+        'schlick': schlick,
+    }
+
+    try:
+        iam_model = models[model]
+    except KeyError:
+        raise ValueError('model must be one of: ' + str(list(models.keys())))
+
+    full_range = (np.asarray(surface_tilt) > 90).any()
+
+    iam_function = functools.partial(iam_model, **kwargs)
+    iam = {}
+    for region in ['sky', 'horizon', 'ground']:
+        interpolator = _get_marion_interpolator(iam_function,
+                                                region, resolution, full_range)
+        iam_values = interpolator(surface_tilt)
+        if isinstance(surface_tilt, pd.Series):
+            iam_values = pd.Series(iam_values, index=surface_tilt.index)
+        elif isinstance(surface_tilt, list):
+            iam_values = iam_values.tolist()
+        iam[region] = iam_values
+
+    return iam
+
+
+@functools.cache
+def _get_marion_interpolator(iam_function, region, resolution,
+                             full_range=False):
+    """
+    Cached interpolator for the Marion integration of an IAM function over
+    solid angle. Helper function for :py:func:`marion_efficient` function
+    to avoid repeated calculations leading to excessive memory use.
+    """
+    if full_range:
+        tilt = np.arange(0, 180.5, resolution)
+    else:
+        tilt = np.arange(0, 90.5, resolution)
+    iam = marion_integrate(iam_function, tilt, region)
+    return PchipInterpolator(tilt, iam)
 
 
 def marion_integrate(function, surface_tilt, region, num=None):

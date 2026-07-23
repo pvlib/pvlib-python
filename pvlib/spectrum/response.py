@@ -6,7 +6,7 @@ from pvlib.tools import normalize_max2one
 import numpy as np
 import pandas as pd
 import scipy.constants
-from scipy.interpolate import interp1d
+from scipy.interpolate import make_interp_spline
 
 
 _PLANCK_BY_LIGHT_SPEED_OVER_ELEMENTAL_CHARGE_BY_BILLION = (
@@ -66,16 +66,14 @@ def get_example_spectral_response(wavelength=None):
     if wavelength is None:
         resolution = 5.0
         wavelength = np.arange(280, 1200 + resolution, resolution)
+    x = SR_DATA[0]
+    y = SR_DATA[1]
+    spline = make_interp_spline(x, y, k=3)
 
-    interpolator = interp1d(SR_DATA[0], SR_DATA[1],
-                            kind='cubic',
-                            bounds_error=False,
-                            fill_value=0.0,
-                            copy=False,
-                            assume_sorted=True)
+    values = spline(wavelength)
+    values[(wavelength < x[0]) | (wavelength > x[-1])] = 0.0
 
-    sr = pd.Series(data=interpolator(wavelength), index=wavelength)
-
+    sr = pd.Series(data=values, index=wavelength)
     sr.index.name = 'wavelength'
     sr.name = 'spectral_response'
 

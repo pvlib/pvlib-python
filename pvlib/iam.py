@@ -481,14 +481,9 @@ def interp(aoi, theta_ref, iam_ref, method='linear', normalize=True):
         raise ValueError("Negative value(s) found in 'iam_ref'. "
                          "This is not physically possible.")
 
-    if method == "linear":
-        interpolator = make_interp_spline(theta_ref, iam_ref, k=1)
-
-    elif method == "quadratic":
-        interpolator = make_interp_spline(theta_ref, iam_ref, k=2)
-
-    elif method == "cubic":
-        interpolator = make_interp_spline(theta_ref, iam_ref, k=3)
+    kvals = {'linear': 1, 'quadratic': 2, 'cubic': 3}
+    if method in kvals:
+        interpolator = make_interp_spline(theta_ref, iam_ref, k=kvals[method])
 
     else:
         raise ValueError(

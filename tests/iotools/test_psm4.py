@@ -14,10 +14,13 @@ from io import StringIO
 
 TMY_TEST_DATA = TESTS_DATA_DIR / 'test_psm4_tmy-2023.csv'
 FULL_DISC_TEST_DATA = TESTS_DATA_DIR / 'test_psm4_full_disc_2023.csv'
+POLAR_TEST_DATA = TESTS_DATA_DIR / 'test_psm4_polar_2023.csv'
+POLAR_TMY_TEST_DATA = TESTS_DATA_DIR / 'test_psm4_polar_tmy_2023.csv'
 YEAR_TEST_DATA = TESTS_DATA_DIR / 'test_psm4_2023.csv'
 YEAR_TEST_DATA_5MIN = TESTS_DATA_DIR / 'test_psm4_2023_5min.csv'
 MANUAL_TEST_DATA = TESTS_DATA_DIR / 'test_read_psm4.csv'
 LATITUDE, LONGITUDE = 40.5137, -108.5449
+LATITUDE_POLAR, LONGITUDE_POLAR = 64.84, -147.70
 METADATA_FIELDS = [
     'Source', 'Location ID', 'City', 'State', 'Country', 'Latitude',
     'Longitude', 'Time Zone', 'Elevation', 'Local Time Zone',
@@ -76,6 +79,39 @@ def test_get_nsrdb_psm4_full_disc(nlr_api_key):
                                                    map_variables=False)
     expected = pd.read_csv(FULL_DISC_TEST_DATA)
     assert_psm4_equal(data, metadata, expected)
+
+
+@pytest.mark.remote_data
+@pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
+def test_get_nsrdb_psm4_polar(nlr_api_key):
+    """test get_nsrdb_psm4_polar with a single year"""
+    data, metadata = psm4.get_nsrdb_psm4_polar(
+        LATITUDE_POLAR, LONGITUDE_POLAR,
+        nlr_api_key, PVLIB_EMAIL,
+        year=2023,
+        leap_day=False,
+        parameters=["ghi"],
+        utc=True,
+        map_variables=False)
+    expected, _ = psm4.read_nsrdb_psm4(POLAR_TEST_DATA, map_variables=False)
+    pd.testing.assert_frame_equal(data, expected)
+
+
+@pytest.mark.remote_data
+@pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
+def test_get_nsrdb_psm4_polar_tmy(nlr_api_key):
+    """test get_nsrdb_psm4_polar_tmy with a single year"""
+    data, metadata = psm4.get_nsrdb_psm4_polar_tmy(
+        LATITUDE_POLAR, LONGITUDE_POLAR,
+        nlr_api_key, PVLIB_EMAIL,
+        year="tmy-2023",
+        leap_day=False,
+        parameters=["ghi"],
+        utc=True,
+        map_variables=False)
+    expected, _ = psm4.read_nsrdb_psm4(
+        POLAR_TMY_TEST_DATA, map_variables=False)
+    pd.testing.assert_frame_equal(data, expected)
 
 
 @pytest.mark.remote_data
@@ -145,6 +181,40 @@ def test_get_nsrdb_psm4_aggregated_errors(
                                        time_step=time_step, leap_day=False,
                                        map_variables=False)
     # ensure the HTTPError caught isn't due to overuse of the API key
+    assert "OVER_RATE_LIMIT" not in str(excinfo.value)
+
+
+@pytest.mark.remote_data
+@pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
+def test_get_nsrdb_psm4_polar_errors(nlr_api_key):
+    """Test get_nsrdb_psm4_polar() for bad input scenarios."""
+    # Bad latitude/longitude -> Coordinates were outside the polar area.
+    with pytest.raises(HTTPError) as excinfo:
+        psm4.get_nsrdb_psm4_polar(55, 0, nlr_api_key, PVLIB_EMAIL, year=2023)
+    # ensure the HTTPError caught isn't due to overuse of the API key
+    assert "OVER_RATE_LIMIT" not in str(excinfo.value)
+    # Bad API key -> HTTP 403 forbidden because api_key is rejected
+    with pytest.raises(HTTPError) as excinfo:
+        psm4.get_nsrdb_psm4_polar(
+            LATITUDE_POLAR, LONGITUDE_POLAR, "bad_key", PVLIB_EMAIL, year=2023)
+    assert "OVER_RATE_LIMIT" not in str(excinfo.value)
+
+
+@pytest.mark.remote_data
+@pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
+def test_get_nsrdb_psm4_polar_tmy_errors(nlr_api_key):
+    """Test get_nsrdb_psm4_polar_tmy() for bad input scenarios."""
+    # Bad latitude/longitude -> Coordinates were outside the polar area.
+    with pytest.raises(HTTPError) as excinfo:
+        psm4.get_nsrdb_psm4_polar_tmy(
+            55, 0, nlr_api_key, PVLIB_EMAIL, year="tmy-2023")
+    # ensure the HTTPError caught isn't due to overuse of the API key
+    assert "OVER_RATE_LIMIT" not in str(excinfo.value)
+    # Bad API key -> HTTP 403 forbidden because api_key is rejected
+    with pytest.raises(HTTPError) as excinfo:
+        psm4.get_nsrdb_psm4_polar_tmy(
+            LATITUDE_POLAR, LONGITUDE_POLAR, "bad_key", PVLIB_EMAIL,
+            year="tmy-2023")
     assert "OVER_RATE_LIMIT" not in str(excinfo.value)
 
 

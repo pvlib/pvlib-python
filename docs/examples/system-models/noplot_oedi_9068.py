@@ -13,9 +13,15 @@ Colorado, United States.
 #
 # The system has public monitoring data available at the Open Energy Data
 # Initiative (OEDI) under `System ID
-# 9068 <https://data.openei.org/s3_viewer?bucket=oedi-data-lake&prefix=pvdaq%2F2023-solar-data-prize%2F9068_OEDI%2F>`__.
+# 9068 <https://data.openei.org/s3_viewer?bucket=oedi-data-lake&prefix=pvdaq%2F2023-solar-data-prize%2F9068_OEDI%2F>`__.  # noqa: E501
 # For more information about the system, see its `OEDI
 # page <https://openei.org/wiki/PVDAQ/Sites/SR_CO>`__.
+#
+# .. warning::
+#    This example requires user-provided credentials to be run at step
+#    :ref:`Fetch weather data <fetch_weather_data>`. Therefore, it is not
+#    executed as part of documentation build process and it's more
+#    susceptible to API changes. Please, report any issues you may find.
 
 # sphinx_gallery_thumbnail_path = "_images/OEDI_9068_daily_timeseries.png"
 import pvlib
@@ -132,6 +138,7 @@ model = pvlib.modelchain.ModelChain(
 # %%
 # Fetch weather data
 # ------------------
+# .. _fetch_weather_data:
 #
 # The system does have measured plane-of-array irradiance data, but the
 # measurements suffer from row-to-row shading and tracker stalls. In this

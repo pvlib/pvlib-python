@@ -446,9 +446,22 @@ def sun_rise_set_transit_spa(times, latitude, longitude, how='numpy',
     else:
         raise ValueError('times must be localized')
 
-    # must convert to midnight UTC on day of interest
     times_utc = times.tz_convert('UTC')
-    unixtime = _datetime_to_unixtime(times_utc.normalize())
+
+    # The SPA sunrise/sunset routine (spa.transit_sunrise_sunset) requires
+    # its input to be midnight UTC (00:00+00:00) on the day of interest,
+    # where the "day of interest" is the *local* calendar day of each input
+    # timestamp.  Drop the timezone label *first* so ``normalize`` truncates
+    # a naive index to the local date: normalizing a tz-aware index would
+    # instead construct local midnight, which does not exist (spring-forward)
+    # or is ambiguous (fall-back) on DST-transition days and would raise.
+    # Then re-label that midnight as UTC -- a relabel, not ``tz_convert``,
+    # because the SPA routine requires 00:00 UTC.  Note we deliberately do
+    # not normalize after converting to UTC: an evening-local timestamp
+    # falls on the following calendar day in UTC, so that would return the
+    # next day's sunrise/sunset (the v0.11.1 regression, see GH #2238).
+    unixtime = _datetime_to_unixtime(
+        times.tz_localize(None).normalize().tz_localize('UTC'))
 
     spa = _spa_python_import(how)
 

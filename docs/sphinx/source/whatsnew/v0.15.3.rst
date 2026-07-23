@@ -14,11 +14,21 @@ Deprecations
 
 Bug fixes
 ~~~~~~~~~
+* :py:func:`~pvlib.solarposition.sun_rise_set_transit_spa` now returns
+  sunrise, sunset, and transit for the *local* calendar day of each input
+  timestamp, restoring the behavior from before v0.11.1. Evening-local
+  timestamps, which fall on the next calendar day in UTC, previously
+  returned the following day's values. (:issue:`2238`)
 
 
 Enhancements
 ~~~~~~~~~~~~
 * Add ``return_components`` kwarg to :py:func:`pvlib.irradiance.isotropic`. (:issue:`2750`, :pull:`2787`)
+* Add iotools functions to retrieve irradiance and weather data from NSRDB PSM4 Polar,
+  which provides satellite-derived irradiance data above 60 degree latitude.
+  :py:func:`~pvlib.iotools.get_nsrdb_psm4_polar` and
+  :py:func:`~pvlib.iotools.get_nsrdb_psm4_polar_tmy`.
+  (:issue:`2639`, :pull:`2807`)
 * Ensure all timezones are available in all OSs. (:issue:`2795`, :pull:`2809`)
 
 
@@ -43,14 +53,18 @@ Requirements
 
 Maintenance
 ~~~~~~~~~~~
+* Fix some gallery examples not being run. Only gallery examples whose filename begins with ``noplot_`` will be excluded. (:issue:`2790`, :pull:`2792`)
 * Removed unused internal function ``clearsky._is_leap_year`` (:issue:`2768`, :pull:`2813`)
 * Fix documentation builds on runner images lacking link-type timezones. (:issue:`2795`, :pull:`2809`)
 
 
 Contributors
 ~~~~~~~~~~~~
+* Adam R. Jensen (:ghuser:`AdamRJensen`)
+* Erin Tonita (:ghuser:`etoni044`)
 * Eesh Saxena (:ghuser:`eeshsaxena`)
 * Karl Hill (:ghuser:`karlhillx`)
 * Mathias Aschwanden (:ghuser:`maschwanden`)
 * Yonry Zhu (:ghuser:`yonryzhu`)
 * Darshan Gowda (:ghuser:`dgowdaan-cmyk`)
+* Leonardo Scappatura (:ghuser:`Leonard013`)

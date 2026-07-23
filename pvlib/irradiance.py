@@ -928,13 +928,13 @@ def reindl(surface_tilt, surface_azimuth, dhi, dni, ghi, dni_extra,
     diffuse_components : dict (array input) or DataFrame (Series input)
         Keys/columns are:
             * poa_sky_diffuse: The sky diffuse component of irradiance on a
-            tilted plane. [Wm⁻²]
+              tilted plane. [Wm⁻²]
             * poa_isotropic: The portion of sky diffuse irradiance on a tilted
-            plane from the isotropic sky dome. [Wm⁻²]
+              plane from the isotropic sky dome. [Wm⁻²]
             * poa_circumsolar: The portion of sky diffuse irradiance on a
-            tilted plane from the circumsolar region. [Wm⁻²]
+              tilted plane from the circumsolar region. [Wm⁻²]
             * poa_horizon: The portion of sky diffuse irradiance on a tilted
-            plane from the horizon. [Wm⁻²]
+              plane from the horizon. [Wm⁻²]
 
     Notes
     -----

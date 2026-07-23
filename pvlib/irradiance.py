@@ -801,11 +801,11 @@ def haydavies(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
     diffuse_components : dict (array input) or DataFrame (Series input)
         Keys/columns are:
             * poa_sky_diffuse: The sky diffuse component of irradiance on a
-            tilted plane. [Wm⁻²]
+              tilted plane. [Wm⁻²]
             * poa_isotropic: The portion of sky diffuse irradiance on a tilted
-            plane from the isotropic sky dome. [Wm⁻²]
+              plane from the isotropic sky dome. [Wm⁻²]
             * poa_circumsolar: The portion of sky diffuse irradiance on a
-            tilted plane from the circumsolar region. [Wm⁻²]
+              tilted plane from the circumsolar region. [Wm⁻²]
 
 
     Notes
@@ -1072,7 +1072,6 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
     dni : numeric
         Direct normal irradiance, must be >=0. [Wm⁻²]
 
-
     dni_extra : numeric
         Extraterrestrial normal irradiance. [Wm⁻²]
 
@@ -1119,18 +1118,18 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
 
     poa_sky_diffuse : numeric
         The sky diffuse component of the solar radiation on a tilted
-        surface.
+        plane. [Wm⁻²]
 
     diffuse_components : dict (array input) or DataFrame (Series input)
         Keys/columns are:
             * poa_sky_diffuse: The sky diffuse component of irradiance on a
-            tilted plane. [Wm⁻²]
+              tilted plane. [Wm⁻²]
             * poa_isotropic: The portion of sky diffuse irradiance on a tilted
-            plane from the isotropic sky dome. [Wm⁻²]
+              plane from the isotropic sky dome. [Wm⁻²]
             * poa_circumsolar: The portion of sky diffuse irradiance on a
-            tilted plane from the circumsolar region. [Wm⁻²]
+              tilted plane from the circumsolar region. [Wm⁻²]
             * poa_horizon: The portion of sky diffuse irradiance on a tilted
-            plane from the horizon. [Wm⁻²]
+              plane from the horizon. [Wm⁻²]
 
 
     References
@@ -1335,7 +1334,6 @@ def perez_driesse(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
     dni : numeric
         Direct normal irradiance, must be >=0. [Wm⁻²]
 
-
     dni_extra : numeric
         Extraterrestrial normal irradiance. [Wm⁻²]
 
@@ -1368,13 +1366,13 @@ def perez_driesse(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
     diffuse_components : dict (array input) or DataFrame (Series input)
         Keys/columns are:
             * poa_sky_diffuse: The sky diffuse component of irradiance on a
-            tilted plane. [Wm⁻²]
+              tilted plane. [Wm⁻²]
             * poa_isotropic: The portion of sky diffuse irradiance on a
-            tilted plane from the isotropic sky dome. [Wm⁻²]
+              tilted plane from the isotropic sky dome. [Wm⁻²]
             * poa_circumsolar: The portion of sky diffuse irradiance on a
-            tilted plane from the circumsolar region. [Wm⁻²]
+              tilted plane from the circumsolar region. [Wm⁻²]
             * poa_horizon: The portion of sky diffuse irradiance on a tilted
-            plane from the horizon. [Wm⁻²]
+              plane from the horizon. [Wm⁻²]
 
     Notes
     -----

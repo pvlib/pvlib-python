@@ -134,23 +134,33 @@ There is a convention on consistent variable names throughout the library:
 
     photocurrent
         Photocurrent
+		
+	poa_circumsolar
+		The portion of sky diffuse irradiance on a tilted plane from the circumsolar
+		region. [Wm⁻²]
 
     poa_diffuse
-        Total diffuse irradiance in plane [Wm⁻²]. Sum of ground and sky diffuse
+        Total diffuse irradiance on a tilted plane [Wm⁻²]. Sum of ground and sky diffuse
         components of global irradiance.
 
     poa_direct
-        Direct/beam irradiance in plane [Wm⁻²].
+        Direct irradiance on a tilted plane [Wm⁻²].
 
     poa_global
-        Global irradiance in plane.  Sum of diffuse and beam projection [Wm⁻²].
+        Total irradiance on a tilted plane. [Wm⁻²]
 
     poa_ground_diffuse
-        In plane ground reflected irradiance [Wm⁻²].
+        The ground diffuse component of irradiance on a tilted plane. [Wm⁻²]
+
+	poa_horizon
+		The portion of sky diffuse irradiance on a tilted plane from the horizon. [Wm⁻²]
+
+	poa_isotropic
+		The portion of sky diffuse irradiance on a tilted plane from the isotropic
+		sky dome. [Wm⁻²]
 
     poa_sky_diffuse
-        Diffuse irradiance in plane from scattered light in the atmosphere
-        (without ground reflected irradiance) [Wm⁻²].
+        The sky diffuse component of irradiance on a tilted plane. [Wm⁻²]
 
     precipitable_water
         Total precipitable water contained in a column of unit cross section

@@ -23,6 +23,7 @@ Bug fixes
 
 Enhancements
 ~~~~~~~~~~~~
+* Add ``return_components`` kwarg to :py:func:`pvlib.irradiance.isotropic`. (:issue:`2750`, :pull:`2787`)
 * Add iotools functions to retrieve irradiance and weather data from NSRDB PSM4 Polar,
   which provides satellite-derived irradiance data above 60 degree latitude.
   :py:func:`~pvlib.iotools.get_nsrdb_psm4_polar` and

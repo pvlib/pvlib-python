@@ -13,7 +13,8 @@ import pandas as pd
 import functools
 from scipy.optimize import minimize
 from pvlib.tools import cosd, sind, acosd
-from scipy.interpolate import make_interp_spline
+from pvlib._deprecation import warn_deprecated
+from scipy.interpolate import make_interp_spline, interp1d
 
 # a dict of required parameter names for each IAM model
 # keys are the function names for the IAM models
@@ -483,7 +484,8 @@ def interp(aoi, theta_ref, iam_ref, method='linear', normalize=True):
 
     kvals = {'linear': 1, 'quadratic': 2, 'cubic': 3}
     if method in kvals:
-        interpolator = make_interp_spline(theta_ref, iam_ref, k=kvals[method])
+        interpolator = make_interp_spline(
+            theta_ref, iam_ref, k=kvals[method])
 
     elif method in {'nearest', 'nearest-up', 'zero', 'slinear', 'previous', 'next'}:
         msg = (

@@ -603,15 +603,16 @@ def test_get_total_irradiance_diffuse_components(irrad_data, ephem_data,
 
     for model in models:
         total = irradiance.get_total_irradiance(
-                    32, 180,
-                    ephem_data['apparent_zenith'].to_numpy(), ephem_data['azimuth'].to_numpy(),
-                    dni=irrad_data['dni'].to_numpy(), ghi=irrad_data['ghi'].to_numpy(),
-                    dhi=irrad_data['dhi'].to_numpy(),
-                    dni_extra=dni_et, airmass=relative_airmass,
-                    model=model,
-                    surface_type='urban',
-                    diffuse_components=True)
-        
+            32, 180,
+            ephem_data['apparent_zenith'].to_numpy(),
+            ephem_data['azimuth'].to_numpy(),
+            dni=irrad_data['dni'].to_numpy(), ghi=irrad_data['ghi'].to_numpy(),
+            dhi=irrad_data['dhi'].to_numpy(),
+            dni_extra=dni_et, airmass=relative_airmass,
+            model=model,
+            surface_type='urban',
+            diffuse_components=True)
+
         assert list(total.keys()) == ['poa_global', 'poa_direct',
                                       'poa_diffuse', 'poa_sky_diffuse',
                                       'poa_ground_diffuse',

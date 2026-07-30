@@ -485,6 +485,12 @@ def interp(aoi, theta_ref, iam_ref, method='linear', normalize=True):
     if method in kvals:
         interpolator = make_interp_spline(theta_ref, iam_ref, k=kvals[method])
 
+    elif method in {'nearest', 'nearest-up', 'zero', 'slinear', 'previous', 'next'}:
+        msg = (
+            f"Interpolation method {method} is deprecated in pvlib"
+        )
+        warn_deprecated(since="0.15.3", removal="0.16.0", addendum=msg)
+        interpolator = interp1d(theta_ref, iam_ref, kind=method, fill_value='extrapolate')
     else:
         raise ValueError(
             f"Interpolation method '{method}' is not supported"

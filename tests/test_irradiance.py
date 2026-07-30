@@ -520,6 +520,13 @@ def test_get_sky_diffuse_model_invalid():
             model='invalid')
 
 
+def test_get_sky_diffuse_components_model_not_supported():
+    with pytest.raises(ValueError):
+        irradiance.get_sky_diffuse(
+            30, 180, 0, 180, 1000, 1100, 100, dni_extra=1360, airmass=1,
+            model='klucher', return_components=True)
+
+
 def test_get_sky_diffuse_missing_dni_extra():
     msg = 'dni_extra is required'
     with pytest.raises(ValueError, match=msg):
@@ -575,7 +582,7 @@ def test_get_total_irradiance(irrad_data, ephem_data, dni_et,
 
 def test_get_total_irradiance_diffuse_components(irrad_data, ephem_data,
                                                  dni_et, relative_airmass):
-    models = ['perez', 'perez-driesse']
+    models = ['reindl', 'perez', 'perez-driesse']
 
     for model in models:
         total = irradiance.get_total_irradiance(
@@ -593,6 +600,23 @@ def test_get_total_irradiance_diffuse_components(irrad_data, ephem_data,
                                           'poa_ground_diffuse',
                                           'poa_isotropic', 'poa_circumsolar',
                                           'poa_horizon']
+
+    for model in models:
+        total = irradiance.get_total_irradiance(
+                    32, 180,
+                    ephem_data['apparent_zenith'].to_numpy(), ephem_data['azimuth'].to_numpy(),
+                    dni=irrad_data['dni'].to_numpy(), ghi=irrad_data['ghi'].to_numpy(),
+                    dhi=irrad_data['dhi'].to_numpy(),
+                    dni_extra=dni_et, airmass=relative_airmass,
+                    model=model,
+                    surface_type='urban',
+                    diffuse_components=True)
+        
+        assert list(total.keys()) == ['poa_global', 'poa_direct',
+                                      'poa_diffuse', 'poa_sky_diffuse',
+                                      'poa_ground_diffuse',
+                                      'poa_isotropic', 'poa_circumsolar',
+                                      'poa_horizon']
 
 
 @pytest.mark.parametrize('model', ['isotropic', 'klucher',

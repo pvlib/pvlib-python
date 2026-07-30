@@ -12,6 +12,7 @@ from .conftest import assert_series_equal
 from numpy.testing import assert_allclose
 
 from pvlib import iam as _iam
+from pvlib._deprecation import pvlibDeprecationWarning
 
 
 def test_ashrae():
@@ -239,6 +240,41 @@ def test_iam_interp():
     expected = 1.0 - 1e-4 * aoi**2
     np.testing.assert_allclose(iam, expected, rtol=1e-12)
 
+
+@pytest.mark.parametrize(
+    "method",
+    ["nearest", "nearest-up", "zero", "slinear", "previous", "next"]
+)
+def test_iam_interp_deprecated_methods(method):
+    theta_ref = np.array([0, 60, 90])
+    iam_ref = np.array([1.0, 0.8, 0.0])
+
+    with pytest.warns(
+        pvlibDeprecationWarning,
+        match=f"Interpolation method {method} is deprecated in pvlib"
+    ):
+        _iam.interp(
+            30,
+            theta_ref,
+            iam_ref,
+            method=method
+        )
+
+
+def test_iam_interp_invalid_method():
+    theta_ref = np.array([0, 60, 90])
+    iam_ref = np.array([1.0, 0.8, 0.0])
+
+    with pytest.raises(
+        ValueError,
+        match="is not supported"
+    ):
+        _iam.interp(
+            30,
+            theta_ref,
+            iam_ref,
+            method="unsupported"
+        )
 
 @pytest.mark.parametrize('aoi,expected', [
     (45, 0.9975036250000002),

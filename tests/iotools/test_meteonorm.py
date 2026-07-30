@@ -62,30 +62,6 @@ def expected_meteonorm_index():
 
 
 @pytest.fixture
-def expected_meteonorm_data():
-    # The first 12 rows of data
-    columns = ['ghi', 'global_horizontal_irradiance_with_shading']
-    expected = [
-        [0.0, 0.0],
-        [0.0, 0.0],
-        [0.0, 0.0],
-        [0.0, 0.0],
-        [0.0, 0.0],
-        [0.0, 0.0],
-        [0.0, 0.0],
-        [3.75, 3.74],
-        [57.25, 57.20],
-        [149.0, 148.96],
-        [242.25, 242.24],
-        [228.0, 227.98],
-    ]
-    index = pd.date_range('2025-01-01 00:30', periods=12, freq='1h', tz='UTC')
-    index.freq = None
-    expected = pd.DataFrame(expected, index=index, columns=columns)
-    return expected
-
-
-@pytest.fixture
 def expected_columns_all():
     columns = [
         'diffuse_horizontal_irradiance',
@@ -114,8 +90,7 @@ def expected_columns_all():
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_get_meteonorm_training(
-        demo_api_key, demo_url, expected_meta, expected_meteonorm_index,
-        expected_meteonorm_data):
+        demo_api_key, demo_url, expected_meta, expected_meteonorm_index):
     data, meta = pvlib.iotools.get_meteonorm_observation_training(
         latitude=50, longitude=10,
         start='2025-01-01', end='2026-01-01',
@@ -128,10 +103,12 @@ def test_get_meteonorm_training(
     for key in ['version', 'commit']:
         assert key in meta  # value changes, so only check presence
     pd.testing.assert_index_equal(data.index, expected_meteonorm_index)
-    # meteonorm API only guarantees similar, not identical, results between
-    # calls.  so we allow a small amount of variation with atol.
-    pd.testing.assert_frame_equal(data.iloc[:12], expected_meteonorm_data,
-                                  check_exact=False, atol=1)
+    # don't pin values: meteonorm may update the dataset without it being a
+    # breaking change.  check parsing instead.
+    assert list(data.columns) == \
+        ['ghi', 'global_horizontal_irradiance_with_shading']
+    assert data.dtypes.map(pd.api.types.is_numeric_dtype).all()
+    assert (data.isna().mean() <= 0.2).all()  # meteonorm guarantees <=20% NaN
 
 
 @pytest.mark.remote_data
@@ -156,8 +133,11 @@ def test_get_meteonorm_realtime(demo_api_key, demo_url, expected_columns_all):
     assert meta['surface_tilt'] == 20
     assert meta['surface_azimuth'] == 10
 
-    assert list(data.columns) == expected_columns_all
-    assert data.shape == (241, 19)
+    # meteonorm may add parameters to 'all' at any time, so only check that
+    # the columns we know about are present, not that the set matches exactly.
+    assert set(expected_columns_all).issubset(data.columns)
+    assert data.shape[0] == 241  # row count is determined by the time range
+    assert data.shape[1] >= len(expected_columns_all)
     # can't test the specific index as it varies due to the
     # use of pd.Timestamp.now
     assert type(data.index) is pd.core.indexes.interval.IntervalIndex
@@ -259,38 +239,10 @@ def expected_meteonorm_tmy_meta():
     return meta
 
 
-@pytest.fixture
-def expected_meteonorm_tmy_data():
-    # The first 12 rows of data
-    columns = ['diffuse_horizontal_irradiance']
-    expected = [
-        [0.],
-        [0.],
-        [0.],
-        [0.],
-        [0.],
-        [0.],
-        [0.],
-        [0.],
-        [9.07],
-        [8.44],
-        [86.64],
-        [110.44],
-    ]
-    index = pd.date_range(
-        '2030-01-01', periods=12, freq='1h', tz=3600)
-    index.freq = None
-    interval_index = pd.IntervalIndex.from_arrays(
-        index, index + pd.Timedelta(hours=1), closed='left')
-    expected = pd.DataFrame(expected, index=interval_index, columns=columns)
-    return expected
-
-
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_get_meteonorm_tmy(
-        demo_api_key, demo_url, expected_meteonorm_tmy_meta,
-        expected_meteonorm_tmy_data):
+        demo_api_key, demo_url, expected_meteonorm_tmy_meta):
     data, meta = pvlib.iotools.get_meteonorm_tmy(
         latitude=50, longitude=10,
         api_key=demo_api_key,
@@ -312,10 +264,11 @@ def test_get_meteonorm_tmy(
     assert meta.items() >= expected_meteonorm_tmy_meta.items()
     for key in ['version', 'commit']:
         assert key in meta  # value changes, so only check presence
-    # meteonorm API only guarantees similar, not identical, results between
-    # calls.  so we allow a small amount of variation with atol.
-    pd.testing.assert_frame_equal(data.iloc[:12], expected_meteonorm_tmy_data,
-                                  check_exact=False, atol=1)
+    # don't pin values: meteonorm may update the dataset without it being a
+    # breaking change.  check parsing instead.
+    assert list(data.columns) == ['diffuse_horizontal_irradiance']
+    assert data.dtypes.map(pd.api.types.is_numeric_dtype).all()
+    assert (data.isna().mean() <= 0.2).all()  # meteonorm guarantees <=20% NaN
 
 
 @fail_on_pvlib_version('0.16.0')

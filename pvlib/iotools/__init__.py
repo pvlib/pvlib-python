@@ -12,6 +12,8 @@ from pvlib.iotools.psm4 import get_nsrdb_psm4_aggregated  # noqa: F401
 from pvlib.iotools.psm4 import get_nsrdb_psm4_tmy  # noqa: F401
 from pvlib.iotools.psm4 import get_nsrdb_psm4_conus  # noqa: F401
 from pvlib.iotools.psm4 import get_nsrdb_psm4_full_disc  # noqa: F401
+from pvlib.iotools.psm4 import get_nsrdb_psm4_polar  # noqa: F401
+from pvlib.iotools.psm4 import get_nsrdb_psm4_polar_tmy  # noqa: F401
 from pvlib.iotools.psm4 import read_nsrdb_psm4  # noqa: F401
 from pvlib.iotools.pvgis import get_pvgis_tmy, read_pvgis_tmy  # noqa: F401
 from pvlib.iotools.pvgis import read_pvgis_hourly  # noqa: F401

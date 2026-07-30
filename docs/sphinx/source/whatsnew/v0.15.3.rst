@@ -23,8 +23,6 @@ Bug fixes
 
 Enhancements
 ~~~~~~~~~~~~
-* Add support for diffuse irradiance components to :py:func:`pvlib.irradiance.isotropic`
-  when ``return_components=True``. (:issue:`2750`, :pull:`2787`)
 * Add iotools functions to retrieve irradiance and weather data from NSRDB PSM4 Polar,
   which provides satellite-derived irradiance data above 60 degree latitude.
   :py:func:`~pvlib.iotools.get_nsrdb_psm4_polar` and

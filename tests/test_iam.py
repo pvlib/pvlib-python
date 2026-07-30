@@ -276,6 +276,7 @@ def test_iam_interp_invalid_method():
             method="unsupported"
         )
 
+
 @pytest.mark.parametrize('aoi,expected', [
     (45, 0.9975036250000002),
     (np.array([[-30, 30, 100, np.nan]]),

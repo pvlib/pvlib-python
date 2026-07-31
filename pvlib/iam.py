@@ -442,7 +442,6 @@ def interp(aoi, theta_ref, iam_ref, method='linear', normalize=True):
     method : str, default 'linear'
         Specifies the interpolation method.
         Useful options are: 'linear', 'quadratic', 'cubic'.
-        See scipy.interpolate for more options.
 
     normalize : boolean, default True
         When true, the interpolated values are divided by the interpolated

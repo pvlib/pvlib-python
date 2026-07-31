@@ -41,6 +41,11 @@ Documentation
   example; the correct parameter name is ``time_step``. (:issue:`2791`)
 * Standardized diffuse component names and descriptions in the docstrings of
   multiple functions in :py:mod:`pvlib.irradiance`. (:pull:`2827`)
+* Clarifies the variable naming, comments and references in
+  :py:func:`pvlib.atmosphere.rh_from_tdew` (and the related comments in
+  :py:func:`pvlib.atmosphere.tdew_from_rh`) related to the actual
+  and saturation vapor pressures. Function output is
+  unchanged. (:issue:`2734`, :pull:`2782`)
 
 
 Testing

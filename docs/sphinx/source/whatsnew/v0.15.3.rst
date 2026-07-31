@@ -10,7 +10,7 @@ Breaking Changes
 
 Deprecations
 ~~~~~~~~~~~~
-* Deprecate scipy.interpolate.interp1d. (:issue:`2394`, :pull:`2741`)
+* Deprecate non-polynomial interpolation options in :py:func:`pvlib.iam.interp` (:issue:`2394`, :pull:`2741`)
 
 Bug fixes
 ~~~~~~~~~

@@ -10,7 +10,7 @@ Breaking Changes
 
 Deprecations
 ~~~~~~~~~~~~
-
+* Deprecate scipy.interpolate.interp1d. (:issue:`2394`, :pull:`2741`)
 
 Bug fixes
 ~~~~~~~~~
@@ -53,3 +53,4 @@ Contributors
 * Mathias Aschwanden (:ghuser:`maschwanden`)
 * Yonry Zhu (:ghuser:`yonryzhu`)
 * Darshan Gowda (:ghuser:`dgowdaan-cmyk`)
+* Jason Lun Leung (:ghuser:`jason-rpkt`)

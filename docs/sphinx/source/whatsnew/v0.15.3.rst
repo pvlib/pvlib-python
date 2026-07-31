@@ -10,7 +10,7 @@ Breaking Changes
 
 Deprecations
 ~~~~~~~~~~~~
-
+* Deprecate non-polynomial interpolation options in :py:func:`pvlib.iam.interp` (:issue:`2394`, :pull:`2741`)
 
 Bug fixes
 ~~~~~~~~~
@@ -71,4 +71,5 @@ Contributors
 * Mathias Aschwanden (:ghuser:`maschwanden`)
 * Yonry Zhu (:ghuser:`yonryzhu`)
 * Darshan Gowda (:ghuser:`dgowdaan-cmyk`)
+* Jason Lun Leung (:ghuser:`jason-rpkt`)
 * Leonardo Scappatura (:ghuser:`Leonard013`)

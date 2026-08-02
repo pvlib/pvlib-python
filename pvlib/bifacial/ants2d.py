@@ -329,9 +329,17 @@ def get_irradiance(tracker_rotation, axis_azimuth, solar_zenith, solar_azimuth,
         with ``axis_tilt=0`` and ``axis_azimuth=180``, ``tracker_theta > 0``
         results in ``surface_azimuth`` to the West while ``tracker_theta < 0``
         results in ``surface_azimuth`` to the East. [degree]
+
+        For fixed-tilt systems, pretend the array is a tracker and input
+        the tilt as a scalar. For example, a 20 degree south-facing array
+        would have ``tracker_rotation=20`` and ``axis_azimuth=90``.
     axis_azimuth : numeric
         Axis azimuth angle in degrees.
-        North = 0°; East = 90°; South = 180°; West = 270°
+        North = 0°; East = 90°; South = 180°; West = 270°.
+        For fixed-tilt systems, add or subtract 90 degrees from the panel
+        azimuth so that ``tracker_rotation`` is still a right-handed rotation.
+        For south-facing arrays (azimuth=180°), set ``axis_azimuth=90``.
+        For north-facing arrays (azimuth=0°), set ``axis_azimuth=270``.
     solar_zenith : numeric
         Refraction-corrected solar zenith angle. [degree]
     solar_azimuth : numeric

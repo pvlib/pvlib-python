@@ -221,7 +221,7 @@ def _apply_sky_diffuse_model(dni, dhi, model, solar_zenith, solar_azimuth,
 
     # Section II.C.2
 
-    if model in ['haydavies', 'perez', 'perez_driesse']:
+    if model in ['haydavies', 'perez', 'perez-driesse']:
         # determine circumsolar irradiance, add it to DNI
 
         if model == 'haydavies':
@@ -230,7 +230,7 @@ def _apply_sky_diffuse_model(dni, dhi, model, solar_zenith, solar_azimuth,
             diffuse_model_func = haydavies
             extra_kwargs = {}
 
-        elif model in ['perez', 'perez_driesse']:
+        elif model in ['perez', 'perez-driesse']:
             # note: horizon brightening is ignored
             if dni_extra is None or airmass is None:
                 raise ValueError(
@@ -356,14 +356,14 @@ def get_irradiance(tracker_rotation, axis_azimuth, solar_zenith, solar_azimuth,
         (``n_ground_segments``, ``len(tracker_rotation)``). [unitless]
     model : str, default 'perez'
         Irradiance model - can be one of 'isotropic', 'haydavies', 'perez',
-        or 'perez_driesse'.
+        or 'perez-driesse'.
     dni_extra : numeric, optional
         Extraterrestrial direct normal irradiance. Required when
-        ``model='haydavies'``, ``model='perez'``, or ``model='perez_driese'``.
+        ``model='haydavies'``, ``model='perez'``, or ``model='perez-driesse'``.
         Computed from the datetime index of the inputs if not provided. [Wm⁻²]
     airmass : numeric, optional
         Relative airmass. Required when ``model='perez'`` or
-        ``model='perez_driese'``. Computed from ``solar_zenith`` if needed.
+        ``model='perez-driesse'``. Computed from ``solar_zenith`` if needed.
         [unitless]
     row_segments : int or list of pairs, default 1
         If ``row_segments`` is an int, it defines the number of equal-length
@@ -447,7 +447,7 @@ def get_irradiance(tracker_rotation, axis_azimuth, solar_zenith, solar_azimuth,
 
     Notes
     -----
-    - ``model='perez_driesse'`` was not evaluated in [1]_ and is included
+    - ``model='perez-driesse'`` was not evaluated in [1]_ and is included
       in this implementation as an extension.
 
     References
@@ -475,11 +475,11 @@ def get_irradiance(tracker_rotation, axis_azimuth, solar_zenith, solar_azimuth,
 
     # preparation steps
 
-    if airmass is None and model in ['perez', 'perez_driesse']:
+    if airmass is None and model in ['perez', 'perez-driesse']:
         airmass = get_relative_airmass(solar_zenith)
 
     if (dni_extra is None and
-            model in ['perez', 'perez_driesse', 'haydavies'] and
+            model in ['perez', 'perez-driesse', 'haydavies'] and
             pd_index is not None and isinstance(pd_index, pd.DatetimeIndex)):
         dni_extra = get_extra_radiation(pd_index)
 

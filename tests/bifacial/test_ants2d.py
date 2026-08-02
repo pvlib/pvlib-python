@@ -47,7 +47,7 @@ def test__shaded_fraction_x0x1():
     assert_allclose(fs, np.array([[0.5, 0.0], [0.0, 0.5]]))
 
 
-@pytest.mark.parametrize('model', ['perez', 'haydavies', 'perez_driesse'])
+@pytest.mark.parametrize('model', ['perez', 'haydavies', 'perez-driesse'])
 def test__apply_sky_diffuse_model(model):
     inputs = {'dni': 900, 'dhi': 150, 'solar_zenith': 41, 'solar_azimuth': 67,
               'dni_extra': 1360, 'airmass': 1.324}
@@ -57,7 +57,7 @@ def test__apply_sky_diffuse_model(model):
     kwargs = inputs.copy()
     kwargs.pop('dni')
     kwargs.pop('dhi')
-    if model not in ['perez', 'perez_driesse']:
+    if model not in ['perez', 'perez-driesse']:
         kwargs.pop('airmass')
     kwargs['surface_tilt'] = 20
     kwargs['surface_azimuth'] = 180
@@ -66,7 +66,7 @@ def test__apply_sky_diffuse_model(model):
                                                 model='isotropic', **kwargs)
     func = {'perez': pvlib.irradiance.perez,
             'haydavies': pvlib.irradiance.haydavies,
-            'perez_driesse': pvlib.irradiance.perez_driesse}[model]
+            'perez-driesse': pvlib.irradiance.perez_driesse}[model]
     diffuse = func(dni=inputs['dni'], dhi=inputs['dhi'], **kwargs,
                    return_components=True)
     aoi_proj = pvlib.irradiance.aoi_projection(kwargs['surface_tilt'],
@@ -92,7 +92,7 @@ def test__apply_sky_diffuse_model_errors():
         ants2d._apply_sky_diffuse_model(0, 0, 'perez', None,
                                         None, None, None)
     with pytest.raises(ValueError, match='Must supply dni_extra and airmass'):
-        ants2d._apply_sky_diffuse_model(0, 0, 'perez_driesse', None,
+        ants2d._apply_sky_diffuse_model(0, 0, 'perez-driesse', None,
                                         None, None, None)
     with pytest.raises(ValueError, match='Invalid model: not_a_model'):
         ants2d._apply_sky_diffuse_model(0, 0, 'not_a_model', None,
@@ -206,7 +206,7 @@ def ants_params():
     return inputs
 
 
-@pytest.mark.parametrize('model', ['haydavies', 'perez', 'perez_driesse'])
+@pytest.mark.parametrize('model', ['haydavies', 'perez', 'perez-driesse'])
 def test_get_irradiance_airmass_dniextra(model, ants_params):
     # verify that airmass, dni_extra are computed internally if not provided
     ants_params.pop('dni_extra')
@@ -520,7 +520,7 @@ def test_get_irradiance_nonuniform_albedo_limit():
         'poa_back_sky_diffuse': 5.643870374194696,
         'poa_back_ground_diffuse': 10.026664442570222,
         'shaded_fraction_back': 0.035915234551784025}),
-    ('perez_driesse', {
+    ('perez-driesse', {
         'poa_front': 1064.6127452995743,
         'poa_front_direct': 954.4678403911828,
         'poa_front_diffuse': 110.14490490839144,

@@ -128,7 +128,7 @@ def test_get_ground_diffuse_simple_float():
 
 def test_get_ground_diffuse_simple_series(irrad_data):
     ground_irrad = irradiance.get_ground_diffuse(40, irrad_data['ghi'])
-    assert ground_irrad.name == 'diffuse_ground'
+    assert ground_irrad.name == 'poa_ground_diffuse'
 
 
 def test_get_ground_diffuse_albedo_0(irrad_data):
@@ -142,7 +142,7 @@ def test_get_ground_diffuse_albedo_series(times):
     ground_irrad = irradiance.get_ground_diffuse(
         45, pd.Series(1000, index=times), albedo)
     expected = albedo * 0.5 * (1 - np.sqrt(2) / 2.) * 1000
-    expected.name = 'diffuse_ground'
+    expected.name = 'poa_ground_diffuse'
     assert_series_equal(ground_irrad, expected)
 
 
@@ -182,13 +182,13 @@ def test_isotropic_components(irrad_data):
     assert_frame_equal(result, expected, check_less_precise=4)
     # numpy
     result = irradiance.isotropic(
-        40, irrad_data['dhi'].values, return_components=True)
+        40, irrad_data['dhi'].to_numpy(), return_components=True)
     for key in keys:
         assert_allclose(result[key], expected[key], atol=1e-4)
     assert isinstance(result, dict)
     # scalar
     result = irradiance.isotropic(
-        40, irrad_data['dhi'].values[-1], return_components=True)
+        40, irrad_data['dhi'].to_numpy()[-1], return_components=True)
     for key in keys:
         assert_allclose(result[key], expected[key].iloc[-1], atol=1e-4)
     assert isinstance(result, dict)

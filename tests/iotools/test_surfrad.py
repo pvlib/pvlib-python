@@ -1,5 +1,3 @@
-import urllib.error
-
 import pandas as pd
 import pytest
 

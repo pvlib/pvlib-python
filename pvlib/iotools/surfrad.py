@@ -187,12 +187,17 @@ def _format_index(data):
 
 
 def get_surfrad(station, start, end, map_variables=True,
-                 url="https://gml.noaa.gov/aftp/data/radiation/surfrad/"):
+                url="https://gml.noaa.gov/aftp/data/radiation/surfrad/"):
     """
     Request data from NOAA SURFRAD and read it into a DataFrame.
- 
+
+    The SURFRAD network is described in [1]_.
+    See README files located in the station directories in the SURFRAD
+    data archives [2]_ for details on SURFRAD daily data files. In addition to
+    the FTP server, the SURFRAD files are also available via HTTP access [3]_.
+
     Data is returned for complete days, including ``start`` and ``end``.
- 
+
     Parameters
     ----------
     station : str
@@ -206,56 +211,67 @@ def get_surfrad(station, start, end, map_variables=True,
         pvlib variable names (e.g. 'dw_solar' -> 'ghi').
     url : str, default 'https://gml.noaa.gov/aftp/data/radiation/surfrad/'
         Base URL of the SURFRAD archive.
- 
+
     Returns
     -------
     data : pd.DataFrame
         Dataframe with data from SURFRAD.
     meta : dict
         Metadata.
- 
+
     See Also
     --------
     pvlib.iotools.read_surfrad
- 
+
     Notes
     -----
     Missing days (e.g. before a station's operational start date, or gaps
     in the archive) are skipped with a warning rather than raising an error.
- 
+
     Examples
     --------
     >>> data, meta = get_surfrad(
     ...     station='bon', start='2020-01-01', end='2020-01-31')
+
+    References
+    ----------
+    .. [1] NOAA Earth System Research Laboratory Surface Radiation Budget
+       Network
+       `SURFRAD Homepage <https://www.esrl.noaa.gov/gmd/grad/surfrad/>`_
+    .. [2] NOAA SURFRAD Data Archive
+       `SURFRAD Archive <ftp://aftp.cmdl.noaa.gov/data/radiation/surfrad/>`_
+    .. [3] `NOAA SURFRAD HTTP Index
+       <https://gml.noaa.gov/aftp/data/radiation/surfrad/>`_
     """
     start = pd.to_datetime(start)
     end = pd.to_datetime(end)
- 
+
     dates = pd.date_range(start.floor('D'), end, freq='D')
     station = station.lower()
- 
+
     filenames = [
         f"{station}/{d.year}/{station}{d.strftime('%y')}{d.dayofyear:03}.dat"
         for d in dates
     ]
- 
+
     dfs = []
     file_metadata = None
     for f in filenames:
         try:
-            dfi, file_metadata = read_surfrad(url + f, map_variables=map_variables)
+            dfi, file_metadata = read_surfrad(url + f,
+                                              map_variables=VARIABLE_MAP)
             dfs.append(dfi)
 
         except urllib.error.HTTPError:
             warnings.warn(f"The following file was not found: {f}")
- 
+
     if not dfs:
         raise ValueError(
             f"No data retrieved for station '{station}' between "
             f"{start.date()} and {end.date()}. Check the station code "
             "and date range."
         )
- 
+
     data = pd.concat(dfs, axis='rows')
     meta = {
         'station': station,

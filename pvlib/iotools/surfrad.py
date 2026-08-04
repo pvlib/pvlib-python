@@ -249,7 +249,7 @@ def get_surfrad(station, start, end, map_variables=True,
     station = station.lower()
 
     filenames = [
-        f"{station}/{d.year}/{station}{d.strftime('%y')}{d.dayofyear:03}.dat"  # noqa: E231
+        f"{station}/{d.year}/{station}{d.strftime('%y')}{d.dayofyear:03}.dat"  # noqa: E231,E501
         for d in dates
     ]
 

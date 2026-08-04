@@ -191,9 +191,8 @@ def get_surfrad(station, start, end, map_variables=True,
     """
     Request data from NOAA SURFRAD and read it into a DataFrame.
 
-    The SURFRAD network is described in [1]_.
-    See README files located in the station directories in the SURFRAD
-    data archives [2]_ for details on SURFRAD daily data files. In addition to
+    The SURFRAD network is described in [1]_. The README files are located in
+    the station directories in the SURFRAD data archives [2]_. In addition to
     the FTP server, the SURFRAD files are also available via HTTP access [3]_.
 
     Data is returned for complete days, including ``start`` and ``end``.
@@ -250,7 +249,7 @@ def get_surfrad(station, start, end, map_variables=True,
     station = station.lower()
 
     filenames = [
-        f"{station}/{d.year}/{station}{d.strftime('%y')}{d.dayofyear:03}.dat"
+        f"{station}/{d.year}/{station}{d.strftime('%y')}{d.dayofyear: 03}.dat"
         for d in dates
     ]
 

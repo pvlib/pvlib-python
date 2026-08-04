@@ -34,6 +34,9 @@ Enhancements
   :py:func:`~pvlib.iotools.get_nsrdb_psm4_polar_tmy`.
   (:issue:`2639`, :pull:`2807`)
 * Ensure all timezones are available in all OSs. (:issue:`2795`, :pull:`2809`)
+* Added :py:func:`pvlib.iotools.get_surfrad`, which requests and reads NOAA
+  SURFRAD data.
+  (:issue:`1155`, :pull:`2836`)
 
 
 Documentation
@@ -76,3 +79,4 @@ Contributors
 * Jason Lun Leung (:ghuser:`jason-rpkt`)
 * Leonardo Scappatura (:ghuser:`Leonard013`)
 * Carolina Crespo (:ghuser:`cbcrespo`)
+* Ioannis Sifnaios (:ghuser:`IoannisSifnaios`)

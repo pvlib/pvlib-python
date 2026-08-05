@@ -17,7 +17,9 @@ Breaking Changes
 
 Deprecations
 ~~~~~~~~~~~~
-
+* Deprecate :py:func:`pvlib.irradiance.king`.
+  Use other diffuse transposition models in :py:mod:`pvlib.irradiance` instead.
+  (:issue:`2636`, :pull:`2783`)
 
 Bug fixes
 ~~~~~~~~~
@@ -28,6 +30,9 @@ Bug fixes
 
 Enhancements
 ~~~~~~~~~~~~
+* Map beam horizontal irradiance to ``bhi`` when
+  :py:func:`~pvlib.iotools.get_era5` is called with ``map_variables=True``.
+  (:pull:`2819`)
 * Allow variables from multiple datasets to be requested at once in
   :py:func:`~pvlib.iotools.get_merra2`. (:pull:`2839`)
 

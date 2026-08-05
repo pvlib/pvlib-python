@@ -46,8 +46,11 @@ def get_merra2(latitude, longitude, start, end, username, password, dataset,
         NASA EarthData username.
     password : str
         NASA EarthData password.
-    dataset : str
-        Dataset name (with version), e.g. "M2T1NXRAD.5.12.4".
+    dataset : str or list of str
+        Dataset name (with version), e.g. "M2T1NXRAD.5.12.4". If all
+        variables are in the same dataset, this can be a single string.
+        Otherwise, pass a list of dataset names corresponding to
+        the list of requested variables.
     variables : list of str
         List of variable names to retrieve.  See the documentation of the
         specific dataset you are accessing for options.
@@ -144,6 +147,11 @@ def get_merra2(latitude, longitude, start, end, username, password, dataset,
     token = response.json()["access_token"]
 
     # data query
+    if isinstance(dataset, str):
+        datasets = [dataset] * len(variables)
+    else:
+        datasets = dataset
+
     data_url = "https://api.giovanni.earthdata.nasa.gov/timeseries"
     parameters = {
         "location": "[{},{}]".format(round(latitude, 4), round(longitude, 4)),
@@ -154,7 +162,7 @@ def get_merra2(latitude, longitude, start, end, username, password, dataset,
     }
     meta = {'dataset': dataset}
     data = {}
-    for variable in variables:
+    for variable, dataset in zip(variables, datasets):
         name = dataset.replace(".", "_") + "_" + variable
         query_parameters = parameters.copy()
         query_parameters["data"] = name

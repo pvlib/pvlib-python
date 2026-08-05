@@ -28,6 +28,8 @@ Bug fixes
 
 Enhancements
 ~~~~~~~~~~~~
+* Allow variables from multiple datasets to be requested at once in
+  :py:func:`~pvlib.iotools.get_merra2`. (:pull:`2839`)
 
 
 Documentation

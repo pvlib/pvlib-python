@@ -147,3 +147,13 @@ def test_get_merra2_bad_variables(params, expected, expected_meta):
     params['variables'] = ['nonexistent']
     with pytest.raises(HTTPError, match='Forbidden for url'):
         pvlib.iotools.get_merra2(**params)
+
+
+@requires_earthdata_credentials
+@pytest.mark.remote_data
+@pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
+def test_get_merra2_multiple_datasets(params):
+    params['variables'] = ["SWGDN", "T2M"]
+    params["dataset"] = ["M2T1NXRAD.5.12.4", "M2T1NXSLV.5.12.4"]
+    df, meta = pvlib.iotools.get_merra2(**params)
+    assert set(df.columns) == {"ghi", "temp_air"}

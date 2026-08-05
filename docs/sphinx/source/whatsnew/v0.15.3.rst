@@ -47,8 +47,8 @@ Enhancements
   :py:func:`~pvlib.iotools.get_nsrdb_psm4_polar_tmy`.
   (:issue:`2639`, :pull:`2807`)
 * Ensure all timezones are available in all OSs. (:issue:`2795`, :pull:`2809`)
-* Added :py:func:`pvlib.iotools.get_surfrad`, which requests and reads NOAA
-  SURFRAD data.
+* Add :py:func:`pvlib.iotools.get_surfrad` for retrieving irradiance data
+  from NOAA's SURFRAD network.
   (:issue:`1155`, :pull:`2836`)
 * Implement the ANTS-2D bifacial irradiance model in
   :py:func:`pvlib.bifacial.ants2d.get_irradiance`. (:pull:`2740`)

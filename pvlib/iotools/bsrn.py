@@ -45,7 +45,6 @@ BSRN_LR0500_COLUMNS = ['day', 'minute', 'uva_global', 'uva_global_std',
                        'empty', 'empty', 'empty', 'empty',
                        'uvb_global', 'uvb_global_std', 'uvb_global_min',
                        'uvb_global_max', 'uvb_diffuse', 'uvb_diffuse_std',
-                       'uvb_diffuse', 'uvb_diffuse_std',
                        'uvb_diffuse_min', 'uvb_diffuse_max',
                        'uvb_reflected', 'uvb_reflected_std',
                        'uvb_reflected_min', 'uvb_reflected_max']

@@ -13,9 +13,7 @@ Irradiance at crop level between rows
 # is referred to :doi:`10.69766/XAEU5008`.
 #
 # This gallery example is based on an actual AgriPV plant, namely
-# European Energy's `Flakkebjerg AgriPV site
-# <https://europeanenergy.com/2023/12/20/using-the-same-land-twice-at-european-\
-# energys-flakkebjerg-solar-park/>`_.
+# European Energy's Flakkebjerg AgriPV site.
 #
 # The first steps are to define the plant location and to calculate solar
 # position and clearsky irradiance for a single day as an example.

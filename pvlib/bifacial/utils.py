@@ -73,11 +73,11 @@ def _unshaded_ground_fraction(tracker_rotation, phi, gcr, height=None,
     g0 : numeric, default 0
         Left position on the ground surface, as a fraction of the row-to-row
         spacing. ``g0=0`` corresponds to ground underneath the center of the
-        left row. ``g0`` should be less than ``g1``. [unitless]
+        left tracker post. ``g0`` should be less than ``g1``. [unitless]
     g1 : numeric, default 1
         Right position on the ground surface, as a fraction of the row-to-row
         spacing. ``g1=1`` corresponds to ground underneath the center of the
-        right row. ``g1`` should be greater than ``g0``. [unitless]
+        right tracker post. ``g1`` should be greater than ``g0``. [unitless]
 
     Returns
     -------

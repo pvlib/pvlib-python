@@ -320,6 +320,7 @@ def get_irradiance(tracker_rotation, axis_azimuth, solar_zenith, solar_azimuth,
     - shading of module surfaces by nearby rows.
     - nonuniform ground albedo.
     - sloped ground surface.
+    - cell-level irradiance nonuniformity.
 
     Parameters
     ----------
@@ -446,7 +447,7 @@ def get_irradiance(tracker_rotation, axis_azimuth, solar_zenith, solar_azimuth,
         ``ground_irradiance`` is a DataFrame when inputs are Series
         and ``n_ground_segments=1``, a dict of scalars when inputs are scalars
         and ``n_ground_segments=1``, and a dict of ``np.ndarray``
-        otherwise. 
+        otherwise.
         The following quantities are included:
 
         - ``ground_direct``: direct irradiance incident on the ground surface.

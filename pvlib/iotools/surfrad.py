@@ -206,8 +206,9 @@ def get_surfrad(station, start, end, map_variables=True,
     end : datetime-like
         Last day of the requested period.
     map_variables : bool, default True
-        Passed through to read_surfrad: whether to rename columns to
-        pvlib variable names (e.g. 'dw_solar' -> 'ghi').
+        Passed through to :py:func:`~pvlib.iotools.read_surfrad`:
+        whether to rename columns to pvlib variable names
+        (e.g. ``'dw_solar'`` -> ``'ghi'``).
     url : str, default 'https://gml.noaa.gov/aftp/data/radiation/surfrad/'
         Base URL of the SURFRAD archive.
 

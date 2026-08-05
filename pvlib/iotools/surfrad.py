@@ -229,7 +229,7 @@ def get_surfrad(station, start, end, map_variables=True,
 
     Examples
     --------
-    >>> data, meta = get_surfrad(
+    >>> data, meta = pvlib.iotools.get_surfrad(
     ...     station='bon', start='2020-01-01', end='2020-01-31')
 
     References

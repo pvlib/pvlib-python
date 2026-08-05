@@ -6,7 +6,6 @@ import pandas as pd
 import pytest
 import pvlib
 import os
-import requests
 from requests.exceptions import HTTPError
 from tests.conftest import RERUNS, RERUNS_DELAY, requires_earthdata_credentials
 
@@ -50,10 +49,10 @@ def expected_meta():
             'end_time': '2020-06-01 19:30:00',
             'lat': '40.0',
             'lon': '-80.0',
-            'lat_resolution': '0.5', 
+            'lat_resolution': '0.5',
             'lon_resolution': '0.625',
             'mean': '1.6219e-01',
-            #'Request_time': '2026-08-05 12:35:06'
+            # 'Request_time': '2026-08-05 12:35:06'
         },
         'SWGDN': {
             'prod_name': 'M2T1NXRAD.5.12.4',
@@ -69,7 +68,7 @@ def expected_meta():
             'lat_resolution': '0.5',
             'lon_resolution': '0.625',
             'mean': '9.6415e+02',
-            #'Request_time': '2026-08-05 12:35:09'
+            # 'Request_time': '2026-08-05 12:35:09'
         }
     }
 

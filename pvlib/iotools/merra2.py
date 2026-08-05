@@ -136,7 +136,7 @@ def get_merra2(latitude, longitude, start, end, username, password, dataset,
     login_url = "https://urs.earthdata.nasa.gov/api/users/find_or_create_token"
     response = requests.post(
         login_url,
-        auth = (username, password),
+        auth=(username, password),
         headers={"Accept": "application/json"},
         timeout=10,
     )
@@ -159,7 +159,8 @@ def get_merra2(latitude, longitude, start, end, username, password, dataset,
         query_parameters = parameters.copy()
         query_parameters["data"] = name
 
-        response = requests.get(data_url, params=query_parameters, headers=query_headers)
+        response = requests.get(data_url, params=query_parameters,
+                                headers=query_headers)
         response.raise_for_status()
         buffer = StringIO(response.text)
 

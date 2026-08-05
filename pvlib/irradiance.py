@@ -430,7 +430,7 @@ def get_sky_diffuse(surface_tilt, surface_azimuth,
 
     Returns
     -------
-    numeric, Dict, or DataFrame
+    numeric, dict, or DataFrame
         Return type controlled by ``return_components`` argument.
         If `False`, total sky diffuse irradiance in the plane of array
         is returned (numeric). [Wm⁻²]
@@ -518,7 +518,7 @@ def poa_components(aoi, dni, poa_sky_diffuse, poa_ground_diffuse):
         Direct normal irradiance, as measured from a TMY file or
         calculated with a clearsky model. See :term:`dni`. [Wm⁻²]
 
-    poa_sky_diffuse : numeric, Dict or DataFrame
+    poa_sky_diffuse : numeric, dict or DataFrame
         Diffuse irradiance in the plane of the modules, as
         calculated by a diffuse irradiance translation function. [Wm⁻²]
 
@@ -529,7 +529,7 @@ def poa_components(aoi, dni, poa_sky_diffuse, poa_ground_diffuse):
 
     Returns
     -------
-    irrads : Dict or DataFrame
+    irrads : dict or DataFrame
         Contains the following keys:
 
         * ``poa_global`` : Total irradiance on a tilted plane. [Wm⁻²]
@@ -540,7 +540,7 @@ def poa_components(aoi, dni, poa_sky_diffuse, poa_ground_diffuse):
         * ``poa_ground_diffuse`` : The ground diffuse component of irradiance
           on a tilted plane. [Wm⁻²]
 
-        If ``poa_sky_diffuse`` is a Dict or DataFrame, ``irrads`` will
+        If ``poa_sky_diffuse`` is a dict or DataFrame, ``irrads`` will
         contain additional keys for each of the diffuse components returned by
         the selected diffuse irradiance model.
 

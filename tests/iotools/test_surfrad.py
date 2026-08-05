@@ -110,6 +110,7 @@ def test_get_surfrad_missing_day():
 
 
 @pytest.mark.remote_data
+@pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_get_surfrad_no_data():
     message = "No data retrieved for station 'xxx'"
     with pytest.warns(UserWarning):

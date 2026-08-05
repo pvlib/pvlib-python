@@ -305,7 +305,7 @@ def get_irradiance(tracker_rotation, axis_azimuth, solar_zenith, solar_azimuth,
     """
     Get front and rear irradiance using the ANTS-2D bifacial irradiance model.
 
-    The ANTS-2D model [1] assumes the PV system comprises parallel,
+    The ANTS-2D model [1]_ assumes the PV system comprises parallel,
     evenly spaced rows on flat or uniformly sloped ground. Rows can be on fixed
     racking or single axis trackers. The model calculates irradiance at a
     location far from the ends of any rows, in effect, assuming that the
@@ -442,10 +442,11 @@ def get_irradiance(tracker_rotation, axis_azimuth, solar_zenith, solar_azimuth,
           rows. [unitless]
 
     ground_irradiance : dict or DataFrame
+        Only returned when ``return_ground_components=True``.
         ``ground_irradiance`` is a DataFrame when inputs are Series
         and ``n_ground_segments=1``, a dict of scalars when inputs are scalars
         and ``n_ground_segments=1``, and a dict of ``np.ndarray``
-        otherwise.  Only returned when ``return_ground_components=True``.
+        otherwise. 
         The following quantities are included:
 
         - ``ground_direct``: direct irradiance incident on the ground surface.

@@ -134,61 +134,47 @@ def get_merra2(latitude, longitude, start, end, username, password, dataset,
     start = _to_utc_dt_notz(start)
     end = _to_utc_dt_notz(end)
 
-    if (year := start.year) != end.year:
-        raise ValueError("start and end must be in the same year (in UTC)")
-
-    url = (
-        "https://goldsmr4.gesdisc.eosdis.nasa.gov/thredds/ncss/grid/"
-        f"MERRA2_aggregation/{dataset}/{dataset}_Aggregation_{year}.ncml"
+    # login
+    login_url = "https://urs.earthdata.nasa.gov/api/users/find_or_create_token"
+    response = requests.post(
+        login_url,
+        auth = (username, password),
+        headers={"Accept": "application/json"},
+        timeout=10,
     )
-
-    parameters = {
-        'var': ",".join(variables),
-        'latitude': latitude,
-        'longitude': longitude,
-        'time_start': start.isoformat() + "Z",
-        'time_end': end.isoformat() + "Z",
-        'accept': 'csv',
-    }
-
-    auth = (username, password)
-
-    with requests.Session() as session:
-        session.auth = auth
-        login = session.request('get', url, params=parameters)
-        response = session.get(login.url, auth=auth, params=parameters)
-
     response.raise_for_status()
+    token = response.json()["access_token"]
 
-    content = response.content.decode('utf-8')
-    buffer = StringIO(content)
-    df = pd.read_csv(buffer)
-
-    df.index = pd.to_datetime(df['time'])
-
+    # data query
+    data_url = "https://api.giovanni.earthdata.nasa.gov/timeseries"
+    parameters = {
+        "location": "[{},{}]".format(round(latitude, 4), round(longitude, 4)),
+        "time": "{}/{}".format(start.isoformat(), end.isoformat())
+    }
+    query_headers = {
+        'Authorization': f'Bearer {token}'
+    }
     meta = {}
+    data = {}
+    for variable in variables:
+        name = dataset.replace(".", "_") + "_" + variable
+        query_parameters = parameters.copy()
+        query_parameters["data"] = name
+
+        response = requests.get(data_url, params=query_parameters, headers=query_headers)
+        response.raise_for_status()
+        buffer = StringIO(response.text)
+
+        while (line := buffer.readline().rstrip()) != "":
+            key, value = line.split(",", maxsplit=1)
+            meta[key] = value
+
+        df = pd.read_csv(buffer, index_col=0, parse_dates=True)
+        data[variable] = df["Data"]
+
+    df = pd.DataFrame(data)
+
     meta['dataset'] = dataset
-    meta['station'] = df['station'].values[0]
-    meta['latitude'] = df['latitude[unit="degrees_north"]'].values[0]
-    meta['longitude'] = df['longitude[unit="degrees_east"]'].values[0]
-
-    # drop the non-data columns
-    dropcols = ['time', 'station', 'latitude[unit="degrees_north"]',
-                'longitude[unit="degrees_east"]']
-    df = df.drop(columns=dropcols)
-
-    # column names are like T2M[unit="K"] by default.  extract the unit
-    # for the metadata, then rename col to just T2M
-    units = {}
-    rename = {}
-    for col in df.columns:
-        name, _ = col.split("[", maxsplit=1)
-        unit = col.split('"')[1]
-        units[name] = unit
-        rename[col] = name
-
-    meta['units'] = units
-    df = df.rename(columns=rename)
 
     if map_variables:
         df = df.rename(columns=VARIABLE_MAP)

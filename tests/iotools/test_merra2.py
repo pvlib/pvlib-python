@@ -38,6 +38,8 @@ def expected():
 def expected_meta():
     return {
         'dataset': 'M2T1NXRAD.5.12.4',
+        'latitude': 40.0,
+        'longitude': -80.0,
         'ALBEDO': {
             'prod_name': 'M2T1NXRAD.5.12.4',
             'doi': '10.5067/Q9QMY5PBNV1T',

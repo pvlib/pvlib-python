@@ -175,6 +175,11 @@ def get_merra2(latitude, longitude, start, end, username, password, dataset,
 
         data[variable] = df["Data"]
 
+    # copy lat/lon to the top level, for consistency
+    # with other iotools functions
+    meta["latitude"] = float(var_meta["latitude"])
+    meta["longitude"] = float(var_meta["longitude"])
+
     df = pd.DataFrame(data)
     df.index = df.index.tz_localize("UTC")
 

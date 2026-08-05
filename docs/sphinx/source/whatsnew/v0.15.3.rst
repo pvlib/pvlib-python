@@ -28,7 +28,7 @@ Documentation
   example; the correct parameter name is ``time_step``. (:issue:`2791`)
 * Fixed several broken/outdated links: NREL clear-sky and spectral data
   pages, EnergyPlus documentation, git-scm.com, and a malformed Wikipedia
-  URL. (:issue:`2489`)
+  URL. (:issue:`2489`, :pull:`2818`)
 
 
 Testing

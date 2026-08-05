@@ -122,9 +122,6 @@ def get_merra2(latitude, longitude, start, end, username, password, dataset,
     .. [3] https://disc.gsfc.nasa.gov/datasets?project=MERRA-2
     """
 
-    # general API info here:
-    # https://docs.unidata.ucar.edu/tds/5.0/userguide/netcdf_subset_service_ref.html  # noqa: E501
-
     def _to_utc_dt_notz(dt):
         dt = pd.to_datetime(dt)
         if dt.tzinfo is not None:

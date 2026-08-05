@@ -175,7 +175,7 @@ def get_merra2(latitude, longitude, start, end, username, password, dataset,
         data[variable] = df["Data"]
 
     df = pd.DataFrame(data)
-
+    df.index = df.index.tz_localize("UTC")
 
     if map_variables:
         df = df.rename(columns=VARIABLE_MAP)

@@ -2,6 +2,8 @@
 
 
 v0.16.0
+-------
+
 Breaking Changes
 ~~~~~~~~~~~~~~~~
 * Change output type of :py:func:`pvlib.irradiance.perez` and
@@ -19,6 +21,9 @@ Deprecations
 
 Bug fixes
 ~~~~~~~~~
+* Fix :py:func:`~pvlib.iotools.get_merra2` to work with a new API endpoint
+  now that the previous one is retired.  Format of returned data and metadata
+  is slightly different. (:pull:`2839`)
 
 
 Enhancements
@@ -48,3 +53,4 @@ Maintenance
 Contributors
 ~~~~~~~~~~~~
 * Carolina Crespo (:ghuser:`cbcrespo`)
+* Kevin Anderson (:ghuser:`kandersolar`)

@@ -21,7 +21,7 @@ Irradiance at crop level between rows
 # .. figure:: ../../_images/agrivoltaics_system.jpg
 #    :align: center
 #    :width: 75%
-#    :alt: Photo of an agriPV system
+#    :alt: Photo of the Flakkebjerg agriPV system
 #
 #    Photo of an agriPV system.
 #    *Source: Adam R. Jensen*

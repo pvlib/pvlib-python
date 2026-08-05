@@ -97,6 +97,7 @@ def test_get_surfrad():
 
 
 @pytest.mark.remote_data
+@pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_get_surfrad_missing_day():
     # SURFRAD's Alamosa station data begins 2014-07-28 (slv14209.dat), so
     # requesting the day before that will raise a warning

@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 import requests
 from io import StringIO
 
@@ -154,7 +155,7 @@ def get_merra2(latitude, longitude, start, end, username, password, dataset,
     query_headers = {
         'Authorization': f'Bearer {token}'
     }
-    meta = {}
+    meta = {'dataset': dataset}
     data = {}
     for variable in variables:
         name = dataset.replace(".", "_") + "_" + variable
@@ -165,16 +166,19 @@ def get_merra2(latitude, longitude, start, end, username, password, dataset,
         response.raise_for_status()
         buffer = StringIO(response.text)
 
+        var_meta = {}
         while (line := buffer.readline().rstrip()) != "":
             key, value = line.split(",", maxsplit=1)
-            meta[key] = value
+            var_meta[key] = value
 
+        meta[variable] = var_meta
         df = pd.read_csv(buffer, index_col=0, parse_dates=True)
+        df = df.replace(float(var_meta["undef"]), np.nan)
+
         data[variable] = df["Data"]
 
     df = pd.DataFrame(data)
 
-    meta['dataset'] = dataset
 
     if map_variables:
         df = df.rename(columns=VARIABLE_MAP)

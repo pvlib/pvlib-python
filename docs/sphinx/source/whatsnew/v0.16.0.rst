@@ -19,7 +19,10 @@ Deprecations
 
 Bug fixes
 ~~~~~~~~~
-
+* Fix incorrect column naming when parsing data from logical record
+  0500 using :py:func:`~pvlib.iotools.read_bsrn` or
+  :py:func:`~pvlib.iotools.get_bsrn`.
+  (:issue:`2835`, :pull:`2841`)
 
 Enhancements
 ~~~~~~~~~~~~

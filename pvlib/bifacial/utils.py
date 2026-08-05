@@ -238,7 +238,7 @@ def vf_ground_sky_2d(rotation, gcr, x, pitch, height, max_rows=10):
     return vf
 
 
-@renamed_kwarg_warning("0.15.2", "surface_tilt", "tracker_rotation")
+@renamed_kwarg_warning("0.16.0", "surface_tilt", "tracker_rotation")
 def vf_ground_sky_2d_integ(tracker_rotation, gcr, height, pitch, max_rows=10,
                            npoints=None, vectorize=None, g0=0, g1=1):
     """
@@ -262,7 +262,7 @@ def vf_ground_sky_2d_integ(tracker_rotation, gcr, height, pitch, max_rows=10,
         Maximum number of rows to consider in front and behind the current row.
     npoints : int, optional
 
-        .. deprecated:: 0.15.2
+        .. deprecated:: 0.16.0
 
            This parameter has no effect; integrated view factors are now
            calculated exactly instead of with discretized approximations.
@@ -270,7 +270,7 @@ def vf_ground_sky_2d_integ(tracker_rotation, gcr, height, pitch, max_rows=10,
 
     vectorize : bool, optional
 
-        .. deprecated:: 0.15.2
+        .. deprecated:: 0.16.0
 
            This parameter has no effect; calculations are now vectorized
            with no memory usage penalty.
@@ -521,8 +521,8 @@ def vf_row_ground_2d(surface_tilt, gcr, x):
 def vf_row_ground_2d_integ(surface_tilt, gcr, height=None, pitch=None,
                            x0=0, x1=1, max_rows=20, g0=0, g1=1):
     r'''
-    Calculate the view factor to the ground segment (g0, g1) from the row
-    surface segment (x0, x1).
+    Calculate the view factor to the ground segment (``g0``, ``g1``) from
+    the row surface segment (``x0``, ``x1``).
 
     Assumes a PV system of infinitely long rows with uniform pitch on
     horizontal ground. The view to the ground is restricted by the row's

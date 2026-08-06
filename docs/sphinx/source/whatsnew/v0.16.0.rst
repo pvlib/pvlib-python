@@ -2,6 +2,8 @@
 
 
 v0.16.0
+-------
+
 Breaking Changes
 ~~~~~~~~~~~~~~~~
 * Change output type of :py:func:`pvlib.irradiance.perez` and
@@ -32,6 +34,9 @@ Bug fixes
   ``dc_ohmic_model="dc_ohms_from_percent"`` is used with a single-Array system
   and the weather/irradiance input is passed as a length-1 list or tuple.
   (:issue:`2829`)
+* Fix :py:func:`~pvlib.iotools.get_merra2` to work with a new API endpoint
+  now that the previous one is retired.  Format of returned data and metadata
+  is slightly different. (:pull:`2839`)
 
 
 Enhancements
@@ -39,6 +44,9 @@ Enhancements
 * Map beam horizontal irradiance to ``bhi`` when
   :py:func:`~pvlib.iotools.get_era5` is called with ``map_variables=True``.
   (:pull:`2819`)
+* Allow variables from multiple datasets to be requested at once in
+  :py:func:`~pvlib.iotools.get_merra2`. (:pull:`2839`)
+
 
 Documentation
 ~~~~~~~~~~~~~
@@ -65,3 +73,4 @@ Contributors
 * Carolina Crespo (:ghuser:`cbcrespo`)
 * Andrew Chen (:ghuser:`chuenchen309`)
 * Sai Asish Y (:ghuser:`SAY-5`)
+* Kevin Anderson (:ghuser:`kandersolar`)

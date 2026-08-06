@@ -128,7 +128,7 @@ def test_get_ground_diffuse_simple_float():
 
 def test_get_ground_diffuse_simple_series(irrad_data):
     ground_irrad = irradiance.get_ground_diffuse(40, irrad_data['ghi'])
-    assert ground_irrad.name == 'diffuse_ground'
+    assert ground_irrad.name == 'poa_ground_diffuse'
 
 
 def test_get_ground_diffuse_albedo_0(irrad_data):
@@ -142,7 +142,7 @@ def test_get_ground_diffuse_albedo_series(times):
     ground_irrad = irradiance.get_ground_diffuse(
         45, pd.Series(1000, index=times), albedo)
     expected = albedo * 0.5 * (1 - np.sqrt(2) / 2.) * 1000
-    expected.name = 'diffuse_ground'
+    expected.name = 'poa_ground_diffuse'
     assert_series_equal(ground_irrad, expected)
 
 
@@ -166,6 +166,32 @@ def test_isotropic_float():
 def test_isotropic_series(irrad_data):
     result = irradiance.isotropic(40, irrad_data['dhi'])
     assert_allclose(result, [0, 35.728402, 104.601328, 54.777191], atol=1e-4)
+
+
+def test_isotropic_components(irrad_data):
+    keys = ['poa_sky_diffuse', 'poa_isotropic']
+    expected = pd.DataFrame(np.array(
+        [[0, 35.728402, 104.601328, 54.777191],
+         [0, 35.728402, 104.601328, 54.777191]]).T,
+        columns=keys,
+        index=irrad_data.index
+    )
+    # pandas
+    result = irradiance.isotropic(
+        40, irrad_data['dhi'], return_components=True)
+    assert_frame_equal(result, expected, check_less_precise=4)
+    # numpy
+    result = irradiance.isotropic(
+        40, irrad_data['dhi'].to_numpy(), return_components=True)
+    for key in keys:
+        assert_allclose(result[key], expected[key], atol=1e-4)
+    assert isinstance(result, dict)
+    # scalar
+    result = irradiance.isotropic(
+        40, irrad_data['dhi'].to_numpy()[-1], return_components=True)
+    for key in keys:
+        assert_allclose(result[key], expected[key].iloc[-1], atol=1e-4)
+    assert isinstance(result, dict)
 
 
 def test_klucher_series_float():
@@ -249,9 +275,49 @@ def test_reindl(irrad_data, ephem_data, dni_et):
     assert_allclose(result, [0., 27.9412, 104.1317, 34.1663], atol=1e-4)
 
 
+def test_reindl_components(irrad_data, ephem_data, dni_et):
+    keys = ['poa_sky_diffuse', 'poa_isotropic', 'poa_circumsolar',
+            'poa_horizon']
+    expected = pd.DataFrame(np.array(
+        [[0, 27.941170, 104.131724, 34.166258],
+         [0, 27.177514, 30.181807, 27.983728],
+         [0, 0, 72.813055, 5.207138],
+         [0, 0.763656, 1.136862, 0.975393]]).T,
+        columns=keys,
+        index=irrad_data.index
+    )
+    # pandas
+    result = irradiance.reindl(
+        40, 180, irrad_data['dhi'], irrad_data['dni'], irrad_data['ghi'],
+        dni_et, ephem_data['apparent_zenith'], ephem_data['azimuth'],
+        return_components=True)
+    assert_frame_equal(result, expected, check_less_precise=4)
+    # numpy
+    result = irradiance.reindl(
+        40, 180, irrad_data['dhi'].to_numpy(), irrad_data['dni'].to_numpy(),
+        irrad_data['ghi'].to_numpy(), dni_et,
+        ephem_data['apparent_zenith'].to_numpy(),
+        ephem_data['azimuth'].to_numpy(), return_components=True)
+    for key in keys:
+        assert_allclose(result[key], expected[key], atol=1e-4)
+    assert isinstance(result, dict)
+    # scalar
+    result = irradiance.reindl(
+        40, 180, irrad_data['dhi'].to_numpy()[-1],
+        irrad_data['dni'].to_numpy()[-1],
+        irrad_data['ghi'].to_numpy()[-1], dni_et[-1],
+        ephem_data['apparent_zenith'].to_numpy()[-1],
+        ephem_data['azimuth'].to_numpy()[-1],
+        return_components=True)
+    for key in keys:
+        assert_allclose(result[key], expected[key].iloc[-1], atol=1e-4)
+    assert isinstance(result, dict)
+
+
 def test_king(irrad_data, ephem_data):
-    result = irradiance.king(40, irrad_data['dhi'], irrad_data['ghi'],
-                             ephem_data['apparent_zenith'])
+    with pytest.warns(pvlibDeprecationWarning, match='king'):
+        result = irradiance.king(40, irrad_data['dhi'], irrad_data['ghi'],
+                                 ephem_data['apparent_zenith'])
     assert_allclose(result, [0, 44.629352, 115.182626, 79.719855], atol=1e-4)
 
 
@@ -449,7 +515,7 @@ def test_perez_driesse_scalar():
 
 
 @pytest.mark.parametrize('model', ['isotropic', 'klucher', 'haydavies',
-                                   'reindl', 'king', 'perez', 'perez-driesse'])
+                                   'reindl', 'perez', 'perez-driesse'])
 def test_sky_diffuse_zenith_close_to_90(model):
     # GH 432
     sky_diffuse = irradiance.get_sky_diffuse(
@@ -501,7 +567,7 @@ def test_campbell_norman():
 def test_get_total_irradiance(irrad_data, ephem_data, dni_et,
                               relative_airmass):
     models = ['isotropic', 'klucher',
-              'haydavies', 'reindl', 'king', 'perez', 'perez-driesse']
+              'haydavies', 'reindl', 'perez', 'perez-driesse']
 
     for model in models:
         total = irradiance.get_total_irradiance(
@@ -519,7 +585,7 @@ def test_get_total_irradiance(irrad_data, ephem_data, dni_et,
 
 
 @pytest.mark.parametrize('model', ['isotropic', 'klucher',
-                                   'haydavies', 'reindl', 'king',
+                                   'haydavies', 'reindl',
                                    'perez', 'perez-driesse'])
 def test_get_total_irradiance_albedo(
         irrad_data, ephem_data, dni_et, relative_airmass, model):
@@ -539,7 +605,7 @@ def test_get_total_irradiance_albedo(
 
 
 @pytest.mark.parametrize('model', ['isotropic', 'klucher',
-                                   'haydavies', 'reindl', 'king',
+                                   'haydavies', 'reindl',
                                    'perez', 'perez-driesse'])
 def test_get_total_irradiance_scalars(model):
     total = irradiance.get_total_irradiance(

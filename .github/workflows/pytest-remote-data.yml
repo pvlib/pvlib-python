@@ -72,6 +72,7 @@ jobs:
         # but what we need is the hypothetical merge commit from the PR:
         with:
           ref: "refs/pull/${{ github.event.number }}/merge"
+          allow-unsafe-pr-checkout: true  # see above discussion; manual triggering makes this ok
 
       - uses: actions/checkout@v4
         if: github.event_name == 'push'

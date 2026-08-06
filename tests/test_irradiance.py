@@ -495,6 +495,16 @@ def test_perez_scalar():
     assert_allclose(out, 109.084332)
 
 
+def test_perez_scalar_dhi_zero():
+    # dhi=0 (e.g. nighttime) is documented-valid input (dhi >= 0). A native
+    # Python scalar division raised ZeroDivisionError (which np.errstate cannot
+    # suppress) while the array path returns a finite value; they must match.
+    out = irradiance.perez(30, 180, 0.0, 800.0, 1400.0, 40.0, 120.0, 1.5)
+    expected = irradiance.perez(30, 180, np.array([0.0]), np.array([800.0]),
+                                1400.0, 40.0, 120.0, np.array([1.5]))
+    assert_allclose(out, expected[0])
+
+
 def test_perez_driesse_scalar():
     # copied values from fixtures
     out = irradiance.perez_driesse(40, 180, 118.458, 939.954,
@@ -783,6 +793,17 @@ def test_dirint_nans():
                                     temp_dew=temp_dew)
     assert_almost_equal(dirint_data.values,
                         np.array([np.nan, np.nan, np.nan, np.nan, 893.1]), 1)
+
+
+def test_delta_kt_prime_interior_nan():
+    # regression test for gh-1847: an interior NaN in kt_prime must not
+    # halve the single valid neighbor difference.  When only one neighbor
+    # is available (Perez eqn 3) delta_kt_prime equals that difference.
+    times = pd.date_range(start='2020-01-01', periods=5, freq='1h')
+    kt_prime = pd.Series([0.5, 0.6, np.nan, 0.7, 0.4], index=times)
+    result = irradiance._delta_kt_prime_dirint(kt_prime, True, times)
+    expected = pd.Series([0.1, 0.1, np.nan, 0.3, 0.3], index=times)
+    assert_series_equal(result, expected)
 
 
 def test_dirint_tdew():

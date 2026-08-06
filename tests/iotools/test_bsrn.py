@@ -76,6 +76,9 @@ def test_read_bsrn_logical_records(expected_index):
     assert 'uva_global' in data.columns
     assert 'uvb_reflected_std' in data.columns
     assert 'ghi' not in data.columns
+    # Check that there are no duplicate columns when parsing
+    # LR0500 data (see #2841)
+    assert not data.columns.duplicated().any()
 
 
 def test_read_bsrn_bad_logical_record():

@@ -1,11 +1,14 @@
 .. _whatsnew_0_16_0:
 
 
-v0.16.0
--------
+v0.16.0 (Month XX, 20YY)
+-----------------------
 
 Breaking Changes
 ~~~~~~~~~~~~~~~~
+* Remove support for the `g_poa_effective` keyword argument in
+  :py:func:`pvlib.pvsystem.pvwatts_dc`. Users must now use
+  `effective_irradiance`. (:issue:`2703`, :pull:`2704`)
 * Change output type of :py:func:`pvlib.irradiance.perez` and
   :py:func:`pvlib.irradiance.perez_driesse` from ``OrderedDict`` to ``dict`` when
   ``return_components=True`` to be consistent with other models.
@@ -20,6 +23,7 @@ Deprecations
 * Deprecate :py:func:`pvlib.irradiance.king`.
   Use other diffuse transposition models in :py:mod:`pvlib.irradiance` instead.
   (:issue:`2636`, :pull:`2783`)
+
 
 Bug fixes
 ~~~~~~~~~
@@ -50,6 +54,7 @@ Enhancements
 
 Documentation
 ~~~~~~~~~~~~~
+* Remove `g_poa_effective` from the :ref:`nomenclature` page (:pull:`2704`)
 
 
 Testing
@@ -70,6 +75,7 @@ Maintenance
 
 Contributors
 ~~~~~~~~~~~~
+* Rajiv Daxini (:ghuser:`RDaxini`)
 * Carolina Crespo (:ghuser:`cbcrespo`)
 * Andrew Chen (:ghuser:`chuenchen309`)
 * Sai Asish Y (:ghuser:`SAY-5`)

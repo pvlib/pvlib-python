@@ -35,6 +35,8 @@ Enhancements
 * Map beam horizontal irradiance to ``bhi`` when
   :py:func:`~pvlib.iotools.get_era5` is called with ``map_variables=True``.
   (:pull:`2819`)
+* Add support for :py:func:`pvlib.iam.schlick` to :py:class:`pvlib.modelchain.ModelChain`
+  (:issue:`2828`, :pull:`2832`)
 
 Documentation
 ~~~~~~~~~~~~~

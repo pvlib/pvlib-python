@@ -16,8 +16,10 @@ VARIABLE_MAP = {
     'TQV': 'precipitable_water',
 }
 
+
 def _k_to_c(temp_k):
     return temp_k - 273.15
+
 
 UNITS = {
     'T2M': _k_to_c,

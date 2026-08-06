@@ -50,6 +50,9 @@ Enhancements
   :py:func:`~pvlib.iotools.get_nsrdb_psm4_polar_tmy`.
   (:issue:`2639`, :pull:`2807`)
 * Ensure all timezones are available in all OSs. (:issue:`2795`, :pull:`2809`)
+* Add :py:func:`pvlib.iotools.get_surfrad` for retrieving irradiance data
+  from NOAA's SURFRAD network.
+  (:issue:`1155`, :pull:`2836`)
 * Implement the ANTS-2D bifacial irradiance model in
   :py:func:`pvlib.bifacial.ants2d.get_irradiance`. (:pull:`2740`)
 * Add parameters ``g0`` and ``g1`` to allow segmented ground surfaces in
@@ -109,3 +112,4 @@ Contributors
 * Jason Lun Leung (:ghuser:`jason-rpkt`)
 * Leonardo Scappatura (:ghuser:`Leonard013`)
 * Carolina Crespo (:ghuser:`cbcrespo`)
+* Ioannis Sifnaios (:ghuser:`IoannisSifnaios`)

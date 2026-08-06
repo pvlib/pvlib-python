@@ -3,6 +3,7 @@ from pvlib.iotools.epw import read_epw, parse_epw  # noqa: F401
 from pvlib.iotools.srml import read_srml  # noqa: F401
 from pvlib.iotools.srml import get_srml  # noqa: F401
 from pvlib.iotools.surfrad import read_surfrad  # noqa: F401
+from pvlib.iotools.surfrad import get_surfrad  # noqa: F401
 from pvlib.iotools.midc import read_midc  # noqa: F401
 from pvlib.iotools.midc import read_midc_raw_data_from_nrel  # noqa: F401
 from pvlib.iotools.crn import read_crn  # noqa: F401

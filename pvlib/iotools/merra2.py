@@ -15,6 +15,7 @@ VARIABLE_MAP = {
     'T2MDEW': 'temp_dew',
     'PS': 'pressure',
     'TOTEXTTAU': 'aod550',
+    'TQV': 'precipitable_water',
 }
 
 
@@ -74,45 +75,42 @@ def get_merra2(latitude, longitude, start, end, username, password, dataset,
     -----
     The following datasets provide quantities useful for PV modeling:
 
-    +------------------------------------+-----------+---------------+
-    | Dataset                            | Variable  | pvlib name    |
-    +====================================+===========+===============+
-    | `M2T1NXRAD.5.12.4 <M2T1NXRAD_>`_   | SWGDN     | ghi           |
-    |                                    +-----------+---------------+
-    |                                    | SWGDNCLR  | ghi_clear     |
-    |                                    +-----------+---------------+
-    |                                    | ALBEDO    | albedo        |
-    |                                    +-----------+---------------+
-    |                                    | LWGAB     | longwave_down |
-    |                                    +-----------+---------------+
-    |                                    | LWGNT     | longwave_net  |
-    |                                    +-----------+---------------+
-    |                                    | LWGEM     | longwave_up   |
-    +------------------------------------+-----------+---------------+
-    | `M2T1NXSLV.5.12.4 <M2T1NXSLV_>`_   | T2M       | temp_air      |
-    |                                    +-----------+---------------+
-    |                                    | U10       | n/a           |
-    |                                    +-----------+---------------+
-    |                                    | V10       | n/a           |
-    |                                    +-----------+---------------+
-    |                                    | T2MDEW    | temp_dew      |
-    |                                    +-----------+---------------+
-    |                                    | PS        | pressure      |
-    |                                    +-----------+---------------+
-    |                                    | TO3       | n/a           |
-    |                                    +-----------+---------------+
-    |                                    | TQV       | n/a           |
-    +------------------------------------+-----------+---------------+
-    | `M2T1NXAER.5.12.4 <M2T1NXAER_>`_   | TOTEXTTAU | aod550        |
-    |                                    +-----------+---------------+
-    |                                    | TOTSCATAU | n/a           |
-    |                                    +-----------+---------------+
-    |                                    | TOTANGSTR | n/a           |
-    +------------------------------------+-----------+---------------+
+    +------------------------------------+-----------+--------------------+
+    | Dataset                            | Variable  | pvlib name         |
+    +====================================+===========+====================+
+    | `M2T1NXRAD.5.12.4 <M2T1NXRAD_>`_   | SWGDN     | ghi                |
+    |                                    +-----------+--------------------+
+    |                                    | SWGDNCLR  | ghi_clear          |
+    |                                    +-----------+--------------------+
+    |                                    | ALBEDO    | albedo             |
+    |                                    +-----------+--------------------+
+    |                                    | LWGNT     | longwave_net       |
+    +------------------------------------+-----------+--------------------+
+    | `M2T1NXLFO.5.12.4 <M2T1NXLFO_>`_   | LWGAB     | longwave_down      |
+    +------------------------------------+-----------+--------------------+
+    | `M2T1NXSLV.5.12.4 <M2T1NXSLV_>`_   | T2M       | temp_air           |
+    |                                    +-----------+--------------------+
+    |                                    | U10M      | n/a                |
+    |                                    +-----------+--------------------+
+    |                                    | V10M      | n/a                |
+    |                                    +-----------+--------------------+
+    |                                    | PS        | pressure           |
+    |                                    +-----------+--------------------+
+    |                                    | TO3       | n/a                |
+    |                                    +-----------+--------------------+
+    |                                    | TQV       | precipitable_water |
+    +------------------------------------+-----------+--------------------+
+    | `M2T1NXAER.5.12.4 <M2T1NXAER_>`_   | TOTEXTTAU | aod550             |
+    |                                    +-----------+--------------------+
+    |                                    | TOTSCATAU | n/a                |
+    |                                    +-----------+--------------------+
+    |                                    | TOTANGSTR | n/a                |
+    +------------------------------------+-----------+--------------------+
 
     .. _M2T1NXRAD: https://disc.gsfc.nasa.gov/datasets/M2T1NXRAD_5.12.4/summary
     .. _M2T1NXSLV: https://disc.gsfc.nasa.gov/datasets/M2T1NXSLV_5.12.4/summary
     .. _M2T1NXAER: https://disc.gsfc.nasa.gov/datasets/M2T1NXAER_5.12.4/summary
+    .. _M2T1NXLFO: https://disc.gsfc.nasa.gov/datasets/M2T1NXLFO_5.12.4/summary
 
     A complete list of datasets and their documentation is available at [3]_.
 

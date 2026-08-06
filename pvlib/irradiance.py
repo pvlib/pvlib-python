@@ -1062,6 +1062,12 @@ def reindl(surface_tilt, surface_azimuth, dhi, dni, ghi, dni_extra,
         return poa_sky_diffuse
 
 
+@deprecated(
+    since="0.16.0",
+    removal="0.17.0",
+    name="pvlib.irradiance.king",
+    alternative="other diffuse transposition models in pvlib.irradiance",
+)
 def king(surface_tilt, dhi, ghi, solar_zenith):
     '''
     Determine diffuse irradiance from the sky on a tilted surface using
@@ -1226,8 +1232,12 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
     delta = dhi * airmass / dni_extra
 
     # epsilon is the sky's "clearness"
-    with np.errstate(invalid='ignore'):
-        eps = ((dhi + dni) / dhi + kappa * (z ** 3)) / (1 + kappa * (z ** 3))
+    # np.divide so a Python-scalar dhi=0 yields inf/nan like the array
+    # path (handled below via digitize) instead of raising ZeroDivisionError,
+    # which np.errstate cannot suppress for native scalar division.
+    with np.errstate(invalid='ignore', divide='ignore'):
+        eps = (np.divide(dhi + dni, dhi) + kappa * (z ** 3)) \
+            / (1 + kappa * (z ** 3))
 
     # numpy indexing below will not work with a Series
     if isinstance(eps, pd.Series):
@@ -2117,16 +2127,15 @@ def _delta_kt_prime_dirint(kt_prime, use_delta_kt_prime, times):
     for use with :py:func:`_dirint_bins`.
     """
     if use_delta_kt_prime:
-        # Perez eqn 2
+        # row-wise mean of neighbor abs-differences; pandas skips NaN so this
+        # covers 0/1/2 valid neighbors (Perez eqn 2 interior,
+        # eqn 3 boundary/gap)
         kt_next = kt_prime.shift(-1)
         kt_previous = kt_prime.shift(1)
-        # replace nan with values that implement Perez Eq 3 for first and last
-        # positions. Use kt_previous and kt_next to handle series of length 1
-        kt_next.iloc[-1] = kt_previous.iloc[-1]
-        kt_previous.iloc[0] = kt_next.iloc[0]
-        delta_kt_prime = 0.5 * ((kt_prime - kt_next).abs().add(
-                                (kt_prime - kt_previous).abs(),
-                                fill_value=0))
+        delta_kt_prime = pd.DataFrame({
+            'next': (kt_prime - kt_next).abs(),
+            'prev': (kt_prime - kt_previous).abs(),
+        }).mean(axis=1)
     else:
         # do not change unless also modifying _dirint_bins
         delta_kt_prime = pd.Series(-1, index=times)

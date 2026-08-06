@@ -214,7 +214,7 @@ def read_epw(filename, coerce_year=None):
     ----------
 
     .. [1] `EnergyPlus documentation, Auxiliary Programs
-       <https://energyplus.net/documentation>`_
+       <https://energyplus.readthedocs.io/en/latest/>`_
     '''
 
     if str(filename).startswith('http'):
@@ -259,7 +259,7 @@ def _parse_epw(csvdata, coerce_year=None):
         A pandas dataframe with the columns described in the table
         below. For more detailed descriptions of each component, please
         consult the EnergyPlus Auxiliary Programs documentation
-        available at: https://energyplus.net/documentation.
+        available at: https://energyplus.readthedocs.io/en/latest/.
 
     metadata : dict
         The site metadata available in the file.

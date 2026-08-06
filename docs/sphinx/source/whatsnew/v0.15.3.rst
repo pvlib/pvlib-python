@@ -10,15 +10,31 @@ Breaking Changes
 
 Deprecations
 ~~~~~~~~~~~~
+* Parameters ``npoints`` and ``vectorize`` in the following functions
+  are now unnecessary and are deprecated (:pull:`2740`):
+
+  - :py:func:`pvlib.bifacial.infinite_sheds.get_irradiance`
+  - :py:func:`pvlib.bifacial.infinite_sheds.get_irradiance_poa`
+  - :py:func:`pvlib.bifacial.utils.vf_ground_sky_2d_integ`
+
+* Parameter ``surface_tilt`` is deprecated and renamed to ``tracker_rotation``
+  in :py:func:`pvlib.bifacial.utils.vf_ground_sky_2d_integ` (:pull:`2740`).
 * Deprecate non-polynomial interpolation options in :py:func:`pvlib.iam.interp` (:issue:`2394`, :pull:`2741`)
+
 
 Bug fixes
 ~~~~~~~~~
+* Fix asymmetry in how ``max_rows`` is interpreted in
+  :py:func:`~pvlib.bifacial.utils.vf_ground_sky_2d`. The difference
+  should be negligible for typical simulations. (:issue:`1867`, :pull:`2740`)
 * :py:func:`~pvlib.solarposition.sun_rise_set_transit_spa` now returns
   sunrise, sunset, and transit for the *local* calendar day of each input
   timestamp, restoring the behavior from before v0.11.1. Evening-local
   timestamps, which fall on the next calendar day in UTC, previously
   returned the following day's values. (:issue:`2238`)
+* Fixed ``irradiance.dirint`` so that an interior missing value in the input
+  series no longer halves the single valid neighbor difference when computing
+  the stability index ``delta_kt_prime`` (Perez eqn 3). (:issue:`1847`, :pull:`2821`)
 
 
 Enhancements
@@ -34,6 +50,14 @@ Enhancements
   :py:func:`~pvlib.iotools.get_nsrdb_psm4_polar_tmy`.
   (:issue:`2639`, :pull:`2807`)
 * Ensure all timezones are available in all OSs. (:issue:`2795`, :pull:`2809`)
+* Implement the ANTS-2D bifacial irradiance model in
+  :py:func:`pvlib.bifacial.ants2d.get_irradiance`. (:pull:`2740`)
+* Add parameters ``g0`` and ``g1`` to allow segmented ground surfaces in
+  :py:func:`~pvlib.bifacial.utils.vf_ground_sky_2d_integ` and
+  :py:func:`~pvlib.bifacial.utils.vf_row_ground_2d_integ`. (:pull:`2740`)
+* Accelerate :py:func:`~pvlib.bifacial.utils.vf_ground_sky_2d_integ` by one or
+  two orders of magnitude. This also makes :py:mod:`pvlib.bifacial.infinite_sheds` faster.
+  (:pull:`2740`)
 
 
 Documentation
@@ -41,8 +65,16 @@ Documentation
 * Fix broken link in GitHub Contributing tab. (:issue:`2628`, :pull:`2806`)
 * Fixed broken ``interval`` keyword argument in the ``oedi_9068`` gallery
   example; the correct parameter name is ``time_step``. (:issue:`2791`)
+* Fixed several broken/outdated links: NREL clear-sky and spectral data
+  pages, EnergyPlus documentation, git-scm.com, and a malformed Wikipedia
+  URL. (:issue:`2489`, :pull:`2818`)
 * Standardized diffuse component names and descriptions in the docstrings of
   multiple functions in :py:mod:`pvlib.irradiance`. (:pull:`2827`)
+* Clarifies the variable naming, comments and references in
+  :py:func:`pvlib.atmosphere.rh_from_tdew` (and the related comments in
+  :py:func:`pvlib.atmosphere.tdew_from_rh`) related to the actual
+  and saturation vapor pressures. Function output is
+  unchanged. (:issue:`2734`, :pull:`2782`)
 
 
 Testing
@@ -72,6 +104,7 @@ Contributors
 * Karl Hill (:ghuser:`karlhillx`)
 * Mathias Aschwanden (:ghuser:`maschwanden`)
 * Yonry Zhu (:ghuser:`yonryzhu`)
+* Aditya (:ghuser:`adi-IL`)
 * Darshan Gowda (:ghuser:`dgowdaan-cmyk`)
 * Jason Lun Leung (:ghuser:`jason-rpkt`)
 * Leonardo Scappatura (:ghuser:`Leonard013`)

@@ -11,6 +11,7 @@ VARIABLE_MAP = {
     't2m': 'temp_air',
     'sp': 'pressure',
     'ssrd': 'ghi',
+    'fdir': 'bhi',
     'tp': 'precipitation',
     'strd': 'longwave_down',
 
@@ -19,6 +20,7 @@ VARIABLE_MAP = {
     '2m_temperature': 'temp_air',
     'surface_pressure': 'pressure',
     'surface_solar_radiation_downwards': 'ghi',
+    'total_sky_direct_solar_radiation_at_surface': 'bhi',
     'total_precipitation': 'precipitation',
     'surface_thermal_radiation_downwards': 'longwave_down',
 }
@@ -52,6 +54,7 @@ UNITS = {
     'skt': _k_to_c,
     'sp': _same,
     'ssrd': _j_to_w,
+    'fdir': _j_to_w,
     'strd': _j_to_w,
     'tp': _m_to_cm,
 }
@@ -80,7 +83,7 @@ def get_era5(latitude, longitude, start, end, variables, api_key,
         Last day of the requested period.  Assumed to be UTC if not localized.
     variables : list of str
         List of variable names to retrieve, for example
-        ``['ghi', 'temp_air']``. Both pvlib and ERA5 names can be used.
+        ``['ghi', 'bhi', 'temp_air']``. Both pvlib and ERA5 names can be used.
         See [1]_ for additional options.
     api_key : str
         ECMWF CDS API key.

@@ -21,6 +21,9 @@ Deprecations
 
 Bug fixes
 ~~~~~~~~~
+* :py:func:`~pvlib.irradiance.perez` no longer raises ``ZeroDivisionError`` on
+  scalar ``dhi=0`` input (e.g. nighttime); the scalar path now returns the same
+  finite value as the array path. (:pull:`2826`)
 * Fixed a ``TypeError`` in :py:class:`~pvlib.modelchain.ModelChain` when
   ``dc_ohmic_model="dc_ohms_from_percent"`` is used with a single-Array system
   and the weather/irradiance input is passed as a length-1 list or tuple.
@@ -56,4 +59,5 @@ Maintenance
 Contributors
 ~~~~~~~~~~~~
 * Carolina Crespo (:ghuser:`cbcrespo`)
+* Andrew Chen (:ghuser:`chuenchen309`)
 * Sai Asish Y (:ghuser:`SAY-5`)

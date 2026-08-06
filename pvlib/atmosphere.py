@@ -448,7 +448,7 @@ def bird_hulstrom80_aod_bb(aod380, aod500):
     References
     ----------
     .. [1] Bird and Hulstrom, "Direct Insolation Models" (1980)
-       `SERI/TR-335-344 <http://www.nrel.gov/docs/legosti/old/344.pdf>`_
+       `SERI/TR-335-344 <http://www.nlr.gov/docs/legosti/old/344.pdf>`_
 
     .. [2] R. E. Bird and R. L. Hulstrom, "Review, Evaluation, and Improvement
        of Direct Irradiance Models", Journal of Solar Energy Engineering

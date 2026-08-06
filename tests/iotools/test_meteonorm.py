@@ -2,8 +2,10 @@ import pandas as pd
 import numpy as np
 import pytest
 import pvlib
-from tests.conftest import RERUNS, RERUNS_DELAY
+from tests.conftest import RERUNS, RERUNS_DELAY, fail_on_pvlib_version
 from requests.exceptions import HTTPError
+
+from pvlib._deprecation import pvlibDeprecationWarning
 
 
 @pytest.fixture
@@ -34,11 +36,11 @@ def expected_meta():
             'description': 'Global horizontal irradiance',
             'name': 'global_horizontal_irradiance',
             'unit': {
-                'description': 'Watt per square meter', 'name': 'W/m**2'}},
+                'description': 'watt per square meter', 'name': 'W/m**2'}},
            {'aggregation_method': 'average',
             'description': 'Global horizontal irradiance with shading taken into account',  # noqa: E501
             'name': 'global_horizontal_irradiance_with_shading',
-            'unit': {'description': 'Watt per square meter',
+            'unit': {'description': 'watt per square meter',
                      'name': 'W/m**2'}},
         ],
         'surface_azimuth': 180,
@@ -245,7 +247,7 @@ def expected_meteonorm_tmy_meta():
             'aggregation_method': 'average',
             'description': 'Diffuse horizontal irradiance',
             'name': 'diffuse_horizontal_irradiance',
-            'unit': {'description': 'Watt per square meter',
+            'unit': {'description': 'watt per square meter',
                      'name': 'W/m**2'},
         }],
         'surface_azimuth': 90,
@@ -302,7 +304,6 @@ def test_get_meteonorm_tmy(
         turbidity=[5.2, 4, 3, 3.1, 3.0, 2.8, 3.14, 3.0, 3, 3, 4, 5],
         random_seed=100,
         clear_sky_radiation_model='solis',
-        data_version='v9.0',  # fix version
         future_scenario='ssp1_26',
         future_year=2030,
         interval_index=True,
@@ -315,3 +316,17 @@ def test_get_meteonorm_tmy(
     # calls.  so we allow a small amount of variation with atol.
     pd.testing.assert_frame_equal(data.iloc[:12], expected_meteonorm_tmy_data,
                                   check_exact=False, atol=1)
+
+
+@fail_on_pvlib_version('0.16.0')
+@pytest.mark.remote_data
+@pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
+def test_get_meteonorm_tmy_data_version_deprecation(demo_url, demo_api_key):
+    with pytest.warns(pvlibDeprecationWarning):
+        _ = pvlib.iotools.get_meteonorm_tmy(
+            latitude=50,
+            longitude=10,
+            api_key=demo_api_key,
+            data_version="latest",
+            url=demo_url
+        )

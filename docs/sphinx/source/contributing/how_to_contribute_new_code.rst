@@ -40,6 +40,16 @@ information on these aspects.
 Pull requests (PRs)
 ~~~~~~~~~~~~~~~~~~~
 
+.. _pull-request-checklist:
+
+PR checklist
+------------
+
+Every pull request description must include the
+`PR checklist <https://github.com/pvlib/pvlib-python/blob/main/.github/PULL_REQUEST_TEMPLATE.md>`_.
+If your workflow overrides the default PR template (e.g. ``gh pr create
+--body "..."``) make sure to copy the checklist into the description.
+
 .. _pull-request-scope:
 
 Scope

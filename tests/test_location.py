@@ -5,11 +5,11 @@ import zoneinfo
 import numpy as np
 from numpy import nan
 import pandas as pd
-from .conftest import assert_frame_equal, assert_index_equal
+from .conftest import (assert_frame_equal, assert_index_equal,
+                       fail_on_pvlib_version)
+from pvlib._deprecation import pvlibDeprecationWarning
 
 import pytest
-
-import pytz
 
 import pvlib
 from pvlib import location
@@ -26,6 +26,10 @@ def test_location_required():
 def test_location_all():
     Location(32.2, -111, 'US/Arizona', 700, 'Tucson')
 
+@pytest.fixture()
+def some_location() -> Location:
+    return Location(32.2, -111, 'US/Arizona', 700, 'Tucson')
+
 
 @pytest.mark.parametrize(
     'tz,tz_expected', [
@@ -37,7 +41,7 @@ def test_location_all():
         pytest.param('Asia/Yangon', 'Asia/Yangon'),
         pytest.param(datetime.timezone.utc, 'UTC'),
         pytest.param(zoneinfo.ZoneInfo('Etc/GMT-7'), 'Etc/GMT-7'),
-        pytest.param(pytz.timezone('US/Arizona'), 'US/Arizona'),
+        pytest.param(zoneinfo.ZoneInfo('US/Arizona'), 'US/Arizona'),
         pytest.param(-6, 'Etc/GMT+6'),
         pytest.param(-11.0, 'Etc/GMT+11'),
         pytest.param(12, 'Etc/GMT-12'),
@@ -45,8 +49,7 @@ def test_location_all():
 )
 def test_location_tz(tz, tz_expected):
     loc = Location(32.2, -111, tz)
-    assert isinstance(loc.pytz, datetime.tzinfo)  # Abstract base class.
-    assert isinstance(loc.pytz, pytz.tzinfo.BaseTzInfo)
+    assert isinstance(loc._zoneinfo, datetime.tzinfo)  # Abstract base class.
     assert type(loc.tz) is str
     assert loc.tz == tz_expected
 
@@ -54,12 +57,10 @@ def test_location_tz(tz, tz_expected):
 def test_location_tz_update():
     loc = Location(32.2, -111, -11)
     assert loc.tz == 'Etc/GMT+11'
-    assert loc.pytz == pytz.timezone('Etc/GMT+11')  # Deprecated attribute.
 
     # Updating Location's tz updates read-only time-zone attributes.
     loc.tz = 7
     assert loc.tz == 'Etc/GMT-7'
-    assert loc.pytz == pytz.timezone('Etc/GMT-7')  # Deprecated attribute.
 
 
 @pytest.mark.parametrize(
@@ -99,8 +100,8 @@ def test_location_print_all():
     assert tus.__str__() == expected_str
 
 
-def test_location_print_pytz():
-    tus = Location(32.2, -111, pytz.timezone('US/Arizona'), 700, 'Tucson')
+def test_location_print():
+    tus = Location(32.2, -111, zoneinfo.ZoneInfo('US/Arizona'), 700, 'Tucson')
     expected_str = '\n'.join([
         'Location: ',
         '  name: Tucson',
@@ -395,3 +396,9 @@ def test_location_lookup_altitude(mocker):
     tus = Location(32.2, -111, 'US/Arizona')
     location.lookup_altitude.assert_called_once_with(32.2, -111)
     assert tus.altitude == location.lookup_altitude(32.2, -111)
+
+
+@fail_on_pvlib_version('0.17.0')
+def test_location_pytz_warning(some_location):
+    with pytest.warns(pvlibDeprecationWarning):
+        assert str(some_location.pytz) == 'US/Arizona'

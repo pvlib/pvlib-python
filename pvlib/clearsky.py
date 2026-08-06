@@ -19,46 +19,46 @@ from pvlib.tools import _degrees_to_index
 def ineichen(apparent_zenith, airmass_absolute, linke_turbidity,
              altitude=0, dni_extra=1364., perez_enhancement=False):
     '''
-    Determine clear sky GHI, DNI, and DHI from Ineichen/Perez model.
+    Determine clear-sky GHI, DNI, and DHI using the Ineichen/Perez model.
 
-    Implements the Ineichen and Perez clear sky model for global
-    horizontal irradiance (GHI), direct normal irradiance (DNI), and
-    calculates the clear-sky diffuse horizontal (DHI) component as the
-    difference between GHI and DNI*cos(zenith) as presented in [1]_ [2]_. A
-    report on clear sky models found the Ineichen/Perez model to have
+    The Ineichen and Perez clear sky model [1]_ [2]_ estimates global
+    horizontal irradiance (GHI) and direct normal irradiance (DNI). Diffuse
+    horizontal irradiance (DHI) is then computed as DHI = GHI - DNI*cos(zenith)
+    Analysis of clear sky models found the Ineichen/Perez model to have
     excellent performance with a minimal input data set [3]_.
 
-    Default values for monthly Linke turbidity provided by SoDa [4]_, [5]_.
+    The Ineichen/Perez model requires Linke turbidity as input. Monthly
+    averages of gridded Linke turbidity (historical data from SoDa [4]_, [5]_)
+    are available using :py:func:`~pvlib.clearsky.lookup_linke_turbidity`.
 
     Parameters
     -----------
     apparent_zenith : numeric
-        Refraction corrected solar zenith angle in degrees.
+        Refraction-corrected solar zenith angle. [°]
 
     airmass_absolute : numeric
-        Pressure corrected airmass.
+        Pressure-corrected airmass. [unitless]
 
     linke_turbidity : numeric
-        Linke Turbidity.
+        Linke turbidity. [unitless]
 
     altitude : numeric, default 0
-        Altitude above sea level in meters.
+        Altitude above sea level. [m]
 
-    dni_extra : numeric, default 1364
-        Extraterrestrial irradiance. The units of ``dni_extra``
-        determine the units of the output.
+    dni_extra : numeric, default 1364 Wm⁻²
+        Extraterrestrial irradiance.
 
     perez_enhancement : bool, default False
-        Controls if the Perez enhancement factor should be applied.
-        Setting to True may produce spurious results for times when
+        If ``True``, the Perez enhancement factor is applied.
+        The Perez enhancement factor may produce spurious results when
         the Sun is near the horizon and the airmass is high.
         See https://github.com/pvlib/pvlib-python/issues/435
 
     Returns
     -------
     clearsky : DataFrame (if Series input) or OrderedDict of arrays
-        DataFrame/OrderedDict contains the columns/keys
-        ``'dhi', 'dni', 'ghi'``.
+        Contains the columns/keys ``'dhi', 'dni', 'ghi'``, with the same
+        unit as the input parameter ``dni_extra``.
 
     See also
     --------
@@ -84,6 +84,11 @@ def ineichen(apparent_zenith, airmass_absolute, linke_turbidity,
 
     .. [5] J. Remund, et. al., "Worldwide Linke Turbidity Information", Proc.
        ISES Solar World Congress, June 2003. Goteborg, Sweden.
+
+    Examples
+    --------
+    See :ref:`Clearsky modeling examples <clearsky-examples>`
+
     '''  # noqa: E501
 
     # ghi is calculated using either the equations in [1] by setting
@@ -942,7 +947,7 @@ def bird(zenith, airmass_relative, aod380, aod500, precipitable_water,
     """
     Bird Simple Clear Sky Broadband Solar Radiation Model
 
-    Based on NREL Excel implementation by Daryl R. Myers [1, 2].
+    Based on NLR Excel implementation by Daryl R. Myers [1, 2].
 
     Bird and Hulstrom define the zenith as the "angle between a line to
     the sun and the local zenith". There is no distinction in the paper
@@ -953,7 +958,7 @@ def bird(zenith, airmass_relative, aod380, aod500, precipitable_water,
     was to compare existing clear sky models with "rigorous radiative
     transfer models" (RTM) it is possible that apparent zenith was
     obtained as output from the RTM. However, the implementation presented
-    in PVLIB is tested against the NREL Excel implementation by Daryl
+    in PVLIB is tested against the NLR Excel implementation by Daryl
     Myers which uses an analytical expression for solar zenith instead
     of apparent zenith.
 
@@ -1001,13 +1006,13 @@ def bird(zenith, airmass_relative, aod380, aod500, precipitable_water,
     .. [2] Daryl R. Myers, "Solar Radiation: Practical Modeling for Renewable
        Energy Applications", pp. 46-51 CRC Press (2013)
 
-    .. [3] `NREL Bird Clear Sky Model <http://rredc.nrel.gov/solar/models/
-       clearsky/>`_
+    .. [3] `Bird Clear Sky Model <http://www.nlr.gov/grid/solar-resource/
+       clearsky.html>`_
 
-    .. [4] `SERI/TR-642-761 <https://www.nrel.gov/docs/legosti/old/761.pdf>`_
+    .. [4] SERI/TR-642-761 :doi:`10.2172/6510849`
 
-    .. [5] `Error Reports <http://rredc.nrel.gov/solar/models/clearsky/
-       error_reports.html>`_
+    .. [5] `Error Reports <http://www.nlr.gov/grid/solar-resource/
+       clearsky-error-reports.html>`_
     """
     etr = dni_extra  # extraradiation
     ze_rad = np.deg2rad(zenith)  # zenith in radians

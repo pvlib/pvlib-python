@@ -4,7 +4,7 @@ test iotools for PSM4
 
 from pvlib.iotools import psm4
 from ..conftest import (
-    TESTS_DATA_DIR, RERUNS, RERUNS_DELAY, assert_index_equal, nrel_api_key
+    TESTS_DATA_DIR, RERUNS, RERUNS_DELAY, assert_index_equal, nlr_api_key
 )
 import numpy as np
 import pandas as pd
@@ -49,15 +49,15 @@ def assert_psm4_equal(data, metadata, expected):
     for mf in METADATA_FIELDS:
         assert mf in metadata
     # check timezone
-    assert (data.index.tzinfo.zone == 'Etc/GMT%+d' % -metadata['Time Zone'])
+    assert (str(data.index.tzinfo) == 'Etc/GMT%+d' % -metadata['Time Zone'])
 
 
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
-def test_get_nsrdb_psm4_tmy(nrel_api_key):
+def test_get_nsrdb_psm4_tmy(nlr_api_key):
     """test get_nsrdb_psm4_tmy with a TMY"""
     data, metadata = psm4.get_nsrdb_psm4_tmy(LATITUDE, LONGITUDE,
-                                             nrel_api_key, PVLIB_EMAIL,
+                                             nlr_api_key, PVLIB_EMAIL,
                                              year='tmy-2023',
                                              leap_day=False,
                                              map_variables=False)
@@ -67,10 +67,10 @@ def test_get_nsrdb_psm4_tmy(nrel_api_key):
 
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
-def test_get_nsrdb_psm4_full_disc(nrel_api_key):
+def test_get_nsrdb_psm4_full_disc(nlr_api_key):
     """test get_nsrdb_psm4_full_disc with a single year"""
     data, metadata = psm4.get_nsrdb_psm4_full_disc(LATITUDE, LONGITUDE,
-                                                   nrel_api_key, PVLIB_EMAIL,
+                                                   nlr_api_key, PVLIB_EMAIL,
                                                    year='2023',
                                                    leap_day=False,
                                                    map_variables=False)
@@ -80,10 +80,10 @@ def test_get_nsrdb_psm4_full_disc(nrel_api_key):
 
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
-def test_get_nsrdb_psm4_conus_singleyear(nrel_api_key):
+def test_get_nsrdb_psm4_conus_singleyear(nlr_api_key):
     """test get_nsrdb_psm4_conus with a single year"""
     data, metadata = psm4.get_nsrdb_psm4_aggregated(LATITUDE, LONGITUDE,
-                                                    nrel_api_key,
+                                                    nlr_api_key,
                                                     PVLIB_EMAIL,
                                                     year='2023',
                                                     leap_day=False,
@@ -95,10 +95,10 @@ def test_get_nsrdb_psm4_conus_singleyear(nrel_api_key):
 
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
-def test_get_nsrdb_psm4_conus_5min(nrel_api_key):
+def test_get_nsrdb_psm4_conus_5min(nlr_api_key):
     """test get_nsrdb_psm4_conus for 5-minute data"""
     data, metadata = psm4.get_nsrdb_psm4_conus(LATITUDE, LONGITUDE,
-                                               nrel_api_key, PVLIB_EMAIL,
+                                               nlr_api_key, PVLIB_EMAIL,
                                                year='2023', time_step=5,
                                                leap_day=False,
                                                map_variables=False)
@@ -110,10 +110,10 @@ def test_get_nsrdb_psm4_conus_5min(nrel_api_key):
 
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
-def test_get_nsrdb_psm4_aggregated_check_leap_day(nrel_api_key):
+def test_get_nsrdb_psm4_aggregated_check_leap_day(nlr_api_key):
     """test get_nsrdb_psm4_aggregated for leap day"""
     data_2012, _ = psm4.get_nsrdb_psm4_aggregated(LATITUDE, LONGITUDE,
-                                                  nrel_api_key, PVLIB_EMAIL,
+                                                  nlr_api_key, PVLIB_EMAIL,
                                                   year="2012", time_step=60,
                                                   leap_day=True,
                                                   map_variables=False)
@@ -122,9 +122,9 @@ def test_get_nsrdb_psm4_aggregated_check_leap_day(nrel_api_key):
 
 @pytest.mark.parametrize('latitude, longitude, api_key, year, time_step',
                          [(LATITUDE, LONGITUDE, 'BAD', '2023', 60),
-                          (51, -5, nrel_api_key, '2023', 60),
-                          (LATITUDE, LONGITUDE, nrel_api_key, 'bad', 60),
-                          (LATITUDE, LONGITUDE, nrel_api_key, '2023', 15),
+                          (51, -5, nlr_api_key, '2023', 60),
+                          (LATITUDE, LONGITUDE, nlr_api_key, 'bad', 60),
+                          (LATITUDE, LONGITUDE, nlr_api_key, '2023', 15),
                           ])
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
@@ -185,13 +185,38 @@ def test_read_nsrdb_psm4_map_variables():
     assert_index_equal(data.columns, pd.Index(columns_mapped))
 
 
+def test_read_nsrdb_psm4_quoted_columns_with_commas():
+    """spectral-on-demand files have quoted column names containing commas;
+    these must not be split into spurious columns (GH #2736)"""
+    # Minimal NSRDB file whose column header (3rd line) has quoted material
+    # names with embedded commas, which is valid CSV. A naive str.split(',')
+    # would break these into extra columns and raise on read.
+    content = (
+        "Source,Location ID,City,State,Country,Latitude,Longitude,Time Zone,"
+        "Elevation,Local Time Zone,Version\n"
+        "NSRDB,1,-,-,-,40.0,-105.0,-7,1600,-7,4.0.1\n"
+        'Year,Month,Day,Hour,Minute,GHI,"GaAs (Bauhuis et al., 2009)",'
+        '"InGaP (Gray, 2008)"\n'
+        "2023,1,1,0,0,0,0.1,0.2\n"
+        "2023,1,1,1,0,5,0.3,0.4\n"
+    )
+    data, metadata = psm4.read_nsrdb_psm4(StringIO(content),
+                                          map_variables=False)
+    assert list(data.columns) == [
+        'Year', 'Month', 'Day', 'Hour', 'Minute', 'GHI',
+        'GaAs (Bauhuis et al., 2009)', 'InGaP (Gray, 2008)']
+    assert data.shape == (2, 8)
+    # the embedded-comma data columns round-trip as floats
+    assert data['GaAs (Bauhuis et al., 2009)'].tolist() == [0.1, 0.3]
+
+
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
-def test_get_nsrdb_psm4_aggregated_parameter_mapping(nrel_api_key):
+def test_get_nsrdb_psm4_aggregated_parameter_mapping(nlr_api_key):
     """Test that pvlib names can be passed in as parameters and get correctly
     reverse mapped to psm4 names"""
     data, meta = psm4.get_nsrdb_psm4_aggregated(
-        LATITUDE, LONGITUDE, nrel_api_key, PVLIB_EMAIL, year='2019',
+        LATITUDE, LONGITUDE, nlr_api_key, PVLIB_EMAIL, year='2019',
         time_step=60, parameters=['ghi', 'wind_speed'], leap_day=False,
         map_variables=True)
     # Check that columns are in the correct order (GH1647)

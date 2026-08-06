@@ -6,7 +6,6 @@ PV modules and cells.
 import numpy as np
 import pandas as pd
 from pvlib.tools import sind
-from pvlib._deprecation import warn_deprecated
 from pvlib.tools import _get_sample_intervals
 import scipy
 import scipy.constants
@@ -883,7 +882,7 @@ def fuentes(poa_global, temp_air, wind_speed, noct_installed, module_height=5,
     windmod_array = wind_speed * (module_height/wind_height)**0.2 + 1e-4
 
     tmod0 = 293.15
-    tmod_array = np.zeros_like(poa_global)
+    tmod_array = np.zeros_like(poa_global, dtype=float)
 
     iterator = zip(tamb_array, sun_array, windmod_array, tsky_array,
                    timedelta_hours)

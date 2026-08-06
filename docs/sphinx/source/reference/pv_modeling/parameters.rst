@@ -14,6 +14,7 @@ Functions for fitting single diode models
     ivtools.sdm.fit_pvsyst_sandia
     ivtools.sdm.fit_pvsyst_iec61853_sandia_2025
     ivtools.sdm.fit_desoto_sandia
+    ivtools.sdm.fit_desoto_batzelis
 
 Functions for fitting the single diode equation
 

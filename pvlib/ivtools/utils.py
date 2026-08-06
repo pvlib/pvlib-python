@@ -470,7 +470,7 @@ def astm_e1036(v, i, imax_limits=(0.75, 1.15), vmax_limits=(0.75, 1.15),
        ASTM E1036-15(2019), :doi:`10.1520/E1036-15R19`
     '''
 
-    # Adapted from https://github.com/NREL/iv_params
+    # Adapted from https://github.com/NatLabRockies/iv_params
     # Copyright (c) 2022, Alliance for Sustainable Energy, LLC
     # All rights reserved.
 
@@ -544,3 +544,63 @@ def astm_e1036(v, i, imax_limits=(0.75, 1.15), vmax_limits=(0.75, 1.15),
     result['mp_fit'] = mp_fit
 
     return result
+
+
+def _log_lambertw(logx):
+    r'''Computes W(x) starting from log(x).
+
+    Parameters
+    ----------
+    logx : numeric
+
+    Returns
+    -------
+    numeric
+        Lambert's W(x)
+
+    '''
+    # handles overflow cases, but results in nan for x <= 1
+    w = logx - np.log(logx)  # initial guess, w = log(x) - log(log(x))
+
+    for _ in range(0, 3):
+        # Newton's. Halley's is not substantially faster or more accurate
+        # because f''(w) = -1 / (w**2) is small for large w
+        w = w * (1. - np.log(w) + logx) / (1. + w)
+    return w
+
+
+def _lambertw_pvlib(x):
+    r'''Lambert's W function principal branch, :math:`W_0(x)`, for
+    :math:`x>=0`.
+
+    Parameters
+    ----------
+    x : float or np.array
+        Must be real numbers.
+
+    Returns
+    -------
+    float or np.array
+
+    '''
+    localx = np.asarray(x, float)
+    w = np.full_like(localx, np.nan)
+    small = localx <= 100
+    # for large x, solve 0 = f(w) = w + log(w) - log(x) using Newton's
+    # w will contain nan for these numbers due to log(w) = log(log(x))
+    w[~small] = _log_lambertw(np.log(localx[~small]))
+
+    # for small x, solve 0 = g(w) = w * exp(w) - x using Halley's method
+    if np.any(small):
+        z = localx[small]
+        temp = np.log1p(localx[small])
+        g = temp - np.log1p(temp)
+        for _ in range(0, 3):
+            expg = np.exp(g)
+            g_expg_z = g*expg - z
+            g_p1 = g + 1
+            g = g - g_expg_z * g_p1 / \
+                (expg * g_p1**2 - 0.5*(g + 2)*g_expg_z)
+        w[small] = g
+
+    return w[0] if w.shape == 1 else w

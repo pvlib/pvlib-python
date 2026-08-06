@@ -88,7 +88,7 @@ def masking_angle(surface_tilt, gcr, slant_height):
        :doi:`10.1016/0379-6787(84)90017-6`
     .. [2] Gilman, P. et al., (2018). "SAM Photovoltaic Model Technical
        Reference Update", NREL Technical Report NREL/TP-6A20-67399.
-       Available at https://www.nrel.gov/docs/fy18osti/67399.pdf
+       :doi:`10.2172/1429291`
     """
     # The original equation (8 in [1]) requires pitch and collector width,
     # but it's easy to non-dimensionalize it to make it a function of GCR
@@ -229,7 +229,7 @@ def sky_diffuse_passias(masking_angle):
        :doi:`10.1016/0379-6787(84)90017-6`
     .. [2] Gilman, P. et al., (2018). "SAM Photovoltaic Model Technical
        Reference Update", NREL Technical Report NREL/TP-6A20-67399.
-       Available at https://www.nrel.gov/docs/fy18osti/67399.pdf
+       :doi:`10.2172/1429291`
     """
     return 1 - cosd(masking_angle/2)**2
 

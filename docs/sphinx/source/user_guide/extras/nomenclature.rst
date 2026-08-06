@@ -103,6 +103,9 @@ There is a convention on consistent variable names throughout the library:
     gri
         Ground-reflected irradiance
 
+    iam
+        Incidence angle modifier
+
     i_sc
         Short circuit module current
 

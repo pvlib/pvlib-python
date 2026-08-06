@@ -1,6 +1,5 @@
 import pandas as pd
 import pytest
-import pytz
 
 from pvlib.iotools import midc
 from tests.conftest import TESTS_DATA_DIR, RERUNS, RERUNS_DELAY
@@ -23,7 +22,7 @@ MIDC_RAW_SHORT_HEADER_TESTFILE = (
     TESTS_DATA_DIR / 'midc_raw_short_header_20191115.txt')
 
 # TODO: not used, remove?
-# midc_network_testfile = ('https://midcdmz.nrel.gov/apps/data_api.pl'
+# midc_network_testfile = ('https://midcdmz.nlr.gov/apps/data_api.pl'
 #                          '?site=UAT&begin=20181018&end=20181019')
 
 
@@ -43,7 +42,7 @@ def test_midc__format_index_tz_conversion():
     data = pd.read_csv(MIDC_TESTFILE)
     data = data.rename(columns={'MST': 'PST'})
     data = midc._format_index(data)
-    assert data.index[0].tz == pytz.timezone('Etc/GMT+8')
+    assert str(data.index[0].tz) == 'Etc/GMT+8'
 
 
 def test_midc__format_index_raw():

@@ -322,7 +322,7 @@ def _parse_bsrn(fbuf, logical_records=('0100',)):
         LR_0100 = LR_0100.reindex(sorted(LR_0100.columns), axis='columns')
         LR_0100.columns = BSRN_LR0100_COLUMNS
         # Set datetime index
-        LR_0100.index = (start_date+pd.to_timedelta(LR_0100['day']-1, unit='d')
+        LR_0100.index = (start_date+pd.to_timedelta(LR_0100['day']-1, unit='D')
                          + pd.to_timedelta(LR_0100['minute'], unit='minutes'))
         # Drop empty, minute, and day columns
         LR_0100 = LR_0100.drop(columns=['empty', 'day', 'minute'])
@@ -336,7 +336,7 @@ def _parse_bsrn(fbuf, logical_records=('0100',)):
                               na_values=[-999.0, -99.9],
                               colspecs=BSRN_LR0300_COL_SPECS,
                               names=BSRN_LR0300_COLUMNS)
-        LR_0300.index = (start_date+pd.to_timedelta(LR_0300['day']-1, unit='d')
+        LR_0300.index = (start_date+pd.to_timedelta(LR_0300['day']-1, unit='D')
                          + pd.to_timedelta(LR_0300['minute'], unit='minutes'))
         LR_0300 = LR_0300.drop(columns=['day', 'minute']).astype(float)
         dfs.append(LR_0300)
@@ -353,13 +353,13 @@ def _parse_bsrn(fbuf, logical_records=('0100',)):
         # Sort columns to match original order and assign column names
         LR_0500 = LR_0500.reindex(sorted(LR_0500.columns), axis='columns')
         LR_0500.columns = BSRN_LR0500_COLUMNS
-        LR_0500.index = (start_date+pd.to_timedelta(LR_0500['day']-1, unit='d')
+        LR_0500.index = (start_date+pd.to_timedelta(LR_0500['day']-1, unit='D')
                          + pd.to_timedelta(LR_0500['minute'], unit='minutes'))
         LR_0500 = LR_0500.drop(columns=['empty', 'day', 'minute'])
         dfs.append(LR_0500)
 
     if len(dfs):
-        data = pd.concat(dfs, axis='columns')
+        data = pd.concat(dfs, axis='columns', sort=False)
     else:
         data = _empty_dataframe_from_logical_records(logical_records)
         metadata = {}

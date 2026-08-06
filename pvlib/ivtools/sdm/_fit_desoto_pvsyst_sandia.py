@@ -5,10 +5,9 @@ helper functions used in desoto.fit_desoto_sandia and pvsyst.fit_pvsyst_sandia
 import numpy as np
 
 from scipy import optimize
-from scipy.special import lambertw
 
 from pvlib.pvsystem import singlediode, v_from_i
-from pvlib.ivtools.utils import rectify_iv_curve, _numdiff
+from pvlib.ivtools.utils import rectify_iv_curve, _numdiff, _lambertw_pvlib
 from pvlib.pvsystem import _pvsyst_Rsh
 
 
@@ -535,7 +534,7 @@ def _calc_theta_phi_exact(vmp, imp, iph, io, rs, rsh, nnsvth):
             nnsvth == 0,
             np.nan,
             rsh * io / nnsvth * np.exp(rsh * (iph + io - imp) / nnsvth))
-        phi = np.where(argw > 0, lambertw(argw).real, np.nan)
+        phi = np.where(argw > 0, _lambertw_pvlib(argw), np.nan)
 
     # NaN where argw overflows. Switch to log space to evaluate
     u = np.isinf(argw)
@@ -561,7 +560,7 @@ def _calc_theta_phi_exact(vmp, imp, iph, io, rs, rsh, nnsvth):
             np.nan,
             rsh / (rsh + rs) * rs * io / nnsvth * np.exp(
                 rsh / (rsh + rs) * (rs * (iph + io) + vmp) / nnsvth))
-        theta = np.where(argw > 0, lambertw(argw).real, np.nan)
+        theta = np.where(argw > 0, _lambertw_pvlib(argw), np.nan)
 
     # NaN where argw overflows. Switch to log space to evaluate
     u = np.isinf(argw)

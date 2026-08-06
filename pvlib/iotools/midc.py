@@ -1,4 +1,4 @@
-"""Functions to read NREL MIDC data.
+"""Functions to read NLR MIDC data.
 """
 import io
 
@@ -15,7 +15,7 @@ import pandas as pd
 #
 # In particular, these mappings coincide with the raw ddata files.
 # All site's field list can be found at:
-#     https://midcdmz.nrel.gov/apps/daily.pl?site=<SITE ID>&live=1
+#     https://midcdmz.nlr.gov/apps/daily.pl?site=<SITE ID>&live=1
 # Where id is the key found in this dictionary
 MIDC_VARIABLE_MAP = {
     'BMS': {
@@ -158,7 +158,7 @@ def _format_index_raw(data):
 
 
 def read_midc(filename, variable_map={}, raw_data=False, **kwargs):
-    """Read in National Renewable Energy Laboratory Measurement and
+    """Read in National Laboratory of the Rockies Measurement and
     Instrumentation Data Center weather data.  The MIDC is described in [1]_.
 
     Parameters
@@ -196,12 +196,12 @@ def read_midc(filename, variable_map={}, raw_data=False, **kwargs):
     :ref:`nomenclature`.
 
     Be sure to check the units for the variables you will use on the
-    `MIDC site <https://midcdmz.nrel.gov/>`_.
+    `MIDC site <https://midcdmz.nlr.gov/>`_.
 
     References
     ----------
-    .. [1] NREL: Measurement and Instrumentation Data Center
-        `https://midcdmz.nrel.gov/ <https://midcdmz.nrel.gov/>`_
+    .. [1] NLR: Measurement and Instrumentation Data Center
+        `https://midcdmz.nlr.gov/ <https://midcdmz.nlr.gov/>`_
     """
     data = pd.read_csv(filename, **kwargs)
     if raw_data:
@@ -248,13 +248,13 @@ def read_midc_raw_data_from_nrel(site, start, end, variable_map={},
     -----
     Requests spanning an instrumentation change will yield an error. See the
     MIDC raw data api page
-    `here <https://midcdmz.nrel.gov/apps/data_api_doc.pl?_idtextlist>`_
+    `here <https://midcdmz.nlr.gov/apps/data_api_doc.pl?_idtextlist>`_
     for more details and considerations.
     """
     args = {'site': site,
             'begin': pd.to_datetime(start).strftime('%Y%m%d'),
             'end': pd.to_datetime(end).strftime('%Y%m%d')}
-    url = 'https://midcdmz.nrel.gov/apps/data_api.pl'
+    url = 'https://midcdmz.nlr.gov/apps/data_api.pl'
     # NOTE: just use requests.get(url, params=args) to build querystring
     # number of header columns and data columns do not always match,
     # so first parse the header to determine the number of data columns

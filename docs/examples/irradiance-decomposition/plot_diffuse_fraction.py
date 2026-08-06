@@ -52,7 +52,7 @@ solpos.index = greensboro.index  # reset index to end of the hour
 # ----
 #
 # DISC :py:func:`~pvlib.irradiance.disc` is an empirical correlation developed
-# at SERI (now NREL) in 1987. The direct normal irradiance (DNI) is related to
+# at SERI (now NLR) in 1987. The direct normal irradiance (DNI) is related to
 # clearness index (kt) by two polynomials split at kt = 0.6, then combined with
 # an exponential relation with airmass.
 
@@ -216,5 +216,5 @@ f.tight_layout()
 # correlations, which include additional variables such as airmass. These
 # methods seem to reduce DNI spikes over 1000 [W/m^2].
 #
-# .. _TMY3: https://www.nrel.gov/docs/fy08osti/43156.pdf
-# .. _NSRDB: https://www.nrel.gov/docs/fy12osti/54824.pdf
+# .. _TMY3: https://doi.org/10.2172/928611
+# .. _NSRDB: https://doi.org/10.2172/1054832

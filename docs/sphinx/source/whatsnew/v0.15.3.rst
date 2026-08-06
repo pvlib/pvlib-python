@@ -34,7 +34,7 @@ Bug fixes
   returned the following day's values. (:issue:`2238`)
 * Fixed ``irradiance.dirint`` so that an interior missing value in the input
   series no longer halves the single valid neighbor difference when computing
-  the stability index ``delta_kt_prime`` (Perez eqn 3). (:issue:`1847`)
+  the stability index ``delta_kt_prime`` (Perez eqn 3). (:issue:`1847`, :pull:`2821`)
 
 
 Enhancements

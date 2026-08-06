@@ -16,6 +16,13 @@ VARIABLE_MAP = {
     'TQV': 'precipitable_water',
 }
 
+def _k_to_c(temp_k):
+    return temp_k - 273.15
+
+UNITS = {
+    'T2M': _k_to_c,
+}
+
 
 def get_merra2(latitude, longitude, start, end, username, password, dataset,
                variables, map_variables=True):
@@ -188,6 +195,11 @@ def get_merra2(latitude, longitude, start, end, username, password, dataset,
     df.index = df.index.tz_localize("UTC")
 
     if map_variables:
+        for col in df.columns:
+            if col in UNITS:
+                convert = UNITS[col]
+                df[col] = convert(df[col])
+
         df = df.rename(columns=VARIABLE_MAP)
 
     return df, meta

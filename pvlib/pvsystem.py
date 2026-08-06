@@ -397,7 +397,7 @@ class PVSystem:
 
         iam_model : string, default 'physical'
             The IAM model to be used. Valid strings are 'physical', 'ashrae',
-            'martin_ruiz', 'sapm' and 'interp'.
+            'martin_ruiz', 'sapm', 'interp', and 'schlick'.
         Returns
         -------
         iam : numeric or tuple of numeric

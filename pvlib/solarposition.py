@@ -180,7 +180,7 @@ def spa_c(time, latitude, longitude, pressure=101325., altitude=0.,
     redefined by Python>=3.5. This issue is
     `Python bug 24643 <https://bugs.python.org/issue24643>`_.
 
-    .. [2] Delta T: https://en.wikipedia.org/wiki/%CE%94T_(timekeeping)
+    .. [2] Delta T: https://en.wikipedia.org/wiki/%CE%94T_(timekeeping%29
 
     .. [3] USNO delta T: https://maia.usno.navy.mil/products/deltaT
 

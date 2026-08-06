@@ -42,10 +42,9 @@ BSRN_LR0300_COLUMNS = ['day', 'minute', 'gri', 'gri_std', 'gri_min', 'gri_max',
 BSRN_LR0500_COLUMNS = ['day', 'minute', 'uva_global', 'uva_global_std',
                        'uva_global_min', 'uva_global_max', 'uvb_direct',
                        'uvb_direct_std', 'uvb_direct_min', 'uvb_direct_max',
-                       'empty', 'empty', 'empty', 'empty',
+                       'empty', 'empty', 'empty', 'empty', 'empty', 'empty',
                        'uvb_global', 'uvb_global_std', 'uvb_global_min',
                        'uvb_global_max', 'uvb_diffuse', 'uvb_diffuse_std',
-                       'uvb_diffuse', 'uvb_diffuse_std',
                        'uvb_diffuse_min', 'uvb_diffuse_max',
                        'uvb_reflected', 'uvb_reflected_std',
                        'uvb_reflected_min', 'uvb_reflected_max']
@@ -379,7 +378,7 @@ def read_bsrn(filename, logical_records=('0100',)):
 
     BSRN files are freely available and can be accessed via FTP [3]_. The
     username and password for the BSRN FTP server can be obtained for free as
-    described in the BSRN's Data Release Guidelines [3]_.
+    described in the BSRN's Data Release Guidelines [4]_.
 
     Parameters
     ----------

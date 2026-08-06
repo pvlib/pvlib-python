@@ -7,15 +7,21 @@ Colorado, United States.
 """
 # %%
 # This example model uses satellite-based solar resource data from the
-# NSRDB PSM3. This approach is useful for pre-construction energy modeling
+# NSRDB PSM4. This approach is useful for pre-construction energy modeling
 # and in retrospective analyses where the system’s own irradiance
 # measurements are not present or unreliable.
 #
 # The system has public monitoring data available at the Open Energy Data
 # Initiative (OEDI) under `System ID
-# 9068 <https://data.openei.org/s3_viewer?bucket=oedi-data-lake&prefix=pvdaq%2F2023-solar-data-prize%2F9068_OEDI%2F>`__.
+# 9068 <https://data.openei.org/s3_viewer?bucket=oedi-data-lake&prefix=pvdaq%2F2023-solar-data-prize%2F9068_OEDI%2F>`__.  # noqa: E501
 # For more information about the system, see its `OEDI
 # page <https://openei.org/wiki/PVDAQ/Sites/SR_CO>`__.
+#
+# .. warning::
+#    This example requires user-provided credentials to be run at step
+#    :ref:`Fetch weather data <fetch_weather_data>`. Therefore, it is not
+#    executed as part of documentation build process and it's more
+#    susceptible to API changes. Please, report any issues you may find.
 
 # sphinx_gallery_thumbnail_path = "_images/OEDI_9068_daily_timeseries.png"
 import pvlib
@@ -132,10 +138,11 @@ model = pvlib.modelchain.ModelChain(
 # %%
 # Fetch weather data
 # ------------------
+# .. _fetch_weather_data:
 #
 # The system does have measured plane-of-array irradiance data, but the
 # measurements suffer from row-to-row shading and tracker stalls. In this
-# example, we will use weather data taken from the NSRDB PSM3 for the year
+# example, we will use weather data taken from the NSRDB PSM4 for the year
 # 2019.
 
 api_key = 'DEMO_KEY'
@@ -143,9 +150,10 @@ email = 'your_email@domain.com'
 
 keys = ['ghi', 'dni', 'dhi', 'temp_air', 'wind_speed',
         'albedo', 'precipitable_water']
-psm3, psm3_metadata = pvlib.iotools.get_nsrdb_psm4_conus(latitude, longitude,
+psm4, psm4_metadata = pvlib.iotools.get_nsrdb_psm4_conus(latitude, longitude,
                                                          api_key, email,
-                                                         year=2019, interval=5,
+                                                         year=2019,
+                                                         time_step=5,
                                                          parameters=keys,
                                                          map_variables=True,
                                                          leap_day=True)
@@ -167,12 +175,12 @@ psm3, psm3_metadata = pvlib.iotools.get_nsrdb_psm4_conus(latitude, longitude,
 # module fraction and returns the average irradiance over the total module
 # surface.
 
-solar_position = location.get_solarposition(psm3.index)
+solar_position = location.get_solarposition(psm4.index)
 tracker_angles = mount.get_orientation(
     solar_position['apparent_zenith'],
     solar_position['azimuth']
 )
-dni_extra = pvlib.irradiance.get_extra_radiation(psm3.index)
+dni_extra = pvlib.irradiance.get_extra_radiation(psm4.index)
 
 # note: this system is monofacial, so only calculate irradiance for the
 # front side:
@@ -180,7 +188,7 @@ averaged_irradiance = pvlib.bifacial.infinite_sheds.get_irradiance_poa(
     tracker_angles['surface_tilt'], tracker_angles['surface_azimuth'],
     solar_position['apparent_zenith'], solar_position['azimuth'],
     gcr, axis_height, pitch,
-    psm3['ghi'], psm3['dhi'], psm3['dni'], psm3['albedo'],
+    psm4['ghi'], psm4['dhi'], psm4['dni'], psm4['albedo'],
     model='haydavies', dni_extra=dni_extra,
 )
 
@@ -191,14 +199,14 @@ averaged_irradiance = pvlib.bifacial.infinite_sheds.get_irradiance_poa(
 
 cell_temperature_steady_state = pvlib.temperature.faiman(
     poa_global=averaged_irradiance['poa_global'],
-    temp_air=psm3['temp_air'],
-    wind_speed=psm3['wind_speed'],
+    temp_air=psm4['temp_air'],
+    wind_speed=psm4['wind_speed'],
     **temperature_model_parameters,
 )
 
 cell_temperature = pvlib.temperature.prilliman(
     cell_temperature_steady_state,
-    psm3['wind_speed'],
+    psm4['wind_speed'],
     unit_mass=module_unit_mass
 )
 
@@ -215,7 +223,7 @@ weather_inputs = pd.DataFrame({
     'poa_direct': averaged_irradiance['poa_direct'],
     'poa_diffuse': averaged_irradiance['poa_diffuse'],
     'cell_temperature': cell_temperature,
-    'precipitable_water': psm3['precipitable_water'],  # for the spectral model
+    'precipitable_water': psm4['precipitable_water'],  # for the spectral model
 })
 model.run_model_from_poa(weather_inputs)
 

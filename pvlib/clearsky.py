@@ -220,22 +220,6 @@ def lookup_linke_turbidity(time, latitude, longitude, filepath=None,
     return linke_turbidity
 
 
-def _is_leap_year(year):
-    """Determine if a year is leap year.
-
-    Parameters
-    ----------
-    year : numeric
-
-    Returns
-    -------
-    isleap : array of bools
-    """
-    isleap = ((np.mod(year, 4) == 0) &
-              ((np.mod(year, 100) != 0) | (np.mod(year, 400) == 0)))
-    return isleap
-
-
 def _interpolate_turbidity(lts, time):
     """
     Interpolated monthly Linke turbidity onto daily values.

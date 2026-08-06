@@ -9,6 +9,18 @@ Breaking Changes
 * Remove support for the `g_poa_effective` keyword argument in
   :py:func:`pvlib.pvsystem.pvwatts_dc`. Users must now use
   `effective_irradiance`. (:issue:`2703`, :pull:`2704`)
+v0.16.0
+-------
+
+Breaking Changes
+~~~~~~~~~~~~~~~~
+* Change output type of :py:func:`pvlib.irradiance.perez` and
+  :py:func:`pvlib.irradiance.perez_driesse` from ``OrderedDict`` to ``dict`` when
+  ``return_components=True`` to be consistent with other models.
+  (:pull:`2789`)
+* Remove empty ``poa_horizon`` key from the ``diffuse_components`` output of
+  :py:func:`pvlib.irradiance.haydavies`.
+  (:pull:`2788`)
 
 
 Deprecations
@@ -17,10 +29,35 @@ Deprecations
 
 Bug fixes
 ~~~~~~~~~
+* Deprecate :py:func:`pvlib.irradiance.king`.
+  Use other diffuse transposition models in :py:mod:`pvlib.irradiance` instead.
+  (:issue:`2636`, :pull:`2783`)
+
+Bug fixes
+~~~~~~~~~
+* Fix incorrect column naming when parsing data from logical record
+  0500 using :py:func:`~pvlib.iotools.read_bsrn` or
+  :py:func:`~pvlib.iotools.get_bsrn`.
+  (:issue:`2835`, :pull:`2841`)
+* :py:func:`~pvlib.irradiance.perez` no longer raises ``ZeroDivisionError`` on
+  scalar ``dhi=0`` input (e.g. nighttime); the scalar path now returns the same
+  finite value as the array path. (:pull:`2826`)
+* Fixed a ``TypeError`` in :py:class:`~pvlib.modelchain.ModelChain` when
+  ``dc_ohmic_model="dc_ohms_from_percent"`` is used with a single-Array system
+  and the weather/irradiance input is passed as a length-1 list or tuple.
+  (:issue:`2829`)
+* Fix :py:func:`~pvlib.iotools.get_merra2` to work with a new API endpoint
+  now that the previous one is retired.  Format of returned data and metadata
+  is slightly different. (:pull:`2839`)
 
 
 Enhancements
 ~~~~~~~~~~~~
+* Map beam horizontal irradiance to ``bhi`` when
+  :py:func:`~pvlib.iotools.get_era5` is called with ``map_variables=True``.
+  (:pull:`2819`)
+* Allow variables from multiple datasets to be requested at once in
+  :py:func:`~pvlib.iotools.get_merra2`. (:pull:`2839`)
 
 
 Documentation
@@ -48,3 +85,7 @@ Contributors
 ~~~~~~~~~~~~
 * Rajiv Daxini (:ghuser:`RDaxini`)
 
+* Carolina Crespo (:ghuser:`cbcrespo`)
+* Andrew Chen (:ghuser:`chuenchen309`)
+* Sai Asish Y (:ghuser:`SAY-5`)
+* Kevin Anderson (:ghuser:`kandersolar`)

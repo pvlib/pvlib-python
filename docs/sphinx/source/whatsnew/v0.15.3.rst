@@ -6,6 +6,9 @@ v0.15.3 (Anticipated September, 2026)
 
 Breaking Changes
 ~~~~~~~~~~~~~~~~
+* Changed output type of :py:func:`pvlib.irradiance.get_total_irradiance`,
+  :py:func:`pvlib.irradiance.get_sky_diffuse`, and :py:func:`pvlib.irradiance.poa_components`
+  from ``OrderedDict`` to ``dict``. (:issue:`2750`, :pull:`2800`)
 
 
 Deprecations

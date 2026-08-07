@@ -8,15 +8,13 @@ from scipy.linalg import hankel
 
 import pytest
 from numpy.testing import assert_allclose
-from .conftest import (assert_frame_equal, assert_series_equal,
-                       fail_on_pvlib_version)
+from .conftest import assert_frame_equal, assert_series_equal
 
 from pvlib.location import Location
 from pvlib import clearsky
 from pvlib import solarposition
 from pvlib import atmosphere
 from pvlib import irradiance
-from pvlib._deprecation import pvlibDeprecationWarning
 
 from .conftest import TESTS_DATA_DIR
 
@@ -897,10 +895,3 @@ def test_bird():
         testdata2[['Direct Beam', 'Direct Hz',
                    'Global Hz', 'Dif Hz']].iloc[11],
         rtol=1e-3)
-
-
-@fail_on_pvlib_version('0.17.0')
-def test_is_leap_year_deprecation():
-    with pytest.warns(pvlibDeprecationWarning,
-                      match='will be removed in 0.17.0.'):
-        clearsky._is_leap_year(2020)

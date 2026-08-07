@@ -18,7 +18,6 @@ import pvlib  # used to avoid dni name collision in complete_irradiance
 
 from pvlib._deprecation import pvlibDeprecationWarning, deprecated
 import warnings
-from pvlib._deprecation import deprecated
 
 
 # Deprecation warning based on https://peps.python.org/pep-0562/
@@ -3223,76 +3222,6 @@ def campbell_norman(zenith, transmittance, pressure=101325.0,
     cos_zen = tools.cosd(zenith)
     dhi = 0.3 * (1.0 - tau**airmass) * dni_extra * cos_zen
     ghi = dhi + dni * cos_zen
-
-    irrads = OrderedDict()
-    irrads['ghi'] = ghi
-    irrads['dni'] = dni
-    irrads['dhi'] = dhi
-
-    if isinstance(ghi, pd.Series):
-        irrads = pd.DataFrame(irrads)
-
-    return irrads
-
-
-@deprecated(
-    since="0.15.2",
-    removal="0.17.0",
-    name="_liujordan",
-    addendum=None,
-)
-def _liujordan(zenith: pd.Series, transmittance: float,
-               airmass: float, dni_extra=1367.0) -> pd.DataFrame:
-    '''
-    Determine DNI, DHI, GHI from extraterrestrial flux, transmittance,
-    and optical air mass number.
-
-    Liu and Jordan, 1960, developed a simplified direct radiation model.
-    DHI is from an empirical equation for diffuse radiation from Liu and
-    Jordan, 1960.
-
-    Parameters
-    ----------
-    zenith: pd.Series
-        True (not refraction-corrected) zenith angles in decimal
-        degrees. If Z is a vector it must be of the same size as all
-        other vector inputs. [°]
-
-    transmittance: float
-        Atmospheric transmittance between 0 and 1.
-
-    airmass: float
-        Absolute airmass.
-
-    dni_extra: float, default 1367.0
-        Direct irradiance incident at the top of the atmosphere. [W/m²]
-
-    Returns
-    -------
-    irradiance: DataFrame
-        Modeled direct normal irradiance, direct horizontal irradiance,
-        and global horizontal irradiance in Wm⁻²
-
-    References
-    ----------
-    .. [1] Campbell, G. S., J. M. Norman (1998) An Introduction to
-       Environmental Biophysics. 2nd Ed. New York: Springer.
-
-    .. [2] Liu, B. Y., R. C. Jordan, (1960). "The interrelationship and
-       characteristic distribution of direct, diffuse, and total solar
-       radiation".  Solar Energy 4:1-19
-
-    .. deprecated:: 0.15.2
-        The ``_liujordan`` function is deprecated and will be
-        removed in 0.17.0.
-        Use the ``liujordan`` function instead.
-    '''
-
-    tau = transmittance
-
-    dni = dni_extra*tau**airmass
-    dhi = 0.3 * (1.0 - tau**airmass) * dni_extra * np.cos(np.radians(zenith))
-    ghi = dhi + dni * np.cos(np.radians(zenith))
 
     irrads = OrderedDict()
     irrads['ghi'] = ghi

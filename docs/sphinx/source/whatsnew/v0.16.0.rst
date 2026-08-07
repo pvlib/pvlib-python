@@ -16,6 +16,13 @@ Breaking Changes
 * Remove empty ``poa_horizon`` key from the ``diffuse_components`` output of
   :py:func:`pvlib.irradiance.haydavies`.
   (:pull:`2788`)
+v0.16.0 (Anticipated 2026)
+--------------------------
+
+Breaking Changes
+~~~~~~~~~~~~~~~~
+* Removed private function :py:func:`pvlib.irradiance._liujordan`.
+  (:issue:`2764`, :pull:`2766`)
 
 
 Deprecations
@@ -83,3 +90,4 @@ Contributors
 * Andrew Chen (:ghuser:`chuenchen309`)
 * Sai Asish Y (:ghuser:`SAY-5`)
 * Kevin Anderson (:ghuser:`kandersolar`)
+* :ghuser:`JoLo90`

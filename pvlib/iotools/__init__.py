@@ -1,5 +1,5 @@
 from pvlib.iotools.tmy import read_tmy2, read_tmy3  # noqa: F401
-from pvlib.iotools.epw import read_epw, parse_epw  # noqa: F401
+from pvlib.iotools.epw import read_epw  # noqa: F401
 from pvlib.iotools.srml import read_srml  # noqa: F401
 from pvlib.iotools.srml import get_srml  # noqa: F401
 from pvlib.iotools.surfrad import read_surfrad  # noqa: F401
@@ -22,10 +22,8 @@ from pvlib.iotools.pvgis import get_pvgis_hourly  # noqa: F401
 from pvlib.iotools.pvgis import get_pvgis_horizon  # noqa: F401
 from pvlib.iotools.bsrn import get_bsrn  # noqa: F401
 from pvlib.iotools.bsrn import read_bsrn  # noqa: F401
-from pvlib.iotools.bsrn import parse_bsrn  # noqa: F401
 from pvlib.iotools.sodapro import get_cams  # noqa: F401
 from pvlib.iotools.sodapro import read_cams  # noqa: F401
-from pvlib.iotools.sodapro import parse_cams  # noqa: F401
 from pvlib.iotools.panond import read_panond  # noqa: F401
 from pvlib.iotools.acis import get_acis_prism  # noqa: F401
 from pvlib.iotools.acis import get_acis_nrcc  # noqa: F401

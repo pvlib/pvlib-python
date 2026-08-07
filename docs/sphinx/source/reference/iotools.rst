@@ -54,7 +54,6 @@ clear-sky irradiance globally.
 
    iotools.get_cams
    iotools.read_cams
-   iotools.parse_cams
 
 
 NASA POWER
@@ -152,7 +151,6 @@ long-wave radiation.
 
    iotools.get_bsrn
    iotools.read_bsrn
-   iotools.parse_bsrn
 
 
 SOLRAD
@@ -269,7 +267,6 @@ Functions for reading irradiance/weather data files.
    iotools.read_tmy2
    iotools.read_tmy3
    iotools.read_epw
-   iotools.parse_epw
    iotools.read_panond
 
 

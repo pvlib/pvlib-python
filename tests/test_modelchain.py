@@ -1,5 +1,4 @@
 import sys
-from unittest.mock import MagicMock
 
 import numpy as np
 import pandas as pd
@@ -9,10 +8,8 @@ from pvlib.modelchain import ModelChain
 from pvlib.pvsystem import PVSystem
 from pvlib.location import Location
 
-from pvlib._deprecation import pvlibDeprecationWarning
+from .conftest import assert_series_equal, assert_frame_equal
 
-from .conftest import (assert_series_equal, assert_frame_equal,
-                       fail_on_pvlib_version)
 import pytest
 
 
@@ -1821,23 +1818,6 @@ def test_invalid_models(model, sapm_dc_snl_ac_system, location):
     kwargs[model] = 'invalid'
     with pytest.raises(ValueError):
         ModelChain(sapm_dc_snl_ac_system, location, **kwargs)
-
-
-@fail_on_pvlib_version('0.17.0')
-def test_bad_get_orientation():
-    with pytest.warns(pvlibDeprecationWarning,
-                      match='will be removed in 0.17.0.'):
-        with pytest.raises(ValueError):
-            modelchain.get_orientation('bad value')
-
-
-@fail_on_pvlib_version('0.17.0')
-def test_get_orientation_deprecation():
-    with pytest.warns(pvlibDeprecationWarning,
-                      match='will be removed in 0.17.0.'):
-        surface_tilt, surface_azimuth = modelchain.get_orientation('flat')
-    assert surface_tilt == 0
-    assert surface_azimuth == 180
 
 
 # tests for PVSystem with multiple Arrays

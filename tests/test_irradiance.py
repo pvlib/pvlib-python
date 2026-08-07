@@ -521,7 +521,8 @@ def test_get_sky_diffuse_model_invalid():
 
 
 def test_get_sky_diffuse_components_model_not_supported():
-    with pytest.raises(ValueError):
+    msg = 'return_components is not supported'
+    with pytest.raises(ValueError, match=msg):
         irradiance.get_sky_diffuse(
             30, 180, 0, 180, 1000, 1100, 100, dni_extra=1360, airmass=1,
             model='klucher', return_components=True)
@@ -580,44 +581,42 @@ def test_get_total_irradiance(irrad_data, ephem_data, dni_et,
                                           'poa_ground_diffuse']
 
 
+@pytest.mark.parametrize('model', ['reindl', 'perez', 'perez-driesse'])
 def test_get_total_irradiance_diffuse_components(irrad_data, ephem_data,
-                                                 dni_et, relative_airmass):
-    models = ['reindl', 'perez', 'perez-driesse']
+                                                 dni_et, relative_airmass,
+                                                 model):
+    total = irradiance.get_total_irradiance(
+        32, 180,
+        ephem_data['apparent_zenith'], ephem_data['azimuth'],
+        dni=irrad_data['dni'], ghi=irrad_data['ghi'],
+        dhi=irrad_data['dhi'],
+        dni_extra=dni_et, airmass=relative_airmass,
+        model=model,
+        surface_type='urban',
+        diffuse_components=True)
 
-    for model in models:
-        total = irradiance.get_total_irradiance(
-            32, 180,
-            ephem_data['apparent_zenith'], ephem_data['azimuth'],
-            dni=irrad_data['dni'], ghi=irrad_data['ghi'],
-            dhi=irrad_data['dhi'],
-            dni_extra=dni_et, airmass=relative_airmass,
-            model=model,
-            surface_type='urban',
-            diffuse_components=True)
-
-        assert total.columns.tolist() == ['poa_global', 'poa_direct',
-                                          'poa_diffuse', 'poa_sky_diffuse',
-                                          'poa_ground_diffuse',
-                                          'poa_isotropic', 'poa_circumsolar',
-                                          'poa_horizon']
-
-    for model in models:
-        total = irradiance.get_total_irradiance(
-            32, 180,
-            ephem_data['apparent_zenith'].to_numpy(),
-            ephem_data['azimuth'].to_numpy(),
-            dni=irrad_data['dni'].to_numpy(), ghi=irrad_data['ghi'].to_numpy(),
-            dhi=irrad_data['dhi'].to_numpy(),
-            dni_extra=dni_et, airmass=relative_airmass,
-            model=model,
-            surface_type='urban',
-            diffuse_components=True)
-
-        assert list(total.keys()) == ['poa_global', 'poa_direct',
+    assert total.columns.tolist() == ['poa_global', 'poa_direct',
                                       'poa_diffuse', 'poa_sky_diffuse',
                                       'poa_ground_diffuse',
                                       'poa_isotropic', 'poa_circumsolar',
                                       'poa_horizon']
+
+    total = irradiance.get_total_irradiance(
+        32, 180,
+        ephem_data['apparent_zenith'].to_numpy(),
+        ephem_data['azimuth'].to_numpy(),
+        dni=irrad_data['dni'].to_numpy(), ghi=irrad_data['ghi'].to_numpy(),
+        dhi=irrad_data['dhi'].to_numpy(),
+        dni_extra=dni_et, airmass=relative_airmass,
+        model=model,
+        surface_type='urban',
+        diffuse_components=True)
+
+    assert list(total.keys()) == ['poa_global', 'poa_direct',
+                                  'poa_diffuse', 'poa_sky_diffuse',
+                                  'poa_ground_diffuse',
+                                  'poa_isotropic', 'poa_circumsolar',
+                                  'poa_horizon']
 
 
 @pytest.mark.parametrize('model', ['isotropic', 'klucher',

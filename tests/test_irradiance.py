@@ -531,6 +531,14 @@ def test_get_sky_diffuse_model_invalid():
             model='invalid')
 
 
+def test_get_sky_diffuse_components_model_not_supported():
+    msg = 'return_components is not supported'
+    with pytest.raises(ValueError, match=msg):
+        irradiance.get_sky_diffuse(
+            30, 180, 0, 180, 1000, 1100, 100, dni_extra=1360, airmass=1,
+            model='klucher', return_components=True)
+
+
 def test_get_sky_diffuse_missing_dni_extra():
     msg = 'dni_extra is required'
     with pytest.raises(ValueError, match=msg):
@@ -582,6 +590,44 @@ def test_get_total_irradiance(irrad_data, ephem_data, dni_et,
         assert total.columns.tolist() == ['poa_global', 'poa_direct',
                                           'poa_diffuse', 'poa_sky_diffuse',
                                           'poa_ground_diffuse']
+
+
+@pytest.mark.parametrize('model', ['reindl', 'perez', 'perez-driesse'])
+def test_get_total_irradiance_diffuse_components(irrad_data, ephem_data,
+                                                 dni_et, relative_airmass,
+                                                 model):
+    total = irradiance.get_total_irradiance(
+        32, 180,
+        ephem_data['apparent_zenith'], ephem_data['azimuth'],
+        dni=irrad_data['dni'], ghi=irrad_data['ghi'],
+        dhi=irrad_data['dhi'],
+        dni_extra=dni_et, airmass=relative_airmass,
+        model=model,
+        surface_type='urban',
+        diffuse_components=True)
+
+    assert total.columns.tolist() == ['poa_global', 'poa_direct',
+                                      'poa_diffuse', 'poa_sky_diffuse',
+                                      'poa_ground_diffuse',
+                                      'poa_isotropic', 'poa_circumsolar',
+                                      'poa_horizon']
+
+    total = irradiance.get_total_irradiance(
+        32, 180,
+        ephem_data['apparent_zenith'].to_numpy(),
+        ephem_data['azimuth'].to_numpy(),
+        dni=irrad_data['dni'].to_numpy(), ghi=irrad_data['ghi'].to_numpy(),
+        dhi=irrad_data['dhi'].to_numpy(),
+        dni_extra=dni_et, airmass=relative_airmass,
+        model=model,
+        surface_type='urban',
+        diffuse_components=True)
+
+    assert list(total.keys()) == ['poa_global', 'poa_direct',
+                                  'poa_diffuse', 'poa_sky_diffuse',
+                                  'poa_ground_diffuse',
+                                  'poa_isotropic', 'poa_circumsolar',
+                                  'poa_horizon']
 
 
 @pytest.mark.parametrize('model', ['isotropic', 'klucher',
@@ -669,6 +715,59 @@ def test_poa_components(irrad_data, ephem_data, dni_et, relative_airmass):
           12.03502531]]),
         columns=['poa_global', 'poa_direct', 'poa_diffuse', 'poa_sky_diffuse',
                  'poa_ground_diffuse'],
+        index=irrad_data.index)
+    assert_frame_equal(out, expected)
+
+
+def test_poa_components_diffuse_components_perez(irrad_data, ephem_data,
+                                                 dni_et, relative_airmass):
+    aoi = irradiance.aoi(40, 180, ephem_data['apparent_zenith'],
+                         ephem_data['azimuth'])
+    gr_sand = irradiance.get_ground_diffuse(40, irrad_data['ghi'],
+                                            surface_type='sand')
+    diff_perez = irradiance.perez(
+        40, 180, irrad_data['dhi'], irrad_data['dni'], dni_et,
+        ephem_data['apparent_zenith'], ephem_data['azimuth'], relative_airmass,
+        return_components=True)
+    out = irradiance.poa_components(
+        aoi, irrad_data['dni'], diff_perez, gr_sand)
+    expected = pd.DataFrame(np.array(
+        [[0.,  -0.,   0.,   0.,
+            0., 0.,   0.,   0.],
+         [35.19456561,   0.,  35.19456561,  31.4635077,
+            3.73105791,   26.841386,   0.000000,   4.622122],
+         [956.18253696, 798.31939281, 157.86314414, 109.08433162,
+          48.77881252,   41.621826,   61.619987,   5.842518],
+         [90.99624896,  33.50143401,  57.49481495,  45.45978964,
+          12.03502531,   31.726961,   4.479664,   9.253165]]),
+        columns=['poa_global', 'poa_direct', 'poa_diffuse', 'poa_sky_diffuse',
+                 'poa_ground_diffuse', 'poa_isotropic', 'poa_circumsolar',
+                 'poa_horizon'],
+        index=irrad_data.index)
+    assert_frame_equal(out, expected)
+
+
+def test_poa_components_diffuse_components_isotropic(irrad_data, ephem_data,
+                                                     dni_et, relative_airmass):
+    aoi = irradiance.aoi(40, 180, ephem_data['apparent_zenith'],
+                         ephem_data['azimuth'])
+    gr_sand = irradiance.get_ground_diffuse(40, irrad_data['ghi'],
+                                            surface_type='sand')
+    diff_isotropic = irradiance.isotropic(
+        40, irrad_data['dhi'], return_components=True)
+    out = irradiance.poa_components(
+        aoi, irrad_data['dni'], diff_isotropic, gr_sand)
+    expected = pd.DataFrame(np.array(
+        [[0.,  -0.,   0.,   0.,
+            0., 0.],
+         [39.459460,   0.000000,   39.459460,   35.728402,
+          3.731058,   35.728402],
+         [951.699533,   798.319393,   153.380140,   104.601328,
+          48.778813,   104.601328],
+         [100.313650,   33.501434,   66.812216,   54.777191,
+          12.035025,   54.777191]]),
+        columns=['poa_global', 'poa_direct', 'poa_diffuse', 'poa_sky_diffuse',
+                 'poa_ground_diffuse', 'poa_isotropic'],
         index=irrad_data.index)
     assert_frame_equal(out, expected)
 

@@ -6,6 +6,9 @@ v0.15.3 (Anticipated September, 2026)
 
 Breaking Changes
 ~~~~~~~~~~~~~~~~
+* Changed output type of :py:func:`pvlib.irradiance.get_total_irradiance`,
+  :py:func:`pvlib.irradiance.get_sky_diffuse`, and :py:func:`pvlib.irradiance.poa_components`
+  from ``OrderedDict`` to ``dict``. (:issue:`2750`, :pull:`2800`)
 
 
 Deprecations
@@ -44,6 +47,10 @@ Enhancements
 * Add ``return_components`` kwarg to :py:func:`pvlib.irradiance.reindl` to
   support returning the components of sky diffuse irradiance.
   (:issue:`2750`, :pull:`2775`)
+* Add ``return_components`` kwarg to :py:func:`pvlib.irradiance.get_sky_diffuse`
+  and ``diffuse_components`` kwarg to :py:func:`pvlib.irradiance.get_total_irradiance`
+  to support returning the components of sky diffuse irradiance.
+  (:issue:`2750`, :pull:`2800`)
 * Add iotools functions to retrieve irradiance and weather data from NSRDB PSM4 Polar,
   which provides satellite-derived irradiance data above 60 degree latitude.
   :py:func:`~pvlib.iotools.get_nsrdb_psm4_polar` and

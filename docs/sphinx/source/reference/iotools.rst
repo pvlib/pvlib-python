@@ -176,6 +176,7 @@ A solar radiation network in the USA, run by NOAA.
    :toctree: generated/
 
    iotools.read_surfrad
+   iotools.get_surfrad
 
 
 MIDC

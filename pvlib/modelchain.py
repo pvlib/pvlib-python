@@ -812,6 +812,10 @@ class ModelChain:
             return self.martin_ruiz_aoi_loss
         elif iam._IAM_MODEL_PARAMS['interp'] <= params:
             return self.interp_aoi_loss
+        # 'schlick' is intentionally excluded from inference. Since it
+        # requires no parameters, it would always match and effectively
+        # become the default, which is undesirable because it is not
+        # commonly used for PV applications.
         else:
             raise ValueError('could not infer AOI model from '
                              'system.arrays[i].module_parameters. Check that '

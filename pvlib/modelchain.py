@@ -336,8 +336,8 @@ class ModelChain:
         If not specified, the model will be inferred from the parameters that
         are common to all of system.arrays[i].module_parameters.
         Valid strings are 'physical', 'ashrae', 'sapm', 'martin_ruiz',
-        'interp' and 'no_loss'. The ModelChain instance will be passed as the
-        first argument to a user-defined function.
+        'schlick', 'interp' and 'no_loss'. The ModelChain instance will be
+        passed as the first argument to a user-defined function.
 
     spectral_model : str or function, optional
         Valid strings are:
@@ -787,6 +787,8 @@ class ModelChain:
                 self._aoi_model = self.sapm_aoi_loss
             elif model == 'martin_ruiz':
                 self._aoi_model = self.martin_ruiz_aoi_loss
+            elif model == 'schlick':
+                self._aoi_model = self.schlick_aoi_loss
             elif model == 'interp':
                 self._aoi_model = self.interp_aoi_loss
             elif model == 'no_loss':
@@ -810,6 +812,10 @@ class ModelChain:
             return self.martin_ruiz_aoi_loss
         elif iam._IAM_MODEL_PARAMS['interp'] <= params:
             return self.interp_aoi_loss
+        # 'schlick' is intentionally excluded from inference. Since it
+        # requires no parameters, it would always match and effectively
+        # become the default, which is undesirable because it is not
+        # commonly used for PV applications.
         else:
             raise ValueError('could not infer AOI model from '
                              'system.arrays[i].module_parameters. Check that '
@@ -843,6 +849,12 @@ class ModelChain:
     def martin_ruiz_aoi_loss(self):
         self.results.aoi_modifier = self.system.get_iam(
             self.results.aoi, iam_model='martin_ruiz'
+        )
+        return self
+
+    def schlick_aoi_loss(self):
+        self.results.aoi_modifier = self.system.get_iam(
+            self.results.aoi, iam_model='schlick'
         )
         return self
 

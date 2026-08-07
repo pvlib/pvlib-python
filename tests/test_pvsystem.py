@@ -75,6 +75,15 @@ def test_PVSystem_get_iam_interp(mocker):
     spy.assert_called_once_with(aoi[0], **interp_module_params)
 
 
+def test_PVSystem_get_iam_schlick(mocker):
+    system = pvsystem.PVSystem()
+    mocker.spy(_iam, 'schlick')
+    aoi = 0
+    out = system.get_iam(aoi, 'schlick')
+    _iam.schlick.assert_called_once_with(aoi)
+    assert_allclose(out, 1.0, atol=0.01)
+
+
 def test__normalize_sam_product_names():
 
     BAD_NAMES  = [' -.()[]:+/",', 'Module[1]']

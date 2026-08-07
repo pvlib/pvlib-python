@@ -816,6 +816,10 @@ def schlick(aoi):
     integrable alternative to the Fresnel equations for estimating IAM
     for diffuse irradiance [2]_ (see :py:func:`schlick_diffuse`).
 
+    .. warning:: The Schlick IAM model has not been validated for PV
+        performance modeling and is not commonly used in PV applications.
+        Users should consider these limitations when selecting models.
+
     Parameters
     ----------
     aoi : numeric
@@ -873,6 +877,10 @@ def schlick_diffuse(surface_tilt):
     from a tilted surface if isotropic distributions are assumed.
     This function implements the integration of the
     Schlick approximation provided by Xie et al. [2]_.
+
+    .. warning:: The Schlick IAM model has not been validated for PV
+        performance modeling and is not commonly used in PV applications.
+        Users should consider these limitations when selecting models.
 
     Parameters
     ----------

@@ -48,6 +48,9 @@ Enhancements
 * Map beam horizontal irradiance to ``bhi`` when
   :py:func:`~pvlib.iotools.get_era5` is called with ``map_variables=True``.
   (:pull:`2819`)
+* Add support for :py:func:`pvlib.iam.schlick` to :py:class:`pvlib.modelchain.ModelChain`,
+  :py:meth:`pvlib.pvsystem.PVSystem.get_iam`, and :py:meth:`pvlib.pvsystem.Array.get_iam`.
+  (:issue:`2828`, :pull:`2832`)
 * Allow variables from multiple datasets to be requested at once in
   :py:func:`~pvlib.iotools.get_merra2`. (:pull:`2839`)
 

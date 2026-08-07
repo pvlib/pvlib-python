@@ -14,6 +14,7 @@ Incident angle modifiers
    iam.sapm
    iam.interp
    iam.marion_diffuse
+   iam.marion_diffuse_tracking
    iam.marion_integrate
    iam.schlick
    iam.schlick_diffuse

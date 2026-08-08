@@ -19,4 +19,5 @@ Functions for fitting inverter models
 .. autosummary::
    :toctree: ../generated/
 
-   inverter.fit_sandia
+   inverter.fit_sandia_lab
+   inverter.fit_sandia_field

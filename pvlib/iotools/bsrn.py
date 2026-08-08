@@ -10,7 +10,6 @@ import io
 import os
 
 from pvlib.tools import _file_context_manager
-from pvlib._deprecation import deprecated
 
 BSRN_FTP_URL = "ftp.bsrn.awi.de"
 
@@ -462,7 +461,3 @@ def read_bsrn(filename, logical_records=('0100',)):
     with open_func(filename, mode) as f:
         content = _parse_bsrn(f, logical_records)
     return content
-
-
-parse_bsrn = deprecated(since="0.13.0", name="parse_bsrn",
-                        alternative="read_bsrn")(read_bsrn)

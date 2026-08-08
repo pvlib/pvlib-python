@@ -3,8 +3,6 @@ import pytest
 from pvlib.iotools import epw
 from tests.conftest import TESTS_DATA_DIR, RERUNS, RERUNS_DELAY
 
-from pvlib._deprecation import pvlibDeprecationWarning
-
 epw_testfile = TESTS_DATA_DIR / 'NLD_Amsterdam062400_IWEC.epw'
 
 
@@ -18,15 +16,6 @@ def test_read_epw():
 def test_read_epw_buffer():
     with open(epw_testfile, 'r') as f:
         df, meta = epw.read_epw(f)
-    assert len(df) == 8760
-    assert 'ghi' in df.columns
-    assert meta['latitude'] == 52.3
-
-
-def test_parse_epw_deprecated():
-    with pytest.warns(pvlibDeprecationWarning, match='Use read_epw instead'):
-        with open(epw_testfile, 'r') as f:
-            df, meta = epw.parse_epw(f)
     assert len(df) == 8760
     assert 'ghi' in df.columns
     assert meta['latitude'] == 52.3

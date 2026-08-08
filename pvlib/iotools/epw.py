@@ -7,7 +7,6 @@ from urllib.request import urlopen, Request
 import pandas as pd
 
 from pvlib.tools import _file_context_manager
-from pvlib._deprecation import deprecated
 
 
 def read_epw(filename, coerce_year=None):
@@ -309,7 +308,3 @@ def _parse_epw(csvdata, coerce_year=None):
     data.index = idx
 
     return data, meta
-
-
-parse_epw = deprecated(since="0.13.0", name="parse_epw",
-                       alternative="read_epw")(read_epw)

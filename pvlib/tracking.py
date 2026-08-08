@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-from pvlib.tools import cosd, sind, tand, acosd, asind
+from pvlib.tools import cosd, sind, tand, acosd
 from pvlib import irradiance
 from pvlib import shading
 from pvlib._deprecation import renamed_kwarg_warning

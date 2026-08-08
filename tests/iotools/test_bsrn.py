@@ -6,7 +6,7 @@ import pandas as pd
 import pytest
 import os
 import tempfile
-from pvlib.iotools import read_bsrn, get_bsrn, parse_bsrn
+from pvlib.iotools import read_bsrn, get_bsrn
 from tests.conftest import (
     TESTS_DATA_DIR,
     RERUNS,
@@ -14,8 +14,6 @@ from tests.conftest import (
     assert_index_equal,
     requires_bsrn_credentials,
 )
-
-from pvlib._deprecation import pvlibDeprecationWarning
 
 
 @pytest.fixture(scope="module")
@@ -33,12 +31,6 @@ def bsrn_credentials():
 def expected_index():
     return pd.date_range(start='20160601', periods=43200, freq='1min',
                          tz='UTC')
-
-
-def test_parse_bsrn_deprecated():
-    with pytest.warns(pvlibDeprecationWarning, match='Use read_bsrn instead'):
-        with open(TESTS_DATA_DIR / 'bsrn-lr0100-pay0616.dat') as fbuf:
-            data, metadata = parse_bsrn(fbuf)
 
 
 @pytest.mark.parametrize('testfile', [

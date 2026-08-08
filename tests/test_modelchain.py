@@ -8,9 +8,8 @@ from pvlib.modelchain import ModelChain
 from pvlib.pvsystem import PVSystem
 from pvlib.location import Location
 
-from pvlib._deprecation import pvlibDeprecationWarning
-
 from .conftest import assert_series_equal, assert_frame_equal
+
 import pytest
 
 
@@ -1819,12 +1818,6 @@ def test_invalid_models(model, sapm_dc_snl_ac_system, location):
     kwargs[model] = 'invalid'
     with pytest.raises(ValueError):
         ModelChain(sapm_dc_snl_ac_system, location, **kwargs)
-
-
-def test_bad_get_orientation():
-    with pytest.warns(pvlibDeprecationWarning, match='will be removed soon'):
-        with pytest.raises(ValueError):
-            modelchain.get_orientation('bad value')
 
 
 # tests for PVSystem with multiple Arrays

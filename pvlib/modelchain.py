@@ -18,8 +18,6 @@ import pvlib.irradiance  # avoid name conflict with full import
 from pvlib.pvsystem import _DC_MODEL_PARAMS
 from pvlib.tools import _build_kwargs
 
-from pvlib._deprecation import deprecated
-
 # keys that are used to detect input data and assign data to appropriate
 # ModelChain attribute
 # for ModelChain.weather
@@ -59,43 +57,6 @@ SAPM_CONFIG = dict(
     dc_model='sapm', ac_model='sandia', losses_model='no_loss',
     aoi_model='sapm', spectral_model='sapm', temperature_model='sapm'
 )
-
-
-@deprecated(
-    since="0.13.1",
-    removal="",
-    name="pvlib.modelchain.get_orientation",
-    alternative=None,
-    addendum=None,
-)
-def get_orientation(strategy, **kwargs):
-    """
-    Determine a PV system's surface tilt and surface azimuth
-    using a named strategy.
-
-    Parameters
-    ----------
-    strategy: str
-        The orientation strategy.
-        Allowed strategies include 'flat', 'south_at_latitude_tilt'.
-    **kwargs:
-        Strategy-dependent keyword arguments. See code for details.
-
-    Returns
-    -------
-    surface_tilt, surface_azimuth
-    """
-    if strategy == 'south_at_latitude_tilt':
-        surface_azimuth = 180
-        surface_tilt = kwargs['latitude']
-    elif strategy == 'flat':
-        surface_azimuth = 180
-        surface_tilt = 0
-    else:
-        raise ValueError('invalid orientation strategy. strategy must '
-                         'be one of south_at_latitude_tilt, flat,')
-
-    return surface_tilt, surface_azimuth
 
 
 def _getmcattr(self, attr):

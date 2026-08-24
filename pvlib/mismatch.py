@@ -4,7 +4,7 @@ conditions.
 
 """
 import numpy as np
-from scipy.optimize.elementwise import find_root
+from scipy.optimize.elementwise import find_root, find_minimum
 from pvlib import singlediode as _singlediode
 
 
@@ -13,10 +13,7 @@ def _iv_series_lambert_v_from_i(current, il, io, rs, rsh, a, neg_v_limit,
     # wrapper for pvlib._singlediode._lambertw_v_from_i, handles
     # dimensions expected in series calculation
     # solve voltages at each current for each IV curve
-    if ndevices is not None:
-        # broadcast I to ndevices to apply same current each device
-        current = np.broadcast_to(current[np.newaxis, :],
-                                  (ndevices, len(current)))
+
     # slice each parameter on its ntimes dimension with idx
     if idx is not None:
         il, io, rs, rsh, a = (il[:, idx], io[:, idx], rs[:, idx], rsh[:, idx],
@@ -37,7 +34,9 @@ def _iv_series_lambert_v_from_i(current, il, io, rs, rsh, a, neg_v_limit,
 def _setup_currents(current_bkpts, string_isc, npts):
     r''' Form array of currents from string_isc down to 0.
     The array of currents will contain all values
-    from current_bkpts which are less than string_isc.
+    from current_bkpts which are less than string_isc. Remaining points are
+    selected from a linear spacing [0, string_isc], avoiding points that are
+    closest to values in current_bkpts.
 
     Parameters
     ----------
@@ -62,32 +61,34 @@ def _setup_currents(current_bkpts, string_isc, npts):
     # have to loop on ntimes since count of device_isc < string_isc may
     # differ for each time
     for i in range(ntimes):
+        # start with values in current_bkpts
         vals = np.unique(current_bkpts[u[:, i], i])
-        # ensure string_isc and 0. are added
+        # add string_isc and 0.
         vals = np.append(vals, [string_isc[i], 0.])
         k_i = len(vals)
 
         if k_i == 0:
             continue
 
-        # Copy original values
+        # Store these values
         currents[i, :k_i] = vals
 
+        # how many more we need
         n_fill = npts - k_i
         if n_fill <= 0:
             continue
 
-        # Build grid
+        # Build linear spacing to draw from
         grid = np.linspace(string_isc[i], 0., npts)
 
-        # Compute distance to nearest point in arr
+        # Compute distances to nearest points in current_bkpts etc.
         # shape: (grid_size, k_i)
         dists = np.abs(grid[:, None] - vals[None, :])
 
         # nearest distance per grid point
         nearest_dist = np.min(dists, axis=1)
 
-        # inverse-distance weights (higher near arr values)
+        # inverse-distance weights (higher near must-have values)
         weights = 1.0 / (nearest_dist + 1e-12)  # 1e-12 to avoid div by 0
 
         # Avoid re-selecting original values exactly
@@ -175,40 +176,72 @@ def _iv_series_lambertw(photocurrent, saturation_current, resistance_series,
     # Remove idx and use preserve_shape once available in find_root
     # https://github.com/scipy/scipy/issues/24869
     idx = np.arange(ntimes)
-
-    def optfn(current, idx):
+    def isc_optfn(current, idx):
         # current is ntimes only since it is common for all devices.
         # other parameters are ntimes x ndevices
+        # broadcast current to ntimes x ndevices
+        cur2 = np.broadcast_to(current[np.newaxis, :], (ndevices, len(current)))
         v = _iv_series_lambert_v_from_i(
-            current, IL, I0, Rs,
+            cur2, IL, I0, Rs,
             Rsh, a, neg_v_limit, ndevices, idx)
         # return string voltage
         return v.sum(axis=0)
 
     isc_result = find_root(
-        optfn,
+        isc_optfn,
         (min_isc, max_isc), args=(idx,))
     string_isc = isc_result.x  # 1d in ntimes
 
     # discretize current from string_isc down to 0 at each time step
+    # Include each device's current at neg_v_limit since these will be the
+    # curvature breakpoints in the series IV curve.
+    # discretize current from max(Isc) down to 0. at each time step
     # Include each device Isc (except the highest) so that the series IV curve
-    # includes the breakpoints
-    current_pts = _setup_currents(current_bkpts, string_isc, npts)
+    currents = _setup_currents(current_bkpts, string_isc, npts)
 
     # shape all arrays to be ndevices x ntimes x ncurrents
-    curs = np.repeat(current_pts[np.newaxis, :, :], ndevices, axis=0)
-    curs, IL, I0, Rs, Rsh, a = np.broadcast_arrays(
-        curs, IL[:, :, np.newaxis], I0[:, :, np.newaxis], Rs[:, :, np.newaxis],
+    cur3 = np.repeat(currents[np.newaxis, :, :], ndevices, axis=0)
+    cur3, il, io, rs, rsh, a3 = np.broadcast_arrays(
+        cur3, IL[:, :, np.newaxis], I0[:, :, np.newaxis], Rs[:, :, np.newaxis],
         Rsh[:, :, np.newaxis], a[:, :, np.newaxis])
 
     # solve voltages at each current for each IV curve
-    voltages = _iv_series_lambert_v_from_i(
-        curs, IL, I0, Rs, Rsh, a, neg_v_limit)
+    device_voltages = _iv_series_lambert_v_from_i(
+        cur3, il, io, rs, rsh, a3, neg_v_limit)
 
-    # add voltage across devices to get series voltage
-    voltage_sum = voltages.sum(axis=0)
+    # add voltage across devices to get string voltage
+    voltages = device_voltages.sum(axis=0)
 
-    # drop currents dimension for devices
-    curs = curs[0, :, :]
+    # objective function for MPP
+    idx = np.arange(ntimes)
+    def mpp_optfn(current, idx):
+        # solve power at each current for each device
+        # current is ntimes only since it is common for all devices.
+        # other parameters are ntimes x ndevices
+        # broadcast current to ntimes x ndevices
+        cur2 = np.broadcast_to(current[np.newaxis, :], (ndevices, len(current)))
+        voltage = _iv_series_lambert_v_from_i(
+            cur2, IL, I0, Rs, Rsh, a, neg_v_limit, ndevices, idx)
 
-    return voltage_sum, curs
+        # return negative of string power
+        return current * -voltage.sum(axis=0)
+
+    # mpp calculations
+    idxs = np.argmax(currents * voltages, axis=1)
+    # reversed since currents is decreasing
+    idcs = idxs[:, np.newaxis] + [1, 0, -1]
+    intervals = np.take_along_axis(currents, idcs, axis=1)
+    init = (intervals[:, 0], intervals[:, 1], intervals[:, 2])
+
+    idx = np.arange(ntimes)
+    imp_result = find_minimum(mpp_optfn, init, args=(idx,))
+    string_imp = imp_result.x
+    
+    # use string_imp to calculate string_vmp
+    idx = np.arange(ntimes)
+    cur2 = np.broadcast_to(string_imp[np.newaxis, :], (ndevices, len(string_imp)))
+    device_vmp = _iv_series_lambert_v_from_i(
+        cur2, IL, I0, Rs, Rsh, a, ndevices, neg_v_limit)
+    string_vmp = device_vmp.sum(axis=0)
+
+    return voltages, currents, string_vmp, string_imp

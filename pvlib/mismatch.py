@@ -108,7 +108,24 @@ def _setup_currents(current_bkpts, string_isc, npts):
     return currents
 
 
-def _iv_series_lambertw(photocurrent, saturation_current, resistance_series,
+def _insert_mpp(vol, cur, vmp, imp):
+    # insert MPP into current and voltage arrays
+    cur_out = np.empty((vol.shape[0], vol.shape[1] + 1))
+    vol_out = np.empty((vol.shape[0], vol.shape[1] + 1))
+    # insert mpp value
+    for i in range(vol.shape[0]):
+        idx = vol[i, :].searchsorted(vmp[i], side='left')
+        vol_out[i, :idx] = vol[i, :idx]
+        vol_out[i, idx] = vmp[i]
+        vol_out[i, idx+1:] = vol[i, idx:]
+        cur_out[i, :idx] = cur[i, :idx]
+        cur_out[i, idx] = imp[i]
+        cur_out[i, idx+1:] = cur[i, idx:]
+
+    return vol_out, cur_out
+
+
+def _singlediode_mismatch(photocurrent, saturation_current, resistance_series,
                         resistance_shunt, nNsVth, neg_v_limit=0.,
                         npts=100):
     r'''Solve the IV curve for series-connected devices where each device
@@ -145,12 +162,14 @@ def _iv_series_lambertw(photocurrent, saturation_current, resistance_series,
 
     Returns
     -------
-    voltages : numeric
-        Voltage points for the series IV curves (V), shape
-        (times, npts).
-    currents : numeric
-        Current points for the series IV curves (A), shape
-        (times, npts).
+    string_isc : numeric
+        Short-circuit current for the string. [A]
+    string_voc : numeric
+        Open-circuit voltage for the string. [V]
+    string_imp : numeric
+        Current at maximum power for the string. [A]
+    string_vmp : numeric
+        Voltage at maximum power for the string. [V]
 
     '''
     # target shape is ndevices x ntimes
@@ -192,12 +211,17 @@ def _iv_series_lambertw(photocurrent, saturation_current, resistance_series,
         (min_isc, max_isc), args=(idx,))
     string_isc = isc_result.x  # 1d in ntimes
 
+    # find Voc for string-level curves
+    device_voc = _singlediode._lambertw_v_from_i(0., IL, I0, Rs, Rsh, a)
+    string_voc = device_voc.sum(axis=0)
+
+    # prepare for MPP calculation by computing voltages on a grid of currents
     # discretize current from string_isc down to 0 at each time step
     # Include each device's current at neg_v_limit since these will be the
     # curvature breakpoints in the series IV curve.
-    # discretize current from max(Isc) down to 0. at each time step
-    # Include each device Isc (except the highest) so that the series IV curve
-    currents = _setup_currents(current_bkpts, string_isc, npts)
+    # Leave a space for inserting MPP
+    # currents is ntimes x npts-1, decreasing
+    currents = _setup_currents(current_bkpts, string_isc, npts-1)
 
     # shape all arrays to be ndevices x ntimes x ncurrents
     cur3 = np.repeat(currents[np.newaxis, :, :], ndevices, axis=0)
@@ -210,6 +234,7 @@ def _iv_series_lambertw(photocurrent, saturation_current, resistance_series,
         cur3, il, io, rs, rsh, a3, neg_v_limit)
 
     # add voltage across devices to get string voltage
+    # voltages is ntimes x ncurrents
     voltages = device_voltages.sum(axis=0)
 
     # objective function for MPP
@@ -219,14 +244,15 @@ def _iv_series_lambertw(photocurrent, saturation_current, resistance_series,
         # current is ntimes only since it is common for all devices.
         # other parameters are ntimes x ndevices
         # broadcast current to ntimes x ndevices
-        cur2 = np.broadcast_to(current[np.newaxis, :], (ndevices, len(current)))
+        cur2 = np.broadcast_to(current[np.newaxis, :],
+                               (ndevices, len(current)))
         voltage = _iv_series_lambert_v_from_i(
             cur2, IL, I0, Rs, Rsh, a, neg_v_limit, ndevices, idx)
 
         # return negative of string power
         return current * -voltage.sum(axis=0)
 
-    # mpp calculations
+    # mpp calculation
     idxs = np.argmax(currents * voltages, axis=1)
     # reversed since currents is decreasing
     idcs = idxs[:, np.newaxis] + [1, 0, -1]
@@ -236,12 +262,84 @@ def _iv_series_lambertw(photocurrent, saturation_current, resistance_series,
     idx = np.arange(ntimes)
     imp_result = find_minimum(mpp_optfn, init, args=(idx,))
     string_imp = imp_result.x
-    
+
     # use string_imp to calculate string_vmp
     idx = np.arange(ntimes)
-    cur2 = np.broadcast_to(string_imp[np.newaxis, :], (ndevices, len(string_imp)))
+    cur2 = np.broadcast_to(string_imp[np.newaxis, :],
+                           (ndevices, ntimes))
     device_vmp = _iv_series_lambert_v_from_i(
-        cur2, IL, I0, Rs, Rsh, a, ndevices, neg_v_limit)
+        cur2, IL, I0, Rs, Rsh, a, neg_v_limit, ndevices)
     string_vmp = device_vmp.sum(axis=0)
 
-    return voltages, currents, string_vmp, string_imp
+    # in case we decide that this function should return (voltage, current)
+    voltages, currents = _insert_mpp(
+        voltages, currents, string_vmp, string_imp)
+
+    return string_isc, string_voc, string_imp, string_vmp
+    
+
+def _v_from_i_mismatch(currents, photocurrent, saturation_current,
+                       resistance_series,
+                       resistance_shunt, nNsVth, neg_v_limit=0.):
+    r'''Solve the IV curve for series-connected devices where each device
+    is described by the single diode equation.
+
+    Uses a simplified model for reverse bias behavior, where current is
+    unbounded at a constant reverse bias voltage ``neg_v_limit``.
+
+    Input parameter ``photocurrent`` must have shape (devices, times).
+    Input parameters ``saturation_current``, ``resistance_series``,
+    ``resistance_shunt``, ``nNsVth`` may be arrays. If arrays, must be
+    broadcastable to the shape of ``photocurrent``.
+
+    Parameters
+    ----------
+    currents : numeric
+        String current (A) at which string voltage is to be computed.
+        Must have shape (times, currents).
+    photocurrent : numeric
+        photocurrent (A). Must have shape (devices, times).
+    saturation_current : numeric
+        saturation current (A). Must be broadcastable with photocurrent.
+    resistance_series : numeric
+        series resistance (ohm). Must be broadcastable with photocurrent.
+    resistance_shunt : numeric
+        shunt resistance (ohm). Must be broadcastable with photocurrent.
+    nNsVth : numeric
+        product of diode factor n, number of series cells Ns, and
+        thermal voltage (Vth), (V). Must be broadcastable with photocurrent.
+    neg_v_limit : float, optional
+        Limit on reverse bias voltage, from cell breakdown voltage or reverse
+        bias diode activation voltage (V). Should be negative. For example,
+        if neg_v_limit=-5, then at V=-5 current is unbounded in the positive
+        direction.
+
+    Returns
+    -------
+    voltages : numeric
+        String voltage (V) at the current points, shape (times).
+
+    '''
+    # target shape is ndevices x ntimes
+    IL, I0, Rs, Rsh, a = \
+        np.broadcast_arrays(photocurrent, saturation_current,
+                            resistance_series, resistance_shunt, nNsVth)
+
+    ndevices, ntimes = IL.shape
+
+    # shape all arrays to be ndevices x ntimes x ncurrents
+    cur3 = np.repeat(currents[np.newaxis, :, :], ndevices, axis=0)
+    cur3, il, io, rs, rsh, a3 = np.broadcast_arrays(
+        cur3, IL[:, :, np.newaxis], I0[:, :, np.newaxis], Rs[:, :, np.newaxis],
+        Rsh[:, :, np.newaxis], a[:, :, np.newaxis])
+
+    # solve voltages at each current for each IV curve
+    # applies neg_v_limit
+    device_voltages = _iv_series_lambert_v_from_i(
+        cur3, il, io, rs, rsh, a3, neg_v_limit)
+
+    # sum voltage across devices to get string voltage
+    # voltages is ntimes x ncurrents
+    voltages = device_voltages.sum(axis=0)
+
+    return voltages

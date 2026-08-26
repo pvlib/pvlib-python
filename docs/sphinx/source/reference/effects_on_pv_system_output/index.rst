@@ -11,3 +11,4 @@ Effects on PV System Output
    soiling
    shading
    spectrum
+   electrical-mismatch

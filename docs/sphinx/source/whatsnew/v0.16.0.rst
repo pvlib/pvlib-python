@@ -70,7 +70,8 @@ Enhancements
   (:issue:`2828`, :pull:`2832`)
 * Allow variables from multiple datasets to be requested at once in
   :py:func:`~pvlib.iotools.get_merra2`. (:pull:`2839`)
-
+* Add `:py:mod:`~pvlib.mismatch` to contain functions for computing DC power
+  and IV curves accounting for electrical mismatch (:pull:`2718`)
 
 Documentation
 ~~~~~~~~~~~~~
@@ -101,3 +102,4 @@ Contributors
 * Sai Asish Y (:ghuser:`SAY-5`)
 * Kevin Anderson (:ghuser:`kandersolar`)
 * Johann Loux (:ghuser:`JoLo90`)
+* Cliff Hansen (:ghuser:`cwhanse`)

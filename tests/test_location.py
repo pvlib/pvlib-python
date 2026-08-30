@@ -6,12 +6,13 @@ import numpy as np
 from numpy import nan
 import pandas as pd
 from .conftest import (assert_frame_equal, assert_index_equal,
-                       fail_on_pvlib_version)
+                       assert_series_equal, fail_on_pvlib_version)
 from pvlib._deprecation import pvlibDeprecationWarning
 
 import pytest
 
 import pvlib
+from pvlib import atmosphere
 from pvlib import location
 from pvlib.location import Location, lookup_altitude
 from pvlib.solarposition import declination_spencer71
@@ -318,6 +319,28 @@ def test_get_airmass(times):
                             columns=['airmass_relative', 'airmass_absolute'],
                             index=times)
     assert_frame_equal(expected, airmass)
+
+
+@pytest.mark.parametrize('model,zenith_column', [
+    ('simple', 'apparent_zenith'),
+    ('kasten1966', 'apparent_zenith'),
+    ('kastenyoung1989', 'apparent_zenith'),
+    ('gueymard1993', 'apparent_zenith'),
+    ('gueymard2003', 'apparent_zenith'),
+    ('pickering2002', 'apparent_zenith'),
+    ('youngirvine1967', 'zenith'),
+    ('young1994', 'zenith'),
+])
+def test_get_airmass_models(times, model, zenith_column):
+    # every model documented by atmosphere.get_relative_airmass must be
+    # accepted here, and must be passed the zenith angle that model requires
+    tus = Location(32.2, -111, 'US/Arizona', 700, 'Tucson')
+    solar_position = tus.get_solarposition(times)
+    airmass = tus.get_airmass(solar_position=solar_position, model=model)
+    expected = atmosphere.get_relative_airmass(solar_position[zenith_column],
+                                               model)
+    assert_series_equal(airmass['airmass_relative'], expected,
+                        check_names=False)
 
 
 def test_get_airmass_valueerror(times):

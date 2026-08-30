@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 
 APPARENT_ZENITH_MODELS = ('simple', 'kasten1966', 'kastenyoung1989',
-                          'gueymard1993', 'pickering2002')
+                          'gueymard1993', 'gueymard2003', 'pickering2002')
 TRUE_ZENITH_MODELS = ('youngirvine1967', 'young1994')
 AIRMASS_MODELS = APPARENT_ZENITH_MODELS + TRUE_ZENITH_MODELS
 

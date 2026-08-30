@@ -58,6 +58,12 @@ Bug fixes
 * Fix :py:func:`~pvlib.iotools.get_merra2` to work with a new API endpoint
   now that the previous one is retired.  Format of returned data and metadata
   is slightly different. (:pull:`2839`)
+* ``model='gueymard2003'`` is now accepted by
+  :py:meth:`~pvlib.location.Location.get_airmass` and, through it, by
+  :py:class:`~pvlib.modelchain.ModelChain`. The model has been available in
+  :py:func:`~pvlib.atmosphere.get_relative_airmass` since v0.9.5 but was not
+  added to ``pvlib.atmosphere.APPARENT_ZENITH_MODELS``, so passing it raised
+  ``ValueError``.
 
 
 Enhancements

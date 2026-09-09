@@ -1171,9 +1171,9 @@ class Array:
         model : String, default 'haydavies'
             Irradiance model.
         diffuse_components : bool, default False
-            If `True`, returns values for the different diffuse irradiance
-            components available from the selected model
-            (e.g., isotropic, circumsolar, horizon brightening).
+            If `True`, returns the diffuse irradiance components available
+            from the selected model (e.g., `poa_isotropic`,
+            `poa_circumsolar`, `poa_horizon`).
             If `False`, only the total diffuse irradiance is returned.
 
         kwargs
@@ -1276,9 +1276,9 @@ class Array:
         Determine the incidence angle modifier for various diffuse irradiance
         components using the method specified by ``iam_model``.
 
-        Parameters for the selected IAM model are expected to be in
-        ``Array.module_parameters``. Default parameters are available for
-        the 'marion_diffuse' and 'martin_ruiz_diffuse' models.
+        Parameters for `iam_model` from `Array.module_parameters` are used if
+        found. If parameters are not found in `Array.module_parameters`,
+        default parameters for `iam_model` are used.
 
         Parameters
         ----------
@@ -1303,7 +1303,8 @@ class Array:
         ValueError
             if `iam_model` is not a valid model name.
         ValueError
-            if `iam_model` is 'marion_diffuse' and `marion_model` is None.
+            if `iam_model` is 'marion_diffuse' and `marion_model` is not
+            a valid model name.
         """
         model = iam_model.lower()
         if model == 'marion_diffuse' and marion_model is None:

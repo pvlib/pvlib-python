@@ -164,13 +164,15 @@ def test_PVSystem_multi_array_get_iam_diffuse():
 
 def test_PVSystem_get_iam_diffuse_invalid(sapm_module_params):
     system = pvsystem.PVSystem(module_parameters=sapm_module_params)
-    with pytest.raises(ValueError):
+    msg = 'not a valid diffuse IAM model'
+    with pytest.raises(ValueError, match=msg):
         system.get_iam_diffuse(45, iam_model='not_a_model')
 
 
 def test_PVSystem_get_iam_diffuse_marion_invalid(sapm_module_params):
     system = pvsystem.PVSystem(module_parameters=sapm_module_params)
-    with pytest.raises(ValueError):
+    msg = 'not a valid IAM model'
+    with pytest.raises(ValueError, match=msg):
         system.get_iam_diffuse(45, iam_model='marion_diffuse',
                                marion_model='not_a_model')
 

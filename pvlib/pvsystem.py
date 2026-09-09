@@ -335,9 +335,9 @@ class PVSystem:
         model : String, default 'haydavies'
             Irradiance model.
         diffuse_components : bool, default False
-            If `True`, returns values for the different diffuse irradiance
-            components available from the selected model
-            (e.g., isotropic, circumsolar, horizon brightening).
+            If `True`, returns the diffuse irradiance components available
+            from the selected model (e.g., `poa_isotropic`,
+            `poa_circumsolar`, `poa_horizon`).
             If `False`, only the total diffuse irradiance is returned.
 
         kwargs
@@ -1276,7 +1276,7 @@ class Array:
         Determine the incidence angle modifier for various diffuse irradiance
         components using the method specified by ``iam_model``.
 
-        Parameters for `iam_model` from `Array.module_parameters` are used if
+        Parameters for `iam_model` are used from `Array.module_parameters` if
         found. If parameters are not found in `Array.module_parameters`,
         default parameters for `iam_model` are used.
 

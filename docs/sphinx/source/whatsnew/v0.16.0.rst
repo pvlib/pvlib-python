@@ -63,7 +63,7 @@ Bug fixes
   :py:class:`~pvlib.modelchain.ModelChain`. The model has been available in
   :py:func:`~pvlib.atmosphere.get_relative_airmass` since v0.9.5 but was not
   added to ``pvlib.atmosphere.APPARENT_ZENITH_MODELS``, so passing it raised
-  ``ValueError``.
+  ``ValueError``. (:pull:`2857`)
 
 
 Enhancements

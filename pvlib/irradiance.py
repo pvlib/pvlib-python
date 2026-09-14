@@ -697,11 +697,6 @@ def isotropic(surface_tilt, dhi, return_components=False):
             * poa_isotropic: The portion of sky diffuse irradiance on a tilted
               plane from the isotropic sky dome. [Wm⁻²]
 
-    diffuse_components : Dict (array input) or DataFrame (Series input)
-        Keys/columns are:
-            * poa_sky_diffuse: Total sky diffuse
-            * poa_isotropic
-
     References
     ----------
     .. [1] Loutzenhiser P.G. et al. "Empirical validation of models to

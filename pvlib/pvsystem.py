@@ -431,12 +431,12 @@ class PVSystem:
 
         Parameters
         ----------
-        surface_tilt : float or Series
+        surface_tilt : numeric or tuple of numeric
             The tilt angle of the surface in degrees.
-        iam_model : string, default 'marion_diffuse'
+        iam_model : str, default 'marion_diffuse'
             The IAM model to be used. Valid strings are 'marion_diffuse',
             'martin_ruiz_diffuse', and 'schlick_diffuse'.
-        marion_model : string, default None
+        marion_model : str, optional
             The IAM function to evaluate across a solid angle. Only used when
             ``iam_model='marion_diffuse'``. Must be one of 'ashrae',
             'physical', 'martin_ruiz', 'sapm', and 'schlick'.
@@ -1282,12 +1282,12 @@ class Array:
 
         Parameters
         ----------
-        surface_tilt : float or Series
+        surface_tilt : numeric
             The tilt angle of the surface in degrees.
-        iam_model : string, default 'marion_diffuse'
+        iam_model : str, default 'marion_diffuse'
             The IAM model to be used. Valid strings are 'marion_diffuse',
             'martin_ruiz_diffuse' and 'schlick_diffuse'.
-        marion_model : string, default None
+        marion_model : str, optional
             The IAM function to evaluate across a solid angle. Only used when
             ``iam_model='marion_diffuse'``. Must be one of 'ashrae',
             'physical', 'martin_ruiz', 'sapm', and 'schlick'.
@@ -1314,7 +1314,7 @@ class Array:
             if marion_model in ['ashrae', 'physical', 'martin_ruiz',
                                 'schlick']:
                 func = getattr(iam, marion_model)
-                params = set(inspect.signature(func).parameters.keys())
+                params = iam._IAM_MODEL_PARAMS[marion_model]
                 params.discard('aoi')
                 kwargs = _build_kwargs(params, self.module_parameters)
                 iams = iam.marion_diffuse(model=marion_model,

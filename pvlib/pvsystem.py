@@ -419,7 +419,7 @@ class PVSystem:
                      for array, aoi in zip(self.arrays, aoi))
 
     @_unwrap_single_value
-    def get_iam_diffuse(self, surface_tilt, iam_model='marion_diffuse',
+    def get_iam_diffuse(self, surface_tilt, iam_model,
                         marion_model=None, **kwargs):
         """
         Determine the incidence angle modifier for diffuse irradiance using the
@@ -433,7 +433,7 @@ class PVSystem:
         ----------
         surface_tilt : numeric or tuple of numeric
             The tilt angle of the surface in degrees.
-        iam_model : str, default 'marion_diffuse'
+        iam_model : str
             The IAM model to be used. Valid strings are 'marion_diffuse',
             'martin_ruiz_diffuse', and 'schlick_diffuse'.
         marion_model : str, optional
@@ -1270,7 +1270,7 @@ class Array:
         else:
             raise ValueError(model + ' is not a valid IAM model')
 
-    def get_iam_diffuse(self, surface_tilt, iam_model='marion_diffuse',
+    def get_iam_diffuse(self, surface_tilt, iam_model,
                         marion_model=None, **kwargs):
         """
         Determine the incidence angle modifier for various diffuse irradiance
@@ -1284,7 +1284,7 @@ class Array:
         ----------
         surface_tilt : numeric
             The tilt angle of the surface in degrees.
-        iam_model : str, default 'marion_diffuse'
+        iam_model : str
             The IAM model to be used. Valid strings are 'marion_diffuse',
             'martin_ruiz_diffuse' and 'schlick_diffuse'.
         marion_model : str, optional

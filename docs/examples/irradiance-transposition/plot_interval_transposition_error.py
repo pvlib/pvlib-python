@@ -93,7 +93,7 @@ def transpose(irradiance, timeshift):
 # is negligible.
 
 # baseline: all calculations done at 1-second scale
-location = pvlib.location.Location(40, -80, tz='Etc/GMT+5')
+location = pvlib.location.Location(40, -80)
 times = pd.date_range('2019-06-01 05:00', '2019-06-01 19:00',
                       freq='1s', tz='Etc/GMT+5')
 solpos = location.get_solarposition(times)

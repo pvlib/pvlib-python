@@ -19,99 +19,23 @@ from pvlib.solarposition import equation_of_time_spencer71
 from .conftest import requires_ephem
 
 
-def test_location_required():
-    Location(32.2, -111)
-
-
 def test_location_all():
-    Location(32.2, -111, 'US/Arizona', 700, 'Tucson')
+    Location(32.2, -111,  700, 'Tucson')
 
 @pytest.fixture()
 def some_location() -> Location:
-    return Location(32.2, -111, 'US/Arizona', 700, 'Tucson')
-
-
-@pytest.mark.parametrize(
-    'tz,tz_expected', [
-        pytest.param('UTC', 'UTC'),
-        pytest.param('Etc/GMT+5', 'Etc/GMT+5'),
-        pytest.param('US/Mountain', 'US/Mountain'),
-        pytest.param('America/Phoenix', 'America/Phoenix'),
-        pytest.param('Asia/Kathmandu', 'Asia/Kathmandu'),
-        pytest.param('Asia/Yangon', 'Asia/Yangon'),
-        pytest.param(datetime.timezone.utc, 'UTC'),
-        pytest.param(zoneinfo.ZoneInfo('Etc/GMT-7'), 'Etc/GMT-7'),
-        pytest.param(zoneinfo.ZoneInfo('US/Arizona'), 'US/Arizona'),
-        pytest.param(-6, 'Etc/GMT+6'),
-        pytest.param(-11.0, 'Etc/GMT+11'),
-        pytest.param(12, 'Etc/GMT-12'),
-    ],
-)
-def test_location_tz(tz, tz_expected):
-    loc = Location(32.2, -111, tz)
-    assert isinstance(loc._zoneinfo, datetime.tzinfo)  # Abstract base class.
-    assert type(loc.tz) is str
-    assert loc.tz == tz_expected
-
-
-def test_location_tz_update():
-    loc = Location(32.2, -111, -11)
-    assert loc.tz == 'Etc/GMT+11'
-
-    # Updating Location's tz updates read-only time-zone attributes.
-    loc.tz = 7
-    assert loc.tz == 'Etc/GMT-7'
-
-
-@pytest.mark.parametrize(
-    'tz', [
-        'invalid',
-        'Etc/GMT+20',  # offset too large.
-        20,  # offset too large.
-    ]
-)
-def test_location_invalid_tz(tz):
-    with pytest.raises(zoneinfo.ZoneInfoNotFoundError):
-        Location(32.2, -111, tz)
-
-
-@pytest.mark.parametrize(
-    'tz', [
-        -9.5,  # float with non-zero fractional part.
-        b"bytes not str",
-        [5],
-    ]
-)
-def test_location_invalid_tz_type(tz):
-    with pytest.raises(TypeError):
-        Location(32.2, -111, tz)
-
+    return Location(32.2, -111,  700, 'Tucson')
 
 def test_location_print_all():
-    tus = Location(32.2, -111, 'US/Arizona', 700, 'Tucson')
+    tus = Location(32.2, -111,  700, 'Tucson')
     expected_str = '\n'.join([
         'Location: ',
         '  name: Tucson',
         '  latitude: 32.2',
         '  longitude: -111',
         '  altitude: 700',
-        '  tz: US/Arizona'
     ])
     assert tus.__str__() == expected_str
-
-
-def test_location_print():
-    tus = Location(32.2, -111, zoneinfo.ZoneInfo('US/Arizona'), 700, 'Tucson')
-    expected_str = '\n'.join([
-        'Location: ',
-        '  name: Tucson',
-        '  latitude: 32.2',
-        '  longitude: -111',
-        '  altitude: 700',
-        '  tz: US/Arizona'
-    ])
-    assert tus.__str__() == expected_str
-
 
 @pytest.fixture
 def times():
@@ -121,7 +45,7 @@ def times():
 
 
 def test_get_clearsky(mocker, times):
-    tus = Location(32.2, -111, 'US/Arizona', 700, 'Tucson')
+    tus = Location(32.2, -111,  700, 'Tucson')
     m = mocker.spy(pvlib.clearsky, 'ineichen')
     out = tus.get_clearsky(times)
     assert m.call_count == 1
@@ -135,7 +59,7 @@ def test_get_clearsky(mocker, times):
 
 
 def test_get_clearsky_ineichen_supply_linke(mocker):
-    tus = Location(32.2, -111, 'US/Arizona', 700)
+    tus = Location(32.2, -111,  700)
     times = pd.date_range(start='2014-06-24-0700', end='2014-06-25-0700',
                           freq='3h')
     mocker.spy(pvlib.clearsky, 'ineichen')
@@ -152,7 +76,7 @@ def test_get_clearsky_ineichen_supply_linke(mocker):
 
 
 def test_get_clearsky_haurwitz(times):
-    tus = Location(32.2, -111, 'US/Arizona', 700, 'Tucson')
+    tus = Location(32.2, -111,  700, 'Tucson')
     clearsky = tus.get_clearsky(times, model='haurwitz')
     expected = pd.DataFrame(data=np.array(
                             [[   0.        ],
@@ -166,7 +90,7 @@ def test_get_clearsky_haurwitz(times):
 
 
 def test_get_clearsky_simplified_solis(times):
-    tus = Location(32.2, -111, 'US/Arizona', 700, 'Tucson')
+    tus = Location(32.2, -111,  700, 'Tucson')
     clearsky = tus.get_clearsky(times, model='simplified_solis')
     expected = pd.DataFrame(data=np.
         array([[   0.        ,    0.        ,    0.        ],
@@ -181,7 +105,7 @@ def test_get_clearsky_simplified_solis(times):
 
 
 def test_get_clearsky_simplified_solis_apparent_elevation(times):
-    tus = Location(32.2, -111, 'US/Arizona', 700, 'Tucson')
+    tus = Location(32.2, -111,  700, 'Tucson')
     solar_position = {'apparent_elevation': pd.Series(80, index=times),
                       'apparent_zenith': pd.Series(10, index=times)}
     clearsky = tus.get_clearsky(times, model='simplified_solis',
@@ -199,7 +123,7 @@ def test_get_clearsky_simplified_solis_apparent_elevation(times):
 
 
 def test_get_clearsky_simplified_solis_dni_extra(times):
-    tus = Location(32.2, -111, 'US/Arizona', 700, 'Tucson')
+    tus = Location(32.2, -111,  700, 'Tucson')
     clearsky = tus.get_clearsky(times, model='simplified_solis',
                                 dni_extra=1370)
     expected = pd.DataFrame(data=np.
@@ -215,7 +139,7 @@ def test_get_clearsky_simplified_solis_dni_extra(times):
 
 
 def test_get_clearsky_simplified_solis_pressure(times):
-    tus = Location(32.2, -111, 'US/Arizona', 700, 'Tucson')
+    tus = Location(32.2, -111,  700, 'Tucson')
     clearsky = tus.get_clearsky(times, model='simplified_solis',
                                 pressure=95000)
     expected = pd.DataFrame(data=np.
@@ -231,7 +155,7 @@ def test_get_clearsky_simplified_solis_pressure(times):
 
 
 def test_get_clearsky_simplified_solis_aod_pw(times):
-    tus = Location(32.2, -111, 'US/Arizona', 700, 'Tucson')
+    tus = Location(32.2, -111,  700, 'Tucson')
     clearsky = tus.get_clearsky(times, model='simplified_solis',
                                 aod700=0.25, precipitable_water=2.)
     expected = pd.DataFrame(data=np.
@@ -247,7 +171,7 @@ def test_get_clearsky_simplified_solis_aod_pw(times):
 
 
 def test_get_clearsky_valueerror(times):
-    tus = Location(32.2, -111, 'US/Arizona', 700, 'Tucson')
+    tus = Location(32.2, -111,  700, 'Tucson')
     with pytest.raises(ValueError):
         tus.get_clearsky(times, model='invalid_model')
 
@@ -259,7 +183,6 @@ def test_from_tmy_3():
     loc = Location.from_tmy(meta, data)
     assert loc.name is not None
     assert loc.altitude != 0
-    assert loc.tz != 'UTC'
     assert_frame_equal(loc.weather, data)
 
 
@@ -270,7 +193,6 @@ def test_from_tmy_2():
     loc = Location.from_tmy(meta, data)
     assert loc.name is not None
     assert loc.altitude != 0
-    assert loc.tz != 'UTC'
     assert_frame_equal(loc.weather, data)
 
 
@@ -281,14 +203,13 @@ def test_from_epw():
     loc = Location.from_epw(meta, data)
     assert loc.name is not None
     assert loc.altitude != 0
-    assert loc.tz != 'UTC'
     assert_frame_equal(loc.weather, data)
 
 
-def test_get_solarposition(expected_solpos, golden_mst):
+def test_get_solarposition(expected_solpos, golden_location, golden_mst_tz):
     times = pd.date_range(datetime.datetime(2003, 10, 17, 12, 30, 30),
-                          periods=1, freq='D', tz=golden_mst.tz)
-    ephem_data = golden_mst.get_solarposition(times, temperature=11)
+                          periods=1, freq='D', tz=golden_mst_tz)
+    ephem_data = golden_location.get_solarposition(times, temperature=11)
     ephem_data = np.round(ephem_data, 3)
     expected_solpos.index = times
     expected_solpos = np.round(expected_solpos, 3)
@@ -296,7 +217,7 @@ def test_get_solarposition(expected_solpos, golden_mst):
 
 
 def test_get_airmass(times):
-    tus = Location(32.2, -111, 'US/Arizona', 700, 'Tucson')
+    tus = Location(32.2, -111,  700, 'Tucson')
     airmass = tus.get_airmass(times)
     expected = pd.DataFrame(data=np.array(
                             [[        nan,         nan],
@@ -321,13 +242,13 @@ def test_get_airmass(times):
 
 
 def test_get_airmass_valueerror(times):
-    tus = Location(32.2, -111, 'US/Arizona', 700, 'Tucson')
+    tus = Location(32.2, -111,  700, 'Tucson')
     with pytest.raises(ValueError):
         tus.get_airmass(times, model='invalid_model')
 
 
 def test_Location___repr__():
-    tus = Location(32.2, -111, 'US/Arizona', 700, 'Tucson')
+    tus = Location(32.2, -111,  700, 'Tucson')
 
     expected = '\n'.join([
         'Location: ',
@@ -335,35 +256,34 @@ def test_Location___repr__():
         '  latitude: 32.2',
         '  longitude: -111',
         '  altitude: 700',
-        '  tz: US/Arizona'
     ])
     assert tus.__repr__() == expected
 
 
 @requires_ephem
-def test_get_sun_rise_set_transit(golden):
+def test_get_sun_rise_set_transit(golden_location):
     times = pd.DatetimeIndex(['2015-01-01 07:00:00', '2015-01-01 23:00:00'],
                              tz='MST')
-    result = golden.get_sun_rise_set_transit(times, method='pyephem')
+    result = golden_location.get_sun_rise_set_transit(times, method='pyephem')
     assert all(result.columns == ['sunrise', 'sunset', 'transit'])
 
-    result = golden.get_sun_rise_set_transit(times, method='spa')
+    result = golden_location.get_sun_rise_set_transit(times, method='spa')
     assert all(result.columns == ['sunrise', 'sunset', 'transit'])
 
     dayofyear = 1
     declination = declination_spencer71(dayofyear)
     eot = equation_of_time_spencer71(dayofyear)
-    result = golden.get_sun_rise_set_transit(times, method='geometric',
-                                             declination=declination,
-                                             equation_of_time=eot)
+    result = golden_location.get_sun_rise_set_transit(times, method='geometric',
+                                                      declination=declination,
+                                                      equation_of_time=eot)
     assert all(result.columns == ['sunrise', 'sunset', 'transit'])
 
 
-def test_get_sun_rise_set_transit_valueerror(golden):
+def test_get_sun_rise_set_transit_valueerror(golden_location):
     times = pd.DatetimeIndex(['2015-01-01 07:00:00', '2015-01-01 23:00:00'],
                              tz='MST')
     with pytest.raises(ValueError):
-        golden.get_sun_rise_set_transit(times, method='eyeball')
+        golden_location.get_sun_rise_set_transit(times, method='eyeball')
 
 
 def test_extra_kwargs():
@@ -388,17 +308,66 @@ def test_lookup_altitude(lat, lon, expected_alt):
 
 def test_location_lookup_altitude(mocker):
     mocker.spy(location, 'lookup_altitude')
-    tus = Location(32.2, -111, 'US/Arizona', 700, 'Tucson')
+    tus = Location(32.2, -111,  700, 'Tucson')
     location.lookup_altitude.assert_not_called()
     assert tus.altitude == 700
     location.lookup_altitude.reset_mock()
 
-    tus = Location(32.2, -111, 'US/Arizona')
+    tus = Location(32.2, -111)
     location.lookup_altitude.assert_called_once_with(32.2, -111)
     assert tus.altitude == location.lookup_altitude(32.2, -111)
 
 
-@fail_on_pvlib_version('0.17.0')
-def test_location_pytz_warning(some_location):
-    with pytest.warns(pvlibDeprecationWarning):
-        assert str(some_location.pytz) == 'US/Arizona'
+@pytest.mark.parametrize(
+    'latitude,longitude', [
+        pytest.param(-90, -180, id='min-bounds'),
+        pytest.param(90, 180, id='max-bounds'),
+    ]
+)
+def test_location_coordinate_bounds(latitude, longitude):
+    loc = Location(latitude, longitude, altitude=0)
+    assert loc.latitude == latitude
+    assert loc.longitude == longitude
+
+
+@pytest.mark.parametrize(
+    'latitude,longitude', [
+        pytest.param(-90.1, 0, id='latitude-too-low'),
+        pytest.param(90.1, 0, id='latitude-too-high'),
+        pytest.param(0, -180.1, id='longitude-too-low'),
+        pytest.param(0, 180.1, id='longitude-too-high'),
+    ]
+)
+def test_location_invalid_coordinate_range(latitude, longitude):
+    with pytest.raises(ValueError):
+        Location(latitude, longitude, altitude=0)
+
+
+@pytest.mark.parametrize('value,name', [
+    pytest.param('32.2', 'latitude', id='latitude-string'),
+    pytest.param(float('nan'), 'latitude', id='latitude-nan'),
+    pytest.param(float('inf'), 'longitude', id='longitude-inf'),
+])
+def test_location_invalid_coordinate_type_or_finiteness(value, name):
+    kwargs = {'latitude': 32.2, 'longitude': -111, 'tz': 'UTC', 'altitude': 0}
+    kwargs[name] = value
+    with pytest.raises((TypeError, ValueError)):
+        Location(**kwargs)
+
+
+@pytest.mark.parametrize('altitude', [-430, 8848])
+def test_location_altitude_bounds(altitude):
+    loc = Location(32.2, -111, altitude=altitude)
+    assert loc.altitude == altitude
+
+
+@pytest.mark.parametrize('altitude', [-500, 10000])
+def test_location_invalid_altitude_range(altitude):
+    with pytest.raises(ValueError):
+        Location(32.2, -111, altitude=altitude)
+
+
+def test_location_dataclass_equality():
+    loc_1 = Location(32.2, -111,  700, 'Tucson')
+    loc_2 = Location(32.2, -111,  700, 'Tucson')
+    assert loc_1 == loc_2

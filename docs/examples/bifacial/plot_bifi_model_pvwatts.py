@@ -35,7 +35,7 @@ tz = 'Etc/GMT+5'
 times = pd.date_range('2021-06-21', '2021-06-22', freq='1min', tz=tz)
 
 # create location object and get clearsky data
-site_location = location.Location(lat, lon, tz=tz, name='Greensboro, NC')
+site_location = location.Location(lat, lon, name='Greensboro, NC')
 cs = site_location.get_clearsky(times)
 
 # get solar position data

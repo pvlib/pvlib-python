@@ -21,8 +21,8 @@ from matplotlib import pyplot as plt
 tz = 'MST'
 lat, lon = 39.755, -105.221
 
-# Create location object to store lat, lon, timezone
-site = location.Location(lat, lon, tz=tz)
+# Create location object to store lat and lon
+site = location.Location(lat, lon)
 
 
 # Calculate clear-sky GHI and transpose to plane of array
@@ -31,7 +31,7 @@ site = location.Location(lat, lon, tz=tz)
 def get_irradiance(site_location, date, tilt, surface_azimuth):
     # Creates one day's worth of 10 min intervals
     times = pd.date_range(date, freq='10min', periods=6*24,
-                          tz=site_location.tz)
+                          tz=tz)
     # Generate clearsky data using the Ineichen model, which is the default
     # The get_clearsky method returns a dataframe with values for GHI, DNI,
     # and DHI

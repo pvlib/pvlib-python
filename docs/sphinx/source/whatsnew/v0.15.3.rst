@@ -9,6 +9,11 @@ Breaking Changes
 * Changed output type of :py:func:`pvlib.irradiance.get_total_irradiance`,
   :py:func:`pvlib.irradiance.get_sky_diffuse`, and :py:func:`pvlib.irradiance.poa_components`
   from ``OrderedDict`` to ``dict``. (:issue:`2750`, :pull:`2800`)
+* Removed timezone-related APIs from :py:class:`pvlib.location.Location`:
+  ``tz``, ``pytz``, and ``_zoneinfo``. Removed
+  :py:func:`pvlib.location.lookup_timezone` and
+  :py:func:`pvlib.tools.localize_to_utc`. Use timezone-aware timestamps
+  instead of storing timezone state on ``Location``. (:pull:`2800`)
 
 
 Deprecations

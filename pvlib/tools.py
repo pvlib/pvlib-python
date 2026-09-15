@@ -119,34 +119,6 @@ def atand(number):
     res = np.degrees(np.arctan(number))
     return res
 
-
-def localize_to_utc(time, location):
-    """
-    Converts ``time`` to UTC, localizing if necessary using location.
-
-    Parameters
-    ----------
-    time : datetime.datetime, pandas.DatetimeIndex,
-           or pandas.Series/DataFrame with a DatetimeIndex.
-    location : pvlib.Location object (unused if ``time`` is localized)
-
-    Returns
-    -------
-    datetime.datetime or pandas object localized to UTC.
-    """
-    if isinstance(time, dt.datetime):
-        if time.tzinfo is None:
-            time = time.replace(tzinfo=zoneinfo.ZoneInfo(location.tz))
-        time_utc = time.astimezone(timezone.utc)
-    else:
-        try:
-            time_utc = time.tz_convert('UTC')
-        except TypeError:
-            time_utc = time.tz_localize(location.tz).tz_convert('UTC')
-
-    return time_utc
-
-
 def datetime_to_djd(time):
     """
     Converts a datetime to the Dublin Julian Day

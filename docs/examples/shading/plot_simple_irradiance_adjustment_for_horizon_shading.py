@@ -31,7 +31,7 @@ times = pd.date_range(
 )
 
 # Create location object, and get solar position and clearsky irradiance data.
-location = pvlib.location.Location(latitude, longitude, tz)
+location = pvlib.location.Location(latitude, longitude)
 solar_position = location.get_solarposition(times)
 clearsky = location.get_clearsky(times)
 

@@ -8,12 +8,12 @@ from packaging.version import Version
 
 
 def set_solar_position(obj):
-    obj.location = pvlib.location.Location(32, -110, altitude=700,
-                                           tz='Etc/GMT+7')
+    tz = 'Etc/GMT+7'
+    obj.location = pvlib.location.Location(32, -110, altitude=700)
     obj.times = pd.date_range(start='20180601', freq='3min',
-                              periods=1440)
+                              periods=1440, tz=tz)
     obj.days = pd.date_range(start='20180101', freq='d', periods=365,
-                             tz=obj.location.tz)
+                             tz=tz)
     obj.solar_position = obj.location.get_solarposition(obj.times)
 
 

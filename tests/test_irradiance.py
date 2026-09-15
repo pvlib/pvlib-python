@@ -21,7 +21,7 @@ from .conftest import (
 from pvlib._deprecation import pvlibDeprecationWarning
 
 # fixtures create realistic test input data
-# test input data generated at Location(32.2, -111, 'US/Arizona', 700)
+# test input data generated at Location(32.2, -111,  700)
 # test input data is hard coded to avoid dependencies on other parts of pvlib
 
 

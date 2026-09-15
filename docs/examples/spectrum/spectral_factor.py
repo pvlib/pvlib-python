@@ -65,7 +65,7 @@ meteo = meteo.loc['2001-08-01':'2001-08-07']
 lat, lon = metadata['latitude'], metadata['longitude']
 alt = altitude = metadata['altitude']
 tz = 'Etc/GMT+5'
-loc = location.Location(lat, lon, tz=tz, name='Greensboro, NC')
+loc = location.Location(lat, lon, name='Greensboro, NC')
 
 # Calculate solar position parameters
 solpos = loc.get_solarposition(

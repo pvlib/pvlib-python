@@ -1,3 +1,4 @@
+import zoneinfo
 from pathlib import Path
 import platform
 import warnings
@@ -236,13 +237,16 @@ chandrupatla = pytest.param(
 
 
 @pytest.fixture()
-def golden():
-    return Location(39.742476, -105.1786, 'America/Denver', 1830.14)
-
+def golden_location():
+    return Location(39.742476, -105.1786, 1830.14)
 
 @pytest.fixture()
-def golden_mst():
-    return Location(39.742476, -105.1786, 'MST', 1830.14)
+def golden_tz():
+    return 'America/Denver'
+
+@pytest.fixture()
+def golden_mst_tz():
+    return 'MST'
 
 
 @pytest.fixture()

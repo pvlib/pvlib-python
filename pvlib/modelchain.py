@@ -151,6 +151,14 @@ class ModelChainResult:
     see :py:meth:`~pvlib.pvsystem.PVSystem.get_iam` for details.
     """
 
+    iam_diffuse_modifier: Optional[PerArray[dict]] = field(default=None)
+    """Dictionary (or tuple of dictionaries, one for each array) containing
+    incidence angle modifiers (unitless) calculated by
+    ``ModelChain.iam_diffuse_model``, which reduces diffuse irradiance for
+    reflections; see :py:meth:`~pvlib.pvsystem.PVSystem.get_iam_diffuse`
+    for details.
+    """
+
     spectral_modifier: Optional[PerArray[Union[pd.Series, float]]] = \
         field(default=None)
     """Series (or tuple of Series, one for each array) containing spectral
@@ -300,6 +308,18 @@ class ModelChain:
         'schlick', 'interp' and 'no_loss'. The ModelChain instance will be
         passed as the first argument to a user-defined function.
 
+    iam_diffuse_model : str, or function, optional
+        Valid strings are 'martin_ruiz_diffuse', 'schlick_diffuse',
+        'marion_diffuse', and 'no_loss'. If not specified, default
+        behavior is to apply the 'FD' parameter from the module parameters
+        if available, otherwise it defaults to 1 (no loss). The ModelChain
+        instance will be passed as the first argument to a user-defined
+        function.
+
+    marion_diffuse_model : str, optional
+        Valid strings are 'ashrae', 'physical', 'martin_ruiz', 'sapm', and
+        'schlick'.
+
     spectral_model : str or function, optional
         Valid strings are:
 
@@ -334,6 +354,8 @@ class ModelChain:
                  solar_position_method='nrel_numpy',
                  airmass_model='kastenyoung1989',
                  dc_model=None, ac_model=None, aoi_model=None,
+                 iam_diffuse_model=None,
+                 marion_diffuse_model=None,
                  spectral_model=None, temperature_model=None,
                  dc_ohmic_model='no_loss',
                  losses_model='no_loss', name=None):
@@ -351,6 +373,8 @@ class ModelChain:
         self.dc_model = dc_model
         self.ac_model = ac_model
         self.aoi_model = aoi_model
+        self.iam_diffuse_model = iam_diffuse_model
+        self.marion_diffuse_model = marion_diffuse_model
         self.spectral_model = spectral_model
         self.temperature_model = temperature_model
 
@@ -533,6 +557,7 @@ class ModelChain:
             'name', 'clearsky_model',
             'transposition_model', 'solar_position_method',
             'airmass_model', 'dc_model', 'ac_model', 'aoi_model',
+            'iam_diffuse_model', 'marion_diffuse_model',
             'spectral_model', 'temperature_model', 'losses_model'
         ]
         return ('ModelChain: \n  ' + '\n  '.join(
@@ -834,6 +859,117 @@ class ModelChain:
         return self
 
     @property
+    def iam_diffuse_model(self):
+        return self._iam_diffuse_model
+
+    @iam_diffuse_model.setter
+    def iam_diffuse_model(self, model):
+        if isinstance(model, str):
+            model = model.lower()
+            if model == 'martin_ruiz_diffuse':
+                self._iam_diffuse_model = self.martin_ruiz_diffuse_loss
+            elif model == 'schlick_diffuse':
+                self._iam_diffuse_model = self.schlick_diffuse_loss
+            elif model == 'marion_diffuse':
+                self._iam_diffuse_model = self.marion_diffuse_loss
+            elif model == 'no_loss':
+                self._iam_diffuse_model = self.no_diffuse_loss
+            else:
+                raise ValueError(model + ' is not a valid diffuse IAM loss '
+                                 'model')
+        elif model is None:
+            self._iam_diffuse_model = self.fd_diffuse_loss
+        else:
+            self._iam_diffuse_model = partial(model, self)
+
+    def martin_ruiz_diffuse_loss(self):
+        self.results.iam_diffuse_modifier = self.system.get_iam_diffuse(
+            tuple(array.mount.surface_tilt
+                  for array in self.system.arrays),
+            iam_model='martin_ruiz_diffuse'
+        )
+        return self
+
+    def schlick_diffuse_loss(self):
+        self.results.iam_diffuse_modifier = self.system.get_iam_diffuse(
+            tuple(array.mount.surface_tilt
+                  for array in self.system.arrays),
+            iam_model='schlick_diffuse'
+        )
+        return self
+
+    def marion_diffuse_loss(self):
+        if self.marion_diffuse_model is None:
+            self.marion_diffuse_model = self.infer_marion_diffuse_model()
+        self.results.iam_diffuse_modifier = self.system.get_iam_diffuse(
+            tuple(array.mount.surface_tilt
+                  for array in self.system.arrays),
+            iam_model='marion_diffuse',
+            marion_model=self.marion_diffuse_model,
+        )
+        return self
+
+    def no_diffuse_loss(self):
+        if self.system.num_arrays == 1:
+            self.results.iam_diffuse_modifier = 1.0
+        else:
+            self.results.iam_diffuse_modifier = (1.0,) * self.system.num_arrays
+        return self
+
+    def fd_diffuse_loss(self):
+        self.results.iam_diffuse_modifier = tuple(
+            array.module_parameters.get('FD', 1.0)
+            for array in self.system.arrays
+        )
+
+    @property
+    def marion_diffuse_model(self):
+        return self._marion_diffuse_model
+
+    @marion_diffuse_model.setter
+    def marion_diffuse_model(self, model):
+        if model is None:
+            self._marion_diffuse_model = None
+        elif isinstance(model, str):
+            model = model.lower()
+            if model not in ['physical', 'sapm', 'ashrae', 'martin_ruiz',
+                             'schlick']:
+                raise ValueError(f'{model} is not a valid '
+                                 'marion_diffuse_model.')
+            self._marion_diffuse_model = model
+        else:
+            raise TypeError(
+                'marion_diffuse_model must be a string or None.'
+            )
+
+    def infer_marion_diffuse_model(self):
+        module_parameters = tuple(
+            array.module_parameters for array in self.system.arrays)
+        params = _common_keys(module_parameters)
+        if iam._IAM_MODEL_PARAMS['physical'] <= params:
+            return 'physical'
+        elif iam._IAM_MODEL_PARAMS['sapm'] <= params:
+            return 'sapm'
+        elif iam._IAM_MODEL_PARAMS['ashrae'] <= params:
+            return 'ashrae'
+        elif iam._IAM_MODEL_PARAMS['martin_ruiz'] <= params:
+            return 'martin_ruiz'
+        # 'schlick' is intentionally excluded from inference. Since it
+        # requires no parameters, it would always match and effectively
+        # become the default, which is undesirable because it is not
+        # commonly used for PV applications.
+        else:
+            raise ValueError('could not infer the IAM model to be used with '
+                             'marion_diffuse from at least one Array\'s '
+                             'module_parameters. Check that the'
+                             'module_parameters for all Arrays in '
+                             'system.arrays contain parameters for the '
+                             'physical, sapm, ashrae, or martin_ruiz '
+                             'model; explicitly set the model with the '
+                             'marion_diffuse_model kwarg; or use a different '
+                             'iam_diffuse_model.')
+
+    @property
     def spectral_model(self):
         return self._spectral_model
 
@@ -1061,22 +1197,90 @@ class ModelChain:
         return self
 
     def effective_irradiance_model(self):
-        def _eff_irrad(module_parameters, total_irrad, spect_mod, aoi_mod):
-            fd = module_parameters.get('FD', 1.)
-            return spect_mod * (total_irrad['poa_direct'] * aoi_mod +
-                                fd * total_irrad['poa_diffuse'])
+        def _eff_irrad(module_parameters, total_irrad, spect_mod, aoi_mod,
+                       iam_diffuse_mod):
+            if isinstance(iam_diffuse_mod, dict):
+                direct = total_irrad['poa_direct']
+                # circumsolar is treated as direct
+                if 'poa_circumsolar' in total_irrad:
+                    direct += total_irrad['poa_circumsolar']
+                direct *= aoi_mod
+
+                diffuse_components = {
+                    'poa_isotropic': 'sky',
+                    'poa_horizon': 'horizon',
+                    'poa_ground_diffuse': 'ground',
+                }
+                sky_components = {
+                    'poa_isotropic',
+                    'poa_circumsolar',
+                    'poa_horizon',
+                }
+                has_sky_components = any(
+                    component in total_irrad for component in sky_components
+                )
+
+                if not has_sky_components:
+                    # The transposition model does not provide component-level
+                    # sky diffuse irradiance, so the sky diffuse component
+                    # cannot be corrected with the selected diffuse IAM model.
+                    warnings.warn(
+                        'The selected transposition_model does not provide '
+                        'component-level sky diffuse irradiance required by '
+                        'the selected iam_diffuse_model. Using an IAM of 1.0 '
+                        'for "poa_sky_diffuse".',
+                        UserWarning,
+                    )
+                    iam_ground = iam_diffuse_mod['ground']
+                    diffuse = (
+                        total_irrad['poa_sky_diffuse']
+                        + total_irrad['poa_ground_diffuse'] * iam_ground
+                    )
+                else:
+                    available_components = {
+                        irrad_key: iam_key
+                        for irrad_key, iam_key in diffuse_components.items()
+                        if irrad_key in total_irrad
+                    }
+
+                    diffuse = 0.0
+                    for irrad_key, iam_key in available_components.items():
+                        iam = iam_diffuse_mod.get(iam_key)
+                        if iam is None:
+                            warnings.warn(
+                                'The selected iam_diffuse_model '
+                                'does not provide diffuse IAM for the '
+                                f'"{iam_key}" component, provided by the '
+                                'selected transposition_model '
+                                f'"{self.transposition_model}". '
+                                'Using an IAM of 1.0.',
+                                UserWarning,
+                            )
+                            iam = 1.0
+                        diffuse += total_irrad[irrad_key] * iam
+            else:
+                direct = total_irrad['poa_direct'] * aoi_mod
+                diffuse = total_irrad['poa_diffuse'] * iam_diffuse_mod
+            return spect_mod * (direct + diffuse)
         if isinstance(self.results.total_irrad, tuple):
+            if not isinstance(self.results.iam_diffuse_modifier, tuple):
+                self.results.iam_diffuse_modifier = (
+                    self.results.iam_diffuse_modifier,)
             self.results.effective_irradiance = tuple(
-                _eff_irrad(array.module_parameters, ti, sm, am) for
-                array, ti, sm, am in zip(
+                _eff_irrad(array.module_parameters, ti, sm, am, di) for
+                array, ti, sm, am, di in zip(
                     self.system.arrays, self.results.total_irrad,
-                    self.results.spectral_modifier, self.results.aoi_modifier))
+                    self.results.spectral_modifier, self.results.aoi_modifier,
+                    self.results.iam_diffuse_modifier
+                )
+            )
         else:
             self.results.effective_irradiance = _eff_irrad(
                 self.system.arrays[0].module_parameters,
                 self.results.total_irrad,
                 self.results.spectral_modifier,
-                self.results.aoi_modifier
+                self.results.aoi_modifier,
+                self.results.iam_diffuse_modifier
             )
         return self
 
@@ -1390,6 +1594,8 @@ class ModelChain:
         self._prep_inputs_albedo(weather)
         self._prep_inputs_fixed()
 
+        diffuse_components = self.transposition_model != 'klucher'
+
         self.results.total_irrad = self.system.get_irradiance(
             self.results.solar_position['apparent_zenith'],
             self.results.solar_position['azimuth'],
@@ -1398,7 +1604,8 @@ class ModelChain:
             _tuple_from_dfs(self.results.weather, 'dhi'),
             albedo=self.results.albedo,
             airmass=self.results.airmass['airmass_relative'],
-            model=self.transposition_model
+            model=self.transposition_model,
+            diffuse_components=diffuse_components,
         )
 
         return self
@@ -1643,6 +1850,7 @@ class ModelChain:
         weather = _to_tuple(weather)
         self.prepare_inputs(weather)
         self.aoi_model()
+        self.iam_diffuse_model()
         self.spectral_model()
 
         self.effective_irradiance_model()
@@ -1775,6 +1983,7 @@ class ModelChain:
         self.prepare_inputs_from_poa(data)
 
         self.aoi_model()
+        self.iam_diffuse_model()
         self.spectral_model()
         self.effective_irradiance_model()
 

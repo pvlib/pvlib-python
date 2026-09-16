@@ -1560,6 +1560,177 @@ def test_infer_aoi_model_invalid(location, system_no_aoi):
         ModelChain(system_no_aoi, location, spectral_model='no_loss')
 
 
+@pytest.mark.parametrize(
+    'iam_diffuse_model, expected_call_count', [
+        ('marion_diffuse', 1),
+        ('martin_ruiz_diffuse', 1),
+        ('schlick_diffuse', 1),
+        ('no_loss', 0),
+        (None, 0)])
+def test_iam_diffuse_models(sapm_dc_snl_ac_system, location,
+                            iam_diffuse_model, expected_call_count,
+                            weather, mocker):
+    mc = ModelChain(sapm_dc_snl_ac_system, location, dc_model='sapm',
+                    iam_diffuse_model=iam_diffuse_model,
+                    spectral_model='no_loss')
+    m = mocker.spy(sapm_dc_snl_ac_system, 'get_iam_diffuse')
+    mc.run_model(weather=weather)
+    assert m.call_count == expected_call_count
+    assert isinstance(mc.results.ac, pd.Series)
+    assert mc.results.ac.iloc[0] > 150 and mc.results.ac.iloc[0] < 200
+    assert mc.results.ac.iloc[1] < 1
+
+
+@pytest.mark.parametrize('iam_diffuse_model', [
+    'marion_diffuse',
+    'martin_ruiz_diffuse',
+    'schlick_diffuse',
+    'no_loss',
+    None
+])
+def test_iam_diffuse_models_singleton_weather_single_array(
+        sapm_dc_snl_ac_system, location, iam_diffuse_model, weather):
+    mc = ModelChain(sapm_dc_snl_ac_system, location, dc_model='sapm',
+                    iam_diffuse_model=iam_diffuse_model,
+                    spectral_model='no_loss')
+    mc.run_model(weather=[weather])
+    assert isinstance(mc.results.iam_diffuse_modifier, tuple)
+    assert len(mc.results.iam_diffuse_modifier) == 1
+    assert isinstance(mc.results.ac, pd.Series)
+    assert not mc.results.ac.empty
+    assert mc.results.ac.iloc[0] > 150 and mc.results.ac.iloc[0] < 200
+    assert mc.results.ac.iloc[1] < 1
+
+
+def test_iam_diffuse_model_no_loss(sapm_dc_snl_ac_system, cec_dc_snl_ac_arrays,
+                                   location, weather):
+    mc = ModelChain(sapm_dc_snl_ac_system, location, dc_model='sapm',
+                    iam_diffuse_model='no_loss', spectral_model='no_loss')
+    mc.run_model(weather)
+    assert mc.results.iam_diffuse_modifier == 1.0
+    assert not mc.results.ac.empty
+    assert mc.results.ac.iloc[0] > 150 and mc.results.ac.iloc[0] < 200
+    assert mc.results.ac.iloc[1] < 1
+
+    # multi-array
+    mc = ModelChain(cec_dc_snl_ac_arrays, location,
+                    dc_model='cec', iam_diffuse_model='no_loss',
+                    spectral_model='no_loss')
+    mc.run_model(weather)
+    assert mc.results.iam_diffuse_modifier == (1.0, 1.0)
+    assert not mc.results.ac.empty
+
+
+def constant_iam_diffuse_loss(mc):
+    mc.results.iam_diffuse_modifier = 0.9
+
+
+def test_iam_diffuse_model_user_func(sapm_dc_snl_ac_system,
+                                     location, weather, mocker):
+    m = mocker.spy(sys.modules[__name__], 'constant_iam_diffuse_loss')
+    mc = ModelChain(sapm_dc_snl_ac_system, location, dc_model='sapm',
+                    iam_diffuse_model=constant_iam_diffuse_loss,
+                    spectral_model='no_loss')
+    mc.run_model(weather)
+    assert m.call_count == 1
+    assert mc.results.iam_diffuse_modifier == 0.9
+    assert not mc.results.ac.empty
+    assert mc.results.ac.iloc[0] > 140 and mc.results.ac.iloc[0] < 200
+    assert mc.results.ac.iloc[1] < 1
+
+
+def test_iam_diffuse_model_invalid(location, system_no_aoi):
+    text = 'not a valid diffuse IAM loss model'
+    with pytest.raises(ValueError, match=text):
+        ModelChain(system_no_aoi, location, aoi_model='no_loss',
+                   iam_diffuse_model='not_a_model')
+
+
+def test_marion_diffuse_model_invalid(location, system_no_aoi):
+    text = "not a valid marion_diffuse_model"
+    with pytest.raises(ValueError, match=text):
+        ModelChain(system_no_aoi, location, aoi_model='no_loss',
+                   iam_diffuse_model='marion_diffuse',
+                   marion_diffuse_model='not_a_model')
+
+    text = "marion_diffuse_model must be a string or None"
+    with pytest.raises(TypeError, match=text):
+        ModelChain(system_no_aoi, location, aoi_model='no_loss',
+                   iam_diffuse_model='marion_diffuse',
+                   marion_diffuse_model=1)
+
+
+@pytest.mark.parametrize('marion_diffuse_model', [
+    'sapm', 'ashrae', 'physical', 'martin_ruiz',
+])
+def test_infer_marion_diffuse_model(
+        location, system_no_aoi, marion_diffuse_model):
+    for k in iam._IAM_MODEL_PARAMS[marion_diffuse_model]:
+        system_no_aoi.arrays[0].module_parameters.update({k: 1.0})
+    mc = ModelChain(
+        system_no_aoi,
+        location,
+        iam_diffuse_model='marion_diffuse',
+        spectral_model='no_loss',
+    )
+    mc.iam_diffuse_model()
+    assert mc.marion_diffuse_model == marion_diffuse_model
+
+
+def test_infer_iam_marion_diffuse_model_with_extra_params(
+        location, system_no_aoi, weather, mocker):
+    model_kwargs = {'n': 1.526, 'K': 4.0, 'L': 0.002,  # required
+                    'n_ar': 1.8}  # extra
+    # test extra parameters not defined at iam._IAM_MODEL_PARAMS are passed
+    m = mocker.spy(iam, 'physical')
+    system_no_aoi.arrays[0].module_parameters.update(**model_kwargs)
+    mc = ModelChain(system_no_aoi, location, spectral_model='no_loss')
+    assert isinstance(mc, ModelChain)
+    mc.run_model(weather=weather)
+    _, call_kwargs = m.call_args
+    assert call_kwargs == model_kwargs
+
+
+def test_infer_marion_diffuse_model_invalid(location, system_no_aoi):
+    text = 'could not infer the IAM model to be used with marion_diffuse'
+    with pytest.raises(ValueError, match=text):
+        mc = ModelChain(
+            system_no_aoi,
+            location,
+            aoi_model='no_loss',
+            iam_diffuse_model='marion_diffuse',
+            spectral_model='no_loss',
+        )
+        mc.iam_diffuse_model()
+
+
+def test_diffuse_iam_with_no_sky_diffuse_components(
+        location, sapm_dc_snl_ac_system, weather):
+    text = 'transposition_model does not provide component-level sky diffuse'
+    with pytest.warns(UserWarning, match=text):
+        mc = ModelChain(
+            sapm_dc_snl_ac_system,
+            location,
+            transposition_model='klucher',
+            iam_diffuse_model='marion_diffuse',
+        )
+        mc.run_model(weather)
+    assert not mc.results.ac.empty
+
+
+def test_diffuse_iam_component_not_present_warning(
+        location, sapm_dc_snl_ac_system, weather):
+    text = 'The selected iam_diffuse_model does not provide'
+    with pytest.warns(UserWarning, match=text):
+        mc = ModelChain(
+            sapm_dc_snl_ac_system,
+            location,
+            transposition_model='perez',
+            iam_diffuse_model='martin_ruiz_diffuse',
+        )
+        mc.run_model(weather)
+
+
 def constant_spectral_loss(mc):
     mc.results.spectral_modifier = 0.9
 
@@ -2052,6 +2223,8 @@ def test_ModelChain___repr__(sapm_dc_snl_ac_system, location):
         '  dc_model: sapm',
         '  ac_model: sandia_inverter',
         '  aoi_model: sapm_aoi_loss',
+        '  iam_diffuse_model: fd_diffuse_loss',
+        '  marion_diffuse_model: None',
         '  spectral_model: sapm_spectral_loss',
         '  temperature_model: sapm_temp',
         '  losses_model: no_extra_losses'

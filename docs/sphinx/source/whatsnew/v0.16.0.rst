@@ -89,6 +89,11 @@ Enhancements
   (:issue:`2828`, :pull:`2832`)
 * Allow variables from multiple datasets to be requested at once in
   :py:func:`~pvlib.iotools.get_merra2`. (:pull:`2839`)
+* Add support for diffuse IAM in the :py:class:`pvlib.pvsystem.Array` and
+  :py:class:`pvlib.pvsystem.PVSystem` classes (see `pvlib.pvsystem.Array.get_iam_diffuse`
+  and `pvlib.pvsystem.PVSystem.get_iam_diffuse`). (:issue:`2812`, :pull:`2845`)
+* Add support for sky diffuse irradiance components and component-specific optical losses
+  (IAM) in the :py:class:`pvlib.modelchain.ModelChain` class. (:issue:`2846`, :pull:`2847`)
 
 
 Documentation

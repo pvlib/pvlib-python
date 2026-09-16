@@ -34,6 +34,25 @@ Breaking Changes
   and :py:func:`pvlib.iam.schlick_diffuse` from tuple to ``dict``, to be
   consistent with :py:func:`pvlib.iam.marion_diffuse`. (:issue:`2837`,
   :pull:`2842`)
+* All ``OrderedDict`` outputs are now ``dict``.  The following functions
+  are affected (:issue:`1684`, :pull:`2856`):
+
+  * :py:func:`~pvlib.clearsky.ineichen`
+  * :py:func:`~pvlib.clearsky.simplified_solis`
+  * :py:func:`~pvlib.clearsky.detect_clearsky`
+  * :py:func:`~pvlib.clearsky.bird`
+  * :py:func:`~pvlib.irradiance.disc`
+  * :py:func:`~pvlib.irradiance.gti_dirint`
+  * :py:func:`~pvlib.irradiance.erbs`
+  * :py:func:`~pvlib.irradiance.erbs_driesse`
+  * :py:func:`~pvlib.irradiance.orgill_hollands`
+  * :py:func:`~pvlib.irradiance.boland`
+  * :py:func:`~pvlib.irradiance.campbell_norman`
+  * :py:func:`~pvlib.irradiance.louche`
+  * :py:func:`~pvlib.pvsystem.sapm`
+  * :py:func:`~pvlib.pvsystem.max_power_point`
+
+
 
 Deprecations
 ~~~~~~~~~~~~

@@ -1,4 +1,3 @@
-from collections import OrderedDict
 import itertools
 
 import numpy as np
@@ -191,7 +190,7 @@ def test_sapm(sapm_module_params):
 
     out = pvsystem.sapm(1000, 25, sapm_module_params)
 
-    expected = OrderedDict()
+    expected = {}
     expected['i_sc'] = sapm_module_params['Isco']
     expected['i_mp'] = sapm_module_params['Impo']
     expected['v_oc'] = sapm_module_params['Voco']
@@ -1651,13 +1650,15 @@ def test_singlediode_series_expected(cec_module_params):
 
     out = pvsystem.singlediode(IL, I0, Rs, Rsh, nNsVth, method='lambertw')
 
-    expected = OrderedDict([('i_sc', array([0., 3.01079860, 6.00726296])),
-                            ('v_oc', array([0., 9.96959733, 10.29603253])),
-                            ('i_mp', array([0., 2.656285960, 5.290525645])),
-                            ('v_mp', array([0., 8.321092255, 8.409413795])),
-                            ('p_mp', array([0., 22.10320053, 44.49021934])),
-                            ('i_x', array([0., 2.884132006, 5.746202281])),
-                            ('i_xx', array([0., 2.052691562, 3.909673879]))])
+    expected = {
+        "i_sc": array([0.0, 3.01079860, 6.00726296]),
+        "v_oc": array([0.0, 9.96959733, 10.29603253]),
+        "i_mp": array([0.0, 2.656285960, 5.290525645]),
+        "v_mp": array([0.0, 8.321092255, 8.409413795]),
+        "p_mp": array([0.0, 22.10320053, 44.49021934]),
+        "i_x": array([0.0, 2.884132006, 5.746202281]),
+        "i_xx": array([0.0, 2.052691562, 3.909673879]),
+    }
 
     for k, v in out.items():
         assert_allclose(v, expected[k], atol=1e-2)

@@ -1,5 +1,3 @@
-from collections import OrderedDict
-
 import numpy as np
 from numpy import nan
 import pandas as pd
@@ -76,7 +74,7 @@ def test_ineichen_series_perez_enhancement():
 
 
 def test_ineichen_scalar_input():
-    expected = OrderedDict()
+    expected = {}
     expected['ghi'] = 1038.159219
     expected['dni'] = 942.2081860378344
     expected['dhi'] = 110.26529293612793
@@ -100,7 +98,7 @@ def test_ineichen_nans():
 
     airmass_absolute = np.full(length, 1.)
 
-    expected = OrderedDict()
+    expected = {}
     expected['ghi'] = np.full(length, np.nan)
     expected['dni'] = np.full(length, np.nan)
     expected['dhi'] = np.full(length, np.nan)
@@ -117,7 +115,7 @@ def test_ineichen_nans():
 
 
 def test_ineichen_arrays():
-    expected = OrderedDict()
+    expected = {}
 
     expected['ghi'] = (np.
         array([[[1095.77074798, 1054.17449885, 1014.15727338],
@@ -283,7 +281,7 @@ def test_haurwitz():
 
 
 def test_simplified_solis_scalar_elevation():
-    expected = OrderedDict()
+    expected = {}
     expected['ghi'] = 1064.653145
     expected['dni'] = 959.335463
     expected['dhi'] = 129.125602
@@ -294,7 +292,7 @@ def test_simplified_solis_scalar_elevation():
 
 
 def test_simplified_solis_scalar_neg_elevation():
-    expected = OrderedDict()
+    expected = {}
     expected['ghi'] = 0
     expected['dni'] = 0
     expected['dhi'] = 0
@@ -368,7 +366,7 @@ def test_simplified_solis_precipitable_water():
 
 def test_simplified_solis_small_scalar_pw():
 
-    expected = OrderedDict()
+    expected = {}
     expected['ghi'] = 1107.84678941
     expected['dni'] = 1001.15353307
     expected['dhi'] = 128.58887606
@@ -379,7 +377,7 @@ def test_simplified_solis_small_scalar_pw():
 
 
 def test_simplified_solis_return_arrays():
-    expected = OrderedDict()
+    expected = {}
 
     expected['ghi'] = np.array([[ 1148.40081325,   913.42330823],
                                 [  965.48550828,   760.04527609]])
@@ -423,7 +421,7 @@ def test_simplified_solis_nans_arrays():
     dni_extra = np.full(length, 1370.)
     dni_extra[4] = np.nan
 
-    expected = OrderedDict()
+    expected = {}
     expected['ghi'] = np.full(length, np.nan)
     expected['dni'] = np.full(length, np.nan)
     expected['dhi'] = np.full(length, np.nan)
@@ -461,7 +459,7 @@ def test_simplified_solis_nans_series():
     dni_extra = np.full(length, 1370.)
     dni_extra[4] = np.nan
 
-    expected = OrderedDict()
+    expected = {}
     expected['ghi'] = np.full(length, np.nan)
     expected['dni'] = np.full(length, np.nan)
     expected['dhi'] = np.full(length, np.nan)
@@ -603,7 +601,7 @@ def test_detect_clearsky_components(detect_clearsky_data):
         return_components=True)
     assert_series_equal(expected['Clear or not'], clear_samples,
                         check_dtype=False, check_names=False)
-    assert isinstance(components, OrderedDict)
+    assert isinstance(components, dict)
     assert np.allclose(alpha, 0.9633903181941296)
 
 

@@ -3,7 +3,6 @@ The ``pvsystem`` module contains functions for modeling the output and
 performance of PV modules and inverters.
 """
 
-from collections import OrderedDict
 import functools
 import io
 import itertools
@@ -2262,7 +2261,7 @@ def sapm(effective_irradiance, temp_cell, module, *, temperature_ref=25,
 
     Returns
     -------
-    A DataFrame with the columns:
+    A dict or DataFrame with the columns:
 
         * i_sc : Short-circuit current (A)
         * i_mp : Current at the maximum-power point (A)
@@ -2369,7 +2368,7 @@ def sapm(effective_irradiance, temp_cell, module, *, temperature_ref=25,
     # avoid repeated __getitem__
     cells_in_series = module['Cells_in_Series']
 
-    out = OrderedDict()
+    out = {}
 
     out['i_sc'] = (
         module['Isco'] * Ee * (1 + module['Aisc']*(temp_cell -
@@ -2684,7 +2683,7 @@ def max_power_point(photocurrent, saturation_current, resistance_series,
 
     Returns
     -------
-    OrderedDict or pandas.DataFrame
+    dict or pandas.DataFrame
         ``(i_mp, v_mp, p_mp)``
 
     Notes
@@ -2702,7 +2701,7 @@ def max_power_point(photocurrent, saturation_current, resistance_series,
         ivp = {'i_mp': i_mp, 'v_mp': v_mp, 'p_mp': p_mp}
         out = pd.DataFrame(ivp, index=photocurrent.index)
     else:
-        out = OrderedDict()
+        out = {}
         out['i_mp'] = i_mp
         out['v_mp'] = v_mp
         out['p_mp'] = p_mp

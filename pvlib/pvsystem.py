@@ -335,10 +335,10 @@ class PVSystem:
         model : String, default 'haydavies'
             Irradiance model.
         diffuse_components : bool, default False
-            If `True`, returns the diffuse irradiance components available
+            If ``True``, returns the diffuse irradiance components available
             from the selected model (e.g., `poa_isotropic`,
             `poa_circumsolar`, `poa_horizon`).
-            If `False`, only the total diffuse irradiance is returned.
+            If ``False``, only the total diffuse irradiance is returned.
 
         kwargs
             Extra parameters passed to
@@ -1171,10 +1171,10 @@ class Array:
         model : String, default 'haydavies'
             Irradiance model.
         diffuse_components : bool, default False
-            If `True`, returns the diffuse irradiance components available
-            from the selected model (e.g., `poa_isotropic`,
-            `poa_circumsolar`, `poa_horizon`).
-            If `False`, only the total diffuse irradiance is returned.
+            If ``True``, returns the diffuse irradiance components available
+            from the selected model (e.g., ``poa_isotropic``,
+            ``poa_circumsolar``, ``poa_horizon``).
+            If ``False``, only the total diffuse irradiance is returned.
 
         kwargs
             Extra parameters passed to
@@ -1276,9 +1276,9 @@ class Array:
         Determine the incidence angle modifier for various diffuse irradiance
         components using the method specified by ``iam_model``.
 
-        Parameters for `iam_model` are used from `Array.module_parameters` if
-        found. If parameters are not found in `Array.module_parameters`,
-        default parameters for `iam_model` are used.
+        Parameters for ``iam_model`` are used from ``Array.module_parameters``
+        if found. If parameters are not found in ``Array.module_parameters``,
+        default parameters for ``iam_model`` are used.
 
         Parameters
         ----------
@@ -1301,9 +1301,9 @@ class Array:
         Raises
         ------
         ValueError
-            if `iam_model` is not a valid model name.
+            if ``iam_model`` is not a valid model name.
         ValueError
-            if `iam_model` is 'marion_diffuse' and `marion_model` is not
+            if ``iam_model`` is 'marion_diffuse' and ``marion_model`` is not
             a valid model name.
         """
         model = iam_model.lower()

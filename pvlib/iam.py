@@ -764,9 +764,9 @@ def _get_marion_interpolator(iam_function, region, resolution,
     function to avoid repeated calculations leading to excessive memory use.
     """
     if full_range:
-        tilt = np.arange(0, 180.5, resolution)
+        tilt = np.arange(0, 180 + resolution, resolution)
     else:
-        tilt = np.arange(0, 90.5, resolution)
+        tilt = np.arange(0, 90 + resolution, resolution)
     iam = marion_integrate(iam_function, tilt, region)
     return PchipInterpolator(tilt, iam)
 

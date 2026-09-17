@@ -175,6 +175,19 @@ def test_rh_from_tdew():
     assert np.isclose(rh_float, relative_humidity_wmo.iloc[0])
 
 
+def test_rh_from_tdew_physical_bounds():
+    # The dew point cannot exceed the air temperature: equal values mean the
+    # air is saturated (100% RH), and a lower dew point gives a lower RH. This
+    # pins the direction of the calculation so it cannot silently invert.
+    assert atmosphere.rh_from_tdew(
+        temp_air=20.0, temp_dew=20.0
+    ) == pytest.approx(100.0)
+    assert atmosphere.rh_from_tdew(temp_air=20.0, temp_dew=10.0) < 100.0
+    assert atmosphere.rh_from_tdew(
+        temp_air=20.0, temp_dew=5.0
+    ) < atmosphere.rh_from_tdew(temp_air=20.0, temp_dew=15.0)
+
+
 # Unit tests
 def test_tdew_from_rh():
 

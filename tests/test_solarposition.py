@@ -183,6 +183,59 @@ def test_sun_rise_set_transit_spa(expected_rise_set_spa, golden, delta_t):
                        )
 
 
+def test_sun_rise_set_transit_spa_local_day():
+    # GH #2238: the "day of interest" is the *local* calendar day of each
+    # input timestamp.  Evening-local timestamps fall on the next day in
+    # UTC; in v0.11.1 they incorrectly returned the following day's
+    # sunrise/sunset/transit.  All timestamps on the same local day must
+    # give identical results, matching pvlib <= v0.11.0.
+    times = pd.to_datetime(
+        ['2000-01-01 18:00', '2000-01-01 19:00']).tz_localize('Etc/GMT+5')
+    result = solarposition.sun_rise_set_transit_spa(times, 40, -80)
+
+    # every result falls on the local calendar day of the input (2000-01-01)
+    for col in ['sunrise', 'sunset', 'transit']:
+        assert (result[col].dt.date == datetime.date(2000, 1, 1)).all()
+
+    # both inputs share the same local day, so their results are identical
+    for col in ['sunrise', 'sunset', 'transit']:
+        assert result[col].iloc[0] == result[col].iloc[1]
+
+    # known-good values from pvlib v0.11.0 (NLR SPA), rounded to the second
+    expected = pd.DataFrame(
+        {'sunrise': pd.DatetimeIndex(['2000-01-01 07:41:51'] * 2),
+         'sunset': pd.DatetimeIndex(['2000-01-01 17:05:04'] * 2),
+         'transit': pd.DatetimeIndex(['2000-01-01 12:23:23'] * 2)},
+        index=times,
+    )
+    for col in expected.columns:
+        expected[col] = expected[col].dt.tz_localize('Etc/GMT+5')
+
+    result_rounded = pd.DataFrame(index=result.index)
+    for col, data in result.items():
+        result_rounded[col] = data.dt.round('1s')
+
+    assert_frame_equal(result_rounded, expected, check_dtype=False)
+
+    # positive-offset zone: early-morning-local timestamps are the *previous*
+    # calendar day in UTC, the mirror of the case above
+    times = pd.to_datetime(
+        ['2000-07-01 05:00', '2000-07-01 06:00']).tz_localize('Etc/GMT-9')
+    result = solarposition.sun_rise_set_transit_spa(times, 35, 139)
+    for col in ['sunrise', 'sunset', 'transit']:
+        assert (result[col].dt.date == datetime.date(2000, 7, 1)).all()
+        assert result[col].iloc[0] == result[col].iloc[1]
+
+    # midnight-DST zone: local midnight does not exist in America/Santiago on
+    # its 2019-09-08 spring-forward day, so normalizing a tz-aware index would
+    # raise.  The day of interest must still be the local day and not error.
+    times = pd.DatetimeIndex(
+        ['2019-09-08 20:00']).tz_localize('America/Santiago')
+    result = solarposition.sun_rise_set_transit_spa(times, -33.45, -70.66)
+    for col in ['sunrise', 'sunset', 'transit']:
+        assert (result[col].dt.date == datetime.date(2019, 9, 8)).all()
+
+
 @requires_ephem
 def test_sun_rise_set_transit_ephem(expected_rise_set_ephem, golden):
     # test for Golden, CO compare to USNO, using local midnight

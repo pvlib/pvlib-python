@@ -1,9 +1,14 @@
 .. _whatsnew_0_16_0:
 
 
-v0.16.0
+v0.16.0 (Month XX, 20YY)
+-----------------------
+
 Breaking Changes
 ~~~~~~~~~~~~~~~~
+* Remove support for the `g_poa_effective` keyword argument in
+  :py:func:`pvlib.pvsystem.pvwatts_dc`. Users must now use
+  `effective_irradiance`. (:issue:`2703`, :pull:`2704`)
 * Change output type of :py:func:`pvlib.irradiance.perez` and
   :py:func:`pvlib.irradiance.perez_driesse` from ``OrderedDict`` to ``dict`` when
   ``return_components=True`` to be consistent with other models.
@@ -11,22 +16,91 @@ Breaking Changes
 * Remove empty ``poa_horizon`` key from the ``diffuse_components`` output of
   :py:func:`pvlib.irradiance.haydavies`.
   (:pull:`2788`)
+* Removed private function :py:func:`pvlib.irradiance._liujordan`.
+  (:issue:`2764`, :pull:`2766`)
+* Removed deprecated iotools functions :py:func:`pvlib.iotools.parse_bsrn`,
+  :py:func:`pvlib.iotools.parse_epw`, and
+  :py:func:`pvlib.iotools.parse_cams`. Use
+  :py:func:`pvlib.iotools.read_bsrn`, :py:func:`pvlib.iotools.read_epw`,
+  and :py:func:`pvlib.iotools.read_cams` instead.
+  (:issue:`2767`, :pull:`2766`)
+* Removed deprecated modelchain function
+  :py:func:`pvlib.modelchain.get_orientation`.
+  (:issue:`2767`, :pull:`2766`)
+* Removed the deprecated ``server`` keyword argument from
+  :py:func:`pvlib.iotools.sodapro.get_cams`. Use ``url`` instead.
+  (:issue:`2767`, :pull:`2766`)
+* Changed the output type of :py:func:`pvlib.iam.marion_ruiz_diffuse`
+  and :py:func:`pvlib.iam.schlick_diffuse` from tuple to ``dict``, to be
+  consistent with :py:func:`pvlib.iam.marion_diffuse`. (:issue:`2837`,
+  :pull:`2842`)
+* All ``OrderedDict`` outputs are now ``dict``.  The following functions
+  are affected (:issue:`1684`, :pull:`2856`):
+
+  * :py:func:`~pvlib.clearsky.ineichen`
+  * :py:func:`~pvlib.clearsky.simplified_solis`
+  * :py:func:`~pvlib.clearsky.detect_clearsky`
+  * :py:func:`~pvlib.clearsky.bird`
+  * :py:func:`~pvlib.irradiance.disc`
+  * :py:func:`~pvlib.irradiance.gti_dirint`
+  * :py:func:`~pvlib.irradiance.erbs`
+  * :py:func:`~pvlib.irradiance.erbs_driesse`
+  * :py:func:`~pvlib.irradiance.orgill_hollands`
+  * :py:func:`~pvlib.irradiance.boland`
+  * :py:func:`~pvlib.irradiance.campbell_norman`
+  * :py:func:`~pvlib.irradiance.louche`
+  * :py:func:`~pvlib.pvsystem.sapm`
+  * :py:func:`~pvlib.pvsystem.max_power_point`
+
 
 
 Deprecations
 ~~~~~~~~~~~~
+* Deprecate :py:func:`pvlib.irradiance.king`.
+  Use other diffuse transposition models in :py:mod:`pvlib.irradiance` instead.
+  (:issue:`2636`, :pull:`2783`)
 
 
 Bug fixes
 ~~~~~~~~~
+* Fix incorrect column naming when parsing data from logical record
+  0500 using :py:func:`~pvlib.iotools.read_bsrn` or
+  :py:func:`~pvlib.iotools.get_bsrn`.
+  (:issue:`2835`, :pull:`2841`)
+* :py:func:`~pvlib.irradiance.perez` no longer raises ``ZeroDivisionError`` on
+  scalar ``dhi=0`` input (e.g. nighttime); the scalar path now returns the same
+  finite value as the array path. (:pull:`2826`)
+* Fixed a ``TypeError`` in :py:class:`~pvlib.modelchain.ModelChain` when
+  ``dc_ohmic_model="dc_ohms_from_percent"`` is used with a single-Array system
+  and the weather/irradiance input is passed as a length-1 list or tuple.
+  (:issue:`2829`)
+* Fix :py:func:`~pvlib.iotools.get_merra2` to work with a new API endpoint
+  now that the previous one is retired.  Format of returned data and metadata
+  is slightly different. (:pull:`2839`)
 
 
 Enhancements
 ~~~~~~~~~~~~
+* Map beam horizontal irradiance to ``bhi`` when
+  :py:func:`~pvlib.iotools.get_era5` is called with ``map_variables=True``.
+  (:pull:`2819`)
+* Add support for :py:func:`pvlib.iam.schlick` to :py:class:`pvlib.modelchain.ModelChain`,
+  :py:meth:`pvlib.pvsystem.PVSystem.get_iam`, and :py:meth:`pvlib.pvsystem.Array.get_iam`.
+  (:issue:`2828`, :pull:`2832`)
+* Allow variables from multiple datasets to be requested at once in
+  :py:func:`~pvlib.iotools.get_merra2`. (:pull:`2839`)
 
 
 Documentation
 ~~~~~~~~~~~~~
+* Remove `g_poa_effective` from the :ref:`nomenclature` page (:pull:`2704`)
+* Clarify in the ``Notes`` section of :py:func:`pvlib.soiling.hsu` that the
+  default ``depo_veloc`` values correspond to the settling velocity of
+  particulates. (:issue:`2535`)
+* Correct the transposed table of Hellmann exponents in the
+  :py:func:`pvlib.atmosphere.windspeed_powerlaw` docstring, which disagreed
+  with :py:data:`pvlib.atmosphere.HELLMANN_SURFACE_EXPONENTS` in four of its
+  nine cells. (:pull:`2853`)
 
 
 Testing
@@ -47,4 +121,10 @@ Maintenance
 
 Contributors
 ~~~~~~~~~~~~
+* Rajiv Daxini (:ghuser:`RDaxini`)
 * Carolina Crespo (:ghuser:`cbcrespo`)
+* Andrew Chen (:ghuser:`chuenchen309`)
+* Sai Asish Y (:ghuser:`SAY-5`)
+* Kevin Anderson (:ghuser:`kandersolar`)
+* Johann Loux (:ghuser:`JoLo90`)
+* Dylan Pulver (:ghuser:`dylanpulver`)

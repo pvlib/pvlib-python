@@ -3,7 +3,6 @@ The ``pvsystem`` module contains functions for modeling the output and
 performance of PV modules and inverters.
 """
 
-from collections import OrderedDict
 import functools
 import io
 import itertools
@@ -16,7 +15,6 @@ import pandas as pd
 from dataclasses import dataclass
 from abc import ABC, abstractmethod
 from typing import Optional, Union
-from pvlib._deprecation import renamed_kwarg_warning
 import pvlib  # used to avoid albedo name collision in the Array class
 from pvlib import (atmosphere, iam, inverter, irradiance,
                    singlediode as _singlediode, spectrum, temperature)
@@ -397,7 +395,7 @@ class PVSystem:
 
         iam_model : string, default 'physical'
             The IAM model to be used. Valid strings are 'physical', 'ashrae',
-            'martin_ruiz', 'sapm' and 'interp'.
+            'martin_ruiz', 'sapm', 'interp', and 'schlick'.
         Returns
         -------
         iam : numeric or tuple of numeric
@@ -852,8 +850,6 @@ class PVSystem:
             for array, data in zip(self.arrays, data)
         )
 
-    @renamed_kwarg_warning(
-        "0.13.0", "g_poa_effective", "effective_irradiance")
     @_unwrap_single_value
     def pvwatts_dc(self, effective_irradiance, temp_cell):
         """
@@ -1190,7 +1186,7 @@ class Array:
 
         iam_model : string, default 'physical'
             The IAM model to be used. Valid strings are 'physical', 'ashrae',
-            'martin_ruiz', 'sapm' and 'interp'.
+            'martin_ruiz', 'sapm', 'interp' and 'schlick'.
 
         Returns
         -------
@@ -1203,7 +1199,7 @@ class Array:
             if `iam_model` is not a valid model name.
         """
         model = iam_model.lower()
-        if model in ['ashrae', 'physical', 'martin_ruiz', 'interp']:
+        if model in ['ashrae', 'physical', 'martin_ruiz', 'interp', 'schlick']:
             func = getattr(iam, model)  # get function at pvlib.iam
             # get all parameters from function signature to retrieve them from
             # module_parameters if present
@@ -2265,7 +2261,7 @@ def sapm(effective_irradiance, temp_cell, module, *, temperature_ref=25,
 
     Returns
     -------
-    A DataFrame with the columns:
+    A dict or DataFrame with the columns:
 
         * i_sc : Short-circuit current (A)
         * i_mp : Current at the maximum-power point (A)
@@ -2372,7 +2368,7 @@ def sapm(effective_irradiance, temp_cell, module, *, temperature_ref=25,
     # avoid repeated __getitem__
     cells_in_series = module['Cells_in_Series']
 
-    out = OrderedDict()
+    out = {}
 
     out['i_sc'] = (
         module['Isco'] * Ee * (1 + module['Aisc']*(temp_cell -
@@ -2687,7 +2683,7 @@ def max_power_point(photocurrent, saturation_current, resistance_series,
 
     Returns
     -------
-    OrderedDict or pandas.DataFrame
+    dict or pandas.DataFrame
         ``(i_mp, v_mp, p_mp)``
 
     Notes
@@ -2705,7 +2701,7 @@ def max_power_point(photocurrent, saturation_current, resistance_series,
         ivp = {'i_mp': i_mp, 'v_mp': v_mp, 'p_mp': p_mp}
         out = pd.DataFrame(ivp, index=photocurrent.index)
     else:
-        out = OrderedDict()
+        out = {}
         out['i_mp'] = i_mp
         out['v_mp'] = v_mp
         out['p_mp'] = p_mp
@@ -2921,8 +2917,6 @@ def scale_voltage_current_power(data, voltage=1, current=1):
     return df_sorted
 
 
-@renamed_kwarg_warning(
-    "0.13.0", "g_poa_effective", "effective_irradiance")
 def pvwatts_dc(effective_irradiance, temp_cell, pdc0, gamma_pdc, temp_ref=25.,
                k=None, cap_adjustment=False):
     r"""

@@ -2,7 +2,12 @@ import pandas as pd
 import pytest
 
 from pvlib.iotools import surfrad
-from tests.conftest import TESTS_DATA_DIR, RERUNS, RERUNS_DELAY
+from tests.conftest import (
+    TESTS_DATA_DIR,
+    assert_frame_equal,
+    RERUNS,
+    RERUNS_DELAY,
+)
 
 testfile = TESTS_DATA_DIR / 'surfrad-slv16001.dat'
 network_testfile = ('ftp://aftp.cmdl.noaa.gov/data/radiation/surfrad/'
@@ -73,3 +78,41 @@ def test_read_surfrad_metadata():
                 'tz': 'UTC'}
     _, metadata = surfrad.read_surfrad(testfile)
     assert metadata == expected
+
+
+@pytest.mark.remote_data
+@pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
+def test_get_surfrad():
+    df, meta = surfrad.get_surfrad('slv', '2016-01-01', '2016-01-01')
+
+    assert meta['station'] == 'slv'
+    assert isinstance(meta['filenames'], list)
+
+    assert len(df) == 1440
+    assert df.index[0] == pd.to_datetime('2016-01-01 00:00+00:00')
+    assert df.index[-1] == pd.to_datetime('2016-01-01 23:59+00:00')
+
+    expected, _ = surfrad.read_surfrad(testfile)
+    assert_frame_equal(df, expected)
+
+
+@pytest.mark.remote_data
+@pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
+def test_get_surfrad_missing_day():
+    # SURFRAD's Alamosa station data begins 2014-07-28 (slv14209.dat), so
+    # requesting the day before that will raise a warning
+    message = 'The following file was not found: slv/2014/slv14208.dat'
+    with pytest.warns(UserWarning, match=message):
+        df, meta = surfrad.get_surfrad('slv', '2014-07-27', '2014-07-28')
+
+    # but the data for 2014-07-28 is still returned
+    assert not df.empty
+
+
+@pytest.mark.remote_data
+@pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
+def test_get_surfrad_no_data():
+    message = "No data retrieved for station 'xxx'"
+    with pytest.warns(UserWarning):
+        with pytest.raises(ValueError, match=message):
+            surfrad.get_surfrad('xxx', '2016-01-01', '2016-01-01')

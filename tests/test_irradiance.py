@@ -1,5 +1,4 @@
 import datetime
-from collections import OrderedDict
 import warnings
 
 import numpy as np
@@ -128,7 +127,7 @@ def test_get_ground_diffuse_simple_float():
 
 def test_get_ground_diffuse_simple_series(irrad_data):
     ground_irrad = irradiance.get_ground_diffuse(40, irrad_data['ghi'])
-    assert ground_irrad.name == 'diffuse_ground'
+    assert ground_irrad.name == 'poa_ground_diffuse'
 
 
 def test_get_ground_diffuse_albedo_0(irrad_data):
@@ -142,7 +141,7 @@ def test_get_ground_diffuse_albedo_series(times):
     ground_irrad = irradiance.get_ground_diffuse(
         45, pd.Series(1000, index=times), albedo)
     expected = albedo * 0.5 * (1 - np.sqrt(2) / 2.) * 1000
-    expected.name = 'diffuse_ground'
+    expected.name = 'poa_ground_diffuse'
     assert_series_equal(ground_irrad, expected)
 
 
@@ -166,6 +165,32 @@ def test_isotropic_float():
 def test_isotropic_series(irrad_data):
     result = irradiance.isotropic(40, irrad_data['dhi'])
     assert_allclose(result, [0, 35.728402, 104.601328, 54.777191], atol=1e-4)
+
+
+def test_isotropic_components(irrad_data):
+    keys = ['poa_sky_diffuse', 'poa_isotropic']
+    expected = pd.DataFrame(np.array(
+        [[0, 35.728402, 104.601328, 54.777191],
+         [0, 35.728402, 104.601328, 54.777191]]).T,
+        columns=keys,
+        index=irrad_data.index
+    )
+    # pandas
+    result = irradiance.isotropic(
+        40, irrad_data['dhi'], return_components=True)
+    assert_frame_equal(result, expected, check_less_precise=4)
+    # numpy
+    result = irradiance.isotropic(
+        40, irrad_data['dhi'].to_numpy(), return_components=True)
+    for key in keys:
+        assert_allclose(result[key], expected[key], atol=1e-4)
+    assert isinstance(result, dict)
+    # scalar
+    result = irradiance.isotropic(
+        40, irrad_data['dhi'].to_numpy()[-1], return_components=True)
+    for key in keys:
+        assert_allclose(result[key], expected[key].iloc[-1], atol=1e-4)
+    assert isinstance(result, dict)
 
 
 def test_klucher_series_float():
@@ -249,9 +274,49 @@ def test_reindl(irrad_data, ephem_data, dni_et):
     assert_allclose(result, [0., 27.9412, 104.1317, 34.1663], atol=1e-4)
 
 
+def test_reindl_components(irrad_data, ephem_data, dni_et):
+    keys = ['poa_sky_diffuse', 'poa_isotropic', 'poa_circumsolar',
+            'poa_horizon']
+    expected = pd.DataFrame(np.array(
+        [[0, 27.941170, 104.131724, 34.166258],
+         [0, 27.177514, 30.181807, 27.983728],
+         [0, 0, 72.813055, 5.207138],
+         [0, 0.763656, 1.136862, 0.975393]]).T,
+        columns=keys,
+        index=irrad_data.index
+    )
+    # pandas
+    result = irradiance.reindl(
+        40, 180, irrad_data['dhi'], irrad_data['dni'], irrad_data['ghi'],
+        dni_et, ephem_data['apparent_zenith'], ephem_data['azimuth'],
+        return_components=True)
+    assert_frame_equal(result, expected, check_less_precise=4)
+    # numpy
+    result = irradiance.reindl(
+        40, 180, irrad_data['dhi'].to_numpy(), irrad_data['dni'].to_numpy(),
+        irrad_data['ghi'].to_numpy(), dni_et,
+        ephem_data['apparent_zenith'].to_numpy(),
+        ephem_data['azimuth'].to_numpy(), return_components=True)
+    for key in keys:
+        assert_allclose(result[key], expected[key], atol=1e-4)
+    assert isinstance(result, dict)
+    # scalar
+    result = irradiance.reindl(
+        40, 180, irrad_data['dhi'].to_numpy()[-1],
+        irrad_data['dni'].to_numpy()[-1],
+        irrad_data['ghi'].to_numpy()[-1], dni_et[-1],
+        ephem_data['apparent_zenith'].to_numpy()[-1],
+        ephem_data['azimuth'].to_numpy()[-1],
+        return_components=True)
+    for key in keys:
+        assert_allclose(result[key], expected[key].iloc[-1], atol=1e-4)
+    assert isinstance(result, dict)
+
+
 def test_king(irrad_data, ephem_data):
-    result = irradiance.king(40, irrad_data['dhi'], irrad_data['ghi'],
-                             ephem_data['apparent_zenith'])
+    with pytest.warns(pvlibDeprecationWarning, match='king'):
+        result = irradiance.king(40, irrad_data['dhi'], irrad_data['ghi'],
+                                 ephem_data['apparent_zenith'])
     assert_allclose(result, [0, 44.629352, 115.182626, 79.719855], atol=1e-4)
 
 
@@ -429,6 +494,16 @@ def test_perez_scalar():
     assert_allclose(out, 109.084332)
 
 
+def test_perez_scalar_dhi_zero():
+    # dhi=0 (e.g. nighttime) is documented-valid input (dhi >= 0). A native
+    # Python scalar division raised ZeroDivisionError (which np.errstate cannot
+    # suppress) while the array path returns a finite value; they must match.
+    out = irradiance.perez(30, 180, 0.0, 800.0, 1400.0, 40.0, 120.0, 1.5)
+    expected = irradiance.perez(30, 180, np.array([0.0]), np.array([800.0]),
+                                1400.0, 40.0, 120.0, np.array([1.5]))
+    assert_allclose(out, expected[0])
+
+
 def test_perez_driesse_scalar():
     # copied values from fixtures
     out = irradiance.perez_driesse(40, 180, 118.458, 939.954,
@@ -439,7 +514,7 @@ def test_perez_driesse_scalar():
 
 
 @pytest.mark.parametrize('model', ['isotropic', 'klucher', 'haydavies',
-                                   'reindl', 'king', 'perez', 'perez-driesse'])
+                                   'reindl', 'perez', 'perez-driesse'])
 def test_sky_diffuse_zenith_close_to_90(model):
     # GH 432
     sky_diffuse = irradiance.get_sky_diffuse(
@@ -453,6 +528,14 @@ def test_get_sky_diffuse_model_invalid():
         irradiance.get_sky_diffuse(
             30, 180, 0, 180, 1000, 1100, 100, dni_extra=1360, airmass=1,
             model='invalid')
+
+
+def test_get_sky_diffuse_components_model_not_supported():
+    msg = 'return_components is not supported'
+    with pytest.raises(ValueError, match=msg):
+        irradiance.get_sky_diffuse(
+            30, 180, 0, 180, 1000, 1100, 100, dni_extra=1360, airmass=1,
+            model='klucher', return_components=True)
 
 
 def test_get_sky_diffuse_missing_dni_extra():
@@ -491,7 +574,7 @@ def test_campbell_norman():
 def test_get_total_irradiance(irrad_data, ephem_data, dni_et,
                               relative_airmass):
     models = ['isotropic', 'klucher',
-              'haydavies', 'reindl', 'king', 'perez', 'perez-driesse']
+              'haydavies', 'reindl', 'perez', 'perez-driesse']
 
     for model in models:
         total = irradiance.get_total_irradiance(
@@ -508,8 +591,46 @@ def test_get_total_irradiance(irrad_data, ephem_data, dni_et,
                                           'poa_ground_diffuse']
 
 
+@pytest.mark.parametrize('model', ['reindl', 'perez', 'perez-driesse'])
+def test_get_total_irradiance_diffuse_components(irrad_data, ephem_data,
+                                                 dni_et, relative_airmass,
+                                                 model):
+    total = irradiance.get_total_irradiance(
+        32, 180,
+        ephem_data['apparent_zenith'], ephem_data['azimuth'],
+        dni=irrad_data['dni'], ghi=irrad_data['ghi'],
+        dhi=irrad_data['dhi'],
+        dni_extra=dni_et, airmass=relative_airmass,
+        model=model,
+        surface_type='urban',
+        diffuse_components=True)
+
+    assert total.columns.tolist() == ['poa_global', 'poa_direct',
+                                      'poa_diffuse', 'poa_sky_diffuse',
+                                      'poa_ground_diffuse',
+                                      'poa_isotropic', 'poa_circumsolar',
+                                      'poa_horizon']
+
+    total = irradiance.get_total_irradiance(
+        32, 180,
+        ephem_data['apparent_zenith'].to_numpy(),
+        ephem_data['azimuth'].to_numpy(),
+        dni=irrad_data['dni'].to_numpy(), ghi=irrad_data['ghi'].to_numpy(),
+        dhi=irrad_data['dhi'].to_numpy(),
+        dni_extra=dni_et, airmass=relative_airmass,
+        model=model,
+        surface_type='urban',
+        diffuse_components=True)
+
+    assert list(total.keys()) == ['poa_global', 'poa_direct',
+                                  'poa_diffuse', 'poa_sky_diffuse',
+                                  'poa_ground_diffuse',
+                                  'poa_isotropic', 'poa_circumsolar',
+                                  'poa_horizon']
+
+
 @pytest.mark.parametrize('model', ['isotropic', 'klucher',
-                                   'haydavies', 'reindl', 'king',
+                                   'haydavies', 'reindl',
                                    'perez', 'perez-driesse'])
 def test_get_total_irradiance_albedo(
         irrad_data, ephem_data, dni_et, relative_airmass, model):
@@ -529,7 +650,7 @@ def test_get_total_irradiance_albedo(
 
 
 @pytest.mark.parametrize('model', ['isotropic', 'klucher',
-                                   'haydavies', 'reindl', 'king',
+                                   'haydavies', 'reindl',
                                    'perez', 'perez-driesse'])
 def test_get_total_irradiance_scalars(model):
     total = irradiance.get_total_irradiance(
@@ -593,6 +714,59 @@ def test_poa_components(irrad_data, ephem_data, dni_et, relative_airmass):
           12.03502531]]),
         columns=['poa_global', 'poa_direct', 'poa_diffuse', 'poa_sky_diffuse',
                  'poa_ground_diffuse'],
+        index=irrad_data.index)
+    assert_frame_equal(out, expected)
+
+
+def test_poa_components_diffuse_components_perez(irrad_data, ephem_data,
+                                                 dni_et, relative_airmass):
+    aoi = irradiance.aoi(40, 180, ephem_data['apparent_zenith'],
+                         ephem_data['azimuth'])
+    gr_sand = irradiance.get_ground_diffuse(40, irrad_data['ghi'],
+                                            surface_type='sand')
+    diff_perez = irradiance.perez(
+        40, 180, irrad_data['dhi'], irrad_data['dni'], dni_et,
+        ephem_data['apparent_zenith'], ephem_data['azimuth'], relative_airmass,
+        return_components=True)
+    out = irradiance.poa_components(
+        aoi, irrad_data['dni'], diff_perez, gr_sand)
+    expected = pd.DataFrame(np.array(
+        [[0.,  -0.,   0.,   0.,
+            0., 0.,   0.,   0.],
+         [35.19456561,   0.,  35.19456561,  31.4635077,
+            3.73105791,   26.841386,   0.000000,   4.622122],
+         [956.18253696, 798.31939281, 157.86314414, 109.08433162,
+          48.77881252,   41.621826,   61.619987,   5.842518],
+         [90.99624896,  33.50143401,  57.49481495,  45.45978964,
+          12.03502531,   31.726961,   4.479664,   9.253165]]),
+        columns=['poa_global', 'poa_direct', 'poa_diffuse', 'poa_sky_diffuse',
+                 'poa_ground_diffuse', 'poa_isotropic', 'poa_circumsolar',
+                 'poa_horizon'],
+        index=irrad_data.index)
+    assert_frame_equal(out, expected)
+
+
+def test_poa_components_diffuse_components_isotropic(irrad_data, ephem_data,
+                                                     dni_et, relative_airmass):
+    aoi = irradiance.aoi(40, 180, ephem_data['apparent_zenith'],
+                         ephem_data['azimuth'])
+    gr_sand = irradiance.get_ground_diffuse(40, irrad_data['ghi'],
+                                            surface_type='sand')
+    diff_isotropic = irradiance.isotropic(
+        40, irrad_data['dhi'], return_components=True)
+    out = irradiance.poa_components(
+        aoi, irrad_data['dni'], diff_isotropic, gr_sand)
+    expected = pd.DataFrame(np.array(
+        [[0.,  -0.,   0.,   0.,
+            0., 0.],
+         [39.459460,   0.000000,   39.459460,   35.728402,
+          3.731058,   35.728402],
+         [951.699533,   798.319393,   153.380140,   104.601328,
+          48.778813,   104.601328],
+         [100.313650,   33.501434,   66.812216,   54.777191,
+          12.035025,   54.777191]]),
+        columns=['poa_global', 'poa_direct', 'poa_diffuse', 'poa_sky_diffuse',
+                 'poa_ground_diffuse', 'poa_isotropic'],
         index=irrad_data.index)
     assert_frame_equal(out, expected)
 
@@ -717,6 +891,17 @@ def test_dirint_nans():
                                     temp_dew=temp_dew)
     assert_almost_equal(dirint_data.values,
                         np.array([np.nan, np.nan, np.nan, np.nan, 893.1]), 1)
+
+
+def test_delta_kt_prime_interior_nan():
+    # regression test for gh-1847: an interior NaN in kt_prime must not
+    # halve the single valid neighbor difference.  When only one neighbor
+    # is available (Perez eqn 3) delta_kt_prime equals that difference.
+    times = pd.date_range(start='2020-01-01', periods=5, freq='1h')
+    kt_prime = pd.Series([0.5, 0.6, np.nan, 0.7, 0.4], index=times)
+    result = irradiance._delta_kt_prime_dirint(kt_prime, True, times)
+    expected = pd.Series([0.1, 0.1, np.nan, 0.3, 0.3], index=times)
+    assert_series_equal(result, expected)
 
 
 def test_dirint_tdew():
@@ -1066,7 +1251,7 @@ def test_erbs_all_scalar():
     zenith = 10
     doy = 180
 
-    expected = OrderedDict()
+    expected = {}
     expected['dni'] = 8.42358014e+02
     expected['dhi'] = 1.70439297e+02
     expected['kt'] = 7.68919470e-01

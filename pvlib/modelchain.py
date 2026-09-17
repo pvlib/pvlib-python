@@ -18,8 +18,6 @@ import pvlib.irradiance  # avoid name conflict with full import
 from pvlib.pvsystem import _DC_MODEL_PARAMS
 from pvlib.tools import _build_kwargs
 
-from pvlib._deprecation import deprecated
-
 # keys that are used to detect input data and assign data to appropriate
 # ModelChain attribute
 # for ModelChain.weather
@@ -59,43 +57,6 @@ SAPM_CONFIG = dict(
     dc_model='sapm', ac_model='sandia', losses_model='no_loss',
     aoi_model='sapm', spectral_model='sapm', temperature_model='sapm'
 )
-
-
-@deprecated(
-    since="0.13.1",
-    removal="",
-    name="pvlib.modelchain.get_orientation",
-    alternative=None,
-    addendum=None,
-)
-def get_orientation(strategy, **kwargs):
-    """
-    Determine a PV system's surface tilt and surface azimuth
-    using a named strategy.
-
-    Parameters
-    ----------
-    strategy: str
-        The orientation strategy.
-        Allowed strategies include 'flat', 'south_at_latitude_tilt'.
-    **kwargs:
-        Strategy-dependent keyword arguments. See code for details.
-
-    Returns
-    -------
-    surface_tilt, surface_azimuth
-    """
-    if strategy == 'south_at_latitude_tilt':
-        surface_azimuth = 180
-        surface_tilt = kwargs['latitude']
-    elif strategy == 'flat':
-        surface_azimuth = 180
-        surface_tilt = 0
-    else:
-        raise ValueError('invalid orientation strategy. strategy must '
-                         'be one of south_at_latitude_tilt, flat,')
-
-    return surface_tilt, surface_azimuth
 
 
 def _getmcattr(self, attr):
@@ -336,8 +297,8 @@ class ModelChain:
         If not specified, the model will be inferred from the parameters that
         are common to all of system.arrays[i].module_parameters.
         Valid strings are 'physical', 'ashrae', 'sapm', 'martin_ruiz',
-        'interp' and 'no_loss'. The ModelChain instance will be passed as the
-        first argument to a user-defined function.
+        'schlick', 'interp' and 'no_loss'. The ModelChain instance will be
+        passed as the first argument to a user-defined function.
 
     spectral_model : str or function, optional
         Valid strings are:
@@ -787,6 +748,8 @@ class ModelChain:
                 self._aoi_model = self.sapm_aoi_loss
             elif model == 'martin_ruiz':
                 self._aoi_model = self.martin_ruiz_aoi_loss
+            elif model == 'schlick':
+                self._aoi_model = self.schlick_aoi_loss
             elif model == 'interp':
                 self._aoi_model = self.interp_aoi_loss
             elif model == 'no_loss':
@@ -810,6 +773,10 @@ class ModelChain:
             return self.martin_ruiz_aoi_loss
         elif iam._IAM_MODEL_PARAMS['interp'] <= params:
             return self.interp_aoi_loss
+        # 'schlick' is intentionally excluded from inference. Since it
+        # requires no parameters, it would always match and effectively
+        # become the default, which is undesirable because it is not
+        # commonly used for PV applications.
         else:
             raise ValueError('could not infer AOI model from '
                              'system.arrays[i].module_parameters. Check that '
@@ -843,6 +810,12 @@ class ModelChain:
     def martin_ruiz_aoi_loss(self):
         self.results.aoi_modifier = self.system.get_iam(
             self.results.aoi, iam_model='martin_ruiz'
+        )
+        return self
+
+    def schlick_aoi_loss(self):
+        self.results.aoi_modifier = self.system.get_iam(
+            self.results.aoi, iam_model='schlick'
         )
         return self
 
@@ -1032,8 +1005,8 @@ class ModelChain:
         method. Uses a `dc_ohmic_percent` parameter in the `losses_parameters`
         of the PVsystem.
         """
-        Rw = self.system.dc_ohms_from_percent()
         if isinstance(self.results.dc, tuple):
+            Rw = self.system.dc_ohms_from_percent(unwrap=False)
             self.results.dc_ohmic_losses = tuple(
                 pvsystem.dc_ohmic_losses(Rw, df['i_mp'])
                 for Rw, df in zip(Rw, self.results.dc)
@@ -1041,6 +1014,7 @@ class ModelChain:
             for df, loss in zip(self.results.dc, self.results.dc_ohmic_losses):
                 df['p_mp'] = df['p_mp'] - loss
         else:
+            Rw = self.system.dc_ohms_from_percent()
             self.results.dc_ohmic_losses = pvsystem.dc_ohmic_losses(
                 Rw, self.results.dc['i_mp']
             )

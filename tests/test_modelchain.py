@@ -8,9 +8,8 @@ from pvlib.modelchain import ModelChain
 from pvlib.pvsystem import PVSystem
 from pvlib.location import Location
 
-from pvlib._deprecation import pvlibDeprecationWarning
-
 from .conftest import assert_series_equal, assert_frame_equal
+
 import pytest
 
 
@@ -1451,7 +1450,7 @@ def constant_aoi_loss(mc):
 
 
 @pytest.mark.parametrize('aoi_model', [
-    'sapm', 'ashrae', 'physical', 'martin_ruiz'
+    'sapm', 'ashrae', 'physical', 'martin_ruiz', 'schlick'
 ])
 def test_aoi_models(sapm_dc_snl_ac_system, location, aoi_model,
                     weather, mocker):
@@ -1467,7 +1466,7 @@ def test_aoi_models(sapm_dc_snl_ac_system, location, aoi_model,
 
 
 @pytest.mark.parametrize('aoi_model', [
-    'sapm', 'ashrae', 'physical', 'martin_ruiz'
+    'sapm', 'ashrae', 'physical', 'martin_ruiz', 'schlick'
 ])
 def test_aoi_models_singleon_weather_single_array(
         sapm_dc_snl_ac_system, location, aoi_model, weather):
@@ -1642,6 +1641,28 @@ def test_dc_ohmic_model_ohms_from_percent(cec_dc_snl_ac_system,
     assert isinstance(mc.results.dc_ohmic_losses, tuple)
 
 
+@pytest.mark.parametrize("input_type", [tuple, list])
+def test_dc_ohmic_model_ohms_from_percent_single_array_list_input(
+        cec_dc_snl_ac_system, location, weather, total_irrad, input_type):
+    # GH 2829: a single-Array system given list/tuple input stores
+    # results.dc as a tuple, so dc_ohms_from_percent must not unwrap Rw
+    for array in cec_dc_snl_ac_system.arrays:
+        array.array_losses_parameters = dict(dc_ohmic_percent=3)
+
+    data = weather.copy()
+    data[['poa_global', 'poa_diffuse', 'poa_direct']] = total_irrad
+    data['effective_irradiance'] = data['poa_global']
+
+    mc = ModelChain(cec_dc_snl_ac_system, location,
+                    aoi_model='no_loss',
+                    spectral_model='no_loss',
+                    dc_ohmic_model='dc_ohms_from_percent')
+    mc.run_model_from_effective_irradiance(input_type((data,)))
+
+    assert isinstance(mc.results.dc_ohmic_losses, tuple)
+    assert len(mc.results.dc_ohmic_losses) == 1
+
+
 def test_dc_ohmic_model_no_dc_ohmic_loss(cec_dc_snl_ac_system,
                                          location,
                                          weather,
@@ -1797,12 +1818,6 @@ def test_invalid_models(model, sapm_dc_snl_ac_system, location):
     kwargs[model] = 'invalid'
     with pytest.raises(ValueError):
         ModelChain(sapm_dc_snl_ac_system, location, **kwargs)
-
-
-def test_bad_get_orientation():
-    with pytest.warns(pvlibDeprecationWarning, match='will be removed soon'):
-        with pytest.raises(ValueError):
-            modelchain.get_orientation('bad value')
 
 
 # tests for PVSystem with multiple Arrays

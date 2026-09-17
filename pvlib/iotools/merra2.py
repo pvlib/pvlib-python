@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 import requests
 from io import StringIO
 
@@ -8,12 +9,20 @@ VARIABLE_MAP = {
     'SWGDNCLR': 'ghi_clear',
     'ALBEDO': 'albedo',
     'LWGNT': 'longwave_net',
-    'LWGEM': 'longwave_up',
     'LWGAB': 'longwave_down',
     'T2M': 'temp_air',
-    'T2MDEW': 'temp_dew',
     'PS': 'pressure',
     'TOTEXTTAU': 'aod550',
+    'TQV': 'precipitable_water',
+}
+
+
+def _k_to_c(temp_k):
+    return temp_k - 273.15
+
+
+UNITS = {
+    'T2M': _k_to_c,
 }
 
 
@@ -45,8 +54,11 @@ def get_merra2(latitude, longitude, start, end, username, password, dataset,
         NASA EarthData username.
     password : str
         NASA EarthData password.
-    dataset : str
-        Dataset name (with version), e.g. "M2T1NXRAD.5.12.4".
+    dataset : str or list of str
+        Dataset name (with version), e.g. "M2T1NXRAD.5.12.4". If all
+        variables are in the same dataset, this can be a single string.
+        Otherwise, pass a list of dataset names corresponding to
+        the list of requested variables.
     variables : list of str
         List of variable names to retrieve.  See the documentation of the
         specific dataset you are accessing for options.
@@ -70,45 +82,42 @@ def get_merra2(latitude, longitude, start, end, username, password, dataset,
     -----
     The following datasets provide quantities useful for PV modeling:
 
-    +------------------------------------+-----------+---------------+
-    | Dataset                            | Variable  | pvlib name    |
-    +====================================+===========+===============+
-    | `M2T1NXRAD.5.12.4 <M2T1NXRAD_>`_   | SWGDN     | ghi           |
-    |                                    +-----------+---------------+
-    |                                    | SWGDNCLR  | ghi_clear     |
-    |                                    +-----------+---------------+
-    |                                    | ALBEDO    | albedo        |
-    |                                    +-----------+---------------+
-    |                                    | LWGAB     | longwave_down |
-    |                                    +-----------+---------------+
-    |                                    | LWGNT     | longwave_net  |
-    |                                    +-----------+---------------+
-    |                                    | LWGEM     | longwave_up   |
-    +------------------------------------+-----------+---------------+
-    | `M2T1NXSLV.5.12.4 <M2T1NXSLV_>`_   | T2M       | temp_air      |
-    |                                    +-----------+---------------+
-    |                                    | U10       | n/a           |
-    |                                    +-----------+---------------+
-    |                                    | V10       | n/a           |
-    |                                    +-----------+---------------+
-    |                                    | T2MDEW    | temp_dew      |
-    |                                    +-----------+---------------+
-    |                                    | PS        | pressure      |
-    |                                    +-----------+---------------+
-    |                                    | TO3       | n/a           |
-    |                                    +-----------+---------------+
-    |                                    | TQV       | n/a           |
-    +------------------------------------+-----------+---------------+
-    | `M2T1NXAER.5.12.4 <M2T1NXAER_>`_   | TOTEXTTAU | aod550        |
-    |                                    +-----------+---------------+
-    |                                    | TOTSCATAU | n/a           |
-    |                                    +-----------+---------------+
-    |                                    | TOTANGSTR | n/a           |
-    +------------------------------------+-----------+---------------+
+    +------------------------------------+-----------+--------------------+
+    | Dataset                            | Variable  | pvlib name         |
+    +====================================+===========+====================+
+    | `M2T1NXRAD.5.12.4 <M2T1NXRAD_>`_   | SWGDN     | ghi                |
+    |                                    +-----------+--------------------+
+    |                                    | SWGDNCLR  | ghi_clear          |
+    |                                    +-----------+--------------------+
+    |                                    | ALBEDO    | albedo             |
+    |                                    +-----------+--------------------+
+    |                                    | LWGNT     | longwave_net       |
+    +------------------------------------+-----------+--------------------+
+    | `M2T1NXLFO.5.12.4 <M2T1NXLFO_>`_   | LWGAB     | longwave_down      |
+    +------------------------------------+-----------+--------------------+
+    | `M2T1NXSLV.5.12.4 <M2T1NXSLV_>`_   | T2M       | temp_air           |
+    |                                    +-----------+--------------------+
+    |                                    | U10M      | n/a                |
+    |                                    +-----------+--------------------+
+    |                                    | V10M      | n/a                |
+    |                                    +-----------+--------------------+
+    |                                    | PS        | pressure           |
+    |                                    +-----------+--------------------+
+    |                                    | TO3       | n/a                |
+    |                                    +-----------+--------------------+
+    |                                    | TQV       | precipitable_water |
+    +------------------------------------+-----------+--------------------+
+    | `M2T1NXAER.5.12.4 <M2T1NXAER_>`_   | TOTEXTTAU | aod550             |
+    |                                    +-----------+--------------------+
+    |                                    | TOTSCATAU | n/a                |
+    |                                    +-----------+--------------------+
+    |                                    | TOTANGSTR | n/a                |
+    +------------------------------------+-----------+--------------------+
 
     .. _M2T1NXRAD: https://disc.gsfc.nasa.gov/datasets/M2T1NXRAD_5.12.4/summary
     .. _M2T1NXSLV: https://disc.gsfc.nasa.gov/datasets/M2T1NXSLV_5.12.4/summary
     .. _M2T1NXAER: https://disc.gsfc.nasa.gov/datasets/M2T1NXAER_5.12.4/summary
+    .. _M2T1NXLFO: https://disc.gsfc.nasa.gov/datasets/M2T1NXLFO_5.12.4/summary
 
     A complete list of datasets and their documentation is available at [3]_.
 
@@ -121,9 +130,6 @@ def get_merra2(latitude, longitude, start, end, username, password, dataset,
     .. [3] https://disc.gsfc.nasa.gov/datasets?project=MERRA-2
     """
 
-    # general API info here:
-    # https://docs.unidata.ucar.edu/tds/5.0/userguide/netcdf_subset_service_ref.html  # noqa: E501
-
     def _to_utc_dt_notz(dt):
         dt = pd.to_datetime(dt)
         if dt.tzinfo is not None:
@@ -134,63 +140,68 @@ def get_merra2(latitude, longitude, start, end, username, password, dataset,
     start = _to_utc_dt_notz(start)
     end = _to_utc_dt_notz(end)
 
-    if (year := start.year) != end.year:
-        raise ValueError("start and end must be in the same year (in UTC)")
-
-    url = (
-        "https://goldsmr4.gesdisc.eosdis.nasa.gov/thredds/ncss/grid/"
-        f"MERRA2_aggregation/{dataset}/{dataset}_Aggregation_{year}.ncml"
+    # login
+    login_url = "https://urs.earthdata.nasa.gov/api/users/find_or_create_token"
+    response = requests.post(
+        login_url,
+        auth=(username, password),
+        headers={"Accept": "application/json"},
+        timeout=10,
     )
-
-    parameters = {
-        'var': ",".join(variables),
-        'latitude': latitude,
-        'longitude': longitude,
-        'time_start': start.isoformat() + "Z",
-        'time_end': end.isoformat() + "Z",
-        'accept': 'csv',
-    }
-
-    auth = (username, password)
-
-    with requests.Session() as session:
-        session.auth = auth
-        login = session.request('get', url, params=parameters)
-        response = session.get(login.url, auth=auth, params=parameters)
-
     response.raise_for_status()
+    token = response.json()["access_token"]
 
-    content = response.content.decode('utf-8')
-    buffer = StringIO(content)
-    df = pd.read_csv(buffer)
+    # data query
+    if isinstance(dataset, str):
+        datasets = [dataset] * len(variables)
+    else:
+        datasets = dataset
 
-    df.index = pd.to_datetime(df['time'])
+    data_url = "https://api.giovanni.earthdata.nasa.gov/timeseries"
+    parameters = {
+        "location": "[{},{}]".format(round(latitude, 4), round(longitude, 4)),
+        "time": "{}/{}".format(start.isoformat(), end.isoformat())
+    }
+    query_headers = {
+        'Authorization': f'Bearer {token}'
+    }
+    meta = {'dataset': dataset}
+    data = {}
+    for variable, dataset in zip(variables, datasets):
+        name = dataset.replace(".", "_") + "_" + variable
+        query_parameters = parameters.copy()
+        query_parameters["data"] = name
 
-    meta = {}
-    meta['dataset'] = dataset
-    meta['station'] = df['station'].values[0]
-    meta['latitude'] = df['latitude[unit="degrees_north"]'].values[0]
-    meta['longitude'] = df['longitude[unit="degrees_east"]'].values[0]
+        response = requests.get(data_url, params=query_parameters,
+                                headers=query_headers)
+        response.raise_for_status()
+        buffer = StringIO(response.text)
 
-    # drop the non-data columns
-    dropcols = ['time', 'station', 'latitude[unit="degrees_north"]',
-                'longitude[unit="degrees_east"]']
-    df = df.drop(columns=dropcols)
+        var_meta = {}
+        while (line := buffer.readline().rstrip()) != "":
+            key, value = line.split(",", maxsplit=1)
+            var_meta[key] = value
 
-    # column names are like T2M[unit="K"] by default.  extract the unit
-    # for the metadata, then rename col to just T2M
-    units = {}
-    rename = {}
-    for col in df.columns:
-        name, _ = col.split("[", maxsplit=1)
-        unit = col.split('"')[1]
-        units[name] = unit
-        rename[col] = name
+        meta[variable] = var_meta
+        df = pd.read_csv(buffer, index_col=0, parse_dates=True)
+        df = df.replace(float(var_meta["undef"]), np.nan)
 
-    meta['units'] = units
-    df = df.rename(columns=rename)
+        data[variable] = df["Data"]
+
+    # copy lat/lon to the top level, for consistency
+    # with other iotools functions
+    meta["latitude"] = float(var_meta["lat"])
+    meta["longitude"] = float(var_meta["lon"])
+
+    df = pd.DataFrame(data)
+    df.index = df.index.tz_localize("UTC")
 
     if map_variables:
+        for col in df.columns:
+            if col in UNITS:
+                convert = UNITS[col]
+                df[col] = convert(df[col])
+
         df = df.rename(columns=VARIABLE_MAP)
 
     return df, meta

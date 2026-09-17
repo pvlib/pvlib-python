@@ -12,6 +12,7 @@ from .conftest import assert_series_equal
 from numpy.testing import assert_allclose
 
 from pvlib import iam as _iam
+from pvlib._deprecation import pvlibDeprecationWarning
 
 
 def test_ashrae():
@@ -133,15 +134,18 @@ def test_martin_ruiz_diffuse():
 
     surface_tilt = 30.
     a_r = 0.16
-    expected = (0.9549735, 0.7944426)
+    expected_sky = 0.9549735
+    expected_ground = 0.7944426
 
     # will fail if default values change
-    iam = _iam.martin_ruiz_diffuse(surface_tilt)
-    assert_allclose(iam, expected)
+    actual_iam = _iam.martin_ruiz_diffuse(surface_tilt)
+    assert_allclose(actual_iam['sky'], expected_sky)
+    assert_allclose(actual_iam['ground'], expected_ground)
 
     # will fail if parameter names change
     iam = _iam.martin_ruiz_diffuse(surface_tilt=surface_tilt, a_r=a_r)
-    assert_allclose(iam, expected)
+    assert_allclose(iam['sky'], expected_sky)
+    assert_allclose(iam['ground'], expected_ground)
 
     a_r = 0.18
     surface_tilt = [0, 30, 90, 120, 180, np.nan, np.inf]
@@ -152,27 +156,27 @@ def test_martin_ruiz_diffuse():
 
     # check various inputs as list
     iam = _iam.martin_ruiz_diffuse(surface_tilt, a_r)
-    assert_allclose(iam[0], expected_sky, atol=1e-7, equal_nan=True)
-    assert_allclose(iam[1], expected_gnd, atol=1e-7, equal_nan=True)
+    assert_allclose(iam['sky'], expected_sky, atol=1e-7, equal_nan=True)
+    assert_allclose(iam['ground'], expected_gnd, atol=1e-7, equal_nan=True)
 
     # check various inputs as array
     iam = _iam.martin_ruiz_diffuse(np.array(surface_tilt), a_r)
-    assert_allclose(iam[0], expected_sky, atol=1e-7, equal_nan=True)
-    assert_allclose(iam[1], expected_gnd, atol=1e-7, equal_nan=True)
+    assert_allclose(iam['sky'], expected_sky, atol=1e-7, equal_nan=True)
+    assert_allclose(iam['ground'], expected_gnd, atol=1e-7, equal_nan=True)
 
     # check various inputs as Series
     surface_tilt = pd.Series(surface_tilt)
     expected_sky = pd.Series(expected_sky, name='iam_sky')
     expected_gnd = pd.Series(expected_gnd, name='iam_ground')
     iam = _iam.martin_ruiz_diffuse(surface_tilt, a_r)
-    assert_series_equal(iam[0], expected_sky)
-    assert_series_equal(iam[1], expected_gnd)
+    assert_series_equal(iam['sky'], expected_sky)
+    assert_series_equal(iam['ground'], expected_gnd)
 
 
 def test_iam_interp():
 
-    aoi_meas = [0.0, 45.0, 65.0, 75.0]
-    iam_meas = [1.0,  0.9,  0.8,  0.6]
+    aoi_meas = np.array([0.0, 45.0, 65.0, 75.0])
+    iam_meas = np.array([1.0,  0.9,  0.8,  0.6])
 
     # simple default linear method
     aoi = 55.0
@@ -200,18 +204,80 @@ def test_iam_interp():
     assert_series_equal(iam, expected)
 
     # check beyond reference values
-    aoi = [-45, 0, 45, 85, 90, 95, 100, 105, 110]
-    expected = [0.9, 1.0, 0.9, 0.4, 0.3, 0.2, 0.1, 0.0, 0.0]
+    aoi = np.array([-45, 0, 45, 85, 90, 95, 100, 105, 110])
+    expected = np.array([0.9, 1.0, 0.9, 0.4, 0.3, 0.2, 0.1, 0.0, 0.0])
     iam = _iam.interp(aoi, aoi_meas, iam_meas)
     assert_allclose(iam, expected)
 
     # check exception clause
     with pytest.raises(ValueError):
-        _iam.interp(0.0, [0], [1])
+        _iam.interp(0.0, np.array([0]), np.array([1]))
 
     # check exception clause
     with pytest.raises(ValueError):
-        _iam.interp(0.0, [0, 90], [1, -1])
+        _iam.interp(0.0, np.array([0, 90]), np.array([1, -1]))
+
+    # check linear after updating interp1d
+    theta_ref = np.array([0, 60, 90])
+    iam_ref = np.array([1.0, 0.8, 0.0])
+
+    aoi = np.array([0, 30, 60])
+    iam = _iam.interp(
+        aoi, theta_ref, iam_ref,
+        method="linear", normalize=False)
+    expected = np.array([1.0, 0.9, 0.8])
+    np.testing.assert_allclose(iam, expected)
+
+    # check quadratic
+    theta_ref = np.array([0, 30, 60, 90])
+    iam_ref = 1.0 - 1e-4 * theta_ref**2
+    aoi = np.array([15, 45, 75])
+    iam = _iam.interp(
+        aoi,
+        theta_ref,
+        iam_ref,
+        method="quadratic",
+        normalize=False
+    )
+
+    expected = 1.0 - 1e-4 * aoi**2
+    np.testing.assert_allclose(iam, expected, rtol=1e-12)
+
+
+@pytest.mark.parametrize(
+    "method",
+    ["nearest", "nearest-up", "zero", "slinear", "previous", "next"]
+)
+def test_iam_interp_deprecated_methods(method):
+    theta_ref = np.array([0, 60, 90])
+    iam_ref = np.array([1.0, 0.8, 0.0])
+
+    with pytest.warns(
+        pvlibDeprecationWarning,
+        match=f"Interpolation method {method} is deprecated in pvlib"
+    ):
+        _iam.interp(
+            30,
+            theta_ref,
+            iam_ref,
+            method=method
+        )
+
+
+def test_iam_interp_invalid_method():
+    theta_ref = np.array([0, 60, 90])
+    iam_ref = np.array([1.0, 0.8, 0.0])
+
+    with pytest.raises(
+        ValueError,
+        match="is not supported"
+    ):
+        _iam.interp(
+            30,
+            theta_ref,
+            iam_ref,
+            method="unsupported"
+        )
 
 
 @pytest.mark.parametrize('aoi,expected', [
@@ -432,22 +498,21 @@ def test_schlick_diffuse():
     expected_ground = np.array([0, 0.62693858, 0.93218737, 0.95238094])
 
     # numpy arrays
-    actual_sky, actual_ground = _iam.schlick_diffuse(surface_tilt)
-    assert_allclose(expected_sky, actual_sky)
-    assert_allclose(expected_ground, actual_ground, rtol=1e-6)
+    actual_iam = _iam.schlick_diffuse(surface_tilt)
+    assert_allclose(expected_sky, actual_iam['sky'])
+    assert_allclose(expected_ground, actual_iam['ground'], rtol=1e-6)
 
     # scalars
     for i in range(len(surface_tilt)):
-        actual_sky, actual_ground = _iam.schlick_diffuse(surface_tilt[i])
-        assert_allclose(expected_sky[i], actual_sky)
-        assert_allclose(expected_ground[i], actual_ground, rtol=1e-6)
+        actual_iam = _iam.schlick_diffuse(surface_tilt[i])
+        assert_allclose(expected_sky[i], actual_iam['sky'], rtol=1e-6)
+        assert_allclose(expected_ground[i], actual_iam['ground'], rtol=1e-6)
 
     # pandas Series
     idx = pd.date_range('2019-01-01', freq='h', periods=len(surface_tilt))
-    actual_sky, actual_ground = _iam.schlick_diffuse(pd.Series(surface_tilt,
-                                                               idx))
-    assert_series_equal(pd.Series(expected_sky, idx), actual_sky)
-    assert_series_equal(pd.Series(expected_ground, idx), actual_ground,
+    actual_iam = _iam.schlick_diffuse(pd.Series(surface_tilt, idx))
+    assert_series_equal(pd.Series(expected_sky, idx), actual_iam['sky'])
+    assert_series_equal(pd.Series(expected_ground, idx), actual_iam['ground'],
                         rtol=1e-6)
 
 

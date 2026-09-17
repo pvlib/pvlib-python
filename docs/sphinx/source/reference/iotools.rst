@@ -54,7 +54,6 @@ clear-sky irradiance globally.
 
    iotools.get_cams
    iotools.read_cams
-   iotools.parse_cams
 
 
 NASA POWER
@@ -80,6 +79,8 @@ Satellite-derived irradiance and weather data for the Americas.
    iotools.get_nsrdb_psm4_tmy
    iotools.get_nsrdb_psm4_conus
    iotools.get_nsrdb_psm4_full_disc
+   iotools.get_nsrdb_psm4_polar
+   iotools.get_nsrdb_psm4_polar_tmy
    iotools.read_nsrdb_psm4
 
 
@@ -150,7 +151,6 @@ long-wave radiation.
 
    iotools.get_bsrn
    iotools.read_bsrn
-   iotools.parse_bsrn
 
 
 SOLRAD
@@ -174,6 +174,7 @@ A solar radiation network in the USA, run by NOAA.
    :toctree: generated/
 
    iotools.read_surfrad
+   iotools.get_surfrad
 
 
 MIDC
@@ -266,7 +267,6 @@ Functions for reading irradiance/weather data files.
    iotools.read_tmy2
    iotools.read_tmy3
    iotools.read_epw
-   iotools.parse_epw
    iotools.read_panond
 
 

@@ -574,6 +574,12 @@ def marion_diffuse(model, surface_tilt, **kwargs):
     Determine diffuse irradiance incidence angle modifiers using Marion's
     method of integrating over solid angle.
 
+    .. tip::
+
+        This function is intended for fixed-tilt systems. For trackers, it
+        may lead to excessive memory use.
+        Consider using :py:func:`marion_diffuse_interpolate` instead.
+
     Parameters
     ----------
     model : str
@@ -603,6 +609,7 @@ def marion_diffuse(model, surface_tilt, **kwargs):
     See Also
     --------
     pvlib.iam.marion_integrate
+    pvlib.iam.marion_diffuse_interpolate
 
     References
     ----------
@@ -645,16 +652,15 @@ def marion_diffuse(model, surface_tilt, **kwargs):
     return iam
 
 
-def marion_diffuse_tracking(model, surface_tilt, resolution=0.5, **kwargs):
+def marion_diffuse_interpolate(model, surface_tilt, resolution=0.5, **kwargs):
     """
     Determine incidence angle modifiers (IAMs) for diffuse irradiance
-    using Marion's method of integrating over solid angles.
+    using interpolation for Marion's method of integrating over solid angles.
 
     This function supports trackers for which ``surface_tilt`` is a vector.
     The IAM function is integrated once for tilt angles specified by
     ``resolution``. IAM at other angles are determined by interpolation.
-    For fixed-tilt systems,
-    use :py:func:`marion_diffuse`.
+    For fixed-tilt systems, use :py:func:`marion_diffuse`.
 
     Parameters
     ----------
@@ -668,8 +674,8 @@ def marion_diffuse_tracking(model, surface_tilt, resolution=0.5, **kwargs):
         (e.g. surface facing up = 0, surface facing horizon = 90).
 
     resolution : float, default 0.5
-        The resolution in degrees of the tilt angle vector used for
-        the integration.
+        The resolution in degrees of the tilt angle vector used to create
+        the interpolator.
 
     **kwargs
         Extra parameters passed to the IAM function.
@@ -734,8 +740,8 @@ def _get_marion_interpolator(iam_function, region, resolution,
                              full_range=False):
     """
     Cached interpolator for the Marion integration of an IAM function over
-    solid angle. Helper function for :py:func:`marion_efficient` function
-    to avoid repeated calculations leading to excessive memory use.
+    solid angle. Helper function for :py:func:`marion_diffuse_interpolate`
+    function to avoid repeated calculations leading to excessive memory use.
     """
     if full_range:
         tilt = np.arange(0, 180.5, resolution)

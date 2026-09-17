@@ -89,6 +89,9 @@ Enhancements
   (:issue:`2828`, :pull:`2832`)
 * Allow variables from multiple datasets to be requested at once in
   :py:func:`~pvlib.iotools.get_merra2`. (:pull:`2839`)
+* Add new function :py:func:`~pvlib.iam.marion_diffuse_interpolate`, which uses
+  interpolation to handle IAM for trackers more efficiently than
+  :py:func:`~pvlib.iam.marion_diffuse`.
 
 
 Documentation

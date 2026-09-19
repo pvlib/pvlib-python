@@ -1215,7 +1215,7 @@ def test_erbs_min_cos_zenith_max_zenith():
     times = pd.DatetimeIndex(['2016-07-19 06:11:00'], tz='America/Phoenix')
 
     # max_zenith keeps these results reasonable
-    out = irradiance.erbs(ghi=1.0, zenith=89.99999,
+    out = irradiance.erbs(ghi=1.0, solar_zenith=89.99999,
                           datetime_or_doy=times, min_cos_zenith=0)
     expected = pd.DataFrame(np.array(
         [[0., 1., 1.]]),
@@ -1223,7 +1223,7 @@ def test_erbs_min_cos_zenith_max_zenith():
     assert_frame_equal(out, expected)
 
     # 4-5 9s will produce bad behavior without max_zenith limit
-    out = irradiance.erbs(ghi=1.0, zenith=89.99999,
+    out = irradiance.erbs(ghi=1.0, solar_zenith=89.99999,
                           datetime_or_doy=times, max_zenith=100)
     expected = pd.DataFrame(np.array(
         [[6.00115286e+03, 9.98952601e-01, 1.16377640e-02]]),
@@ -1231,7 +1231,7 @@ def test_erbs_min_cos_zenith_max_zenith():
     assert_frame_equal(out, expected)
 
     # 1-2 9s will produce bad behavior without either limit
-    out = irradiance.erbs(ghi=1.0, zenith=89.99, datetime_or_doy=times,
+    out = irradiance.erbs(ghi=1.0, solar_zenith=89.99, datetime_or_doy=times,
                           min_cos_zenith=0, max_zenith=100)
     expected = pd.DataFrame(np.array(
         [[4.78419761e+03, 1.65000000e-01, 1.00000000e+00]]),
@@ -1239,7 +1239,7 @@ def test_erbs_min_cos_zenith_max_zenith():
     assert_frame_equal(out, expected)
 
     # check default behavior under hardest condition
-    out = irradiance.erbs(ghi=1.0, zenith=90, datetime_or_doy=times)
+    out = irradiance.erbs(ghi=1.0, solar_zenith=90, datetime_or_doy=times)
     expected = pd.DataFrame(np.array(
         [[0., 1., 0.01163776]]),
         columns=columns, index=times)
@@ -1669,3 +1669,26 @@ def test_diffuse_par_spitters():
         0.99591, 0.99576, 0.99472, 0.99270, 0.99283, 0.99406, 0.99581, 0.99591,
     ])  # fmt: skip
     assert_allclose(result, expected, atol=1e-5)
+
+
+@pytest.mark.parametrize('func, args', [
+    (irradiance.erbs, dict(ghi=800.0, datetime_or_doy=180)),
+    (irradiance.erbs_driesse, dict(ghi=800.0, datetime_or_doy=180)),
+    (irradiance.orgill_hollands, dict(ghi=800.0, datetime_or_doy=180)),
+    (irradiance.campbell_norman, dict(transmittance=0.75)),
+])
+def test_decomposition_zenith_renamed_to_solar_zenith(func, args):
+    # GH 2851: the solar zenith parameter was called `zenith` in some
+    # decomposition functions and `solar_zenith` in others.
+    expected = func(solar_zenith=40.0, **args)
+    with pytest.warns(pvlibDeprecationWarning, match="renamed since 0.16.0"):
+        result = func(zenith=40.0, **args)
+    assert_series_equal_or_close(result, expected)
+
+
+def assert_series_equal_or_close(result, expected):
+    if isinstance(result, dict):
+        for key in expected:
+            assert result[key] == pytest.approx(expected[key])
+    else:
+        assert result == pytest.approx(expected)

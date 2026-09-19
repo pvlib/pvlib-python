@@ -15,7 +15,9 @@ from scipy.optimize import bisect
 from pvlib import atmosphere, solarposition, tools
 import pvlib  # used to avoid dni name collision in complete_irradiance
 
-from pvlib._deprecation import pvlibDeprecationWarning, deprecated
+from pvlib._deprecation import (
+    pvlibDeprecationWarning, deprecated, renamed_kwarg_warning
+)
 import warnings
 
 
@@ -2298,7 +2300,12 @@ def _dirint_bins(times, kt_prime, zenith, w, delta_kt_prime):
     return kt_prime_bin, zenith_bin, w_bin, delta_kt_prime_bin
 
 
-def dirindex(ghi, ghi_clear, dni_clear, zenith, times, pressure=101325.,
+@renamed_kwarg_warning(
+    since='0.16.0',
+    old_param_name='zenith',
+    new_param_name='solar_zenith')
+def dirindex(ghi, ghi_clear, dni_clear, solar_zenith, times,
+             pressure=101325.,
              use_delta_kt_prime=True, temp_dew=None, min_cos_zenith=0.065,
              max_zenith=87):
     """
@@ -2331,10 +2338,13 @@ def dirindex(ghi, ghi_clear, dni_clear, zenith, times, pressure=101325.,
         .. versionchanged:: 0.11.2
             Renamed from ``dni_clearsky`` to ``dni_clear``.
 
-    zenith : array-like
+    solar_zenith : array-like
         True (not refraction-corrected) zenith angles.
-        If ``zenith`` is a vector, it must be of the same size as all other
-        vector inputs. See :term`solar_zenith`. [°]
+        If ``solar_zenith`` is a vector, it must be of the same size as all
+        other vector inputs. See :term:`solar_zenith`. [°]
+
+        .. versionchanged:: 0.16.0
+            Renamed from ``zenith`` to ``solar_zenith``.
 
     times : DatetimeIndex
 
@@ -2381,12 +2391,12 @@ def dirindex(ghi, ghi_clear, dni_clear, zenith, times, pressure=101325.,
        irradiances: description and validation. Solar Energy, 73(5), 307-317.
     """
 
-    dni_dirint = dirint(ghi, zenith, times, pressure=pressure,
+    dni_dirint = dirint(ghi, solar_zenith, times, pressure=pressure,
                         use_delta_kt_prime=use_delta_kt_prime,
                         temp_dew=temp_dew, min_cos_zenith=min_cos_zenith,
                         max_zenith=max_zenith)
 
-    dni_dirint_clearsky = dirint(ghi_clear, zenith, times,
+    dni_dirint_clearsky = dirint(ghi_clear, solar_zenith, times,
                                  pressure=pressure,
                                  use_delta_kt_prime=use_delta_kt_prime,
                                  temp_dew=temp_dew,
@@ -2735,7 +2745,12 @@ def _gti_dirint_gte_90_kt_prime(aoi, solar_zenith, solar_azimuth, times,
     return kt_prime_gte_90
 
 
-def erbs(ghi, zenith, datetime_or_doy, min_cos_zenith=0.065, max_zenith=87):
+@renamed_kwarg_warning(
+    since='0.16.0',
+    old_param_name='zenith',
+    new_param_name='solar_zenith')
+def erbs(ghi, solar_zenith, datetime_or_doy, min_cos_zenith=0.065,
+         max_zenith=87):
     r"""
     Estimate DNI and DHI from GHI using the Erbs model.
 
@@ -2760,9 +2775,13 @@ def erbs(ghi, zenith, datetime_or_doy, min_cos_zenith=0.065, max_zenith=87):
     ----------
     ghi: numeric
         Global horizontal irradiance. See :term:`ghi`. [Wm⁻²]
-    zenith: numeric
+    solar_zenith: numeric
         True (not refraction-corrected) zenith angles. See
         :term:`solar_zenith`. [°]
+
+        .. versionchanged:: 0.16.0
+            Renamed from ``zenith`` to ``solar_zenith``.
+
     datetime_or_doy : int, float, array, pd.DatetimeIndex
         Day of year or array of days of year e.g.
         pd.DatetimeIndex.dayofyear, or pd.DatetimeIndex.
@@ -2799,7 +2818,8 @@ def erbs(ghi, zenith, datetime_or_doy, min_cos_zenith=0.065, max_zenith=87):
 
     dni_extra = get_extra_radiation(datetime_or_doy)
 
-    kt = clearness_index(ghi, zenith, dni_extra, min_cos_zenith=min_cos_zenith,
+    kt = clearness_index(ghi, solar_zenith, dni_extra,
+                         min_cos_zenith=min_cos_zenith,
                          max_clearness_index=1)
 
     # For Kt <= 0.22, set the diffuse fraction
@@ -2816,8 +2836,8 @@ def erbs(ghi, zenith, datetime_or_doy, min_cos_zenith=0.065, max_zenith=87):
 
     dhi = df * ghi
 
-    dni = (ghi - dhi) / tools.cosd(zenith)
-    bad_values = (zenith > max_zenith) | (ghi < 0) | (dni < 0)
+    dni = (ghi - dhi) / tools.cosd(solar_zenith)
+    bad_values = (solar_zenith > max_zenith) | (ghi < 0) | (dni < 0)
     dni = np.where(bad_values, 0, dni)
     # ensure that closure relationship remains valid
     dhi = np.where(bad_values, ghi, dhi)
@@ -2833,7 +2853,11 @@ def erbs(ghi, zenith, datetime_or_doy, min_cos_zenith=0.065, max_zenith=87):
     return data
 
 
-def erbs_driesse(ghi, zenith, datetime_or_doy=None, dni_extra=None,
+@renamed_kwarg_warning(
+    since='0.16.0',
+    old_param_name='zenith',
+    new_param_name='solar_zenith')
+def erbs_driesse(ghi, solar_zenith, datetime_or_doy=None, dni_extra=None,
                  min_cos_zenith=0.065, max_zenith=87):
     r"""
     Estimate DNI and DHI from GHI using the continuous Erbs-Driesse model.
@@ -2859,9 +2883,12 @@ def erbs_driesse(ghi, zenith, datetime_or_doy=None, dni_extra=None,
     ghi: numeric
         Global horizontal irradiance. See :term:`ghi`. [Wm⁻²]
 
-    zenith: numeric
+    solar_zenith: numeric
         True (not refraction-corrected) zenith angles. See
         :term:`solar_zenith`. [°]
+
+        .. versionchanged:: 0.16.0
+            Renamed from ``zenith`` to ``solar_zenith``.
 
     datetime_or_doy : int, float, array or pd.DatetimeIndex, optional
         Day of year or array of days of year e.g.
@@ -2939,7 +2966,8 @@ def erbs_driesse(ghi, zenith, datetime_or_doy=None, dni_extra=None,
     # negative ghi should not reach this point, but just in case
     ghi = np.maximum(0, ghi)
 
-    kt = clearness_index(ghi, zenith, dni_extra, min_cos_zenith=min_cos_zenith,
+    kt = clearness_index(ghi, solar_zenith, dni_extra,
+                         min_cos_zenith=min_cos_zenith,
                          max_clearness_index=1)
 
     # For all Kt, set the default diffuse fraction
@@ -2953,8 +2981,8 @@ def erbs_driesse(ghi, zenith, datetime_or_doy=None, dni_extra=None,
 
     dhi = df * ghi
 
-    dni = (ghi - dhi) / tools.cosd(zenith)
-    bad_values = (zenith > max_zenith) | (ghi < 0) | (dni < 0)
+    dni = (ghi - dhi) / tools.cosd(solar_zenith)
+    bad_values = (solar_zenith > max_zenith) | (ghi < 0) | (dni < 0)
     dni = np.where(bad_values, 0, dni)
     # ensure that closure relationship remains valid
     dhi = np.where(bad_values, ghi, dhi)
@@ -2972,7 +3000,11 @@ def erbs_driesse(ghi, zenith, datetime_or_doy=None, dni_extra=None,
     return data
 
 
-def orgill_hollands(ghi, zenith, datetime_or_doy, dni_extra=None,
+@renamed_kwarg_warning(
+    since='0.16.0',
+    old_param_name='zenith',
+    new_param_name='solar_zenith')
+def orgill_hollands(ghi, solar_zenith, datetime_or_doy, dni_extra=None,
                     min_cos_zenith=0.065, max_zenith=87):
     """Estimate DNI and DHI from GHI using the Orgill and Hollands model.
 
@@ -2986,9 +3018,12 @@ def orgill_hollands(ghi, zenith, datetime_or_doy, dni_extra=None,
     ghi: numeric
         Global horizontal irradiance. See :term:`ghi`. [Wm⁻²]
 
-    zenith: numeric
+    solar_zenith: numeric
         True (not refraction-corrected) zenith angles. See
         :term:`solar_zenith`. [°]
+
+        .. versionchanged:: 0.16.0
+            Renamed from ``zenith`` to ``solar_zenith``.
 
     datetime_or_doy : int, float, array or pd.DatetimeIndex, optional
         Day of year or array of days of year e.g.
@@ -3036,7 +3071,8 @@ def orgill_hollands(ghi, zenith, datetime_or_doy, dni_extra=None,
     if dni_extra is None:
         dni_extra = get_extra_radiation(datetime_or_doy)
 
-    kt = clearness_index(ghi, zenith, dni_extra, min_cos_zenith=min_cos_zenith,
+    kt = clearness_index(ghi, solar_zenith, dni_extra,
+                         min_cos_zenith=min_cos_zenith,
                          max_clearness_index=1)
 
     # For Kt < 0.35, set the diffuse fraction
@@ -3051,8 +3087,8 @@ def orgill_hollands(ghi, zenith, datetime_or_doy, dni_extra=None,
 
     dhi = df * ghi
 
-    dni = (ghi - dhi) / tools.cosd(zenith)
-    bad_values = (zenith > max_zenith) | (ghi < 0) | (dni < 0)
+    dni = (ghi - dhi) / tools.cosd(solar_zenith)
+    bad_values = (solar_zenith > max_zenith) | (ghi < 0) | (dni < 0)
     dni = np.where(bad_values, 0, dni)
     # ensure that closure relationship remains valid
     dhi = np.where(bad_values, ghi, dhi)
@@ -3179,7 +3215,11 @@ def boland(ghi, solar_zenith, datetime_or_doy, a_coeff=8.645, b_coeff=0.613,
     return data
 
 
-def campbell_norman(zenith, transmittance, pressure=101325.0,
+@renamed_kwarg_warning(
+    since='0.16.0',
+    old_param_name='zenith',
+    new_param_name='solar_zenith')
+def campbell_norman(solar_zenith, transmittance, pressure=101325.0,
                     dni_extra=1367.0):
     '''
     Determine DNI, DHI, GHI from extraterrestrial flux, transmittance,
@@ -3187,9 +3227,13 @@ def campbell_norman(zenith, transmittance, pressure=101325.0,
 
     Parameters
     ----------
-    zenith: pd.Series
-        True (not refraction-corrected) zenith angles. If ``zenith`` is a
-        vector, it must be of the same size as all other vector inputs. [°]
+    solar_zenith: pd.Series
+        True (not refraction-corrected) zenith angles. If ``solar_zenith``
+        is a vector, it must be of the same size as all other vector
+        inputs. [°]
+
+        .. versionchanged:: 0.16.0
+            Renamed from ``zenith`` to ``solar_zenith``.
 
     transmittance: float
         Atmospheric transmittance between 0 and 1.
@@ -3215,10 +3259,10 @@ def campbell_norman(zenith, transmittance, pressure=101325.0,
 
     tau = transmittance
 
-    airmass = atmosphere.get_relative_airmass(zenith, model='simple')
+    airmass = atmosphere.get_relative_airmass(solar_zenith, model='simple')
     airmass = atmosphere.get_absolute_airmass(airmass, pressure=pressure)
     dni = dni_extra*tau**airmass
-    cos_zen = tools.cosd(zenith)
+    cos_zen = tools.cosd(solar_zenith)
     dhi = 0.3 * (1.0 - tau**airmass) * dni_extra * cos_zen
     ghi = dhi + dni * cos_zen
 

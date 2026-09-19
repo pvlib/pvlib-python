@@ -56,6 +56,10 @@ Breaking Changes
 
 Deprecations
 ~~~~~~~~~~~~
+* Rename parameter ``zenith`` to ``solar_zenith`` in :py:func:`~pvlib.irradiance.dirindex`,
+  :py:func:`~pvlib.irradiance.erbs`, :py:func:`~pvlib.irradiance.erbs_driesse`,
+  :py:func:`~pvlib.irradiance.orgill_hollands` and :py:func:`~pvlib.irradiance.campbell_norman`,
+  for consistency with the other decomposition models. (:issue:`2851`, :pull:`XXXX`)
 * Deprecate :py:func:`pvlib.irradiance.king`.
   Use other diffuse transposition models in :py:mod:`pvlib.irradiance` instead.
   (:issue:`2636`, :pull:`2783`)
@@ -128,3 +132,4 @@ Contributors
 * Kevin Anderson (:ghuser:`kandersolar`)
 * Johann Loux (:ghuser:`JoLo90`)
 * Dylan Pulver (:ghuser:`dylanpulver`)
+* Anish Mehta (:ghuser:`anishmehta24`)

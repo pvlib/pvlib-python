@@ -117,7 +117,7 @@
             "build": "",
             "numpy": "1.23.5",
             "pandas": "1.5.1",  // first anaconda version to support py 3.11
-            "scipy": "1.7.2",
+            "scipy": "1.9.3",  // first anaconda version to support py 3.11
             // Note: these don't have a minimum in setup.py
             "h5py": "3.9.0",  // first anaconda version to support py 3.11
             "ephem": "4.1.5",  // first anaconda version to support py 3.11

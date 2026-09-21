@@ -112,6 +112,76 @@ def test_PVSystem_get_iam_invalid(sapm_module_params, mocker):
         system.get_iam(45, iam_model='not_a_model')
 
 
+def test_PVSystem_get_iam_diffuse_marion(sapm_module_params, mocker):
+    model_params = {'b': 0.05}
+    m = mocker.spy(_iam, 'marion_diffuse')
+    system = pvsystem.PVSystem(module_parameters=model_params)
+    tilt = 30
+    iam = system.get_iam_diffuse(tilt, iam_model='marion_diffuse',
+                                 marion_model='ashrae')
+    m.assert_called_with(model='ashrae', surface_tilt=tilt,
+                         **model_params)
+    assert isinstance(iam, dict)
+    assert set(iam.keys()) == {'sky', 'ground', 'horizon'}
+
+    system = pvsystem.PVSystem(module_parameters=sapm_module_params)
+    tilt = pd.Series([30, 60])
+    iam = system.get_iam_diffuse(tilt, iam_model='marion_diffuse',
+                                 marion_model='sapm')
+    assert isinstance(iam, pd.DataFrame)
+
+
+@pytest.mark.parametrize('iam_model', ['martin_ruiz_diffuse',
+                                       'schlick_diffuse'])
+def test_PVSystem_get_iam_diffuse(iam_model, mocker):
+    model_params = {'a_r': 0.16} if iam_model == 'martin_ruiz_diffuse' else {}
+    m = mocker.spy(_iam, iam_model)
+    system = pvsystem.PVSystem(module_parameters=model_params)
+    tilt = 30
+    iam = system.get_iam_diffuse(tilt, iam_model=iam_model)
+    m.assert_called_with(surface_tilt=tilt, **model_params)
+    assert isinstance(iam, dict)
+
+
+def test_PVSystem_multi_array_get_iam_diffuse():
+    model_params = {'b': 0.05}
+    system = pvsystem.PVSystem(
+        arrays=[pvsystem.Array(mount=pvsystem.FixedMount(0, 180),
+                               module_parameters=model_params),
+                pvsystem.Array(mount=pvsystem.FixedMount(0, 180),
+                               module_parameters=model_params)]
+    )
+    iam = system.get_iam_diffuse((30, 60), iam_model='marion_diffuse',
+                                 marion_model='ashrae')
+    assert len(iam) == 2
+    assert iam[0] != iam[1]
+    with pytest.raises(ValueError,
+                       match="Length mismatch for per-array parameter"):
+        system.get_iam_diffuse((30,), iam_model='marion_diffuse',
+                               marion_model='ashrae')
+
+
+def test_PVSystem_get_iam_diffuse_invalid(sapm_module_params):
+    system = pvsystem.PVSystem(module_parameters=sapm_module_params)
+    msg = 'not a valid diffuse IAM model'
+    with pytest.raises(ValueError, match=msg):
+        system.get_iam_diffuse(45, iam_model='not_a_model')
+
+
+def test_PVSystem_get_iam_diffuse_marion_invalid(sapm_module_params):
+    system = pvsystem.PVSystem(module_parameters=sapm_module_params)
+    msg = 'not a valid IAM model'
+    with pytest.raises(ValueError, match=msg):
+        system.get_iam_diffuse(45, iam_model='marion_diffuse',
+                               marion_model='not_a_model')
+
+
+def test_PVSystem_get_iam_diffuse_marion_missing_model(sapm_module_params):
+    system = pvsystem.PVSystem(module_parameters=sapm_module_params)
+    with pytest.raises(ValueError, match="marion_model must be specified"):
+        system.get_iam_diffuse(45, iam_model='marion_diffuse')
+
+
 def test_retrieve_sam_raises_exceptions():
     """
     Raise an exception if an invalid parameter is provided to `retrieve_sam()`.

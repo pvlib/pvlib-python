@@ -122,6 +122,12 @@ Benchmarking
 
 Requirements
 ~~~~~~~~~~~~
+* Increase minimum requirements to (:pull:`2860`):
+
+  - python: 3.11
+  - numpy: 1.23.2
+  - pandas: 1.5.0
+  - scipy: 1.9.2
 
 
 Maintenance

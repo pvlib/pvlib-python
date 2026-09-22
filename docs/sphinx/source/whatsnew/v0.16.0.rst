@@ -83,6 +83,9 @@ Bug fixes
   :py:func:`~pvlib.atmosphere.get_relative_airmass` since v0.9.5 but was not
   added to ``pvlib.atmosphere.APPARENT_ZENITH_MODELS``, so passing it raised
   ``ValueError``. (:pull:`2857`)
+* :py:func:`~pvlib.pvsystem.singlediode` with ``method='lambertw'`` no longer
+  emits ``RuntimeWarning: invalid value encountered in divide`` when the open
+  circuit voltage is zero, e.g. with zero photocurrent. (:issue:`2671`)
 
 
 Enhancements
@@ -137,3 +140,4 @@ Contributors
 * Kevin Anderson (:ghuser:`kandersolar`)
 * Johann Loux (:ghuser:`JoLo90`)
 * Dylan Pulver (:ghuser:`dylanpulver`)
+* Jakub Krasuski (:ghuser:`Blizzeq`)

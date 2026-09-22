@@ -912,17 +912,19 @@ def _lambertw(photocurrent, saturation_current, resistance_series,
     try:
         from scipy.optimize.elementwise import find_minimum
         # left negative to insure strict inequality. Where v_oc is 0 the
-        # bracket would collapse to x2 == x3 (GH 2671); any positive right
-        # end still brackets the minimum at 0, since current falls with voltage
-        init = (-1., 0.8*v_oc, np.where(v_oc > 0, v_oc, 1.))
+        # bracket would collapse to x2 == x3 (GH 2671), and 0 is the only
+        # voltage in [0, v_oc], so v_mp and p_mp are 0 there. Those elements
+        # get a placeholder bracket whose result is discarded.
+        voc_zero = v_oc == 0
+        init = (-1., 0.8*v_oc, np.where(voc_zero, 1., v_oc))
         res = find_minimum(_vmp_opt, init,
                            args=(params['photocurrent'],
                                  params['saturation_current'],
                                  params['resistance_series'],
                                  params['resistance_shunt'],
                                  params['nNsVth'],))
-        v_mp = res.x
-        p_mp = -1.*res.f_x
+        v_mp = np.where(voc_zero, 0., res.x)[()]
+        p_mp = np.where(voc_zero, 0., -1.*res.f_x)[()]
     except ModuleNotFoundError:
         # switch to old golden section method
         p_mp, v_mp = _golden_sect_DataFrame(params, 0., v_oc * 1.14,

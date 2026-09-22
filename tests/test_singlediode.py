@@ -205,10 +205,11 @@ def test_singlediode_lambert_zero_voc():
         outs = pvsystem.singlediode(np.array([0., 5.]), 1e-12, 0.5, np.inf,
                                     1.8, method="lambertw")
     assert out["v_oc"] == 0
-    assert np.isclose(out["v_mp"], 0, atol=1e-12)
+    assert out["v_mp"] == 0
     assert out["p_mp"] == 0
-    assert np.isclose(outs["v_mp"][0], 0, atol=1e-12)
+    assert outs["v_mp"][0] == 0
     assert outs["p_mp"][0] == 0
+    assert 0 < outs["v_mp"][1] < outs["v_oc"][1]
     assert outs["p_mp"][1] > 0
 
 

@@ -25,7 +25,7 @@ Breaking Changes
 * Remove the deprecated ``server`` keyword argument from
   :py:func:`~pvlib.iotools.get_cams`. Use ``url`` instead.
   (:issue:`2767`, :pull:`2766`)
-* Change the output type of :py:func:`pvlib.iam.marion_ruiz_diffuse`
+* Change the output type of :py:func:`pvlib.iam.martin_ruiz_diffuse`
   and :py:func:`pvlib.iam.schlick_diffuse` from ``tuple`` to ``dict``, to be
   consistent with :py:func:`pvlib.iam.marion_diffuse`. (:issue:`2837`,
   :pull:`2842`)
@@ -97,7 +97,7 @@ Bug fixes
   timestamp, restoring the behavior from before v0.11.1. Evening-local
   timestamps, which fall on the next calendar day in UTC, previously
   returned the following day's values. (:issue:`2238`)
-* Fix ``irradiance.dirint`` so that an interior missing value in the input
+* Fix :py:func:`~pvlib.irradiance.dirint` so that an interior missing value in the input
   series no longer halves the single valid neighbor difference when computing
   the stability index ``delta_kt_prime``. (:issue:`1847`, :pull:`2821`)
 
@@ -141,6 +141,7 @@ Enhancements
   two orders of magnitude. This also makes :py:mod:`~pvlib.bifacial.infinite_sheds` faster.
   (:pull:`2740`)
 
+
 Documentation
 ~~~~~~~~~~~~~
 * Remove ``g_poa_effective`` from the :ref:`nomenclature` page (:pull:`2704`)
@@ -160,13 +161,6 @@ Documentation
   :py:func:`pvlib.atmosphere.tdew_from_rh`) related to the actual
   and saturation vapor pressures. Function output is
   unchanged. (:issue:`2734`, :pull:`2782`)
-
-Testing
-~~~~~~~
-
-
-Benchmarking
-~~~~~~~~~~~~
 
 
 Requirements
@@ -206,6 +200,7 @@ Contributors
 * Darshan Gowda (:ghuser:`dgowdaan-cmyk`)
 * Jason Lun Leung (:ghuser:`jason-rpkt`)
 * Leonardo Scappatura (:ghuser:`Leonard013`)
+* Rodrigo Amaro e Silva (:ghuser:`ramaroesilva`)
 * Ioannis Sifnaios (:ghuser:`IoannisSifnaios`)
 * Echedey Luis (:ghuser:`echedey-ls`)
 * Cliff Hansen (:ghuser:`cwhanse`)
@@ -213,3 +208,12 @@ Contributors
 * Will Holmgren (:ghuser:`wholmgren`)
 * Anton Driesse (:ghuser:`adriesse`)
 * Mark Mikofski (:ghuser:`mikofski`)
+* Will Hobbs (:ghuser:`whobbs`)
+* Bing Gao (:ghuser:`binggao1230`)
+* Jean-Baptiste Pasquier (:ghuser:`pasquierjb`)
+* :ghuser:`Aditya-myst`
+* :ghuser:`amandadiniz-eng`
+* Mohammad Kazemi (:ghuser:`mokazemi`)
+* :ghuser:`FrancoisFEM`
+* :ghuser:`weixuan-song`
+

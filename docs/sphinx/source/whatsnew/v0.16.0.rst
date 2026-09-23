@@ -9,10 +9,6 @@ Breaking Changes
 * Remove support for the ``g_poa_effective`` keyword argument in
   :py:func:`pvlib.pvsystem.pvwatts_dc`. Users must now use
   ``effective_irradiance``. (:issue:`2703`, :pull:`2704`)
-* Change output type of :py:func:`pvlib.irradiance.perez` and
-  :py:func:`pvlib.irradiance.perez_driesse` from ``OrderedDict`` to ``dict`` when
-  ``return_components=True`` to be consistent with other models.
-  (:pull:`2789`)
 * Remove empty ``poa_horizon`` key from the ``diffuse_components`` output of
   :py:func:`pvlib.irradiance.haydavies`. (:pull:`2788`)
 * Remove private function :py:func:`pvlib.irradiance._liujordan`.
@@ -34,7 +30,7 @@ Breaking Changes
   consistent with :py:func:`pvlib.iam.marion_diffuse`. (:issue:`2837`,
   :pull:`2842`)
 * All ``OrderedDict`` outputs are now ``dict``.  The following functions
-  are affected (:issue:`1684`, :issue:`2750`, :pull:`2800`, :pull:`2856`):
+  are affected (:issue:`1684`, :issue:`2750`, :pull:`2789`, :pull:`2800`, :pull:`2856`):
 
   * :py:func:`~pvlib.clearsky.ineichen`
   * :py:func:`~pvlib.clearsky.simplified_solis`
@@ -43,6 +39,9 @@ Breaking Changes
   * :py:func:`~pvlib.irradiance.get_total_irradiance`
   * :py:func:`~pvlib.irradiance.get_sky_diffuse`
   * :py:func:`~pvlib.irradiance.poa_components`
+  * :py:func:`~pvlib.irradiance.disc`
+  * :py:func:`~pvlib.irradiance.perez`
+  * :py:func:`~pvlib.irradiance.perez_driesse`
   * :py:func:`~pvlib.irradiance.disc`
   * :py:func:`~pvlib.irradiance.gti_dirint`
   * :py:func:`~pvlib.irradiance.erbs`

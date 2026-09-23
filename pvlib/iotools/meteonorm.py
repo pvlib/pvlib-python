@@ -501,7 +501,7 @@ def get_meteonorm_tmy(
             "This parameter was removed from the Meteonorm API "
             "and now has no effect."
         )
-        warn_deprecated(since="0.15.2", removal="0.16.0", name="data_version",
+        warn_deprecated(since="0.15.2", removal="0.17.0", name="data_version",
                         addendum=msg)
     additional_params = {
         "situation": terrain_situation,

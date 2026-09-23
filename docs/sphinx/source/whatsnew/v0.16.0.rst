@@ -6,9 +6,9 @@ v0.16.0 (September 23, 2026)
 
 Breaking Changes
 ~~~~~~~~~~~~~~~~
-* Remove support for the `g_poa_effective` keyword argument in
+* Remove support for the ``g_poa_effective`` keyword argument in
   :py:func:`pvlib.pvsystem.pvwatts_dc`. Users must now use
-  `effective_irradiance`. (:issue:`2703`, :pull:`2704`)
+  ```effective_irradiance``. (:issue:`2703`, :pull:`2704`)
 * Change output type of :py:func:`pvlib.irradiance.perez` and
   :py:func:`pvlib.irradiance.perez_driesse` from ``OrderedDict`` to ``dict`` when
   ``return_components=True`` to be consistent with other models.
@@ -151,7 +151,7 @@ Enhancements
 
 Documentation
 ~~~~~~~~~~~~~
-* Remove `g_poa_effective` from the :ref:`nomenclature` page (:pull:`2704`)
+* Remove ``g_poa_effective`` from the :ref:`nomenclature` page (:pull:`2704`)
 * Clarify in the ``Notes`` section of :py:func:`pvlib.soiling.hsu` that the
   default ``depo_veloc`` values correspond to the settling velocity of
   particulates. (:issue:`2535`)

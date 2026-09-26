@@ -1,45 +1,14 @@
 .. _whatsnew_0_16_1:
 
 
-v0.16.1 (Anticipated December, 2026)
-------------------------------------
-
-Breaking Changes
-~~~~~~~~~~~~~~~~
-
-
-Deprecations
-~~~~~~~~~~~~
-
-
-Bug fixes
-~~~~~~~~~
-
-
-Enhancements
-~~~~~~~~~~~~
-
+v0.16.1 (September 26, 2026)
+----------------------------
 
 Documentation
 ~~~~~~~~~~~~~
-
-
-Testing
-~~~~~~~
-
-
-Benchmarking
-~~~~~~~~~~~~
-
-
-Requirements
-~~~~~~~~~~~~
-
-
-Maintenance
-~~~~~~~~~~~
-
+* Fix a documentation rendering issue. (:pull:`2867`)
 
 Contributors
 ~~~~~~~~~~~~
-
+* Echedey Luis (:ghuser:`echedey-ls`)
+* Kevin Anderson (:ghuser:`kandersolar`)

@@ -25,6 +25,7 @@ Loss models that are specific to bifacial PV systems
    bifacial.power_mismatch_deline
 
 .. py:module:: pvlib.bifacial.utils
+.. currentmodule:: pvlib
 
 Utility functions for bifacial modeling
 

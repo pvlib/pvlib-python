@@ -1,7 +1,7 @@
 .. _whatsnew_0_16_0:
 
 
-v0.16.0 (September 24, 2026)
+v0.16.0 (September 26, 2026)
 ----------------------------
 
 Breaking Changes

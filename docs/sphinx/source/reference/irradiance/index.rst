@@ -1,3 +1,5 @@
+.. py:module:: pvlib.irradiance
+
 .. currentmodule:: pvlib
 
 Irradiance

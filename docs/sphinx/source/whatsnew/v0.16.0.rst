@@ -6,13 +6,11 @@ v0.16.0 (September 26, 2026)
 
 Breaking Changes
 ~~~~~~~~~~~~~~~~
-* Remove support for the ``g_poa_effective`` keyword argument in
+* Remove support for the deprecated ``g_poa_effective`` keyword argument in
   :py:func:`pvlib.pvsystem.pvwatts_dc`. Users must now use
   ``effective_irradiance``. (:issue:`2703`, :pull:`2704`)
 * Remove empty ``poa_horizon`` key from the ``diffuse_components`` output of
   :py:func:`pvlib.irradiance.haydavies`. (:pull:`2788`)
-* Remove private function :py:func:`pvlib.irradiance._liujordan`.
-  (:issue:`2764`, :pull:`2766`)
 * Remove deprecated iotools functions :py:func:`~pvlib.iotools.parse_bsrn`,
   :py:func:`~pvlib.iotools.parse_epw`, and
   :py:func:`~pvlib.iotools.parse_cams`. Use
@@ -59,14 +57,14 @@ Deprecations
 * Deprecate :py:func:`pvlib.irradiance.king`.
   Use other diffuse transposition models in :py:mod:`pvlib.irradiance` instead.
   (:issue:`2636`, :pull:`2783`)
-* Parameters ``npoints`` and ``vectorize`` in the following functions
-  are now unnecessary and are deprecated (:pull:`2740`):
+* Deprecate parameters ``npoints`` and ``vectorize`` in the following functions
+  as they are now unnecessary (:pull:`2740`):
 
   - :py:func:`pvlib.bifacial.infinite_sheds.get_irradiance`
   - :py:func:`pvlib.bifacial.infinite_sheds.get_irradiance_poa`
   - :py:func:`pvlib.bifacial.utils.vf_ground_sky_2d_integ`
 
-* Parameter ``surface_tilt`` is deprecated and renamed to ``tracker_rotation``
+* Rename parameter ``surface_tilt`` to ``tracker_rotation``
   in :py:func:`pvlib.bifacial.utils.vf_ground_sky_2d_integ` (:pull:`2740`).
 * Deprecate non-polynomial interpolation options in :py:func:`pvlib.iam.interp` (:issue:`2394`, :pull:`2741`)
 
@@ -76,9 +74,8 @@ Bug fixes
 * Fix incorrect column naming when parsing data from logical record
   0500 using :py:func:`~pvlib.iotools.read_bsrn` or
   :py:func:`~pvlib.iotools.get_bsrn`. (:issue:`2835`, :pull:`2841`)
-* :py:func:`~pvlib.irradiance.perez` no longer raises ``ZeroDivisionError`` on
-  scalar ``dhi=0`` input (e.g. nighttime); the scalar path now returns the same
-  finite value as the array path. (:pull:`2826`)
+* Fix :py:func:`~pvlib.irradiance.perez` raising ``ZeroDivisionError`` on
+  scalar ``dhi=0`` input. (:pull:`2826`)
 * Fix a ``TypeError`` in :py:class:`~pvlib.modelchain.ModelChain` when
   ``dc_ohmic_model="dc_ohms_from_percent"`` is used with a single-Array system
   and the weather/irradiance input is passed as a length-1 list or tuple.
@@ -86,14 +83,14 @@ Bug fixes
 * Fix :py:func:`~pvlib.iotools.get_merra2` to work with a new API endpoint
   now that the previous one is retired.  Format of returned data and metadata
   is slightly different. (:pull:`2839`)
-* ``model='gueymard2003'`` is now accepted by
+* Fix ``model='gueymard2003'`` not being available in
   :py:meth:`~pvlib.location.Location.get_airmass` and 
   :py:class:`~pvlib.modelchain.ModelChain`. (:pull:`2857`)
 * Fix asymmetry in how ``max_rows`` is interpreted in
   :py:func:`~pvlib.bifacial.utils.vf_ground_sky_2d`. The difference
   should be negligible for typical simulations. (:issue:`1867`, :pull:`2740`)
-* :py:func:`~pvlib.solarposition.sun_rise_set_transit_spa` now returns
-  sunrise, sunset, and transit for the *local* calendar day of each input
+* Fix regression in :py:func:`~pvlib.solarposition.sun_rise_set_transit_spa`. It now
+  returns sunrise, sunset, and transit for the *local* calendar day of each input
   timestamp, restoring the behavior from before v0.11.1. Evening-local
   timestamps, which fall on the next calendar day in UTC, previously
   returned the following day's values. (:issue:`2238`)
@@ -115,13 +112,13 @@ Enhancements
 * Add support for diffuse IAM in the :py:class:`~pvlib.pvsystem.Array` and
   :py:class:`~pvlib.pvsystem.PVSystem` classes (see :py:meth:`pvlib.pvsystem.Array.get_iam_diffuse`
   and :py:meth:`pvlib.pvsystem.PVSystem.get_iam_diffuse`). (:issue:`2812`, :pull:`2845`)
-* Add ``return_components`` kwarg to the following transposition functions (:issue:`2750`):
+* Add ``return_components`` parameter to the following transposition functions (:issue:`2750`):
 
   * :py:func:`pvlib.irradiance.isotropic` (:pull:`2787`)
   * :py:func:`pvlib.irradiance.reindl` (:pull:`2775`)
   * :py:func:`pvlib.irradiance.get_sky_diffuse` (:pull:`2800`)
 
-* Add ``diffuse_components`` kwarg to :py:func:`pvlib.irradiance.get_total_irradiance`
+* Add ``diffuse_components`` parameter to :py:func:`pvlib.irradiance.get_total_irradiance`
   to support returning the components of sky diffuse irradiance.
   (:issue:`2750`, :pull:`2800`)
 * Add iotools functions to retrieve irradiance and weather data from NSRDB PSM4 Polar,
@@ -145,9 +142,8 @@ Enhancements
 Documentation
 ~~~~~~~~~~~~~
 * Remove ``g_poa_effective`` from the :ref:`nomenclature` page (:pull:`2704`)
-* Clarify in the ``Notes`` section of :py:func:`pvlib.soiling.hsu` that the
-  default ``depo_veloc`` values correspond to the settling velocity of
-  particulates. (:issue:`2535`)
+* Clarify :py:func:`pvlib.soiling.hsu` default ``depo_veloc`` values correspond
+  to the settling velocity of particulates (see its ``Notes`` section). (:issue:`2535`)
 * Correct Hellmann exponents in the
   :py:func:`~pvlib.atmosphere.windspeed_powerlaw` docstring. (:pull:`2853`)
 * Fix broken link in GitHub Contributing tab. (:issue:`2628`, :pull:`2806`)
@@ -172,12 +168,15 @@ Requirements
   - pandas: 1.5.0
   - scipy: 1.9.2
 
+* Add dependency on the tzdata package. (:pull:`2809`)
 
 Maintenance
 ~~~~~~~~~~~
 * Fix some gallery examples not being run. Only gallery examples whose filename
   begins with ``noplot_`` will be excluded. (:issue:`2790`, :pull:`2792`)
-* Remove unused internal function ``clearsky._is_leap_year`` (:issue:`2768`, :pull:`2813`)
+* Remove unused internal function :py:func:`pvlib.clearsky._is_leap_year`. (:issue:`2768`, :pull:`2813`)
+* Remove private function :py:func:`pvlib.irradiance._liujordan`.
+  (:issue:`2764`, :pull:`2766`)
 * Fix documentation builds on runner images lacking link-type timezones. (:issue:`2795`, :pull:`2809`)
 
 

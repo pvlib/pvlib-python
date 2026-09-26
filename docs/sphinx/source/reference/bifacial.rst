@@ -1,3 +1,7 @@
+.. py:module:: pvlib.bifacial.infinite_sheds
+.. py:module:: pvlib.bifacial.pvfactors
+.. py:module:: pvlib.bifacial.ants2d
+
 .. currentmodule:: pvlib
 
 Bifacial
@@ -19,6 +23,8 @@ Loss models that are specific to bifacial PV systems
    :toctree: generated/
 
    bifacial.power_mismatch_deline
+
+.. py:module:: pvlib.bifacial.utils
 
 Utility functions for bifacial modeling
 

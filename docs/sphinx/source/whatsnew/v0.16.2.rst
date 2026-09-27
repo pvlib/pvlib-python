@@ -14,6 +14,9 @@ Deprecations
 
 Bug fixes
 ~~~~~~~~~
+* :py:func:`~pvlib.pvsystem.singlediode` with ``method='lambertw'`` no longer
+  emits ``RuntimeWarning: invalid value encountered in divide`` when the open
+  circuit voltage is zero, e.g. with zero photocurrent. (:issue:`2671`)
 
 
 Enhancements
@@ -42,4 +45,5 @@ Maintenance
 
 Contributors
 ~~~~~~~~~~~~
+* Jakub Krasuski (:ghuser:`Blizzeq`)
 

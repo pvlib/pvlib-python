@@ -83,15 +83,6 @@ Bug fixes
 * Fix :py:func:`~pvlib.iotools.get_merra2` to work with a new API endpoint
   now that the previous one is retired.  Format of returned data and metadata
   is slightly different. (:pull:`2839`)
-* ``model='gueymard2003'`` is now accepted by
-  :py:meth:`~pvlib.location.Location.get_airmass` and, through it, by
-  :py:class:`~pvlib.modelchain.ModelChain`. The model has been available in
-  :py:func:`~pvlib.atmosphere.get_relative_airmass` since v0.9.5 but was not
-  added to ``pvlib.atmosphere.APPARENT_ZENITH_MODELS``, so passing it raised
-  ``ValueError``. (:pull:`2857`)
-* :py:func:`~pvlib.pvsystem.singlediode` with ``method='lambertw'`` no longer
-  emits ``RuntimeWarning: invalid value encountered in divide`` when the open
-  circuit voltage is zero, e.g. with zero photocurrent. (:issue:`2671`)
 * Fix ``model='gueymard2003'`` not being available in
   :py:meth:`~pvlib.location.Location.get_airmass` and 
   :py:class:`~pvlib.modelchain.ModelChain`. (:pull:`2857`)
@@ -198,7 +189,6 @@ Contributors
 * Kevin Anderson (:ghuser:`kandersolar`)
 * Johann Loux (:ghuser:`JoLo90`)
 * Dylan Pulver (:ghuser:`dylanpulver`)
-* Jakub Krasuski (:ghuser:`Blizzeq`)
 * Adam R. Jensen (:ghuser:`AdamRJensen`)
 * Erin Tonita (:ghuser:`etoni044`)
 * Eesh Saxena (:ghuser:`eeshsaxena`)

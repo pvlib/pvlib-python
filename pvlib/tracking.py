@@ -18,6 +18,11 @@ def singleaxis(apparent_zenith, solar_azimuth,
     Determine the rotation angle of a single-axis tracker when given particular
     solar zenith and azimuth angles.
 
+    The rotation angle is chosen to minimize the angle of incidence (AOI) of
+    the sun's beam onto the panel, thereby maximizing the use of direct
+    normal irradiance (DNI). When backtracking is enabled, the rotation is
+    adjusted away from this AOI-minimizing angle to avoid row-to-row shading.
+
     See [1]_ and [2]_ for details about the equations. Backtracking may be
     specified, in which case a ground coverage ratio is required.
 

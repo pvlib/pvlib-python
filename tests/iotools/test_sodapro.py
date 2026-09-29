@@ -193,12 +193,6 @@ def test_read_cams_integrated_unmapped_label():
     assert_frame_equal(out, expected, check_less_precise=True)
 
 
-def test_parse_cams_deprecated():
-    with pytest.warns(pvlibDeprecationWarning, match='Use read_cams instead'):
-        with open(testfile_radiation_verbose, mode="r") as fbuf:
-            _ = sodapro.parse_cams(fbuf)
-
-
 def test_read_cams_metadata():
     _, metadata = sodapro.read_cams(testfile_mcclear_monthly, integrated=False)
     assert metadata['Time reference'] == 'Universal time (UT)'

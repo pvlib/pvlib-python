@@ -12,7 +12,7 @@ the primary source of light. The primary challenge in modeling a PV system
 with bifacial modules is estimating the irradiance on the front and back
 surfaces.
 
-pvlib-python provides two groups of functions for estimating front and back
+pvlib-python provides three groups of functions for estimating front and back
 irradiance:
 
 1. a wrapper for convenient use of the pvfactors model:
@@ -22,6 +22,7 @@ irradiance:
 :py:func:`~pvlib.bifacial.infinite_sheds.get_irradiance`
 :py:func:`~pvlib.bifacial.infinite_sheds.get_irradiance_poa`
 
+3. the ANTS-2D bifacial model: :py:func:`~pvlib.bifacial.ants2d.get_irradiance`
 
 pvfactors
 ---------
@@ -50,7 +51,7 @@ after installation, Python code still accesses it as "pvfactors"
 Infinite Sheds
 --------------
 
-The "infinite sheds" model [1] is a 2-dimensional model of irradiance on the
+The "infinite sheds" model [1]_ is a 2-dimensional model of irradiance on the
 front and rear surfaces of a PV array. The model assumes that the array
 comprises parallel, equally spaced rows (sheds) and calculates irradiance in
 the middle of a shed which is far from the front and back rows of the array.
@@ -101,7 +102,7 @@ View factors from the ground to the sky are calculated at points spaced along
 a one-dimensional axis on the ground, with the origin under the center of a
 row and the positive direction toward the right. The positive direction is
 considered to be towards the "front" of the array. Array height differs in this
-code from the description in [1], where array height is described at the row's
+code from the description in [1]_, where array height is described at the row's
 lower edge.
 
 If ``model='isotropic'`` (the default), ``dhi`` is assumed to be isotropically
@@ -111,8 +112,22 @@ the input ``dhi`` is decomposed into circumsolar and isotropic components using
 :py:func:`~pvlib.irradiance.haydavies`, with the circumsolar component treated
 as additional ``dni`` for transposition and shading purposes.
 
-This model is influenced by the 2D model published by Marion, *et al.* in [2].
+This model is influenced by the 2D model published by Marion, *et al.* in [2]_.
 
+
+ANTS-2D
+-------
+
+The ANTS-2D model is a 2-D model similar to the Infinite Sheds and pvfactors
+models.  However, it has additional inputs to allow modeling of arrays on
+sloped terrain and ground surfaces with nonuniform albedo.  It partitions the
+module and ground surfaces into a user-specified number of segments to better
+capture irradiance nonuniformity effects.  It is also computationally efficient
+relative to models of comparable capability like pvfactors.  Finally, it can
+compute and return irradiance components at the ground level, which may be
+useful for agriPV modeling.
+
+For details, see :py:func:`~pvlib.bifacial.ants2d.get_irradiance` and Ref. [3]_.
 
 References
 ----------
@@ -124,4 +139,7 @@ References
    Riley, D., Stein, J. and Hansen, C. "A Practical Irradiance Model for
    Bifacial PV Modules".2017 IEEE 44th Photovoltaic Specialists Conference
    (PVSC), 2017, pp. 1537-1543. doi: 10.1109/PVSC.2017.8366263
+.. [3] K. S. Anderson, A. R. Jensen, and C. W. Hansen, "A Bifacial View
+   Factor Model Considering Terrain Slope and Nonuniform Albedo,"
+   IEEE JPV, 2026. :doi:`10.1109/JPHOTOV.2026.3677506`
 

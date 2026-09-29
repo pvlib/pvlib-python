@@ -56,10 +56,10 @@ jobs:
     strategy:
       fail-fast: false  # don't cancel other matrix jobs when one fails
       matrix:
-        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
+        python-version: ["3.11", "3.12", "3.13", "3.14"]
         suffix: ['']  # the alternative to "-min"
         include:
-          - python-version: "3.10"
+          - python-version: "3.11"
             suffix: -min
 
     runs-on: ubuntu-latest
@@ -72,6 +72,7 @@ jobs:
         # but what we need is the hypothetical merge commit from the PR:
         with:
           ref: "refs/pull/${{ github.event.number }}/merge"
+          allow-unsafe-pr-checkout: true  # see above discussion; manual triggering makes this ok
 
       - uses: actions/checkout@v4
         if: github.event_name == 'push'
@@ -106,7 +107,7 @@ jobs:
         run: pytest tests/iotools --cov=./ --cov-report=xml --remote-data
 
       - name: Upload coverage to Codecov
-        if: matrix.python-version == '3.10' && matrix.suffix == ''
+        if: matrix.python-version == '3.11' && matrix.suffix == ''
         uses: codecov/codecov-action@v4
         with:
           fail_ci_if_error: true

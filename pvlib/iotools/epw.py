@@ -7,7 +7,6 @@ from urllib.request import urlopen, Request
 import pandas as pd
 
 from pvlib.tools import _file_context_manager
-from pvlib._deprecation import deprecated
 
 
 def read_epw(filename, coerce_year=None):
@@ -214,7 +213,7 @@ def read_epw(filename, coerce_year=None):
     ----------
 
     .. [1] `EnergyPlus documentation, Auxiliary Programs
-       <https://energyplus.net/documentation>`_
+       <https://energyplus.readthedocs.io/en/latest/>`_
     '''
 
     if str(filename).startswith('http'):
@@ -259,7 +258,7 @@ def _parse_epw(csvdata, coerce_year=None):
         A pandas dataframe with the columns described in the table
         below. For more detailed descriptions of each component, please
         consult the EnergyPlus Auxiliary Programs documentation
-        available at: https://energyplus.net/documentation.
+        available at: https://energyplus.readthedocs.io/en/latest/.
 
     metadata : dict
         The site metadata available in the file.
@@ -309,7 +308,3 @@ def _parse_epw(csvdata, coerce_year=None):
     data.index = idx
 
     return data, meta
-
-
-parse_epw = deprecated(since="0.13.0", name="parse_epw",
-                       alternative="read_epw")(read_epw)

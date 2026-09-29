@@ -44,6 +44,7 @@ Enhancements
   ``relative_humidity``, ``ghi_extra``, ``dhi_clear``, ``longwave_down``,
   and ``albedo``. (:issue:`2731`, :pull:`2753`, :pull:`2762`)
 
+
 Documentation
 ~~~~~~~~~~~~~
 * Clarify that :py:func:`pvlib.soiling.hsu` has an implicit minimum

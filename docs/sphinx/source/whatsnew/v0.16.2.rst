@@ -18,7 +18,9 @@ Bug fixes
 
 Enhancements
 ~~~~~~~~~~~~
-
+* Add ``dataset`` parameter to :py:func:`~pvlib.iotools.get_era5`
+  allowing for choosing between ERA5 and ERA5-Land datasets.
+  (:pull:`2780`)
 
 Documentation
 ~~~~~~~~~~~~~
@@ -42,4 +44,5 @@ Maintenance
 
 Contributors
 ~~~~~~~~~~~~
+* Adam R. Jensen (:ghuser:`AdamRJensen`)
 

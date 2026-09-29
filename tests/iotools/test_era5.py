@@ -60,10 +60,15 @@ def test_get_era5(params, expected):
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_get_era5_land(params, expected):
     params['dataset'] = "reanalysis-era5-land-timeseries"
+    # ghi and temp_air belong to different parameter groups and are
+    # returned by ERA5-Land as separate CSV files (bhi is not available)
+    params['variables'] = ['ghi', 'temp_air']
     df, meta = pvlib.iotools.get_era5(**params)
     assert np.isclose(meta['longitude'], -80.0)
     assert np.isclose(meta['latitude'], 40.0)
-    assert pd.testing.assert_index_equal(df.index, expected.index)
+    pd.testing.assert_index_equal(df.index, expected.index)
+    assert set(df.columns) == {'ghi', 'temp_air'}
+    assert df.notna().all().all()
 
 
 @requires_ecmwf_credentials

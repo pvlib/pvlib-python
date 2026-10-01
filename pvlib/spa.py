@@ -1108,7 +1108,7 @@ def solar_position(unixtime, lat, lon, elev, pressure, temp, delta_t,
 def transit_sunrise_sunset(dates, lat, lon, delta_t, numthreads):
     """
     Calculate the sun transit, sunrise, and sunset
-    for a set of dates at a given location.
+    for a set of dates at a given location using the NREL SPA [1]_.
 
     Parameters
     ----------
@@ -1129,6 +1129,11 @@ def transit_sunrise_sunset(dates, lat, lon, delta_t, numthreads):
     -------
     tuple : (transit, sunrise, sunset) localized to UTC
 
+    References
+    ----------
+    .. [1] I. Reda and A. Andreas, Solar position algorithm for solar
+       radiation applications. Solar Energy, vol. 76, no. 5, pp. 577-589,
+       2004. :doi:`10.1016/j.solener.2003.12.003`
     """
 
     if ((dates % 86400) != 0.0).any():

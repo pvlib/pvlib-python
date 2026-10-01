@@ -22,6 +22,8 @@ Enhancements
 
 Documentation
 ~~~~~~~~~~~~~
+* Add :py:func:`pvlib.spa.transit_sunrise_sunset` to the API reference.
+  (:issue:`2255`, :pull:`2873`)
 
 
 Testing

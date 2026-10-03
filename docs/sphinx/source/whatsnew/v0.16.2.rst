@@ -14,7 +14,8 @@ Deprecations
 
 Bug fixes
 ~~~~~~~~~
-
+* :py:func:`pvlib.tracking.calc_surface_orientation` returns scalar when input
+  is scalar (:issue:`2881`, :pull:`2882`)
 
 Enhancements
 ~~~~~~~~~~~~
@@ -42,4 +43,4 @@ Maintenance
 
 Contributors
 ~~~~~~~~~~~~
-
+* Cliff Hansen (:ghuser:`cwhanse`)

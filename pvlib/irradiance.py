@@ -1157,7 +1157,7 @@ def king(surface_tilt, dhi, ghi, solar_zenith):
 
 
 def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
-          solar_zenith, solar_azimuth, airmass,
+          solar_zenith, solar_azimuth, airmass=None,
           model='allsitescomposite1990', return_components=False):
     '''
     Determine diffuse irradiance from the sky on a tilted surface using
@@ -1207,11 +1207,13 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
     solar_azimuth : numeric
         Solar azimuth angle. See :term:`solar_azimuth`. [°]
 
-    airmass : numeric
-        Relative (not pressure-corrected) airmass values. If AM is a
-        DataFrame it must be of the same size as all other DataFrame
-        inputs. AM must be >=0 (careful using the 1/cos(z) model of AM
-        generation). [unitless]
+    airmass : numeric, optional
+        Relative (not pressure-corrected) airmass values. If ``airmass`` is a
+        DataFrame, then it must be of the same size as all other DataFrame
+        inputs. AM must be >=0 (careful using the 1/cos(z) model of AM 
+        generation). If not provided or None, then the kastenyoung1989 model
+        is used, which corresponds to the calibration of the F1 and F2 
+        coefficients in the original work by Perez. [unitless]
 
     model : string, default 'allsitescomposite1990'
         A string which selects the desired set of Perez coefficients. If
@@ -1281,36 +1283,20 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
        Perez Diffuse Radiation Model". SAND88-7030
     '''
 
-    kappa = 1.041  # for solar_zenith in radians
-    z = np.radians(solar_zenith)  # convert to radians
-
-    # delta is the sky's "brightness", NaN airmass ok, assumes dni_extra > 0
-    delta = dhi * airmass / dni_extra
-
-    # epsilon is the sky's "clearness". Preserves NaNs for dni or dhi.
-    # Assumes:
+    # FIXME Verify _calc_zeta assumes:
     # - dni >=0 and dhi >= 0.
     # - dni->0^+ faster than dhi->0^+.
-    irr_ratio = np.zeros(np.broadcast(dni, dhi).shape)
-    with np.errstate(divide="raise"):
-        irr_ratio = np.divide(
-            dni, dhi, out=irr_ratio, where=np.logical_not(
-                np.logical_and(dhi == 0, dni == 0)
-            )
-        )
-    eps = 1 + irr_ratio / (1 + kappa * (z ** 3))
 
-    # numpy indexing below will not work with a Series
-    if isinstance(eps, pd.Series):
-        eps = eps.values
+    delta = _calc_delta(dhi, dni_extra, solar_zenith, airmass)
+    zeta, z = _calc_zeta(dhi, dni, solar_zenith)
 
     # Perez et al define clearness bins according to the following
     # rules. 1 = overcast ... 8 = clear (these names really only make
     # sense for small zenith angles, but...) these values will
     # eventually be used as indicies for coeffecient look ups
-    ebin = np.digitize(eps, (0., 1.065, 1.23, 1.5, 1.95, 2.8, 4.5, 6.2))
+    ebin = np.digitize(zeta, (0., 1.065, 1.23, 1.5, 1.95, 2.8, 4.5, 6.2))
     ebin = np.array(ebin)  # GH 642
-    ebin[np.isnan(eps)] = 0
+    ebin[np.isnan(zeta)] = 0
 
     # correct for 0 indexing in coeffecient lookup
     # later, ebin = -1 will yield nan coefficients
@@ -1320,7 +1306,7 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
     # in a subfunction to clean up the code.
     F1c, F2c = _get_perez_coefficients(model)
 
-    # results in invalid eps (ebin = -1) being mapped to nans
+    # results in invalid zeta (ebin = -1) being mapped to nans
     nans = np.array([np.nan, np.nan, np.nan])
     F1c = np.vstack((F1c, nans))
     F2c = np.vstack((F2c, nans))
@@ -1382,12 +1368,13 @@ def _calc_delta(dhi, dni_extra, solar_zenith, airmass=None):
     Compute the delta parameter, which represents sky dome "brightness"
     in the Perez and Perez-Driesse models.
 
-    Helper function for perez_driesse transposition.
+    Helper function for perez and perez_driesse transposition.
     '''
     if airmass is None:
         # use the same airmass model as in the original perez work
-        airmass = atmosphere.get_relative_airmass(solar_zenith,
-                                                  'kastenyoung1989')
+        airmass = atmosphere.get_relative_airmass(
+            solar_zenith, 'kastenyoung1989'
+        )
 
     max_airmass = atmosphere.get_relative_airmass(90, 'kastenyoung1989')
     airmass = np.where(solar_zenith >= 90, max_airmass, airmass)
@@ -1398,9 +1385,9 @@ def _calc_delta(dhi, dni_extra, solar_zenith, airmass=None):
 def _calc_zeta(dhi, dni, zenith):
     '''
     Compute the zeta parameter, which represents sky dome "clearness"
-    in the Perez-Driesse model.
+    in the Perez and Perez-Driesse model.
 
-    Helper function for perez_driesse transposition.
+    Helper function for perez and perez_driesse transposition.
     '''
     dhi = np.asarray(dhi)
     dni = np.asarray(dni)
@@ -1414,10 +1401,10 @@ def _calc_zeta(dhi, dni, zenith):
 
     # then apply the kappa correction in a manner analogous to eq. 7
     kappa = 1.041
-    kterm = kappa * np.radians(zenith) ** 3
-    zeta = zeta / (1 - kterm * (zeta - 1))
+    z = np.radians(zenith)
+    zeta = zeta / (1 - kappa * z ** 3 * (zeta - 1))
 
-    return zeta
+    return zeta, z
 
 
 def _f(i, j, zeta):
@@ -1491,9 +1478,11 @@ def perez_driesse(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
 
     airmass : numeric, optional
         Relative (not pressure-corrected) airmass values. If ``airmass`` is a
-        DataFrame it must be of the same size as all other DataFrame
-        inputs. AM must be >=0 (careful using the 1/cos(z) model of AM
-        generation). [unitless]
+        DataFrame, then it must be of the same size as all other DataFrame
+        inputs. AM must be >=0 (careful using the 1/cos(z) model of AM 
+        generation). If not provided or None, then the kastenyoung1989 model
+        is used, which corresponds to the calibration of the F1 and F2 
+        coefficients in the original work by Perez. [unitless]
 
     return_components: bool (optional, default=False)
         Flag used to decide whether to return the calculated diffuse components
@@ -1550,9 +1539,7 @@ def perez_driesse(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
     # Contributed by Anton Driesse (@adriesse), PV Performance Labs. Oct., 2023
 
     delta = _calc_delta(dhi, dni_extra, solar_zenith, airmass)
-    zeta = _calc_zeta(dhi, dni, solar_zenith)
-
-    z = np.radians(solar_zenith)
+    zeta, z = _calc_zeta(dhi, dni, solar_zenith)
 
     F1 = _f(1, 1, zeta) + _f(1, 2, zeta) * delta + _f(1, 3, zeta) * z
     F2 = _f(2, 1, zeta) + _f(2, 2, zeta) * delta + _f(2, 3, zeta) * z

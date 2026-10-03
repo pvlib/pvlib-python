@@ -1210,7 +1210,7 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra, solar_zenith,
     airmass : numeric or None
         Relative (not pressure-corrected) airmass values. If ``airmass`` is a
         DataFrame, then it must be of the same size as all other DataFrame
-        inputs. AM must be >=0 (careful using the 1/cos(z) model of AM 
+        inputs. AM must be >=0 (careful using the 1/cos(z) model of AM
         generation). If None, then the 'kastenyoung1989' model is used, which
         corresponds to the calibration of the F1 and F2 coefficients in the
         original work by Perez. [unitless]
@@ -1479,9 +1479,9 @@ def perez_driesse(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
     airmass : numeric, optional
         Relative (not pressure-corrected) airmass values. If ``airmass`` is a
         DataFrame, then it must be of the same size as all other DataFrame
-        inputs. AM must be >=0 (careful using the 1/cos(z) model of AM 
+        inputs. AM must be >=0 (careful using the 1/cos(z) model of AM
         generation). If not provided or None, then the kastenyoung1989 model
-        is used, which corresponds to the calibration of the F1 and F2 
+        is used, which corresponds to the calibration of the F1 and F2
         coefficients in the original work by Perez. [unitless]
 
     return_components: bool (optional, default=False)

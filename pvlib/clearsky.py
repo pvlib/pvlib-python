@@ -4,7 +4,6 @@ to calculate clear sky GHI, DNI, and DHI.
 """
 
 import os
-from collections import OrderedDict
 import calendar
 
 import numpy as np
@@ -56,7 +55,7 @@ def ineichen(apparent_zenith, airmass_absolute, linke_turbidity,
 
     Returns
     -------
-    clearsky : DataFrame (if Series input) or OrderedDict of arrays
+    clearsky : DataFrame (if Series input) or dict of arrays
         Contains the columns/keys ``'dhi', 'dni', 'ghi'``, with the same
         unit as the input parameter ``dni_extra``.
 
@@ -138,7 +137,7 @@ def ineichen(apparent_zenith, airmass_absolute, linke_turbidity,
 
     dhi = ghi - dni*cos_zenith
 
-    irrads = OrderedDict()
+    irrads = {}
     irrads['ghi'] = ghi
     irrads['dni'] = dni
     irrads['dhi'] = dhi
@@ -363,8 +362,8 @@ def simplified_solis(apparent_elevation, aod700=0.1, precipitable_water=1.,
 
     Returns
     -------
-    clearsky : DataFrame (if Series input) or OrderedDict of arrays
-        DataFrame/OrderedDict contains the columns/keys
+    clearsky : DataFrame (if Series input) or dict of arrays
+        DataFrame/dict contains the columns/keys
         ``'dhi', 'dni', 'ghi'``.
 
     References
@@ -408,7 +407,7 @@ def simplified_solis(apparent_elevation, aod700=0.1, precipitable_water=1.,
     ghi = i0p * np.exp(-taug/sin_elev**g) * sin_elev
     dhi = i0p * np.exp(-taud/sin_elev**d)
 
-    irrads = OrderedDict()
+    irrads = {}
     irrads['ghi'] = ghi
     irrads['dni'] = dni
     irrads['dhi'] = dhi
@@ -737,7 +736,7 @@ def detect_clearsky(measured, clearsky, times=None, infer_limits=False,
         Boolean array or Series of whether or not the given time is
         clear. Return type is the same as the input type.
 
-    components : OrderedDict, optional
+    components : dict, optional
         Dict of arrays of whether or not the given time window is clear
         for each condition. Only provided if ``return_components`` is True.
 
@@ -905,7 +904,7 @@ def detect_clearsky(measured, clearsky, times=None, infer_limits=False,
         clear_samples = pd.Series(clear_samples, index=times)
 
     if return_components:
-        components = OrderedDict()
+        components = {}
         components['mean_diff_flag'] = c1
         components['max_diff_flag'] = c2
         components['line_length_flag'] = c3
@@ -971,8 +970,8 @@ def bird(zenith, airmass_relative, aod380, aod500, precipitable_water,
 
     Returns
     -------
-    clearsky : DataFrame (if Series input) or OrderedDict of arrays
-        DataFrame/OrderedDict contains the columns/keys
+    clearsky : DataFrame (if Series input) or dict of arrays
+        DataFrame/dict contains the columns/keys
         ``'dhi', 'dni', 'ghi', 'direct_horizontal'`` in  [W/m^2].
 
     See also
@@ -1039,8 +1038,8 @@ def bird(zenith, airmass_relative, aod380, aod500, precipitable_water,
     gh = (id_nh + ias) / (1.0 - albedo * rs)
     diffuse_horiz = gh - id_nh
     # TODO: be DRY, use decorator to wrap methods that need to return either
-    # OrderedDict or DataFrame instead of repeating this boilerplate code
-    irrads = OrderedDict()
+    # dict or DataFrame instead of repeating this boilerplate code
+    irrads = {}
     irrads['direct_horizontal'] = id_nh
     irrads['ghi'] = gh
     irrads['dni'] = id_

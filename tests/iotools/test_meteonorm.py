@@ -271,7 +271,7 @@ def test_get_meteonorm_tmy(
     assert (data.isna().mean() <= 0.2).all()  # meteonorm guarantees <=20% NaN
 
 
-@fail_on_pvlib_version('0.16.0')
+@fail_on_pvlib_version('0.17.0')
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_get_meteonorm_tmy_data_version_deprecation(demo_url, demo_api_key):

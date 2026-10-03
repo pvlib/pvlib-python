@@ -134,15 +134,18 @@ def test_martin_ruiz_diffuse():
 
     surface_tilt = 30.
     a_r = 0.16
-    expected = (0.9549735, 0.7944426)
+    expected_sky = 0.9549735
+    expected_ground = 0.7944426
 
     # will fail if default values change
-    iam = _iam.martin_ruiz_diffuse(surface_tilt)
-    assert_allclose(iam, expected)
+    actual_iam = _iam.martin_ruiz_diffuse(surface_tilt)
+    assert_allclose(actual_iam['sky'], expected_sky)
+    assert_allclose(actual_iam['ground'], expected_ground)
 
     # will fail if parameter names change
     iam = _iam.martin_ruiz_diffuse(surface_tilt=surface_tilt, a_r=a_r)
-    assert_allclose(iam, expected)
+    assert_allclose(iam['sky'], expected_sky)
+    assert_allclose(iam['ground'], expected_ground)
 
     a_r = 0.18
     surface_tilt = [0, 30, 90, 120, 180, np.nan, np.inf]
@@ -153,21 +156,21 @@ def test_martin_ruiz_diffuse():
 
     # check various inputs as list
     iam = _iam.martin_ruiz_diffuse(surface_tilt, a_r)
-    assert_allclose(iam[0], expected_sky, atol=1e-7, equal_nan=True)
-    assert_allclose(iam[1], expected_gnd, atol=1e-7, equal_nan=True)
+    assert_allclose(iam['sky'], expected_sky, atol=1e-7, equal_nan=True)
+    assert_allclose(iam['ground'], expected_gnd, atol=1e-7, equal_nan=True)
 
     # check various inputs as array
     iam = _iam.martin_ruiz_diffuse(np.array(surface_tilt), a_r)
-    assert_allclose(iam[0], expected_sky, atol=1e-7, equal_nan=True)
-    assert_allclose(iam[1], expected_gnd, atol=1e-7, equal_nan=True)
+    assert_allclose(iam['sky'], expected_sky, atol=1e-7, equal_nan=True)
+    assert_allclose(iam['ground'], expected_gnd, atol=1e-7, equal_nan=True)
 
     # check various inputs as Series
     surface_tilt = pd.Series(surface_tilt)
     expected_sky = pd.Series(expected_sky, name='iam_sky')
     expected_gnd = pd.Series(expected_gnd, name='iam_ground')
     iam = _iam.martin_ruiz_diffuse(surface_tilt, a_r)
-    assert_series_equal(iam[0], expected_sky)
-    assert_series_equal(iam[1], expected_gnd)
+    assert_series_equal(iam['sky'], expected_sky)
+    assert_series_equal(iam['ground'], expected_gnd)
 
 
 def test_iam_interp():
@@ -441,22 +444,21 @@ def test_schlick_diffuse():
     expected_ground = np.array([0, 0.62693858, 0.93218737, 0.95238094])
 
     # numpy arrays
-    actual_sky, actual_ground = _iam.schlick_diffuse(surface_tilt)
-    assert_allclose(expected_sky, actual_sky)
-    assert_allclose(expected_ground, actual_ground, rtol=1e-6)
+    actual_iam = _iam.schlick_diffuse(surface_tilt)
+    assert_allclose(expected_sky, actual_iam['sky'])
+    assert_allclose(expected_ground, actual_iam['ground'], rtol=1e-6)
 
     # scalars
     for i in range(len(surface_tilt)):
-        actual_sky, actual_ground = _iam.schlick_diffuse(surface_tilt[i])
-        assert_allclose(expected_sky[i], actual_sky)
-        assert_allclose(expected_ground[i], actual_ground, rtol=1e-6)
+        actual_iam = _iam.schlick_diffuse(surface_tilt[i])
+        assert_allclose(expected_sky[i], actual_iam['sky'], rtol=1e-6)
+        assert_allclose(expected_ground[i], actual_iam['ground'], rtol=1e-6)
 
     # pandas Series
     idx = pd.date_range('2019-01-01', freq='h', periods=len(surface_tilt))
-    actual_sky, actual_ground = _iam.schlick_diffuse(pd.Series(surface_tilt,
-                                                               idx))
-    assert_series_equal(pd.Series(expected_sky, idx), actual_sky)
-    assert_series_equal(pd.Series(expected_ground, idx), actual_ground,
+    actual_iam = _iam.schlick_diffuse(pd.Series(surface_tilt, idx))
+    assert_series_equal(pd.Series(expected_sky, idx), actual_iam['sky'])
+    assert_series_equal(pd.Series(expected_ground, idx), actual_iam['ground'],
                         rtol=1e-6)
 
 

@@ -297,7 +297,7 @@ A clear sky time series using only basic pvlib functions.
 
 
 The input data types determine the returned output type. Array input
-results in an OrderedDict of array output, and Series input results in a
+results in an dict of array output, and Series input results in a
 DataFrame output. The keys are 'ghi', 'dni', and 'dhi'.
 
 Grid with a clear sky irradiance for a few turbidity values.
@@ -437,7 +437,7 @@ A clear sky time series using only basic pvlib functions.
     In [1]: plt.close();
 
 The input data types determine the returned output type. Array input
-results in an OrderedDict of array output, and Series input results in a
+results in an dict of array output, and Series input results in a
 DataFrame output. The keys are 'ghi', 'dni', and 'dhi'.
 
 Irradiance as a function of solar elevation.
@@ -518,7 +518,7 @@ Contour plots of irradiance as a function of both PW and AOD.
 
     In [1]: aod700, precipitable_water = np.meshgrid(aod700, precipitable_water)
 
-    # inputs are arrays, so solis is an OrderedDict
+    # inputs are arrays, so solis is an dict
     In [1]: solis = clearsky.simplified_solis(apparent_elevation, aod700,
        ...:                                   precipitable_water, pressure,
        ...:                                   dni_extra)

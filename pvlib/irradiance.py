@@ -5,7 +5,6 @@ irradiance, and total irradiance under various conditions.
 """
 
 import datetime
-from collections import OrderedDict
 from functools import partial
 
 import numpy as np
@@ -1958,7 +1957,7 @@ def disc(ghi, solar_zenith, datetime_or_doy, pressure=101325,
 
     Returns
     -------
-    output : OrderedDict or DataFrame
+    output : dict or DataFrame
         Contains the following keys:
 
         * ``dni``: The modeled direct normal irradiance
@@ -2000,7 +1999,7 @@ def disc(ghi, solar_zenith, datetime_or_doy, pressure=101325,
     bad_values = (solar_zenith > max_zenith) | (ghi < 0) | (dni < 0)
     dni = np.where(bad_values, 0, dni)
 
-    output = OrderedDict()
+    output = {}
     output['dni'] = dni
     output['kt'] = kt
     output['airmass'] = am
@@ -2479,7 +2478,7 @@ def gti_dirint(poa_global, aoi, solar_zenith, solar_azimuth, times,
 
     Returns
     -------
-    data : DataFrame
+    data : dict or DataFrame
         Contains the following keys/columns:
 
         * ``ghi``: the modeled global horizontal irradiance. [Wm⁻²]
@@ -2517,7 +2516,7 @@ def gti_dirint(poa_global, aoi, solar_zenith, solar_azimuth, times,
         ghi_gte_90, dni_gte_90, dhi_gte_90 = np.nan, np.nan, np.nan
 
     # put the AOI < 90 and AOI >= 90 conditions together
-    output = OrderedDict()
+    output = {}
     output['ghi'] = ghi.where(aoi_lt_90, ghi_gte_90)
     output['dni'] = dni.where(aoi_lt_90, dni_gte_90)
     output['dhi'] = dhi.where(aoi_lt_90, dhi_gte_90)
@@ -2776,7 +2775,7 @@ def erbs(ghi, zenith, datetime_or_doy, min_cos_zenith=0.065, max_zenith=87):
 
     Returns
     -------
-    data : OrderedDict or DataFrame
+    data : dict or DataFrame
         Contains the following keys/columns:
 
         * ``dni``: the modeled direct normal irradiance. [Wm⁻²]
@@ -2823,7 +2822,7 @@ def erbs(ghi, zenith, datetime_or_doy, min_cos_zenith=0.065, max_zenith=87):
     # ensure that closure relationship remains valid
     dhi = np.where(bad_values, ghi, dhi)
 
-    data = OrderedDict()
+    data = {}
     data['dni'] = dni
     data['dhi'] = dhi
     data['kt'] = kt
@@ -2885,7 +2884,7 @@ def erbs_driesse(ghi, zenith, datetime_or_doy=None, dni_extra=None,
 
     Returns
     -------
-    data : OrderedDict or DataFrame
+    data : dict or DataFrame
         Contains the following keys/columns:
 
         * ``dni``: the modeled direct normal irradiance. [Wm⁻²]
@@ -2960,7 +2959,7 @@ def erbs_driesse(ghi, zenith, datetime_or_doy=None, dni_extra=None,
     # ensure that closure relationship remains valid
     dhi = np.where(bad_values, ghi, dhi)
 
-    data = OrderedDict()
+    data = {}
     data['dni'] = dni
     data['dhi'] = dhi
     data['kt'] = kt
@@ -3012,7 +3011,7 @@ def orgill_hollands(ghi, zenith, datetime_or_doy, dni_extra=None,
 
     Returns
     -------
-    data : OrderedDict or DataFrame
+    data : dict or DataFrame
         Contains the following keys/columns:
 
         * ``dni``: the modeled direct normal irradiance. [Wm⁻²]
@@ -3058,7 +3057,7 @@ def orgill_hollands(ghi, zenith, datetime_or_doy, dni_extra=None,
     # ensure that closure relationship remains valid
     dhi = np.where(bad_values, ghi, dhi)
 
-    data = OrderedDict()
+    data = {}
     data['dni'] = dni
     data['dhi'] = dhi
     data['kt'] = kt
@@ -3113,7 +3112,7 @@ def boland(ghi, solar_zenith, datetime_or_doy, a_coeff=8.645, b_coeff=0.613,
 
     Returns
     -------
-    data : OrderedDict or DataFrame
+    data : dict or DataFrame
         Contains the following keys/columns:
 
         * ``dni``: the modeled direct normal irradiance. [Wm⁻²]
@@ -3169,7 +3168,7 @@ def boland(ghi, solar_zenith, datetime_or_doy, a_coeff=8.645, b_coeff=0.613,
     # ensure that closure relationship remains valid
     dhi = np.where(bad_values, ghi, dhi)
 
-    data = OrderedDict()
+    data = {}
     data['dni'] = dni
     data['dhi'] = dhi
     data['kt'] = kt
@@ -3204,7 +3203,7 @@ def campbell_norman(zenith, transmittance, pressure=101325.0,
 
     Returns
     -------
-    irradiance: DataFrame
+    irradiance: dict or DataFrame
         Modeled direct normal irradiance, direct horizontal irradiance,
         and global horizontal irradiance. [Wm⁻²]
 
@@ -3223,7 +3222,7 @@ def campbell_norman(zenith, transmittance, pressure=101325.0,
     dhi = 0.3 * (1.0 - tau**airmass) * dni_extra * cos_zen
     ghi = dhi + dni * cos_zen
 
-    irrads = OrderedDict()
+    irrads = {}
     irrads['ghi'] = ghi
     irrads['dni'] = dni
     irrads['dhi'] = dhi
@@ -3902,7 +3901,7 @@ def louche(ghi, solar_zenith, datetime_or_doy, max_zenith=90):
 
     Returns
     -------
-    data: OrderedDict or DataFrame
+    data: dict or DataFrame
         Contains the following keys/columns:
 
         * ``dni``: the modeled direct normal irradiance, see :term:`dni`.
@@ -3934,7 +3933,7 @@ def louche(ghi, solar_zenith, datetime_or_doy, max_zenith=90):
     # ensure that closure relationship remains valid
     dhi = np.where(bad_values, ghi, dhi)
 
-    data = OrderedDict()
+    data = {}
     data['dni'] = dni
     data['dhi'] = dhi
     data['kt'] = Kt

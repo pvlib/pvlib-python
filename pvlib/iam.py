@@ -13,6 +13,8 @@ import pandas as pd
 import functools
 from scipy.optimize import minimize
 from pvlib.tools import cosd, sind, acosd
+from pvlib._deprecation import warn_deprecated
+from scipy.interpolate import make_interp_spline, interp1d
 
 # a dict of required parameter names for each IAM model
 # keys are the function names for the IAM models
@@ -314,8 +316,11 @@ def martin_ruiz(aoi, a_r=0.16):
 
 def martin_ruiz_diffuse(surface_tilt, a_r=0.16, c1=0.4244, c2=None):
     '''
-    Determine the incidence angle modifiers (iam) for diffuse sky and
+    Determine the incidence angle modifiers (IAM) for sky diffuse and
     ground-reflected irradiance using the Martin and Ruiz incident angle model.
+
+    As described in [1]_, the IAMs result from integrals that assume the
+    incoming sky diffuse and ground-reflected irradiance are isotropic.
 
     Parameters
     ----------
@@ -344,11 +349,12 @@ def martin_ruiz_diffuse(surface_tilt, a_r=0.16, c1=0.4244, c2=None):
 
     Returns
     -------
-    iam_sky : numeric
-        The incident angle modifier for sky diffuse
+    iam : dict
+        Incident Angle Modifier (see :term:`iam`) values for each type of
+        diffuse irradiance:
 
-    iam_ground : numeric
-        The incident angle modifier for ground-reflected diffuse
+        * 'sky': radiation from the sky dome
+        * 'ground': radiation reflected from the ground
 
     Notes
     -----
@@ -417,7 +423,9 @@ def martin_ruiz_diffuse(surface_tilt, a_r=0.16, c1=0.4244, c2=None):
         iam_sky = pd.Series(iam_sky, index=out_index, name='iam_sky')
         iam_gnd = pd.Series(iam_gnd, index=out_index, name='iam_ground')
 
-    return iam_sky, iam_gnd
+    iam = {'sky': iam_sky, 'ground': iam_gnd}
+
+    return iam
 
 
 def interp(aoi, theta_ref, iam_ref, method='linear', normalize=True):
@@ -440,7 +448,6 @@ def interp(aoi, theta_ref, iam_ref, method='linear', normalize=True):
     method : str, default 'linear'
         Specifies the interpolation method.
         Useful options are: 'linear', 'quadratic', 'cubic'.
-        See scipy.interpolate.interp1d for more options.
 
     normalize : boolean, default True
         When true, the interpolated values are divided by the interpolated
@@ -469,9 +476,6 @@ def interp(aoi, theta_ref, iam_ref, method='linear', normalize=True):
     pvlib.iam.sapm
     '''
     # Contributed by Anton Driesse (@adriesse), PV Performance Labs. July, 2019
-
-    from scipy.interpolate import interp1d
-
     # Scipy doesn't give the clearest feedback, so check number of points here.
     MIN_REF_VALS = {'linear': 2, 'quadratic': 3, 'cubic': 4, 1: 2, 2: 3, 3: 4}
 
@@ -483,10 +487,25 @@ def interp(aoi, theta_ref, iam_ref, method='linear', normalize=True):
         raise ValueError("Negative value(s) found in 'iam_ref'. "
                          "This is not physically possible.")
 
-    interpolator = interp1d(theta_ref, iam_ref, kind=method,
-                            fill_value='extrapolate')
-    aoi_input = aoi
+    kvals = {'linear': 1, 'quadratic': 2, 'cubic': 3}
+    if method in kvals:
+        interpolator = make_interp_spline(
+            theta_ref, iam_ref, k=kvals[method])
 
+    elif method in {'nearest', 'nearest-up', 'zero',
+                    'slinear', 'previous', 'next'}:
+        msg = (
+            f"Interpolation method {method} is deprecated in pvlib"
+        )
+        warn_deprecated(since="0.16.0", removal="0.17.0", addendum=msg)
+        interpolator = interp1d(theta_ref, iam_ref, kind=method,
+                                fill_value='extrapolate')
+    else:
+        raise ValueError(
+            f"Interpolation method '{method}' is not supported"
+            " in pvlib-python.")
+
+    aoi_input = aoi
     aoi = np.asanyarray(aoi)
     aoi = np.abs(aoi)
     iam = interpolator(aoi)
@@ -570,8 +589,8 @@ def sapm(aoi, module, upper=None):
 
 def marion_diffuse(model, surface_tilt, **kwargs):
     """
-    Determine diffuse irradiance incidence angle modifiers using Marion's
-    method of integrating over solid angle.
+    Determine diffuse irradiance incidence angle modifiers (IAM) using
+    Marion's method of integrating over solid angle.
 
     Parameters
     ----------
@@ -590,7 +609,8 @@ def marion_diffuse(model, surface_tilt, **kwargs):
     Returns
     -------
     iam : dict
-        IAM values for each type of diffuse irradiance:
+        Incident Angle Modifier (see :term:`iam`) values for each type of
+        diffuse irradiance:
 
         * 'sky': radiation from the sky dome (zenith <= 90)
         * 'horizon': radiation from the region of the sky near the horizon
@@ -803,6 +823,10 @@ def schlick(aoi):
     integrable alternative to the Fresnel equations for estimating IAM
     for diffuse irradiance [2]_ (see :py:func:`schlick_diffuse`).
 
+    .. warning:: The Schlick IAM model has not been validated for PV
+        performance modeling and is not commonly used in PV applications.
+        Users should consider these limitations when selecting models.
+
     Parameters
     ----------
     aoi : numeric
@@ -842,7 +866,7 @@ def schlick(aoi):
 
 def schlick_diffuse(surface_tilt):
     r"""
-    Determine the incidence angle modifiers (IAM) for diffuse sky and
+    Determine the incidence angle modifiers (IAM) for sky diffuse and
     ground-reflected irradiance on a tilted surface using the Schlick
     incident angle model.
 
@@ -861,6 +885,10 @@ def schlick_diffuse(surface_tilt):
     This function implements the integration of the
     Schlick approximation provided by Xie et al. [2]_.
 
+    .. warning:: The Schlick IAM model has not been validated for PV
+        performance modeling and is not commonly used in PV applications.
+        Users should consider these limitations when selecting models.
+
     Parameters
     ----------
     surface_tilt : numeric
@@ -869,11 +897,12 @@ def schlick_diffuse(surface_tilt):
 
     Returns
     -------
-    iam_sky : numeric
-        The incident angle modifier for sky diffuse.
+    iam : dict
+        Incident Angle Modifier (see :term:`iam`) values for each type of
+        diffuse irradiance:
 
-    iam_ground : numeric
-        The incident angle modifier for ground-reflected diffuse.
+        * 'sky': radiation from the sky dome
+        * 'ground': radiation reflected from the ground
 
     See Also
     --------
@@ -940,7 +969,9 @@ def schlick_diffuse(surface_tilt):
         cuk = pd.Series(cuk, surface_tilt.index)
         cug = pd.Series(cug, surface_tilt.index)
 
-    return cuk, cug
+    iam = {'sky': cuk, 'ground': cug}
+
+    return iam
 
 
 def _get_model(model_name):

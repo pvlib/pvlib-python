@@ -1,4 +1,3 @@
-from collections import OrderedDict
 import itertools
 
 import numpy as np
@@ -75,6 +74,15 @@ def test_PVSystem_get_iam_interp(mocker):
     spy.assert_called_once_with(aoi[0], **interp_module_params)
 
 
+def test_PVSystem_get_iam_schlick(mocker):
+    system = pvsystem.PVSystem()
+    mocker.spy(_iam, 'schlick')
+    aoi = 0
+    out = system.get_iam(aoi, 'schlick')
+    _iam.schlick.assert_called_once_with(aoi)
+    assert_allclose(out, 1.0, atol=0.01)
+
+
 def test__normalize_sam_product_names():
 
     BAD_NAMES  = [' -.()[]:+/",', 'Module[1]']
@@ -102,6 +110,76 @@ def test_PVSystem_get_iam_invalid(sapm_module_params, mocker):
     system = pvsystem.PVSystem(module_parameters=sapm_module_params)
     with pytest.raises(ValueError):
         system.get_iam(45, iam_model='not_a_model')
+
+
+def test_PVSystem_get_iam_diffuse_marion(sapm_module_params, mocker):
+    model_params = {'b': 0.05}
+    m = mocker.spy(_iam, 'marion_diffuse')
+    system = pvsystem.PVSystem(module_parameters=model_params)
+    tilt = 30
+    iam = system.get_iam_diffuse(tilt, iam_model='marion_diffuse',
+                                 marion_model='ashrae')
+    m.assert_called_with(model='ashrae', surface_tilt=tilt,
+                         **model_params)
+    assert isinstance(iam, dict)
+    assert set(iam.keys()) == {'sky', 'ground', 'horizon'}
+
+    system = pvsystem.PVSystem(module_parameters=sapm_module_params)
+    tilt = pd.Series([30, 60])
+    iam = system.get_iam_diffuse(tilt, iam_model='marion_diffuse',
+                                 marion_model='sapm')
+    assert isinstance(iam, pd.DataFrame)
+
+
+@pytest.mark.parametrize('iam_model', ['martin_ruiz_diffuse',
+                                       'schlick_diffuse'])
+def test_PVSystem_get_iam_diffuse(iam_model, mocker):
+    model_params = {'a_r': 0.16} if iam_model == 'martin_ruiz_diffuse' else {}
+    m = mocker.spy(_iam, iam_model)
+    system = pvsystem.PVSystem(module_parameters=model_params)
+    tilt = 30
+    iam = system.get_iam_diffuse(tilt, iam_model=iam_model)
+    m.assert_called_with(surface_tilt=tilt, **model_params)
+    assert isinstance(iam, dict)
+
+
+def test_PVSystem_multi_array_get_iam_diffuse():
+    model_params = {'b': 0.05}
+    system = pvsystem.PVSystem(
+        arrays=[pvsystem.Array(mount=pvsystem.FixedMount(0, 180),
+                               module_parameters=model_params),
+                pvsystem.Array(mount=pvsystem.FixedMount(0, 180),
+                               module_parameters=model_params)]
+    )
+    iam = system.get_iam_diffuse((30, 60), iam_model='marion_diffuse',
+                                 marion_model='ashrae')
+    assert len(iam) == 2
+    assert iam[0] != iam[1]
+    with pytest.raises(ValueError,
+                       match="Length mismatch for per-array parameter"):
+        system.get_iam_diffuse((30,), iam_model='marion_diffuse',
+                               marion_model='ashrae')
+
+
+def test_PVSystem_get_iam_diffuse_invalid(sapm_module_params):
+    system = pvsystem.PVSystem(module_parameters=sapm_module_params)
+    msg = 'not a valid diffuse IAM model'
+    with pytest.raises(ValueError, match=msg):
+        system.get_iam_diffuse(45, iam_model='not_a_model')
+
+
+def test_PVSystem_get_iam_diffuse_marion_invalid(sapm_module_params):
+    system = pvsystem.PVSystem(module_parameters=sapm_module_params)
+    msg = 'not a valid IAM model'
+    with pytest.raises(ValueError, match=msg):
+        system.get_iam_diffuse(45, iam_model='marion_diffuse',
+                               marion_model='not_a_model')
+
+
+def test_PVSystem_get_iam_diffuse_marion_missing_model(sapm_module_params):
+    system = pvsystem.PVSystem(module_parameters=sapm_module_params)
+    with pytest.raises(ValueError, match="marion_model must be specified"):
+        system.get_iam_diffuse(45, iam_model='marion_diffuse')
 
 
 def test_retrieve_sam_raises_exceptions():
@@ -182,7 +260,7 @@ def test_sapm(sapm_module_params):
 
     out = pvsystem.sapm(1000, 25, sapm_module_params)
 
-    expected = OrderedDict()
+    expected = {}
     expected['i_sc'] = sapm_module_params['Isco']
     expected['i_mp'] = sapm_module_params['Impo']
     expected['v_oc'] = sapm_module_params['Voco']
@@ -1642,13 +1720,15 @@ def test_singlediode_series_expected(cec_module_params):
 
     out = pvsystem.singlediode(IL, I0, Rs, Rsh, nNsVth, method='lambertw')
 
-    expected = OrderedDict([('i_sc', array([0., 3.01079860, 6.00726296])),
-                            ('v_oc', array([0., 9.96959733, 10.29603253])),
-                            ('i_mp', array([0., 2.656285960, 5.290525645])),
-                            ('v_mp', array([0., 8.321092255, 8.409413795])),
-                            ('p_mp', array([0., 22.10320053, 44.49021934])),
-                            ('i_x', array([0., 2.884132006, 5.746202281])),
-                            ('i_xx', array([0., 2.052691562, 3.909673879]))])
+    expected = {
+        "i_sc": array([0.0, 3.01079860, 6.00726296]),
+        "v_oc": array([0.0, 9.96959733, 10.29603253]),
+        "i_mp": array([0.0, 2.656285960, 5.290525645]),
+        "v_mp": array([0.0, 8.321092255, 8.409413795]),
+        "p_mp": array([0.0, 22.10320053, 44.49021934]),
+        "i_x": array([0.0, 2.884132006, 5.746202281]),
+        "i_xx": array([0.0, 2.052691562, 3.909673879]),
+    }
 
     for k, v in out.items():
         assert_allclose(v, expected[k], atol=1e-2)

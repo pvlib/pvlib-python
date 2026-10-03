@@ -1,0 +1,50 @@
+.. _whatsnew_0_16_2:
+
+
+v0.16.2 (Anticipated December, 2026)
+------------------------------------
+
+Breaking Changes
+~~~~~~~~~~~~~~~~
+
+
+Deprecations
+~~~~~~~~~~~~
+
+
+Bug fixes
+~~~~~~~~~
+* Fix :py:func:`pvlib.irradiance.perez` to return 0 when both DHI and
+  DNI are zero. (:issue:`2801`, :pull:`2808`)
+* Fix :py:func:`pvlib.irradiance.perez` to return NaN when
+  airmass is NaN and either DHI or DNI are NaN. (:issue:`2801`, :pull:`2808`)
+
+
+Enhancements
+~~~~~~~~~~~~
+
+
+Documentation
+~~~~~~~~~~~~~
+
+
+Testing
+~~~~~~~
+
+
+Benchmarking
+~~~~~~~~~~~~
+
+
+Requirements
+~~~~~~~~~~~~
+
+
+Maintenance
+~~~~~~~~~~~
+
+
+Contributors
+~~~~~~~~~~~~
+
+* Mark Campanelli (:ghuser:`markcampanelli`)

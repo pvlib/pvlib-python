@@ -13,9 +13,7 @@ Irradiance at crop level between rows
 # is referred to :doi:`10.69766/XAEU5008`.
 #
 # This gallery example is based on an actual AgriPV plant, namely
-# European Energy's `Flakkebjerg AgriPV site
-# <https://europeanenergy.com/2023/12/20/using-the-same-land-twice-at-european-\
-# energys-flakkebjerg-solar-park/>`_.
+# European Energy's Flakkebjerg AgriPV site.
 #
 # The first steps are to define the plant location and to calculate solar
 # position and clearsky irradiance for a single day as an example.
@@ -23,7 +21,7 @@ Irradiance at crop level between rows
 # .. figure:: ../../_images/agrivoltaics_system.jpg
 #    :align: center
 #    :width: 75%
-#    :alt: Photo of an agriPV system
+#    :alt: Photo of the Flakkebjerg agriPV system
 #
 #    Photo of an agriPV system.
 #    *Source: Adam R. Jensen*
@@ -136,17 +134,21 @@ plt.show()
 # (i.e., receives DNI).
 
 vf_ground_sky = pvlib.bifacial.utils.vf_ground_sky_2d_integ(
-    surface_tilt=tracking_orientations['surface_tilt'],
+    tracker_rotation=tracking_orientations['tracker_theta'],
     gcr=gcr,
     height=height,
     pitch=pitch,
 )
 
-unshaded_ground_fraction = pvlib.bifacial.utils._unshaded_ground_fraction(
-    surface_tilt=tracking_orientations['surface_tilt'],
-    surface_azimuth=tracking_orientations['surface_azimuth'],
+phi = pvlib.shading.projected_solar_zenith_angle(
     solar_zenith=solpos['apparent_zenith'],
     solar_azimuth=solpos['azimuth'],
+    axis_tilt=0,
+    axis_azimuth=axis_azimuth,
+)
+unshaded_ground_fraction = pvlib.bifacial.utils._unshaded_ground_fraction(
+    tracker_rotation=tracking_orientations['tracker_theta'],
+    phi=phi,
     gcr=gcr,
 )
 

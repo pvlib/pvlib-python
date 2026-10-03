@@ -20,9 +20,9 @@ import warnings
 # for generating GH links with linenumbers
 import inspect
 
-# import distutils before calling pd.show_versions()
-# https://github.com/pypa/setuptools/issues/3044
-import distutils  # noqa: F401
+# to escape special characters in sphinx-gallery OS-dependant regex
+import re
+
 import pandas as pd
 
 pd.show_versions()
@@ -384,12 +384,19 @@ ipython_warning_is_error = False
 # https://github.com/pvlib/pvlib-python/issues/837
 suppress_warnings = ['ref.footnote']
 
+os_re_sep = re.escape(os.path.sep)
 # settings for sphinx-gallery
 sphinx_gallery_conf = {
     'examples_dirs': ['../../examples'],  # location of gallery scripts
     'gallery_dirs': ['gallery'],  # location of generated output
-    # execute only files starting with plot_
-    'filename_pattern': 'plot_',
+
+    # do not execute gallery examples filenames that begin with noplot_
+    # first group + sep := match folders up to filename
+    # negative lookahead + match anything but sep := match filename (if valid)
+    # https://sphinx-gallery.github.io/stable/configuration.html#parsing-and-executing-examples-via-matching-patterns  # noqa: E501
+    # unix: filename_pattern = '^(.*)/(?!noplot_)([^/]*)$'
+    # win: filename_pattern = '^(.*)\\\\(?!noplot_)([^\\\\]*)$'
+    'filename_pattern': rf"^(.*){os_re_sep}(?!noplot_)([^{os_re_sep}]*)$",
 
     # directory where function/class granular galleries are stored
     'backreferences_dir': 'reference/generated/gallery_backreferences',

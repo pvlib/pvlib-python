@@ -9,8 +9,6 @@ import io
 import warnings
 from pvlib import tools
 
-from pvlib._deprecation import deprecated, renamed_kwarg_warning
-
 URL = 'api.soda-solardata.com'
 
 CAMS_INTEGRATED_COLUMNS = [
@@ -45,11 +43,6 @@ SUMMATION_PERIOD_TO_TIME_STEP = {'0 year 0 month 0 day 0 h 1 min 0 s': '1min',
                                  '0 year 1 month 0 day 0 h 0 min 0 s': '1M'}
 
 
-@renamed_kwarg_warning(
-    since='0.13.0',
-    old_param_name='server',
-    new_param_name='url',
-    removal="0.14.0")
 def get_cams(latitude, longitude, start, end, email, identifier='mcclear',
              altitude=None, time_step='1h', time_ref='UT', verbose=False,
              integrated=False, label=None, map_variables=True,
@@ -357,7 +350,3 @@ def read_cams(filename, integrated=False, label=None, map_variables=True):
         data = data.rename(columns=VARIABLE_MAP)
 
     return data, metadata
-
-
-parse_cams = deprecated(since="0.13.0", name="parse_cams",
-                        alternative="read_cams")(read_cams)

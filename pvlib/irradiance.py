@@ -1156,9 +1156,9 @@ def king(surface_tilt, dhi, ghi, solar_zenith):
     return poa_sky_diffuse
 
 
-def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
-          solar_zenith, solar_azimuth, airmass=None,
-          model='allsitescomposite1990', return_components=False):
+def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra, solar_zenith,
+          solar_azimuth, airmass, model='allsitescomposite1990',
+          return_components=False):
     '''
     Determine diffuse irradiance from the sky on a tilted surface using
     one of the Perez models.
@@ -1207,13 +1207,13 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
     solar_azimuth : numeric
         Solar azimuth angle. See :term:`solar_azimuth`. [°]
 
-    airmass : numeric, optional
+    airmass : numeric or None
         Relative (not pressure-corrected) airmass values. If ``airmass`` is a
         DataFrame, then it must be of the same size as all other DataFrame
         inputs. AM must be >=0 (careful using the 1/cos(z) model of AM 
-        generation). If not provided or None, then the kastenyoung1989 model
-        is used, which corresponds to the calibration of the F1 and F2 
-        coefficients in the original work by Perez. [unitless]
+        generation). If None, then the 'kastenyoung1989' model is used, which
+        corresponds to the calibration of the F1 and F2 coefficients in the
+        original work by Perez. [unitless]
 
     model : string, default 'allsitescomposite1990'
         A string which selects the desired set of Perez coefficients. If

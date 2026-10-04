@@ -222,8 +222,7 @@ def fit_desoto_sandia(ivcurves, specs, const=None, maxiter=5, eps1=1.e-3):
     Estimate parameters for the De Soto module performance model.
 
     Requires multiple IV curves measured at different effective irradiance
-    and cell temperature conditions. Each curve must have corresponding
-    effective irradiance and cell temperature data in ``ivcurves``.
+    and cell temperature conditions.
 
     Parameters
     ----------

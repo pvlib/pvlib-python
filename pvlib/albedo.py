@@ -25,6 +25,13 @@ SURFACE_ALBEDOS = {
     'dirty steel': 0.08,
     'sea': 0.06,
 }
+"""Typical albedo values indexed by ground surface type.
+
+Values are used by :py:func:`pvlib.irradiance.get_ground_diffuse` and can
+also be passed to :py:class:`pvlib.pvsystem.PVSystem` using ``surface_type``.
+The cited sources for the values are listed in the ``get_ground_diffuse``
+documentation.
+"""
 
 WATER_COLOR_COEFFS = {
     'clear_water_no_waves': 0.13,
@@ -34,6 +41,12 @@ WATER_COLOR_COEFFS = {
     'green_water_ripples_up_to_2.5cm': 0.22,
     'muddy_water_no_waves': 0.19
 }
+"""Water color coefficients for :py:func:`inland_water_dvoracek`.
+
+The keys are surface-condition names accepted by that function. Values are
+empirically determined coefficients from the reference listed in its
+documentation.
+"""
 
 WATER_ROUGHNESS_COEFFS = {
     'clear_water_no_waves': 0.29,
@@ -43,6 +56,12 @@ WATER_ROUGHNESS_COEFFS = {
     'green_water_ripples_up_to_2.5cm': 0.7,
     'muddy_water_no_waves': 0.29
 }
+"""Water wave-roughness coefficients for :py:func:`inland_water_dvoracek`.
+
+The keys are surface-condition names accepted by that function. Values are
+empirically determined coefficients from the reference listed in its
+documentation.
+"""
 
 
 def inland_water_dvoracek(solar_elevation, surface_condition=None,

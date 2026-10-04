@@ -74,7 +74,8 @@ intersphinx_mapping = {
 # Enable hover tooltips
 hoverxref_auto_ref = True
 hoverxref_roles = [
-    "class", "meth", "func", "ref", "term", "obj", "mod", "data"
+    "class", "meth", "func", "ref", "term", "obj", "mod", "data",
+    "const"
 ]
 hoverxref_role_types = dict.fromkeys(hoverxref_roles, "tooltip")
 hoverxref_domains = ["py"]

@@ -9,8 +9,11 @@ import pandas as pd
 
 APPARENT_ZENITH_MODELS = ('simple', 'kasten1966', 'kastenyoung1989',
                           'gueymard1993', 'gueymard2003', 'pickering2002')
+"""Relative-airmass model names that use apparent solar zenith angles."""
 TRUE_ZENITH_MODELS = ('youngirvine1967', 'young1994')
+"""Relative-airmass model names that use true solar zenith angles."""
 AIRMASS_MODELS = APPARENT_ZENITH_MODELS + TRUE_ZENITH_MODELS
+"""All model names accepted by :py:func:`get_relative_airmass`."""
 
 
 def pres2alt(pressure):
@@ -639,6 +642,12 @@ HELLMANN_SURFACE_EXPONENTS = {
     'neutral_air_above_human_inhabited_areas': 0.34,
     'stable_air_above_human_inhabited_areas': 0.60,
 }
+"""Hellmann power-law exponents indexed by atmospheric and surface condition.
+
+These values are used by :py:func:`windspeed_powerlaw` when ``surface_type``
+is provided instead of an explicit exponent. The references and a summary
+table are in that function's documentation.
+"""
 
 
 def windspeed_powerlaw(wind_speed_reference, height_reference,

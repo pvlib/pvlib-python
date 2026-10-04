@@ -8,6 +8,7 @@ API reference
    :maxdepth: 2
 
    classes
+   constants
    solarposition
    clearsky
    airmass_atmospheric

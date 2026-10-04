@@ -23,6 +23,8 @@ Enhancements
 Documentation
 ~~~~~~~~~~~~~
 
+* Add a reference page documenting useful module-level constants. (:issue:`2096`)
+
 
 Testing
 ~~~~~~~
@@ -43,3 +45,4 @@ Maintenance
 Contributors
 ~~~~~~~~~~~~
 
+* Anshu Raj Bisoyi (:ghuser:`anshurajbisoyi98-ctrl`)

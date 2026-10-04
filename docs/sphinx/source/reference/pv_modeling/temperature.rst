@@ -23,6 +23,5 @@ PV temperature models
 
 Temperature Model Parameters
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-.. currentmodule:: pvlib.temperature
-.. autodata:: TEMPERATURE_MODEL_PARAMETERS
-   :annotation:
+The available temperature model parameter sets are documented in
+:doc:`../constants`.

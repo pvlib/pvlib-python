@@ -23,6 +23,10 @@ Enhancements
 Documentation
 ~~~~~~~~~~~~~
 
+* Clarify that :py:func:`pvlib.ivtools.sdm.fit_pvsyst_sandia` and
+  :py:func:`pvlib.ivtools.sdm.fit_desoto_sandia` require multiple IV curves.
+  (:issue:`1715`)
+
 
 Testing
 ~~~~~~~
@@ -43,3 +47,4 @@ Maintenance
 Contributors
 ~~~~~~~~~~~~
 
+* :ghuser:`anshurajbisoyi98-ctrl`

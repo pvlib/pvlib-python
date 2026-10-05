@@ -24,7 +24,7 @@ def singleaxis(apparent_zenith, solar_azimuth,
     a ground coverage ratio is required. When backtracking, the rotation is
     adjusted away from the AOI-minimizing angle to avoid row-to-row shading.
 
-   See [1]_ and [2]_ for details about the equations. 
+   See [1]_ and [2]_ for details about the equations.
 
     Rotation angle is determined in a right-handed coordinate system. The
     tracker ``axis_azimuth`` defines the positive y-axis, the positive x-axis

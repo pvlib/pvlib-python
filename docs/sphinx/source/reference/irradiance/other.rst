@@ -3,6 +3,19 @@
 Other
 -----
 
+.. currentmodule:: pvlib.albedo
+
+.. autodata:: SURFACE_ALBEDOS
+   :annotation:
+
+.. autodata:: WATER_COLOR_COEFFS
+   :annotation:
+
+.. autodata:: WATER_ROUGHNESS_COEFFS
+   :annotation:
+
+.. currentmodule:: pvlib
+
 .. autosummary::
    :toctree: ../generated/
 

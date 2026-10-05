@@ -3,6 +3,19 @@
 Airmass and atmospheric models
 ==============================
 
+.. currentmodule:: pvlib.atmosphere
+
+.. autodata:: APPARENT_ZENITH_MODELS
+   :annotation:
+
+.. autodata:: TRUE_ZENITH_MODELS
+   :annotation:
+
+.. autodata:: AIRMASS_MODELS
+   :annotation:
+
+.. currentmodule:: pvlib
+
 .. autosummary::
    :toctree: generated/
 
@@ -19,3 +32,8 @@ Airmass and atmospheric models
    atmosphere.angstrom_aod_at_lambda
    atmosphere.angstrom_alpha
    atmosphere.windspeed_powerlaw
+
+.. currentmodule:: pvlib.atmosphere
+
+.. autodata:: HELLMANN_SURFACE_EXPONENTS
+   :annotation:

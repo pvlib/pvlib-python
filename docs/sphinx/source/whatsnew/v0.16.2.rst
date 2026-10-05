@@ -23,7 +23,8 @@ Enhancements
 Documentation
 ~~~~~~~~~~~~~
 
-* Add a reference page documenting useful module-level constants. (:issue:`2096`)
+* Document useful module-level constants on the existing reference pages near
+  the related functions. (:pull:`2884`)
 
 
 Testing
@@ -46,3 +47,4 @@ Contributors
 ~~~~~~~~~~~~
 
 * Anshu Raj Bisoyi (:ghuser:`anshurajbisoyi98-ctrl`)
+* Chen Yi (:ghuser:`chenyi6758-source`)

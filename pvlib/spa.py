@@ -1032,7 +1032,7 @@ def solar_position(unixtime, lat, lon, elev, pressure, temp, delta_t,
 
     """
     Calculate the solar position using the
-    NREL SPA algorithm described in [1].
+    NREL SPA described in [1]_, [2]_.
 
     If numba is installed, the functions can be compiled
     and the code runs quickly. If not, the functions

@@ -1,6 +1,7 @@
 """
-Calculate the sun's position using the NREL Solar Position Algorithm (SPA) either using
-numpy arrays or compiling the code to machine language with numba.
+Calculate the sun's position using the NREL Solar Position Algorithm
+(SPA) either using numpy arrays or compiling the code to machine language
+with numba.
 """
 
 # Contributors:

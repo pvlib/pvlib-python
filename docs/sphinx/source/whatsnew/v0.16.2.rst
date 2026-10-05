@@ -22,6 +22,9 @@ Enhancements
 
 Documentation
 ~~~~~~~~~~~~~
+* Clarified in :py:func:`pvlib.tracking.singleaxis` that the tracker
+  rotation minimizes the angle of incidence (AOI) to maximize the use of
+  direct normal irradiance (DNI). (:issue:`2314`, :pull:`2869`)
 
 * Clarify that :py:func:`pvlib.ivtools.sdm.fit_pvsyst_sandia` and
   :py:func:`pvlib.ivtools.sdm.fit_desoto_sandia` require multiple IV curves.
@@ -48,3 +51,4 @@ Contributors
 ~~~~~~~~~~~~
 
 * :ghuser:`anshurajbisoyi98-ctrl`
+* Chen Yi (:ghuser:`chenyi6758-source`)

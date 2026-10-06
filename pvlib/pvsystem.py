@@ -1678,6 +1678,124 @@ class SingleAxisTrackerMount(AbstractMount):
         )
         return tracking_data
 
+def calcparams_villalva(
+    effective_irradiance,
+    temp_cell,
+    alpha_sc,
+    beta_voc,
+    a_ref,
+    I_L_ref,
+    R_sh_ref,
+    R_s,
+    i_sc_ref,
+    v_oc_ref,
+    irrad_ref=1000.0,
+    temp_ref=25.0,
+):
+    r"""Calculate Villalva SDM parameters at operating conditions.
+
+    The Villalva auxiliary equations convert reference-condition parameters
+    into the five single-diode equation parameters required by
+    :py:func:`pvlib.pvsystem.singlediode`.
+
+    The photocurrent is modeled as
+
+    .. math::
+
+       I_L = (I_{L,ref} + \alpha_{sc}\Delta T)
+             \frac{G}{G_{ref}}.
+
+    The finite-:math:`R_{sh}` open-circuit relation is used for the
+    temperature-dependent saturation current so that the operating-condition
+    equations remain consistent with the fitted reference parameters. The
+    fitted :math:`R_s` and :math:`R_{sh}` are held constant with operating
+    condition, following the Villalva modeling assumption used here.
+
+    Parameters
+    ----------
+    effective_irradiance : numeric
+        Effective irradiance converted to photocurrent. [W/m²]
+    temp_cell : numeric
+        Cell temperature. [°C]
+    alpha_sc : float
+        Short-circuit current temperature coefficient. [A/K]
+    beta_voc : float
+        Open-circuit voltage temperature coefficient. [V/K]
+    a_ref : float
+        Product of diode ideality factor, cells in series, and cell thermal
+        voltage at the reference temperature. [V]
+    I_L_ref : float
+        Light-generated current at reference conditions. [A]
+    R_sh_ref : float
+        Shunt resistance at reference conditions. [ohm]
+    R_s : float
+        Series resistance. [ohm]
+    i_sc_ref : float
+        Short-circuit current at reference conditions. [A]
+    v_oc_ref : float
+        Open-circuit voltage at reference conditions. [V]
+    irrad_ref : float, default 1000
+        Reference irradiance. [W/m²]
+    temp_ref : float, default 25
+        Reference cell temperature. [°C]
+
+    Returns
+    -------
+    photocurrent : numeric
+        Light-generated current at the operating condition. [A]
+    saturation_current : numeric
+        Diode reverse saturation current at the operating condition. [A]
+    resistance_series : numeric
+        Series resistance at the operating condition. [ohm]
+    resistance_shunt : numeric
+        Shunt resistance at the operating condition. [ohm]
+    nNsVth : numeric
+        Product of diode ideality factor, cells in series, and cell thermal
+        voltage at the operating condition. [V]
+
+    References
+    ----------
+    .. [1] M. G. Villalva, PhD thesis, Chapter 3 and Appendix A.
+    .. [2] M. G. Villalva, J. R. Gazoli, and E. Ruppert Filho,
+       "Comprehensive Approach to Modeling and Simulation of Photovoltaic
+       Arrays," IEEE Transactions on Power Electronics, 2009.
+    """
+    temp_ref_k = temp_ref + 273.15
+    temp_cell_k = temp_cell + 273.15
+    delta_t = temp_cell - temp_ref
+
+    # n * Ns * Vth at operating temperature.
+    nNsVth = a_ref * temp_cell_k / temp_ref_k
+
+    # Villalva photocurrent equation.
+    photocurrent = (
+        I_L_ref + alpha_sc * delta_t
+    ) * effective_irradiance / irrad_ref
+
+    # Datasheet temperature coefficients.
+    i_sc = i_sc_ref + alpha_sc * delta_t
+    v_oc = v_oc_ref + beta_voc * delta_t
+
+    # Finite-Rsh form corresponding to Villalva's temperature-dependent
+    # saturation-current equation.
+    photocurrent_for_i0 = (
+        (R_sh_ref + R_s) / R_sh_ref * i_sc
+    )
+
+    saturation_current = (
+        photocurrent_for_i0 - v_oc / R_sh_ref
+    ) / np.expm1(v_oc / nNsVth)
+
+    resistance_series = R_s
+    resistance_shunt = R_sh_ref
+
+    return (
+        photocurrent,
+        saturation_current,
+        resistance_series,
+        resistance_shunt,
+        nNsVth,
+    )
 
 def calcparams_desoto(effective_irradiance, temp_cell,
                       alpha_sc, a_ref, I_L_ref, I_o_ref, R_sh_ref, R_s,

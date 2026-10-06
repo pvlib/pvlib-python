@@ -19,3 +19,8 @@ from pvlib.ivtools.sdm.pvsyst import (  # noqa: F401
     fit_pvsyst_iec61853_sandia_2025,
     pvsyst_temperature_coeff,
 )
+
+from pvlib.ivtools.sdm.villalva import ( # noqa: F401
+    _villalva_params_at_rs,
+    fit_villalva,
+)

@@ -45,5 +45,6 @@ Maintenance
 
 Contributors
 ~~~~~~~~~~~~
-
 * Chen Yi (:ghuser:`chenyi6758-source`)
+* Rajiv Daxini (:ghuser:`rdaxini`)
+

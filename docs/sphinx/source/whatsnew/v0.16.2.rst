@@ -28,6 +28,9 @@ Documentation
 * Clarified in :py:func:`pvlib.tracking.singleaxis` that the tracker
   rotation minimizes the angle of incidence (AOI) to maximize the use of
   direct normal irradiance (DNI). (:issue:`2314`, :pull:`2869`)
+* Fix the :py:func:`pvlib.spa.solar_position` docstring, which listed
+  outputs ``elevation`` and ``apparent_elevation`` in the wrong order.
+  (:issue:`2886`, :pull:`2887`)
 
 
 Testing

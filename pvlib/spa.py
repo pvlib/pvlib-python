@@ -1074,8 +1074,8 @@ def solar_position(unixtime, lat, lon, elev, pressure, temp, delta_t,
     Numpy Array with elements:
         apparent zenith,
         zenith,
-        elevation,
         apparent_elevation,
+        elevation,
         azimuth,
         equation_of_time
 

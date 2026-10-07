@@ -14,6 +14,9 @@ Deprecations
 
 Bug fixes
 ~~~~~~~~~
+* Fix the documented return order in :py:func:`pvlib.spa.solar_position`,
+  which listed ``elevation`` and ``apparent_elevation`` in the wrong order.
+  (:issue:`2886`, :pull:`2887`)
 
 
 Enhancements

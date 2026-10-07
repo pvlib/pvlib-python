@@ -145,10 +145,11 @@ def fit_villalva(
 
     References
     ----------
-    .. [1] M. G. Villalva, PhD thesis, Chapter 3 and Appendix A.
-    .. [2] M. G. Villalva, J. R. Gazoli, and E. Ruppert Filho,
-       "Comprehensive Approach to Modeling and Simulation of Photovoltaic
-       Arrays," IEEE Transactions on Power Electronics, 2009.
+    .. [1] M. G. Villalva, "Three-phase electronic power converter for a grid-connected photovoltaic system," 
+       PhD Thesis, Unicamp, 2010. DOI: 10.47749/T/UNICAMP.2010.781324
+    .. [2] M. G. Villalva, J. R. Gazoli, and E. Ruppert Filho, 
+       "Comprehensive Approach to Modeling and Simulation of Photovoltaic Arrays," 
+       IEEE Transactions on Power Electronics, 2009. DOI: 10.1109/TPEL.2009.2013862
     """
     temp_ref_k = temp_ref + 273.15
 

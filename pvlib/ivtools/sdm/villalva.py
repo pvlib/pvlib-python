@@ -83,7 +83,7 @@ def fit_villalva(
     selected solution minimizes the absolute difference between modeled and
     reference maximum power.
 
-    The dimensionless diode ideality factor is supplied by the user. The
+    The dimensionless diode ideality factor :math:`n` is supplied by the user. The
     modified ideality factor at reference conditions is calculated as
 
     .. math::

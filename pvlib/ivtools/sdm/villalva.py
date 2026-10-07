@@ -88,7 +88,7 @@ def fit_villalva(
 
     .. math::
 
-       a_{ref} = a N_s k T_{ref} / q.
+       a_{ref} = n N_s k T_{ref} / q.
 
     Parameters
     ----------

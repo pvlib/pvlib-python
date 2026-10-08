@@ -32,6 +32,10 @@ Documentation
   outputs ``elevation`` and ``apparent_elevation`` in the wrong order.
   (:issue:`2886`, :pull:`2887`)
 
+* Clarify that :py:func:`pvlib.ivtools.sdm.fit_pvsyst_sandia` and
+  :py:func:`pvlib.ivtools.sdm.fit_desoto_sandia` require multiple IV curves.
+  (:issue:`1715`)
+
 
 Testing
 ~~~~~~~
@@ -51,6 +55,8 @@ Maintenance
 
 Contributors
 ~~~~~~~~~~~~
+
+* :ghuser:`anshurajbisoyi98-ctrl`
 * Adam R. Jensen (:ghuser:`AdamRJensen`)
 * Cliff Hansen (:ghuser:`cwhanse`)
 * Chen Yi (:ghuser:`chenyi6758-source`)

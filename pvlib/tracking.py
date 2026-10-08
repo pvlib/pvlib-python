@@ -304,6 +304,11 @@ def calc_surface_orientation(tracker_theta, axis_tilt=0, axis_azimuth=0):
     surface_azimuth = np.degrees(
         np.arctan2(unit_normal[..., 0], unit_normal[..., 1]))
 
+    # above always returns a np.array
+    # return scalar if `tracker_theta` is a scalar
+    if np.isscalar(tracker_theta):
+        surface_azimuth = surface_azimuth.item()
+
     surface_azimuth = np.where(surface_tilt == 0., axis_azimuth - 90.,
                                surface_azimuth)
     # constrain angles to [0, 360)

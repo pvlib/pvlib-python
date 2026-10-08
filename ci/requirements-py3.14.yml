@@ -1,6 +1,6 @@
 name: test_env
 channels:
-    - defaults
+    #- defaults  # avoid troublesome linking failure on py 3.14 and windows 
     - conda-forge
 dependencies:
     - coveralls

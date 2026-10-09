@@ -111,7 +111,7 @@ def fit_villalva(
     temp_ref : float, default 25
         Reference cell temperature. [°C]
     irrad_ref : float, default 1000
-        Reference irradiance. [W/m²]
+        Reference irradiance. [Wm⁻²]
     rs_step : float, default 1e-4
         Increment used for the series-resistance sweep. [ohm]
     rs_max : float, optional

@@ -107,7 +107,7 @@ def fit_villalva(
     cells_in_series : int
         Effective number of cells or junctions connected in series.
     diode_factor : float
-        Dimensionless diode ideality factor used by the Villalva model.
+        Dimensionless diode ideality factor. [unitless]
     temp_ref : float, default 25
         Reference cell temperature. [°C]
     irrad_ref : float, default 1000

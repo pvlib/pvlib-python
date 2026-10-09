@@ -22,4 +22,5 @@ from pvlib.ivtools.sdm.pvsyst import (  # noqa: F401
 
 from pvlib.ivtools.sdm.villalva import (  # noqa: F401
     _villalva_params_at_rs,
+    fit_villalva,
 )

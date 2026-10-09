@@ -145,11 +145,15 @@ def fit_villalva(
 
     References
     ----------
-    .. [1] M. G. Villalva, "Three-phase electronic power converter for a grid-connected photovoltaic system," 
-       PhD Thesis, Unicamp, 2010. :doi:`10.47749/T/UNICAMP.2010.781324`
-    .. [2] M. G. Villalva, J. R. Gazoli, and E. Ruppert Filho, 
-       "Comprehensive Approach to Modeling and Simulation of Photovoltaic Arrays," 
-       IEEE Transactions on Power Electronics, 2009. :doi:`10.1109/TPEL.2009.2013862`
+    .. [1] M. G. Villalva, "Conversor eletrônico de potência trifásico para
+       sistema fotovoltaico conectado à rede elétrica," Ph.D. dissertation,
+       Faculdade de Engenharia Elétrica e de Computação, Universidade Estadual
+       de Campinas (UNICAMP), Campinas, Brazil, 2010.
+       :doi:`10.47749/T/UNICAMP.2010.781324`
+    .. [2] M. G. Villalva, J. R. Gazoli, and E. Ruppert Filho, "Comprehensive
+       approach to modeling and simulation of photovoltaic arrays," IEEE Trans.
+       Power Electron., vol. 24, no. 5, pp. 1198-1208, May 2009.
+       :doi:`10.1109/TPEL.2009.2013862`
     """
     temp_ref_k = temp_ref + 273.15
 

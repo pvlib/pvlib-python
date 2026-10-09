@@ -177,66 +177,82 @@ def fit_villalva(
     if rs_max is None:
         rs_max = v_oc / i_sc
 
-    rows = []
     rs_values = np.arange(0.0, rs_max + 0.5 * rs_step, rs_step)
 
-    for resistance_series in rs_values:
-        try:
-            photocurrent, saturation_current, resistance_shunt = (
-                _villalva_params_at_rs(
-                    resistance_series,
-                    v_mp,
-                    i_mp,
-                    v_oc,
-                    i_sc,
-                    a_ref,
-                )
+    # Calculate parameters for all candidate series resistances.
+    with np.errstate(divide="ignore", invalid="ignore", over="ignore"):
+        photocurrent, saturation_current, resistance_shunt = (
+            _villalva_params_at_rs(
+                rs_values,
+                v_mp,
+                i_mp,
+                v_oc,
+                i_sc,
+                a_ref,
             )
-        except (FloatingPointError, ZeroDivisionError):
-            continue
-
-        if (
-            not np.isfinite(resistance_shunt)
-            or resistance_shunt < r_sh_min
-            or photocurrent <= 0
-            or saturation_current <= 0
-        ):
-            continue
-
-        try:
-            mpp = pvsystem.max_power_point(
-                photocurrent=photocurrent,
-                saturation_current=saturation_current,
-                resistance_series=resistance_series,
-                resistance_shunt=resistance_shunt,
-                nNsVth=a_ref,
-                method="brentq",
-            )
-        except (ValueError, RuntimeError):
-            continue
-
-        p_mp_model = float(np.asarray(mpp["p_mp"]))
-        power_error = p_mp_model - p_mp_ref
-
-        rows.append(
-            {
-                "R_s": resistance_series,
-                "R_sh_ref": resistance_shunt,
-                "I_L_ref": photocurrent,
-                "I_o_ref": saturation_current,
-                "v_mp_model": float(np.asarray(mpp["v_mp"])),
-                "i_mp_model": float(np.asarray(mpp["i_mp"])),
-                "p_mp_model": p_mp_model,
-                "p_mp_ref": p_mp_ref,
-                "power_error": power_error,
-                "abs_power_error": abs(power_error),
-            }
         )
 
-    if not rows:
+    # Exclude non-finite and physically invalid parameters.
+    valid = (
+        np.isfinite(photocurrent)
+        & np.isfinite(saturation_current)
+        & np.isfinite(resistance_shunt)
+        & (resistance_shunt >= r_sh_min)
+        & (photocurrent > 0)
+        & (saturation_current > 0)
+    )
+
+    if not np.any(valid):
         raise RuntimeError("No valid Villalva solution was found.")
 
-    history = pd.DataFrame(rows)
+    rs_values = rs_values[valid]
+    photocurrent = photocurrent[valid]
+    saturation_current = saturation_current[valid]
+    resistance_shunt = resistance_shunt[valid]
+
+    # Calculate the maximum power point for all valid candidates.
+    with np.errstate(divide="ignore", invalid="ignore", over="ignore"):
+        mpp = pvsystem.max_power_point(
+            photocurrent=photocurrent,
+            saturation_current=saturation_current,
+            resistance_series=rs_values,
+            resistance_shunt=resistance_shunt,
+            nNsVth=a_ref,
+            method="brentq",
+        )
+
+    v_mp_model = np.asarray(mpp["v_mp"])
+    i_mp_model = np.asarray(mpp["i_mp"])
+    p_mp_model = np.asarray(mpp["p_mp"])
+
+    power_error = p_mp_model - p_mp_ref
+
+    # Exclude non-finite maximum power point results.
+    valid_mpp = (
+        np.isfinite(v_mp_model)
+        & np.isfinite(i_mp_model)
+        & np.isfinite(p_mp_model)
+        & np.isfinite(power_error)
+    )
+
+    if not np.any(valid_mpp):
+        raise RuntimeError("No valid Villalva solution was found.")
+
+    history = pd.DataFrame(
+        {
+            "R_s": rs_values[valid_mpp],
+            "R_sh_ref": resistance_shunt[valid_mpp],
+            "I_L_ref": photocurrent[valid_mpp],
+            "I_o_ref": saturation_current[valid_mpp],
+            "v_mp_model": v_mp_model[valid_mpp],
+            "i_mp_model": i_mp_model[valid_mpp],
+            "p_mp_model": p_mp_model[valid_mpp],
+            "p_mp_ref": p_mp_ref,
+            "power_error": power_error[valid_mpp],
+            "abs_power_error": np.abs(power_error[valid_mpp]),
+        }
+    )
+
     best = history.loc[history["abs_power_error"].idxmin()]
 
     params = {

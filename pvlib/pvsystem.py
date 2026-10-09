@@ -1714,7 +1714,7 @@ def calcparams_villalva(
     Parameters
     ----------
     effective_irradiance : numeric
-        Effective irradiance converted to photocurrent. [W/m²]
+        Effective irradiance converted to photocurrent. [Wm⁻²]
     temp_cell : numeric
         Cell temperature. [°C]
     alpha_sc : float

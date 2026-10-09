@@ -31,6 +31,9 @@ Documentation
 * Fix the :py:func:`pvlib.spa.solar_position` docstring, which listed
   outputs ``elevation`` and ``apparent_elevation`` in the wrong order.
   (:issue:`2886`, :pull:`2887`)
+* Document in :py:func:`pvlib.iotools.read_epw` that each record is labelled
+  with the start of its hour, unlike :py:func:`pvlib.iotools.read_tmy3`, and
+  how to label it with the time given in the EPW file. (:issue:`1156`)
 
 
 Testing
@@ -56,6 +59,7 @@ Contributors
 * Chen Yi (:ghuser:`chenyi6758-source`)
 * Rajiv Daxini (:ghuser:`rdaxini`)
 * jason-writer (:ghuser:`jason-writer`)
+* Christoph Deil (:ghuser:`cdeil`)
 
 
 

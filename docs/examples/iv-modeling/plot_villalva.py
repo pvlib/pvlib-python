@@ -115,10 +115,10 @@ print(parameter_table)
 best_idx = history["abs_power_error"].idxmin()
 best = history.loc[best_idx]
 
-print(f"Best R_s = {best['R_s']:.6f} ohm")
-print(f"Modeled P_mp = {best['p_mp_model']:.6f} W")
-print(f"Reference P_mp = {best['p_mp_ref']:.6f} W")
-print(f"Absolute error = {best['abs_power_error']:.6e} W")
+print(f"Best R_s = {best['R_s']:.6f} ohm")  # noqa: E231
+print(f"Modeled P_mp = {best['p_mp_model']:.6f} W")  # noqa: E231
+print(f"Reference P_mp = {best['p_mp_ref']:.6f} W")  # noqa: E231
+print(f"Absolute error = {best['abs_power_error']:.6e} W")  # noqa: E231
 
 plt.figure(figsize=(9, 5))
 plt.plot(history["R_s"], history["p_mp_model"], label="Modeled $P_{mp}$")
@@ -131,7 +131,7 @@ plt.scatter(
     [best["R_s"]],
     [best["p_mp_model"]],
     zorder=3,
-    label=f"Best $R_s$ = {best['R_s']:.4f} $\\Omega$",
+    label=f"Best $R_s$ = {best['R_s']:.4f} $\\Omega$",  # noqa: E231
 )
 plt.axvline(best["R_s"], linestyle=":")
 plt.xlim(0, 0.26)
@@ -289,7 +289,7 @@ recovery_table["Relative error [%]"] = (
     / recovery_table["Starting value"]
 )
 
-print(f"Known Villalva diode ideality factor: {diode_factor_known:.9f}")
+print(f"Known Villalva diode ideality factor: {diode_factor_known:.9f}")  # noqa: E231
 print(recovery_table)
 
 v_validation = np.linspace(0.0, synthetic_points["v_oc"], 300)
@@ -397,9 +397,9 @@ plt.figure(figsize=(9, 6))
 for idx, case in conditions.iterrows():
     label = (
         "$G_{eff}$ "
-        + f"{case['Geff']:.0f} W/m$^2$\n"
+        + f"{case['Geff']:.0f} W/m$^2$\n"  # noqa: E231
         "$T_{cell}$ "
-        + f"{case['Tcell']:.0f} °C"
+        + f"{case['Tcell']:.0f} °C"  # noqa: E231
     )
     plt.plot(v[idx], i[idx], label=label)
     plt.plot(

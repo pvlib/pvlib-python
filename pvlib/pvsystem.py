@@ -1676,7 +1676,8 @@ class SingleAxisTrackerMount(AbstractMount):
             self.max_angle, self.backtrack,
             self.gcr, self.cross_axis_tilt
         )
-        return tracking_data
+return tracking_data
+
 
 def calcparams_villalva(
     effective_irradiance,

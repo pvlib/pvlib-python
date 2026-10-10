@@ -207,3 +207,17 @@ def test_wvm_series_xyaslist(clear_sky_index, time, positions,
 def test_wvm_invalid(clear_sky_index, positions):
     with pytest.raises(ValueError):
         scaling.wvm(clear_sky_index, positions, cloud_speed)
+
+
+def test_compute_vr_single_site(expect_tmscale):
+    vr = scaling._compute_vr(np.array([(0., 0.)]), cloud_speed,
+                             np.array(expect_tmscale))
+    assert_almost_equal(vr, np.ones(len(expect_tmscale)))
+
+
+def test_wvm_single_site(clear_sky_index):
+    # A single site has no variability reduction: the smoothed signal is the
+    # input unchanged. Previously returned all NaNs. See GH #2895.
+    single_site = np.array([(0., 0.)])
+    cs_sm, _, _ = scaling.wvm(clear_sky_index, single_site, cloud_speed, dt=dt)
+    assert_almost_equal(cs_sm[5000:5005], clear_sky_index[5000:5005])

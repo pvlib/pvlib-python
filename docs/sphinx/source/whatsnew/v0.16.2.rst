@@ -16,6 +16,8 @@ Bug fixes
 ~~~~~~~~~
 * :py:func:`pvlib.tracking.calc_surface_orientation` returns scalar when input
   is scalar (:issue:`2881`, :pull:`2882`)
+* :py:func:`pvlib.scaling.wvm` no longer returns all NaNs when ``positions``
+  contains a single site (:issue:`2895`, :pull:`2896`) by :ghuser:`bfs2021`
 
 Enhancements
 ~~~~~~~~~~~~

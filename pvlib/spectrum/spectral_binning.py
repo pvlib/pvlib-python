@@ -74,8 +74,8 @@ def spectral_binning(spectra, n_bins):
         proxy spectrum) [eV], ``n_spectra``, and ``energy_fraction`` (share
         of the total incident energy).
     labels : pandas.Series
-        Bin number of each input spectrum. ``<NA>`` for spectra excluded
-        because their irradiance is zero or NaN.
+        Bin number of each input spectrum. ``np.nan`` for spectra whose APE
+        is undefined, e.g. all-zero or NaN spectra.
 
     Notes
     -----
@@ -110,3 +110,27 @@ def spectral_binning(spectra, n_bins):
        in Photovoltaics: Research and Applications, vol. 26, no. 1, pp. 48-54,
        2018, :doi:`10.1002/pip.2943`.
     """
+    ape = average_photon_energy(spectra)
+    wavelength = spectra.columns.to_numpy(dtype=float)
+    irradiance = pd.Series(trapezoid(spectra, x=wavelength, axis=1),
+                           index=spectra.index)
+
+    # APE is NaN for all-zero or NaN spectra, which can't be sorted
+    valid = ape.notna()
+    ape, irradiance = ape[valid], irradiance[valid]
+
+    # equal time intervals, so energy is proportional to irradiance
+    labels = _assign_equal_energy_bins(ape, irradiance, n_bins)
+
+    proxy_spectra = spectra[valid].groupby(labels).mean()
+
+    bins = pd.DataFrame({
+        'ape_min': ape.groupby(labels).min(),
+        'ape_max': ape.groupby(labels).max(),
+        'ape': average_photon_energy(proxy_spectra),
+        'n_spectra': labels.value_counts().sort_index(),
+        'energy_fraction': irradiance.groupby(labels).sum() / irradiance.sum(),
+    })
+
+    labels = labels.reindex(spectra.index)
+    return proxy_spectra, bins, labels

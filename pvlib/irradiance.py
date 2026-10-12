@@ -3911,6 +3911,14 @@ def louche(ghi, solar_zenith, datetime_or_doy, max_zenith=90):
         * ``kt``: Clearness index. Ratio of global to
           extraterrestrial irradiance on a horizontal plane. [unitless]
 
+    Notes
+    -----
+    The hourly Louche polynomial uses extraterrestrial normal irradiance
+    as its reference. At very low GHI, its nonzero intercept can otherwise
+    produce negative diffuse irradiance. DNI is limited to available
+    horizontal irradiance in that case, preserving irradiance closure.
+    This safeguard is outside the original empirical regression.
+
     References
     -------
     .. [1] Louche A, Notton G, Poggi P, Simonnot G. Correlations for direct
@@ -3926,7 +3934,14 @@ def louche(ghi, solar_zenith, datetime_or_doy, max_zenith=90):
     kb = -10.627*Kt**5 + 15.307*Kt**4 - 5.205 * \
         Kt**3 + 0.994*Kt**2 - 0.059*Kt + 0.002
     dni = kb*I0
-    dhi = ghi - dni*tools.cosd(solar_zenith)
+    cos_zenith = tools.cosd(solar_zenith)
+    dhi = ghi - dni*cos_zenith
+
+    # The hourly polynomial has a positive intercept, so low GHI can
+    # produce negative DHI. Cap DNI consistently to preserve closure.
+    negative_dhi = (dhi < 0) & (cos_zenith > 0) & (ghi >= 0)
+    dni = np.where(negative_dhi, ghi / np.maximum(cos_zenith, 1e-8), dni)
+    dhi = np.where(negative_dhi, 0, dhi)
 
     bad_values = (solar_zenith > max_zenith) | (ghi < 0) | (dni < 0)
     dni = np.where(bad_values, 0, dni)

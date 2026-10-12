@@ -1639,6 +1639,43 @@ def test_louche():
     assert_frame_equal(out, expected)
 
 
+def test_louche_nonnegative_low_light_and_closure():
+    # Regression for issue 2864. The unbounded polynomial gives
+    # negative DHI for small positive or zero GHI at low sun.
+    ghi = np.array([0., 0.1, 0.01, 50.])
+    zenith = np.array([80., 80., 89., 85.])
+    out = irradiance.louche(ghi, zenith, 1)
+    assert np.all(out['dni'] >= 0)
+    assert np.all(out['dhi'] >= 0)
+    assert_allclose(out['dhi'] + out['dni'] * np.cos(np.radians(zenith)),
+                    ghi, atol=1e-10)
+    assert_allclose(out['dhi'][0], 0)
+    assert_allclose(out['dni'][0], 0)
+
+
+def test_louche_zero_ghi_scalar():
+    out = irradiance.louche(0., 80., 1)
+    assert_allclose(out['dni'], 0., atol=1e-10)
+    assert_allclose(out['dhi'], 0., atol=1e-10)
+
+
+def test_louche_low_light_pandas_and_nan():
+    times = pd.DatetimeIndex(['2019-01-01'] * 4)
+    ghi = pd.Series([0., 0.1, np.nan, 50.], index=times)
+    zenith = pd.Series([80., 80., 80., 85.], index=times)
+    out = irradiance.louche(ghi, zenith, times)
+    assert isinstance(out, pd.DataFrame)
+    assert out.index.equals(times)
+    assert np.all(out['dni'].iloc[[0, 1, 3]] >= 0)
+    assert np.all(out['dhi'].iloc[[0, 1, 3]] >= 0)
+    assert np.isnan(out['dni'].iloc[2])
+    assert np.isnan(out['dhi'].iloc[2])
+    assert_allclose(out['dhi'].iloc[[0, 1, 3]]
+                    + out['dni'].iloc[[0, 1, 3]]
+                    * np.cos(np.radians(zenith.iloc[[0, 1, 3]])),
+                    ghi.iloc[[0, 1, 3]], atol=1e-10)
+
+
 def test_SURFACE_ALBEDOS_deprecated():
     with pytest.warns(pvlibDeprecationWarning, match='SURFACE_ALBEDOS has been'
                       ' moved to the albedo module as of v0.11.0. Please use'

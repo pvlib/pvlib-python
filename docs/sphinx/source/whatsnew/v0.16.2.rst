@@ -14,6 +14,9 @@ Deprecations
 
 Bug fixes
 ~~~~~~~~~
+* Prevent negative diffuse irradiance in low-light
+  :py:func:`pvlib.irradiance.louche`, retaining irradiance closure
+  (:issue:`2864`, :ghuser:`mattjenkins3`).
 * :py:func:`pvlib.tracking.calc_surface_orientation` returns scalar when input
   is scalar (:issue:`2881`, :pull:`2882`)
 

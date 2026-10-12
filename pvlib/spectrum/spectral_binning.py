@@ -12,6 +12,42 @@ from scipy.integrate import trapezoid
 from pvlib.spectrum.irradiance import average_photon_energy
 
 
+def _assign_equal_energy_bins(ape, energy, n_bins):
+    """
+    Assign each spectrum to one of ``n_bins`` equal-energy bins.
+
+    Parameters
+    ----------
+    ape : pandas.Series
+        Average photon energy of each spectrum. [eV]
+    energy : pandas.Series
+        Energy of each spectrum, aligned with ``ape``. Any consistent unit.
+        Must be positive.
+    n_bins : int
+        Number of bins.
+
+    Returns
+    -------
+    labels : pandas.Series of int
+        Bin index of each spectrum, with the same index as ``ape``. Bins may
+        be empty if a single spectrum holds more than ``1/n_bins`` of the
+        total energy.
+
+    Notes
+    -----
+    Spectra are sorted by ``ape`` and assigned to bin ``k`` (0-indexed) if
+    their cumulative energy lies in ``(k*E/n_bins, (k+1)*E/n_bins]``, where
+    ``E`` is the total energy.
+    """
+    order = np.argsort(ape.to_numpy(), kind='stable')
+    cum_energy = np.cumsum(energy.to_numpy()[order])
+    thresholds = cum_energy[-1] * np.arange(1, n_bins) / n_bins
+    labels = np.empty(len(ape), dtype=int)
+    labels[order] = np.searchsorted(thresholds, cum_energy, side='left')
+
+    return pd.Series(labels, index=ape.index, name='bin')
+
+
 def spectral_binning(spectra, n_bins):
     r"""
     Reduce a set of spectra to a few representative spectra by equal-energy

@@ -14,77 +14,54 @@ from pvlib.spectrum.irradiance import average_photon_energy
 
 def spectral_binning(spectra, n_bins):
     r"""
-    Bin spectral irradiance data into a specified number of bins.
+    Reduce a set of spectra to a few representative spectra by equal-energy
+    binning.
+
+    Spectra are sorted from red-rich to blue-rich by average photon energy
+    (APE) and split into bins that each hold an equal share of the total
+    incident energy. Each bin is represented by its mean "proxy" spectrum.
 
     Parameters
     ----------
-    spectra : pandas.Series or pandas.DataFrame
-
-        Spectral irradiance, must be positive [Wm⁻²nm⁻¹].
+    spectra : pandas.DataFrame
+        Spectral irradiance, one spectrum per row with wavelength [nm] as
+        column headers. Must be positive. [Wm⁻²nm⁻¹]
         See :term:`spectra`.
-
-        A single spectrum must be a :py:class:`pandas.Series` with wavelength
-        [nm] as the index, while multiple spectra must be rows in a
-        :py:class:`pandas.DataFrame` with column headers as wavelength [nm]
-
     n_bins : int
-        The number of bins to reduce the spectral data into.
+        Number of bins.
 
     Returns
     -------
-    binned_spectra : pandas.Series or pandas.DataFrame
-        The binned spectral irradiance data. The structure matches the input
-        ``spectra``: a single spectrum is returned as a
-        :py:class:`pandas.Series`, while multiple spectra are returned as a
-        :py:class:`pandas.DataFrame`.
-    bins           : DataFrame with ape_min, ape_max, ape (APE of the proxy
-                     spectrum), duration [s], energy [Wh m-2], n_spectra
-    labels         : Series, the bin number of each input spectrum
-                     (users can group temperature etc. by this)
+    proxy_spectra : pandas.DataFrame
+        Mean spectrum of each bin, indexed by bin number. [Wm⁻²nm⁻¹]
+    bins : pandas.DataFrame
+        Bin properties: ``ape_min``, ``ape_max`` and ``ape`` (APE of the
+        proxy spectrum) [eV], ``n_spectra``, and ``energy_fraction`` (share
+        of the total incident energy).
+    labels : pandas.Series
+        Bin number of each input spectrum. ``<NA>`` for spectra excluded
+        because their irradiance is zero or NaN.
 
     Notes
     -----
-    This function implements the equal-energy spectral binning method of
-    Witteck et al. [1]_, following the approach of Garcia et al. [2]_. It
-    reduces a large set of spectra (for example, a year of measurements) to a
-    small number of representative "proxy" spectra while conserving the total
-    incident energy. This lowers the cost of energy yield simulations and
-    highlights which spectra contribute most of the energy.
-
-    Each spectrum is described by two quantities. The first is its average
-    photon energy (APE, :math:`E_\mathrm{ape}`; see
-    :py:func:`~pvlib.spectrum.average_photon_energy`), a device-independent
-    measure of spectral shape, where a higher APE indicates a bluer spectrum.
-    The second is the energy it contributes,
+    This function implements the spectral binning method of [1]_, adapted
+    from [2]_. Spectra are sorted by APE (see
+    :py:func:`~pvlib.spectrum.average_photon_energy`) and their cumulative
+    broadband irradiance :math:`G = \int \Phi(\lambda) \, d\lambda` is split
+    into ``n_bins`` equal parts. Bin :math:`k` is represented by the mean of
+    its :math:`n_k` spectra,
 
     .. math::
 
-        E = G \cdot \Delta t,
+        \Phi_k^\mathrm{p} = \frac{1}{n_k} \sum_{l=1}^{n_k} \Phi_{kl},
 
-    where :math:`G = \int \Phi(\lambda) \, d\lambda` is the broadband
-    irradiance of the spectrum :math:`\Phi`, and :math:`\Delta t` is the time
-    interval the spectrum represents.
+    which conserves the total incident energy. Fewer than ``n_bins`` bins are
+    returned if a single spectrum holds more than ``1/n_bins`` of the total.
 
-    The spectra are sorted by APE and the cumulative energy is partitioned into
-    ``n_bins`` bins that each contain an equal share of the total energy.
-    Unlike binning by equal APE width or by equal spectrum count, equal-energy
-    binning concentrates the bins where most of the energy is delivered, so the
-    representation is most accurate for the spectra that matter most to the
-    energy yield.
-
-    Each bin :math:`k` groups :math:`n_k` spectra :math:`\Phi_{kl}`, where
-    spectrum :math:`l` represents a time :math:`t_{kl}`. The bin is summarised
-    by a single proxy spectrum :math:`\Phi_k^\mathrm{p}`, the time-weighted
-    mean of its members,
-
-    .. math::
-
-        \Phi_k^\mathrm{p} = \frac{1}{t_k} \sum_{l=1}^{n_k} \Phi_{kl} \, t_{kl},
-        \qquad t_k = \sum_{l=1}^{n_k} t_{kl}.
-
-    Because the mean is energy-conserving, the proxy spectra carry the same
-    total energy as the original dataset. The APE depends on the wavelength
-    range of the input, so all spectra must share a common wavelength grid.
+    Each spectrum is assumed to represent an equal time interval, so data with
+    unequal intervals should be resampled first. Night-time gaps have no
+    effect, but missing daylight data bias the result towards the conditions
+    present.
 
     References
     ----------

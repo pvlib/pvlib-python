@@ -4,7 +4,6 @@ for calculations related to reducing (binning) large spectral irradiance
 datasets into smaller, representative datasets.
 """
 
-import pvlib
 import numpy as np
 import pandas as pd
 

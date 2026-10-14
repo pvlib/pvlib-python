@@ -80,18 +80,22 @@ def spectral_binning(spectra, n_bins):
     Notes
     -----
     This function implements the spectral binning method of [1]_, adapted
-    from [2]_. Spectra are sorted by APE (see
-    :py:func:`~pvlib.spectrum.average_photon_energy`) and their cumulative
-    broadband irradiance :math:`G = \int \Phi(\lambda) \, d\lambda` is split
-    into ``n_bins`` equal parts. Bin :math:`k` is represented by the mean of
-    its :math:`n_k` spectra,
+    from [2]_. First, the spectra are sorted by APE (see
+    :py:func:`~pvlib.spectrum.average_photon_energy`). Next, they are divided
+    into ``n_bins`` bins of equal energy, using the cumulative sum of their
+    broadband irradiance :math:`G = \int \Phi(\lambda) \, d\lambda`. Finally,
+    each bin :math:`k` is represented by the mean of its :math:`n_k` spectra,
 
     .. math::
 
         \Phi_k^\mathrm{p} = \frac{1}{n_k} \sum_{l=1}^{n_k} \Phi_{kl},
 
-    which conserves the total incident energy. Fewer than ``n_bins`` bins are
-    returned if a single spectrum holds more than ``1/n_bins`` of the total.
+    which conserves the total incident energy.
+
+    A spectrum cannot be split between bins, so a spectrum holding more than
+    ``1/n_bins`` of the total energy can span an entire bin and leave it
+    empty. Empty bins are omitted, so fewer than ``n_bins`` bins can be
+    returned, e.g. when ``n_bins`` exceeds the number of spectra.
 
     Each spectrum is assumed to represent an equal time interval, so data with
     unequal intervals should be resampled first. Night-time gaps have no

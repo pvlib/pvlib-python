@@ -18,16 +18,27 @@ Bug fixes
   emits ``RuntimeWarning: invalid value encountered in divide`` when the open
   circuit voltage is zero, e.g. with zero photocurrent. (:issue:`2671`)
 
+* :py:func:`pvlib.tracking.calc_surface_orientation` returns scalar when input
+  is scalar (:issue:`2881`, :pull:`2882`)
 
 Enhancements
 ~~~~~~~~~~~~
-
+* Add ``dataset`` parameter to :py:func:`~pvlib.iotools.get_era5`
+  allowing for choosing between ERA5 and ERA5-Land datasets.
+  (:pull:`2780`)
 
 Documentation
 ~~~~~~~~~~~~~
 * Clarified in :py:func:`pvlib.tracking.singleaxis` that the tracker
   rotation minimizes the angle of incidence (AOI) to maximize the use of
   direct normal irradiance (DNI). (:issue:`2314`, :pull:`2869`)
+* Fix the :py:func:`pvlib.spa.solar_position` docstring, which listed
+  outputs ``elevation`` and ``apparent_elevation`` in the wrong order.
+  (:issue:`2886`, :pull:`2887`)
+
+* Clarify that :py:func:`pvlib.ivtools.sdm.fit_pvsyst_sandia` and
+  :py:func:`pvlib.ivtools.sdm.fit_desoto_sandia` require multiple IV curves.
+  (:issue:`1715`, :pull:`2883`)
 
 
 Testing
@@ -49,6 +60,13 @@ Maintenance
 Contributors
 ~~~~~~~~~~~~
 * Jakub Krasuski (:ghuser:`Blizzeq`)
+
+* :ghuser:`anshurajbisoyi98-ctrl`
+* Adam R. Jensen (:ghuser:`AdamRJensen`)
+* Cliff Hansen (:ghuser:`cwhanse`)
 * Chen Yi (:ghuser:`chenyi6758-source`)
 * Rajiv Daxini (:ghuser:`rdaxini`)
+* jason-writer (:ghuser:`jason-writer`)
+
+
 

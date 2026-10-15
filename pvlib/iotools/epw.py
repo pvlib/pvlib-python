@@ -208,6 +208,17 @@ def read_epw(filename, coerce_year=None):
     |                               | liquid precipitation depth field, hour  |
     +-------------------------------+-----------------------------------------+
 
+    .. warning:: EPW irradiance and illuminance values are totals over the
+        hour *ending* at the time in the file, while temperatures, humidity
+        and pressure are values *at* that time [1]_. ``read_epw`` labels
+        each record with the *start* of its hour: EPW hour 1 (00:00-01:00)
+        becomes 00:00, so a full year runs from 00:00 on 1 January to 23:00
+        on 31 December. :py:func:`~pvlib.iotools.read_tmy3` labels each record
+        with the *end* of its hour instead, so the same data read from an EPW
+        file and from a TMY3 file are one hour apart. To label the records
+        with the time given in the EPW file, add one hour to the index:
+        ``data.index = data.index + pd.Timedelta('1h')``.
+
 
     References
     ----------

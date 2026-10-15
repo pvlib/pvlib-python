@@ -1,6 +1,7 @@
 name: test_env
 channels:
-    - defaults
+    # - defaults  # not supported by mamba
+    - conda-forge
 dependencies:
     - coveralls
     - pip

@@ -890,7 +890,28 @@ def test_dirint_nans():
     dirint_data = irradiance.dirint(ghi, zenith, times, pressure=pressure,
                                     temp_dew=temp_dew)
     assert_almost_equal(dirint_data.values,
-                        np.array([np.nan, np.nan, np.nan, np.nan, 893.1]), 1)
+                        np.array([np.nan, np.nan, np.nan, 888.1, 893.1]), 1)
+
+
+def test_dirint_night_and_missing_temp_dew():
+    # GH 2900: DNI is 0 above max_zenith, also where airmass is undefined
+    times = pd.date_range('2024-06-21T22:00Z', periods=3, freq='h')
+    ghi = pd.Series([0., 0., 0.], index=times)
+    zenith = pd.Series([91., 100., 110.], index=times)
+    out = irradiance.dirint(ghi, zenith, times)
+    expected = pd.Series([0., 0., 0.], index=times, name='dni')
+    assert_series_equal(out, expected)
+
+    # GH 2900: a missing temp_dew value uses the dew point unavailable
+    # coefficients, the same as omitting temp_dew
+    times = pd.date_range('2024-06-21T11:00Z', periods=3, freq='h')
+    ghi = pd.Series([800., 800., 800.], index=times)
+    zenith = pd.Series([20., 20., 20.], index=times)
+    temp_dew = pd.Series([10., np.nan, 10.], index=times)
+    out = irradiance.dirint(ghi, zenith, times, temp_dew=temp_dew)
+    expected = pd.Series([437.595652, 515.527062, 437.595652], index=times,
+                         name='dni')
+    assert_series_equal(out, expected)
 
 
 def test_delta_kt_prime_interior_nan():
@@ -1291,9 +1312,10 @@ def test_dirindex(times):
     assert np.allclose(out, expected_out, rtol=tolerance, atol=0,
                        equal_nan=True)
     tol_dirint = 0.2
+    # at night dirindex is nan (0/0) while dirint is 0, so skip that point
     assert np.allclose(
-        out.values,
-        dirint_close_values,
+        out.values[1:],
+        dirint_close_values[1:],
         rtol=tol_dirint,
         atol=0,
         equal_nan=True)

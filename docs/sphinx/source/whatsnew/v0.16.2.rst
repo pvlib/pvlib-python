@@ -16,6 +16,10 @@ Bug fixes
 ~~~~~~~~~
 * :py:func:`pvlib.tracking.calc_surface_orientation` returns scalar when input
   is scalar (:issue:`2881`, :pull:`2882`)
+* :py:func:`pvlib.irradiance.dirint` now returns 0 instead of NaN for
+  ``solar_zenith`` greater than ``max_zenith`` when the airmass is
+  undefined, and uses the dew point unavailable coefficients for NaN
+  values of ``temp_dew``, as documented. (:issue:`2900`)
 
 Enhancements
 ~~~~~~~~~~~~
@@ -62,6 +66,7 @@ Contributors
 * Chen Yi (:ghuser:`chenyi6758-source`)
 * Rajiv Daxini (:ghuser:`rdaxini`)
 * jason-writer (:ghuser:`jason-writer`)
+* vera-rubin (:ghuser:`vera-rubin`)
 
 
 

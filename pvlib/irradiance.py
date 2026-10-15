@@ -2147,6 +2147,10 @@ def dirint(ghi, solar_zenith, times, pressure=101325., use_delta_kt_prime=True,
     # Perez eqn 5
     dni = disc_out['dni'] * dirint_coeffs
 
+    # dirint_coeffs is NaN where kt_prime is undefined (zenith > 90), so
+    # reapply the max_zenith cutoff from disc
+    dni[np.asarray(solar_zenith) > max_zenith] = 0
+
     return dni
 
 
@@ -2196,6 +2200,8 @@ def _temp_dew_dirint(temp_dew, times):
     if temp_dew is not None:
         # Perez eqn 4
         w = pd.Series(np.exp(0.07 * temp_dew - 0.075), index=times)
+        # missing temp_dew values use the dew point unavailable bin
+        w = w.fillna(-1)
     else:
         # do not change unless also modifying _dirint_bins
         w = pd.Series(-1, index=times)

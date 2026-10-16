@@ -127,6 +127,11 @@ def _compute_vr(positions, cloud_speed, tmscales):
     # Added by Joe Ranalli (@jranalli), Penn State Hazleton, 2021
 
     pos = np.array(positions)
+    if len(pos) <= 1:
+        # A single site has no pairwise distances, so the variability
+        # reduction is 1; the effective-size optimizer below would converge
+        # to n_dist=0 and divide by zero. See GH #2895.
+        return np.ones(tmscales.shape)
     dist = pdist(pos, 'euclidean')
 
     # Find effective length of position vector, 'dist' is full pairwise

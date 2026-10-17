@@ -483,7 +483,9 @@ class PVSystem:
 
         effective_irradiance : numeric or tuple of numeric, optional
             The irradiance that is converted to photocurrent in W/m^2.
-            Only used for some models.
+            Only used for some models. For ``'noct_sam'``, the cell
+            temperature is calculated from ``effective_irradiance`` when it
+            is provided and from ``poa_global`` otherwise.
 
         longwave_down: numeric or tuple of numeric, optional
             Downwelling long-wave radiation from the sky, measured on a
@@ -1368,7 +1370,9 @@ class Array:
 
         effective_irradiance : numeric, optional
             The irradiance that is converted to photocurrent in W/m^2.
-            Only used for some models.
+            Only used for some models. For ``'noct_sam'``, the cell
+            temperature is calculated from ``effective_irradiance`` when it
+            is provided and from ``poa_global`` otherwise.
 
         longwave_down: numeric, optional
             Downwelling long-wave radiation from the sky, measured on a
@@ -1432,8 +1436,11 @@ class Array:
             if self.mount.module_height is not None:
                 optional['module_height'] = self.mount.module_height
         elif model == 'noct_sam':
-            func = functools.partial(temperature.noct_sam,
-                                     effective_irradiance=effective_irradiance)
+            func = temperature.noct_sam
+            # noct_sam takes the irradiance absorbed by the module; fall
+            # back to poa_global when effective_irradiance is not provided
+            if effective_irradiance is not None:
+                poa_global = effective_irradiance
             required = _build_tcell_args(['noct', 'module_efficiency'])
             optional = _build_kwargs(['transmittance_absorptance',
                                       'array_height', 'mount_standoff'],

@@ -621,8 +621,7 @@ def test_PVSystem_noct_celltemp(mocker):
     out = system.get_cell_temperature(poa_global, temp_air, wind_speed,
                                       model='noct_sam')
     temperature.noct_sam.assert_called_once_with(
-        poa_global, temp_air, wind_speed, noct, module_efficiency,
-        effective_irradiance=None)
+        poa_global, temp_air, wind_speed, noct, module_efficiency)
     assert_allclose(out, expected)
     # different types
     out = system.get_cell_temperature(np.array(poa_global), np.array(temp_air),
@@ -639,12 +638,35 @@ def test_PVSystem_noct_celltemp(mocker):
     temp_model_params.update({'transmittance_absorptance': 0.8,
                               'array_height': 2,
                               'mount_standoff': 2.0})
-    expected = 60.477703576
+    # effective_irradiance is used in place of poa_global
+    expected = 62.877665877
     system = pvsystem.PVSystem(temperature_model_parameters=temp_model_params)
     out = system.get_cell_temperature(poa_global, temp_air, wind_speed,
                                       effective_irradiance=1100.,
                                       model='noct_sam')
     assert_allclose(out, expected)
+
+
+def test_PVSystem_noct_celltemp_against_sam():
+    # poa_global and effective_irradiance both given, as ModelChain does.
+    # Reference is SAM's cell temperature for hour 11 of
+    # pvlib/data/723170TYA.CSV; see test_temperature.test_noct_sam_against_sam
+    # for the SAM configuration. poa_global is SAM's POA irradiance before
+    # reflection (subarray1_poa_shaded_soiled); effective_irradiance is the
+    # POA irradiance after reflection times the air mass modifier.
+    zenith = 60.4221
+    air_mass = 1. / (np.cos(np.radians(zenith))
+                     + 0.5057 * (96.080 - zenith)**-1.634)
+    air_mass *= np.exp(-0.0001184 * 273.)
+    a = np.flipud([0.918093, 0.086257, -0.024459, 0.002816, -0.000126])
+    effective_irradiance = 265.4939 * np.polyval(a, air_mass)
+    temp_model_params = {'noct': 43.1,
+                         'module_efficiency': 12.82 * 41.4 / (1000. * 2.58)}
+    system = pvsystem.PVSystem(temperature_model_parameters=temp_model_params)
+    out = system.get_cell_temperature(
+        272.9785, 11.7, 5.2, model='noct_sam',
+        effective_irradiance=effective_irradiance)
+    assert_allclose(out, 15.305202, atol=1e-5)
 
 
 def test_PVSystem_noct_celltemp_error():

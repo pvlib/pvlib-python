@@ -295,7 +295,7 @@ def get_total_irradiance(surface_tilt, surface_azimuth,
         * klucher
         * haydavies
         * reindl
-        * king
+        * king (deprecated)
         * perez
         * perez-driesse
 
@@ -328,7 +328,7 @@ def get_total_irradiance(surface_tilt, surface_azimuth,
         the list of accepted values.
     model : str, default 'isotropic'
         Irradiance model. Can be one of ``'isotropic'``, ``'klucher'``,
-        ``'haydavies'``, ``'reindl'``, ``'king'``, ``'perez'``,
+        ``'haydavies'``, ``'reindl'``, ``'king'`` (deprecated), ``'perez'``,
         ``'perez-driesse'``.
     model_perez : str, default 'allsitescomposite1990'
         Used only if ``model='perez'``. See :py:func:`~pvlib.irradiance.perez`.
@@ -387,7 +387,7 @@ def get_sky_diffuse(surface_tilt, surface_azimuth,
         * klucher
         * haydavies
         * reindl
-        * king
+        * king (deprecated)
         * perez
         * perez-driesse
 
@@ -415,7 +415,7 @@ def get_sky_diffuse(surface_tilt, surface_azimuth,
         See :term:`airmass_relative`. [unitless]
     model : str, default 'isotropic'
         Irradiance model. Can be one of ``'isotropic'``, ``'klucher'``,
-        ``'haydavies'``, ``'reindl'``, ``'king'``, ``'perez'``,
+        ``'haydavies'``, ``'reindl'``, ``'king'`` (deprecated), ``'perez'``,
         ``'perez-driesse'``.
     model_perez : str, default 'allsitescomposite1990'
         Used only if ``model='perez'``. See :py:func:`~pvlib.irradiance.perez`.

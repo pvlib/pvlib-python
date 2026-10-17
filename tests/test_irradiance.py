@@ -320,6 +320,28 @@ def test_king(irrad_data, ephem_data):
     assert_allclose(result, [0, 44.629352, 115.182626, 79.719855], atol=1e-4)
 
 
+def test_get_sky_diffuse_king_deprecated(irrad_data, ephem_data):
+    with warnings.catch_warnings():
+        warnings.simplefilter('always')
+        with pytest.warns(pvlibDeprecationWarning, match='king'):
+            irradiance.get_sky_diffuse(
+                40, 180, ephem_data['apparent_zenith'],
+                ephem_data['azimuth'], irrad_data['dni'],
+                irrad_data['ghi'], irrad_data['dhi'], model='king',
+            )
+
+
+def test_get_total_irradiance_king_deprecated(irrad_data, ephem_data):
+    with warnings.catch_warnings():
+        warnings.simplefilter('always')
+        with pytest.warns(pvlibDeprecationWarning, match='king'):
+            irradiance.get_total_irradiance(
+                40, 180, ephem_data['apparent_zenith'],
+                ephem_data['azimuth'], irrad_data['dni'],
+                irrad_data['ghi'], irrad_data['dhi'], model='king',
+            )
+
+
 def test_perez(irrad_data, ephem_data, dni_et, relative_airmass):
     dni = irrad_data['dni'].copy()
     dni.iloc[2] = np.nan

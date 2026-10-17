@@ -16,6 +16,8 @@ Bug fixes
 ~~~~~~~~~
 * :py:func:`pvlib.tracking.calc_surface_orientation` returns scalar when input
   is scalar (:issue:`2881`, :pull:`2882`)
+* Fix :py:func:`pvlib.solarposition.solar_azimuth_analytical` returning south
+  instead of north at solar noon.
 
 Enhancements
 ~~~~~~~~~~~~
@@ -62,6 +64,7 @@ Contributors
 * Chen Yi (:ghuser:`chenyi6758-source`)
 * Rajiv Daxini (:ghuser:`rdaxini`)
 * jason-writer (:ghuser:`jason-writer`)
+* :ghuser:`vera-rubin`
 
 
 

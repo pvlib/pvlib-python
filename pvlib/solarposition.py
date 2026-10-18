@@ -1308,6 +1308,9 @@ def solar_azimuth_analytical(latitude, hourangle, declination, zenith):
     with np.errstate(invalid='ignore'):
         sign_ha = np.sign(hourangle)
 
+    # At solar noon, use the morning branch so that north is zero radians.
+    sign_ha = sign_ha - 1.0 * (sign_ha == 0)
+
     return sign_ha * np.arccos(cos_azi) + np.pi
 
 

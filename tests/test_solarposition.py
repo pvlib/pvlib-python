@@ -718,6 +718,22 @@ def test_analytical_azimuth():
     assert not np.isnan(azimuths).any()
 
 
+@pytest.mark.parametrize('latitude,declination,expected', [
+    (-35., 0., 0.),
+    (35., 0., 180.),
+    (10., 20., 0.),
+])
+@pytest.mark.parametrize('hourangle', [
+    0., -0., np.array([0.]), np.array([-0.]), pd.Series([0., -0.]),
+])
+def test_analytical_azimuth_noon(latitude, declination, expected, hourangle):
+    # At noon, the sun is due north if declination exceeds latitude.
+    zenith = np.radians(abs(latitude - declination))
+    azimuth = solarposition.solar_azimuth_analytical(
+        np.radians(latitude), hourangle, np.radians(declination), zenith)
+    assert_allclose(azimuth, np.radians(expected), atol=1e-8)
+
+
 def test_hour_angle():
     """
     Test conversion from hours to hour angles in degrees given the following

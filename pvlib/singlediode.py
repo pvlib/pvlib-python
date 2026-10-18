@@ -908,16 +908,22 @@ def _lambertw(photocurrent, saturation_current, resistance_series,
     # remove try/except when scipy>=1.15, and golden mean is retired
     try:
         from scipy.optimize.elementwise import find_minimum
-        # left negative to insure strict inequality
-        init = (-1., 0.8*v_oc, v_oc)
+        # Set up initial value x1 < x2 < x3 to find vmp.
+        # Set x2 to 0.8*v_oc. Set x1=-1, negative to insure strict inequality
+        # x1 < x2. Set right to 1.0 where v_oc = 0 to ensure
+        # x2 < x3, otherwise set x3 = np.abs(v_oc).
+        # Where v_oc = 0 the minimizer returns a tiny positive v_mp, so
+        # v_mp and p_mp are set to 0 there to keep v_mp <= v_oc (GH 2671).
+        voc_zero = v_oc == 0
+        init = (-1., 0.8*v_oc, np.where(voc_zero, 1., np.abs(v_oc)))
         res = find_minimum(_vmp_opt, init,
                            args=(params['photocurrent'],
                                  params['saturation_current'],
                                  params['resistance_series'],
                                  params['resistance_shunt'],
                                  params['nNsVth'],))
-        v_mp = res.x
-        p_mp = -1.*res.f_x
+        v_mp = np.where(voc_zero, 0., res.x)[()]
+        p_mp = np.where(voc_zero, 0., -1.*res.f_x)[()]
     except ModuleNotFoundError:
         # switch to old golden section method
         p_mp, v_mp = _golden_sect_DataFrame(params, 0., v_oc * 1.14,

@@ -417,7 +417,7 @@ class NumbaSpaTest(unittest.TestCase, SpaBase):
 
 
 # Define extra test cases for issue #2077
-test_cases_issue_2207 = [
+test_cases_issue_2077 = [
     ((2000, 1, 1, 12, 0, 0), 2451545.0),
     ((1999, 1, 1, 0, 0, 0), 2451179.5),
     ((1987, 1, 27, 0, 0, 0), 2446822.5),
@@ -437,7 +437,7 @@ test_cases_issue_2207 = [
 ]
 
 
-@pytest.mark.parametrize("inputs, expected", test_cases_issue_2207)
-def test_julian_day_issue_2207(inputs, expected):
+@pytest.mark.parametrize("inputs, expected", test_cases_issue_2077)
+def test_julian_day_issue_2077(inputs, expected):
     result = pvlib.spa.julian_day_dt(*inputs, microsecond=0)
     assert result == expected, f"Failed for inputs {inputs}"

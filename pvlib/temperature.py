@@ -10,6 +10,8 @@ from pvlib.tools import _get_sample_intervals
 import scipy
 import scipy.constants
 import warnings
+import functools
+from pvlib._deprecation import pvlibDeprecationWarning
 
 
 TEMPERATURE_MODEL_PARAMETERS = {
@@ -937,18 +939,76 @@ def _adj_for_mounting_standoff(x):
                         [0., 18., 11., 6., 2., 0.])
 
 
-def noct_sam(poa_global, temp_air, wind_speed, noct, module_efficiency,
-             effective_irradiance=None, transmittance_absorptance=0.9,
+def _noct_sam_legacy_signature(func):
+    # Deprecation shim for the signature of noct_sam before v0.16.2:
+    #   noct_sam(poa_global, temp_air, wind_speed, noct, module_efficiency,
+    #            effective_irradiance=None, transmittance_absorptance=0.9,
+    #            array_height=1, mount_standoff=4)
+    # Remove in v0.18.0, together with the tests decorated with
+    # @fail_on_pvlib_version('0.18.0') in tests/test_temperature.py.
+    legacy_optional = ('transmittance_absorptance', 'array_height',
+                       'mount_standoff')
+    preamble = (
+        "The signature of pvlib.temperature.noct_sam changed in pvlib 0.16.2:"
+        " the first parameter is now effective_irradiance, poa_global was"
+        " removed, and the optional parameters are keyword-only. ")
+    epilogue = " Support for the previous signature will be removed in 0.18.0."
+
+    def _warn(detail):
+        warnings.warn(preamble + detail + epilogue, pvlibDeprecationWarning,
+                      stacklevel=3)
+
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        poa_global = kwargs.pop('poa_global', None)
+        has_eff_kw = 'effective_irradiance' in kwargs
+        eff_kw = kwargs.pop('effective_irradiance', None)
+        if len(args) > 9:
+            raise TypeError(f"noct_sam() takes at most 9 positional arguments"
+                            f" ({len(args)} given)")
+        if len(args) > 5:
+            # legacy positional effective_irradiance (and options)
+            _warn("Pass effective_irradiance as the first argument, and"
+                  " transmittance_absorptance, array_height and"
+                  " mount_standoff by keyword.")
+            kwargs.update(zip(legacy_optional, args[6:]))
+            args = (args[5],) + tuple(args[1:5])
+        elif eff_kw is not None:
+            if args:
+                _warn("The positional poa_global argument is ignored; pass"
+                      " effective_irradiance as the first argument.")
+                args = (eff_kw,) + tuple(args[1:])
+            else:
+                if poa_global is not None:
+                    _warn("The poa_global argument is ignored.")
+                kwargs['effective_irradiance'] = eff_kw
+        elif poa_global is not None:
+            _warn("poa_global was passed in place of effective_irradiance.")
+            kwargs['effective_irradiance'] = poa_global
+        elif has_eff_kw:
+            _warn("effective_irradiance=None is not accepted; the first"
+                  " argument is used as the effective irradiance.")
+        return func(*args, **kwargs)
+
+    return wrapper
+
+
+@_noct_sam_legacy_signature
+def noct_sam(effective_irradiance, temp_air, wind_speed, noct,
+             module_efficiency, *, transmittance_absorptance=0.9,
              array_height=1, mount_standoff=4):
-    r'''
+    r"""
     Cell temperature model from the System Advisor Model (SAM).
 
-    The model is described in [1]_, Section 10.6.
+    The model is described in [1]_, Section 10.6, and is implemented as in
+    SAM [2]_.
 
     Parameters
     ----------
-    poa_global : numeric
-        Total incident irradiance. [W/m^2]
+    effective_irradiance : numeric
+        Irradiance absorbed by the module, i.e., plane-of-array irradiance
+        after reflection and spectral losses, as converted to photocurrent.
+        [W/m^2]
 
     temp_air : numeric
         Ambient dry bulb temperature. [C]
@@ -967,10 +1027,6 @@ def noct_sam(poa_global, temp_air, wind_speed, noct, module_efficiency,
         1000 W/m^2 and 20C. Denoted as :math:`eta_{m}` in [1]_. Calculate as
         :math:`\eta_{m} = \frac{V_{mp} I_{mp}}{A \times 1000 W/m^2}`
         where A is module area [m^2].
-
-    effective_irradiance : numeric, optional
-        The irradiance that is converted to photocurrent. If not specified,
-        assumed equal to poa_global. [W/m^2]
 
     transmittance_absorptance : numeric, default 0.9
         Coefficient for combined transmittance and absorptance effects.
@@ -995,25 +1051,27 @@ def noct_sam(poa_global, temp_air, wind_speed, noct, module_efficiency,
     ValueError
         If array_height is an invalid value (must be 1 or 2).
 
+    Notes
+    -----
+    .. versionchanged:: 0.16.2
+        ``effective_irradiance`` replaced ``poa_global`` as the first
+        parameter, and the optional parameters became keyword-only.
+        Previously, the ratio of ``effective_irradiance`` to ``poa_global``
+        was folded into ``transmittance_absorptance``, so reflection losses
+        did not reduce the modeled temperature of an open-circuit module, and
+        small ratios gave cell temperatures below ambient. SAM made the same
+        correction in [2]_. The previous signature is deprecated and will be
+        removed in 0.18.0.
+
     References
     ----------
     .. [1] Gilman, P., Dobos, A., DiOrio, N., Freeman, J., Janzou, S.,
            Ryberg, D., 2018, "SAM Photovoltaic Model Technical Reference
            Update", National Renewable Energy Laboratory Report
            NREL/TP-6A20-67399.
-    '''
-    # in [1] the denominator for irr_ratio isn't precisely clear. From
-    # reproducing output of the SAM function noct_celltemp_t, we determined
-    # that:
-    #  - G_total (SAM) is broadband plane-of-array irradiance before
-    #    reflections. Equivalent to pvlib variable poa_global
-    #  - Geff_total (SAM) is POA irradiance after reflections and
-    #    adjustment for spectrum. Equivalent to effective_irradiance
-    if effective_irradiance is None:
-        irr_ratio = 1.
-    else:
-        irr_ratio = effective_irradiance / poa_global
-
+    .. [2] NREL/ssc pull request 1233, "Noct taualpha", merged 2024-11-04.
+           https://github.com/NREL/ssc/pull/1233
+    """
     if array_height == 1:
         wind_adj = 0.51 * wind_speed
     elif array_height == 2:
@@ -1023,12 +1081,14 @@ def noct_sam(poa_global, temp_air, wind_speed, noct, module_efficiency,
             f'array_height must be 1 or 2, {array_height} was given')
 
     noct_adj = noct + _adj_for_mounting_standoff(mount_standoff)
-    tau_alpha = transmittance_absorptance * irr_ratio
 
-    # [1] Eq. 10.37 isn't clear on exactly what "G" is. SAM SSC code uses
-    # poa_global where G appears
-    cell_temp_init = poa_global / 800. * (noct_adj - 20.)
-    heat_loss = 1 - module_efficiency / tau_alpha
+    # [1] Eq. 10.37 isn't explicit about which irradiance "G" is. SAM
+    # (noct_celltemp_t in shared/lib_cec6par.cpp) used the total POA
+    # irradiance and scaled tau_alpha by the ratio of effective to total
+    # irradiance until NREL/ssc#1233, which switched to the effective
+    # irradiance and removed the scaling. pvlib follows SAM.
+    cell_temp_init = effective_irradiance / 800. * (noct_adj - 20.)
+    heat_loss = 1 - module_efficiency / transmittance_absorptance
     wind_loss = 9.5 / (5.7 + 3.8 * wind_adj)
     return temp_air + cell_temp_init * heat_loss * wind_loss
 

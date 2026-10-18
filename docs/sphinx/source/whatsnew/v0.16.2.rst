@@ -10,10 +10,21 @@ Breaking Changes
 
 Deprecations
 ~~~~~~~~~~~~
+* The signature of :py:func:`pvlib.temperature.noct_sam` has changed: the
+  first parameter is now ``effective_irradiance``, ``poa_global`` is removed,
+  and the remaining optional parameters are keyword-only. Calls using the
+  previous signature still work but emit a deprecation warning, and support
+  for them will be removed in v0.18.0. (:issue:`1462`, :pull:`2905`)
 
 
 Bug fixes
 ~~~~~~~~~
+* :py:func:`pvlib.temperature.noct_sam` now calculates cell temperature from
+  ``effective_irradiance`` directly, matching the corrected SAM implementation
+  (NREL/ssc#1233). Previously the ratio of effective to total irradiance was
+  folded into ``transmittance_absorptance``, so reflection losses did not
+  reduce the modeled temperature of an open-circuit module, and small ratios
+  gave cell temperatures below ambient. (:issue:`1462`, :pull:`2905`)
 * :py:func:`pvlib.tracking.calc_surface_orientation` returns scalar when input
   is scalar (:issue:`2881`, :pull:`2882`)
 
@@ -62,6 +73,7 @@ Contributors
 * Chen Yi (:ghuser:`chenyi6758-source`)
 * Rajiv Daxini (:ghuser:`rdaxini`)
 * jason-writer (:ghuser:`jason-writer`)
+* :ghuser:`asystemoffields`
 
 
 

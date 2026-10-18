@@ -2,12 +2,15 @@ import pandas as pd
 import numpy as np
 
 import pytest
-from .conftest import TESTS_DATA_DIR, assert_series_equal
+from .conftest import (
+    TESTS_DATA_DIR, assert_series_equal, fail_on_pvlib_version)
 from numpy.testing import assert_allclose
 
 from pvlib import temperature, tools
+from pvlib._deprecation import pvlibDeprecationWarning
 
 import re
+import warnings
 
 
 @pytest.fixture
@@ -285,76 +288,142 @@ def test_fuentes_timezone(tz):
 
 
 def test_noct_sam():
-    poa_global, temp_air, wind_speed, noct, module_efficiency = (
+    effective_irradiance, temp_air, wind_speed, noct, module_efficiency = (
         1000., 25., 1., 45., 0.2)
     expected = 55.230790492
-    result = temperature.noct_sam(poa_global, temp_air, wind_speed, noct,
-                                  module_efficiency)
+    result = temperature.noct_sam(effective_irradiance, temp_air, wind_speed,
+                                  noct, module_efficiency)
     assert_allclose(result, expected)
     # test with different types
-    result = temperature.noct_sam(np.array(poa_global), np.array(temp_air),
-                                  np.array(wind_speed), np.array(noct),
-                                  np.array(module_efficiency))
+    result = temperature.noct_sam(np.array(effective_irradiance),
+                                  np.array(temp_air), np.array(wind_speed),
+                                  np.array(noct), np.array(module_efficiency))
     assert_allclose(result, expected)
     dr = pd.date_range(start='2020-01-01 12:00:00', end='2020-01-01 13:00:00',
                        freq='1h')
-    result = temperature.noct_sam(pd.Series(index=dr, data=poa_global),
-                                  pd.Series(index=dr, data=temp_air),
-                                  pd.Series(index=dr, data=wind_speed),
-                                  pd.Series(index=dr, data=noct),
-                                  module_efficiency)
+    result = temperature.noct_sam(
+        pd.Series(index=dr, data=effective_irradiance),
+        pd.Series(index=dr, data=temp_air),
+        pd.Series(index=dr, data=wind_speed),
+        pd.Series(index=dr, data=noct),
+        module_efficiency)
     assert_series_equal(result, pd.Series(index=dr, data=expected))
 
 
 def test_noct_sam_against_sam():
-    # test is constructed to reproduce output from SAM v2020.11.29.
-    # SAM calculation is the default Detailed PV System model (CEC diode model,
-    # NOCT cell temperature model), with the only change being the soiling
-    # loss is set to 0. Weather input is TMY3 for Phoenix AZ.
-    # Values are taken from the Jan 1 12:00:00 timestamp.
-    poa_total, temp_air, wind_speed, noct, module_efficiency = (
-        860.673, 25, 3, 46.4, 0.20551)
-    poa_total_after_refl = 851.458  # from SAM output
-    # compute effective irradiance
-    # spectral loss coefficients fixed in lib_cec6par.cpp
+    # Reproduces SAM's steady-state cell temperature output
+    # (subarray1_celltempSS) from SAM via NREL-PySAM 7.1.1. Configuration:
+    # Pvsamv1 default "FlatPlatePVSingleOwner" with the NOCT cell temperature
+    # model (cec_temp_corr_mode=0), fixed tilt of 20 degrees, monofacial
+    # module, soiling and snow losses off. Weather is pvlib/data/723170TYA.CSV
+    # (Greensboro, NC, elevation 273 m). Module: NOCT 43.1 C, Imp 12.82 A,
+    # Vmp 41.4 V, area 2.58 m2, ground/rack mounting (no standoff
+    # adjustment), one-story array height.
+    # SAM's effective irradiance is the POA irradiance after reflection
+    # (output subarray1_poa_front) times the air mass modifier f1 with the
+    # DeSoto coefficients, using absolute air mass from the Kasten-Young
+    # formula with zenith clipped at 86 degrees and the elevation correction
+    # exp(-0.0001184 * elevation).
+    noct = 43.1
+    module_efficiency = 12.82 * 41.4 / (1000. * 2.58)
     a = np.flipud([0.918093, 0.086257, -0.024459, 0.002816, -0.000126])
-    # reproduce SAM air mass calculation
-    zen = 56.4284
-    elev = 358
-    air_mass = 1. / (tools.cosd(zen) + 0.5057 * (96.080 - zen)**-1.634)
-    air_mass *= np.exp(-0.0001184 * elev)
-    f1 = np.polyval(a, air_mass)
-    effective_irradiance = f1 * poa_total_after_refl
-    transmittance_absorptance = 0.9
-    array_height = 1
-    mount_standoff = 4.0
-    result = temperature.noct_sam(poa_total, temp_air, wind_speed, noct,
-                                  module_efficiency, effective_irradiance,
-                                  transmittance_absorptance, array_height,
-                                  mount_standoff)
-    expected = 43.0655
-    # rtol from limited SAM output precision
-    assert_allclose(result, expected, rtol=1e-5)
+    # hour of year: (poa_front, zenith, temp_air, wind_speed, SAM cell temp)
+    cases = {
+        11: (265.4939, 60.4221, 11.7, 5.2, 15.305202),
+        4117: (432.4450, 19.4464, 25.0, 5.2, 30.705839),
+        6562: (346.9347, 45.8076, 16.7, 4.1, 22.067894),
+    }
+    for poa_front, zenith, temp_air, wind_speed, expected in cases.values():
+        zenith = min(zenith, 86.)
+        air_mass = 1. / (tools.cosd(zenith)
+                         + 0.5057 * (96.080 - zenith)**-1.634)
+        air_mass *= np.exp(-0.0001184 * 273.)
+        effective_irradiance = poa_front * np.polyval(a, air_mass)
+        result = temperature.noct_sam(effective_irradiance, temp_air,
+                                      wind_speed, noct, module_efficiency)
+        assert_allclose(result, expected, atol=1e-5)
 
 
 def test_noct_sam_options():
-    poa_global, temp_air, wind_speed, noct, module_efficiency = (
-        1000., 25., 1., 45., 0.2)
-    effective_irradiance = 1100.
-    transmittance_absorptance = 0.8
-    array_height = 2
-    mount_standoff = 2.0
-    result = temperature.noct_sam(poa_global, temp_air, wind_speed, noct,
-                                  module_efficiency, effective_irradiance,
-                                  transmittance_absorptance, array_height,
-                                  mount_standoff)
-    expected = 60.477703576
+    effective_irradiance, temp_air, wind_speed, noct, module_efficiency = (
+        1100., 25., 1., 45., 0.2)
+    result = temperature.noct_sam(effective_irradiance, temp_air, wind_speed,
+                                  noct, module_efficiency,
+                                  transmittance_absorptance=0.8,
+                                  array_height=2, mount_standoff=2.0)
+    expected = 62.877665877
     assert_allclose(result, expected)
 
 
-def test_noct_sam_errors():
-    with pytest.raises(ValueError):
-        temperature.noct_sam(1000., 25., 1., 34., 0.2, array_height=3)
+def test_noct_sam_effective_irradiance():
+    # GH 1462: a lower effective irradiance (e.g. reflection losses) must
+    # lower the cell temperature, also for an open-circuit module, and the
+    # cell can't be cooler than the air.
+    kwargs = dict(temp_air=20., wind_speed=1. / 0.51, noct=41.6)
+    for module_efficiency in (0., 0.2):
+        full = temperature.noct_sam(800., module_efficiency=module_efficiency,
+                                    **kwargs)
+        reduced = temperature.noct_sam(600.,
+                                       module_efficiency=module_efficiency,
+                                       **kwargs)
+        tiny = temperature.noct_sam(160., module_efficiency=module_efficiency,
+                                    **kwargs)
+        assert tiny > kwargs['temp_air']
+        assert tiny < reduced < full
+        # temperature rise is proportional to effective irradiance
+        assert_allclose(reduced - 20., 0.75 * (full - 20.))
+
+
+def test_noct_sam_new_signature_no_warning():
+    with warnings.catch_warnings():
+        warnings.simplefilter('error', pvlibDeprecationWarning)
+        temperature.noct_sam(600., 25., 1., 45., 0.2,
+                             transmittance_absorptance=0.8, array_height=2,
+                             mount_standoff=2.0)
+        temperature.noct_sam(effective_irradiance=600., temp_air=25.,
+                             wind_speed=1., noct=45., module_efficiency=0.2)
+
+
+@fail_on_pvlib_version('0.18.0')
+def test_noct_sam_legacy_signature():
+    # The signature before v0.16.2 is accepted with a deprecation warning and
+    # gives the same result as the new signature; only effective_irradiance
+    # determines the cell temperature. Remove with the shim in temperature.py.
+    expected = temperature.noct_sam(600., 25., 1., 45., 0.2,
+                                    transmittance_absorptance=0.8,
+                                    array_height=2, mount_standoff=2.0)
+    options = dict(transmittance_absorptance=0.8, array_height=2,
+                   mount_standoff=2.0)
+    legacy_calls = [
+        # everything positional
+        ((800., 25., 1., 45., 0.2, 600., 0.8, 2, 2.0), {}),
+        # positional poa_global, keyword effective_irradiance
+        ((800., 25., 1., 45., 0.2), dict(effective_irradiance=600.,
+                                         **options)),
+        # keyword poa_global and effective_irradiance
+        ((), dict(poa_global=800., temp_air=25., wind_speed=1., noct=45.,
+                  module_efficiency=0.2, effective_irradiance=600.,
+                  **options)),
+        # keyword poa_global in place of effective_irradiance
+        ((), dict(poa_global=600., temp_air=25., wind_speed=1., noct=45.,
+                  module_efficiency=0.2, **options)),
+        # explicit effective_irradiance=None
+        ((600., 25., 1., 45., 0.2), dict(effective_irradiance=None,
+                                         **options)),
+    ]
+    for args, kwargs in legacy_calls:
+        with pytest.warns(pvlibDeprecationWarning,
+                          match='effective_irradiance'):
+            result = temperature.noct_sam(*args, **kwargs)
+        assert_allclose(result, expected)
+    # array inputs through the legacy signature
+    with pytest.warns(pvlibDeprecationWarning):
+        result = temperature.noct_sam(
+            np.array([800., 800.]), 25., 1., 45., 0.2,
+            effective_irradiance=np.array([600., 300.]), **options)
+    assert_allclose(result, [expected, 25. + 0.5 * (expected - 25.)])
+    with pytest.raises(TypeError):
+        temperature.noct_sam(800., 25., 1., 45., 0.2, 600., 0.8, 2, 2.0, 1)
 
 
 def test_prilliman():

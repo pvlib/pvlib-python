@@ -14,6 +14,9 @@ Deprecations
 
 Bug fixes
 ~~~~~~~~~
+* Correct the Series name in ``ModelChain.results.dc_ohmic_losses`` from
+  ``i_mp`` to ``p_dc_ohmic_loss`` when using ``dc_ohms_from_percent``.
+  (:issue:`1959`)
 * :py:func:`pvlib.tracking.calc_surface_orientation` returns scalar when input
   is scalar (:issue:`2881`, :pull:`2882`)
 
@@ -62,6 +65,7 @@ Contributors
 * Chen Yi (:ghuser:`chenyi6758-source`)
 * Rajiv Daxini (:ghuser:`rdaxini`)
 * jason-writer (:ghuser:`jason-writer`)
+* :ghuser:`xiajiahang`
 
 
 

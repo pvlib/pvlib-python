@@ -7,13 +7,13 @@ v0.16.2 (Anticipated December, 2026)
 Breaking Changes
 ~~~~~~~~~~~~~~~~
 
-
 Deprecations
 ~~~~~~~~~~~~
 
 
 Bug fixes
 ~~~~~~~~~
+
 * :py:func:`pvlib.tracking.calc_surface_orientation` returns scalar when input
   is scalar (:issue:`2881`, :pull:`2882`)
 
@@ -22,6 +22,12 @@ Enhancements
 * Add ``dataset`` parameter to :py:func:`~pvlib.iotools.get_era5`
   allowing for choosing between ERA5 and ERA5-Land datasets.
   (:pull:`2780`)
+
+* Pass ``offset`` directly to ``_calculate_simple_day_angle`` in
+  :py:func:`pvlib.solarposition.equation_of_time_pvcdrom` and
+  :py:func:`pvlib.solarposition.declination_cooper69` instead of
+  adding or subtracting equivalent multiples of 2*pi/365 afterwards.
+  (:issue:`2902`, :pull:`2911`)
 
 Documentation
 ~~~~~~~~~~~~~
@@ -62,6 +68,3 @@ Contributors
 * Chen Yi (:ghuser:`chenyi6758-source`)
 * Rajiv Daxini (:ghuser:`rdaxini`)
 * jason-writer (:ghuser:`jason-writer`)
-
-
-

@@ -23,10 +23,10 @@ def wvm(clearsky_index, positions, cloud_speed, dt=None):
     clearsky_index : numeric or pandas.Series
         Clear Sky Index time series that will be smoothed.
 
-    positions : numeric
-        Array of coordinate distances as (x,y) pairs representing the
-        easting, northing of the site positions in meters [m]. Distributed
-        plants could be simulated by gridded points throughout the plant
+    positions : np.array
+        Array of shape (N, 2) of coordinates (x, y) representing the
+        easting, northing in meters [m] of the PV systems. Large PV
+        plants could be simulated by gridded points over the plant's
         footprint.
 
     cloud_speed : numeric
@@ -93,10 +93,10 @@ def _compute_vr(positions, cloud_speed, tmscales):
 
     Parameters
     ----------
-    positions : numeric
-        Array of coordinate distances as (x,y) pairs representing the
-        easting, northing of the site positions in meters [m]. Distributed
-        plants could be simulated by gridded points throughout the plant
+    positions : np.array
+        Array of shape (N, 2) of coordinates (x, y) representing the
+        easting, northing in meters [m] of the PV systems. Large PV
+        plants could be simulated by gridded points over the plant's
         footprint.
 
     cloud_speed : numeric
@@ -127,7 +127,7 @@ def _compute_vr(positions, cloud_speed, tmscales):
     # Added by Joe Ranalli (@jranalli), Penn State Hazleton, 2021
 
     pos = np.array(positions)
-    if len(pos) <= 1:
+    if len(pos) == 1:
         # A single site has no pairwise distances, so the variability
         # reduction is 1; the effective-size optimizer below would converge
         # to n_dist=0 and divide by zero. See GH #2895.

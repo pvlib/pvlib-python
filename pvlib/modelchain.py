@@ -185,8 +185,7 @@ class ModelChainResult:
 
     dc_ohmic_losses: Optional[PerArray[pd.Series]] = field(default=None)
     """Series (or tuple of Series, one for each array) containing DC ohmic
-    losses (W) calculated by ``ModelChain.dc_ohmic_model``. Each Series is
-    named ``p_dc_ohmic_loss`` when using ``dc_ohms_from_percent``.
+    losses (W) calculated by ``ModelChain.dc_ohmic_model``.
     """
 
     # copies of input data, for user convenience

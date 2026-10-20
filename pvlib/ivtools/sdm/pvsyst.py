@@ -25,6 +25,9 @@ def fit_pvsyst_sandia(ivcurves, specs, const=None, maxiter=5, eps1=1.e-3):
     """
     Estimate parameters for the PVsyst module performance model.
 
+    Requires multiple IV curves measured at different effective irradiance
+    and cell temperature conditions.
+
     Parameters
     ----------
     ivcurves : dict

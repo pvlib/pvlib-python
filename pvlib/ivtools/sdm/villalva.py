@@ -76,12 +76,13 @@ def fit_villalva(
 ):
     r"""Fit Villalva single-diode model to datasheet values.
 
-    Villalva's parameter-extraction method is described in [1]_ and [2]. This
-    approach increments the series resistance from zero. For each candidate
-    :math:`R_s`, the corresponding :math:`R_{sh}`, :math:`I_L`, and :math:`I_0`
-    are calculated and the maximum power of the resulting single-diode
-    model is evaluated. The selected solution minimizes the absolute
-    difference between modeled and reference maximum power.
+    Parameter extraction for Villalva's single-diode model [1]_ is described in [2]_.
+    Parameter estimation increments the series resistance from zero. For each
+    candidate :math:`R_s`, the corresponding :math:`R_{sh}`, :math:`I_L`, and
+    :math:`I_0` are calculated and the maximum power of the resulting single-diode
+    equation is evaluated. The returned parameters solution minimizes the absolute
+    difference between the modeled maximum power and the datasheet maximum
+    power at reference conditions.
 
     The dimensionless diode ideality factor :math:`n` is supplied by the user.
     The modified ideality factor at reference conditions is calculated as

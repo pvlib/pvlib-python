@@ -1144,8 +1144,7 @@ def equation_of_time_pvcdrom(dayofyear):
     equation_of_time_spencer71
     """
     # day angle relative to Vernal Equinox, typically March 22 (day number 81)
-    bday = \
-        _calculate_simple_day_angle(dayofyear) - (2.0 * np.pi / 365.0) * 80.0
+    bday = _calculate_simple_day_angle(dayofyear, offset=81)
     # same value but about 2x faster than Spencer (1971)
     return 9.87 * np.sin(2.0 * bday) - 7.53 * np.cos(bday) - 1.5 * np.sin(bday)
 
@@ -1236,8 +1235,8 @@ def declination_cooper69(dayofyear):
     --------
     declination_spencer71
     """
-    day_angle = _calculate_simple_day_angle(dayofyear)
-    dec = np.deg2rad(23.45 * np.sin(day_angle + (2.0 * np.pi / 365.0) * 285.0))
+    day_angle = _calculate_simple_day_angle(dayofyear, offset=-284)
+    dec = np.deg2rad(23.45 * np.sin(day_angle))
     return dec
 
 

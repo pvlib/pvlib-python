@@ -1780,7 +1780,7 @@ def calcparams_villalva(
     # Finite-Rsh form corresponding to Villalva's temperature-dependent
     # saturation-current equation.
     photocurrent_for_i0 = (
-        (R_sh_ref + R_s) / R_sh_ref * i_sc
+        (1 + R_s / R_sh_ref) * i_sc
     )
 
     saturation_current = (

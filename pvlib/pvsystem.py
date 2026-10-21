@@ -1756,7 +1756,7 @@ def calcparams_villalva(
 
     References
     ----------
-    .. [2] M. G. Villalva, J. R. Gazoli, and E. Ruppert Filho, "Comprehensive
+    .. [1] M. G. Villalva, J. R. Gazoli, and E. Ruppert Filho, "Comprehensive
        approach to modeling and simulation of photovoltaic arrays," IEEE Trans.
        Power Electron., vol. 24, no. 5, pp. 1198-1208, May 2009.
        :doi:`10.1109/TPEL.2009.2013862`

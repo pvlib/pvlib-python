@@ -1693,7 +1693,7 @@ def calcparams_villalva(
     irrad_ref=1000.0,
     temp_ref=25.0,
 ):
-    r"""Calculate Villalva SDM parameters at operating conditions.
+    r"""Calculate Villalva SDM [1]_ parameters at operating conditions.
 
     The Villalva auxiliary equations convert reference-condition parameters
     into the five single-diode equation parameters required by

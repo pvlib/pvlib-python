@@ -17,6 +17,7 @@ unless you know that you need a different function.
    solarposition.get_solarposition
    solarposition.spa_python
    solarposition.ephemeris
+   solarposition.geometric
    solarposition.pyephem
    solarposition.spa_c
 

@@ -463,6 +463,58 @@ def test_ephemeris_physical_no_tz(expected_solpos, golden_mst):
     assert_frame_equal(expected_solpos, ephem_data[expected_solpos.columns])
 
 
+@pytest.mark.parametrize('latitude, longitude, tz', [
+    (39.742476, -105.1786, 'America/Denver'),  # west of Greenwich
+    (28.46, 77.03, 'Asia/Kolkata'),  # east of Greenwich
+    (-33.87, 151.21, 'Australia/Sydney'),  # southern hemisphere
+    (69.65, 18.96, 'Europe/Oslo'),  # high latitude
+])
+def test_geometric_vs_spa(latitude, longitude, tz):
+    # the geometric method is approximate: compare with SPA across a whole
+    # year, including evenings at western longitudes where the hour angle
+    # leaves [-180, 180] degrees before wrapping
+    times = pd.date_range('2026-01-01', '2026-12-31 23:00', freq='1h', tz=tz)
+    expected = solarposition.spa_python(times, latitude, longitude)
+    result = solarposition.geometric(times, latitude, longitude)
+    assert_allclose(result['zenith'], expected['zenith'], atol=1)
+    assert_allclose(result['elevation'], expected['elevation'], atol=1)
+    daytime = expected['elevation'] > 0
+    azimuth_error = (result['azimuth'] - expected['azimuth'] + 180) % 360 - 180
+    assert (azimuth_error[daytime].abs() < 2).all()
+
+
+def test_geometric_output(golden):
+    result = solarposition.geometric(times_localized, golden.latitude,
+                                     golden.longitude)
+    assert result.index.equals(times_localized)
+    assert list(result.columns) == ['apparent_elevation', 'elevation',
+                                    'azimuth', 'apparent_zenith', 'zenith']
+    assert not result.isna().any().any()
+    assert result['azimuth'].between(0, 360).all()
+    assert_allclose(result['zenith'] + result['elevation'], 90)
+    # refraction is neglected
+    assert_series_equal(result['apparent_zenith'], result['zenith'],
+                        check_names=False)
+
+
+def test_geometric_no_tz():
+    # times without a timezone are assumed to be UTC
+    times_naive = pd.date_range('2026-06-21 00:00', periods=24, freq='1h')
+    expected = solarposition.geometric(times_naive.tz_localize('UTC'),
+                                       32.2, -111)
+    result = solarposition.geometric(times_naive, 32.2, -111)
+    assert_allclose(result.to_numpy(), expected.to_numpy())
+
+
+def test_get_solarposition_method_geometric(golden):
+    expected = solarposition.geometric(times_localized, golden.latitude,
+                                       golden.longitude)
+    result = solarposition.get_solarposition(
+        times_localized, golden.latitude, golden.longitude,
+        method='geometric')
+    assert_frame_equal(result, expected)
+
+
 def test_get_solarposition_error(golden):
     times = pd.date_range(datetime.datetime(2003, 10, 17, 13, 30, 30),
                           periods=1, freq='D', tz=golden.tz)

@@ -693,6 +693,25 @@ def test_get_total_irradiance_missing_airmass():
                                   'poa_ground_diffuse']
 
 
+@pytest.mark.parametrize('array_type', [np.array, pd.Series])
+def test_beam_component_negative_dni(array_type):
+    solar_zenith = array_type([120., 120., 60., 60., 90., 90., np.nan])
+    dni = array_type([-10., 100., -10., 100., -10., 100., 100.])
+    result = irradiance.beam_component(0, 180, solar_zenith, 180, dni)
+    assert_allclose(result, [0., 0., -5., 50., 0., 0., np.nan], atol=1e-12)
+
+
+@pytest.mark.parametrize('array_type', [np.array, pd.Series])
+def test_poa_components_negative_dni(array_type):
+    aoi = array_type([120., 120., 60., 60., 90., 90., np.nan])
+    dni = array_type([-10., 100., -10., 100., -10., 100., 100.])
+    result = irradiance.poa_components(aoi, dni, 10., 5.)
+    assert_allclose(result['poa_direct'],
+                    [0., 0., -5., 50., 0., 0., np.nan], atol=1e-12)
+    assert_allclose(result['poa_global'],
+                    [15., 15., 10., 65., 15., 15., np.nan])
+
+
 def test_poa_components(irrad_data, ephem_data, dni_et, relative_airmass):
     aoi = irradiance.aoi(40, 180, ephem_data['apparent_zenith'],
                          ephem_data['azimuth'])

@@ -268,9 +268,9 @@ def beam_component(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
     beam : numeric
         Beam component. [Wm⁻²]
     """
-    beam = dni * aoi_projection(surface_tilt, surface_azimuth,
+    projection = aoi_projection(surface_tilt, surface_azimuth,
                                 solar_zenith, solar_azimuth)
-    beam = np.maximum(beam, 0)
+    beam = dni * np.maximum(projection, 0)
 
     return beam
 
@@ -545,7 +545,7 @@ def poa_components(aoi, dni, poa_sky_diffuse, poa_ground_diffuse):
 
     Notes
     ------
-    Negative beam irradiation due to AOI > 90° or AOI < 0° is set to zero.
+    Beam irradiance is set to zero when the sun is behind the surface.
     '''
 
     if isinstance(poa_sky_diffuse, dict):
@@ -558,7 +558,7 @@ def poa_components(aoi, dni, poa_sky_diffuse, poa_ground_diffuse):
         sky_components = {}
         total_poa_sky_diffuse = poa_sky_diffuse
 
-    poa_direct = np.maximum(dni * np.cos(np.radians(aoi)), 0)
+    poa_direct = dni * np.maximum(np.cos(np.radians(aoi)), 0)
     poa_diffuse = total_poa_sky_diffuse + poa_ground_diffuse
     poa_global = poa_direct + poa_diffuse
 

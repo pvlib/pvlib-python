@@ -27,6 +27,10 @@ Enhancements
 * Add ``dataset`` parameter to :py:func:`~pvlib.iotools.get_era5`
   allowing for choosing between ERA5 and ERA5-Land datasets.
   (:pull:`2780`)
+* Add :py:func:`pvlib.solarposition.geometric`, a fast but approximate solar
+  position calculation based on spherical geometry, and make it available as
+  ``method='geometric'`` in :py:func:`pvlib.solarposition.get_solarposition`.
+  (:issue:`2914`)
 
 Documentation
 ~~~~~~~~~~~~~

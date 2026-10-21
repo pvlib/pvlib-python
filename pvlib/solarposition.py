@@ -69,6 +69,9 @@ def get_solarposition(time, latitude, longitude,
 
         'nrel_c' uses the NLR SPA C code [3]: :py:func:`spa_c`
 
+        'geometric' uses a fast but approximate spherical-geometry
+        calculation: :py:func:`geometric`
+
     temperature : float, default 12
         Degrees C.
 
@@ -119,6 +122,8 @@ def get_solarposition(time, latitude, longitude,
     elif method == 'ephemeris':
         ephem_df = ephemeris(time, latitude, longitude, pressure, temperature,
                              **kwargs)
+    elif method == 'geometric':
+        ephem_df = geometric(time, latitude, longitude, **kwargs)
     else:
         raise ValueError('Invalid solar position method')
 
@@ -876,6 +881,83 @@ def ephemeris(time, latitude, longitude, pressure=101325.0, temperature=12.0):
     )
 
     return result
+
+
+def geometric(time, latitude, longitude):
+    """
+    Fast, approximate solar position from spherical geometry.
+
+    The solar declination and the equation of time are evaluated with the
+    Spencer (1971) Fourier series, and the zenith and azimuth angles follow
+    from spherical trigonometry. This is much faster than, but less
+    accurate than, :py:func:`spa_python`; use it only when speed matters more
+    than accuracy.
+
+    .. warning::
+        Atmospheric refraction is neglected, so ``apparent_zenith`` and
+        ``apparent_elevation`` are equal to ``zenith`` and ``elevation``.
+
+    Parameters
+    ----------
+    time : pandas.DatetimeIndex
+        Must be localized or UTC will be assumed.
+    latitude : float
+        Latitude in decimal degrees. Positive north of equator, negative
+        to south.
+    longitude : float
+        Longitude in decimal degrees. Positive east of prime meridian,
+        negative to west.
+
+    Returns
+    -------
+    DataFrame with the following columns:
+
+        * apparent_elevation : equal to ``elevation`` (no refraction).
+        * elevation : elevation of the sun in decimal degrees, 0 = on
+          horizon. The complement of the zenith angle.
+        * azimuth : Azimuth of the sun in decimal degrees East of North.
+        * apparent_zenith : equal to ``zenith`` (no refraction).
+        * zenith : Solar zenith angle in decimal degrees.
+
+    See Also
+    --------
+    spa_python, ephemeris, declination_spencer71,
+    equation_of_time_spencer71, solar_zenith_analytical,
+    solar_azimuth_analytical
+    """
+    time_utc = tools._pandas_to_utc(time)  # naive times assumed to be UTC
+
+    dayofyear = time_utc.dayofyear
+    declination = declination_spencer71(dayofyear)
+    eot = equation_of_time_spencer71(dayofyear)
+    utc_hours = (time_utc.hour + time_utc.minute / 60. +
+                 time_utc.second / 3600. + time_utc.microsecond / 3.6e9)
+    # hour angle in degrees, as in hour_angle() but computed from UTC time
+    # (no timezone offset to apply)
+    hourangle = np.radians(15. * (np.asarray(utc_hours) - 12.) + longitude +
+                           eot / 4.)
+    # wrap to [-pi, pi): the sign of the hour angle selects the azimuth branch
+    hourangle = np.mod(hourangle + np.pi, 2 * np.pi) - np.pi
+    latitude_rad = np.radians(latitude)
+
+    zenith = solar_zenith_analytical(latitude_rad, hourangle, declination)
+    azimuth = solar_azimuth_analytical(
+        latitude_rad, hourangle, declination, zenith)
+
+    zenith = np.degrees(zenith)
+    azimuth = np.mod(np.degrees(azimuth), 360)
+    elevation = 90 - zenith
+
+    return pd.DataFrame(
+        {
+            "apparent_elevation": elevation,
+            "elevation": elevation,
+            "azimuth": azimuth,
+            "apparent_zenith": zenith,
+            "zenith": zenith,
+        },
+        index=time,
+    )
 
 
 def calc_time(lower_bound, upper_bound, latitude, longitude, attribute, value,

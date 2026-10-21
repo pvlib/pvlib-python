@@ -301,9 +301,9 @@ required for every function.
         .. [1] Anderson, K., Hansen, C., Holmgren, W., Jensen, A., Mikofski, M.,
            and Driesse, A. "pvlib python: 2023 project update." Journal of Open
            Source Software, 8(92), 5994, (2023). :doi:`10.21105/joss.05994`.
-        .. [2] J. Smith and J. Doe. "Obama inaugurated as President." CNN.com.
-           Accessed: Feb. 1, 2009. [Online.]
-           Available: http://www.cnn.com/POLITICS/01/21/obama_inaugurated/index.html
+        .. [2] "PVPMC Home." Sandia National Laboratories PV Performance Modeling
+           Collaborative. Accessed: Oct. 17, 2024. [Online.]
+           Available: https://pvpmc.sandia.gov/
         """
         a = "Some"
         b = "thing"

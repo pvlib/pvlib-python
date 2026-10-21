@@ -147,8 +147,7 @@ Set up a virtual environment
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 We strongly recommend working in a `virtual environment
-<http://astropy.readthedocs.org/en/latest/development/workflow/
-virtual_pythons.html>`_ if you're going to use an editable version
+<https://docs.python.org/3/tutorial/venv.html>`_ if you're going to use an editable version
 of the library. You can skip this step if:
 
 #. You already have Anaconda or another scientific Python distribution

@@ -67,7 +67,7 @@ reliable, interoperable, and benchmark implementations of PV system models.
 Documentation
 =============
 
-Full documentation can be found at [readthedocs](http://pvlib-python.readthedocs.io/en/stable/),
+Full documentation can be found at [readthedocs](https://pvlib-python.readthedocs.io/en/stable/),
 including an [FAQ](https://pvlib-python.readthedocs.io/en/stable/user_guide/extras/faq.html) page.
 
 Installation

@@ -83,9 +83,8 @@ References
 ----------
 .. [1] A. Driesse, J. S. Stein, and M. Theristis, "Global horizontal spectral
        irradiance and module spectral response measurements: an open dataset
-       for PV research Sandia National Laboratories, ALbuquerque, NM, USA, Rep.
-       SAND2023-02045, 2023. Available:
-       https://datahub.duramat.org/dataset/module-sr-library
+       for PV research," Sandia National Laboratories, Albuquerque, NM, USA, Rep.
+       SAND2023-02045, 2023. :doi:`10.2172/1962943`
 .. [2] R. Daxini and Y. Wu, "Review of methods to account for the solar
        spectral influence on photovoltaic device performance," Energy, 
        vol. 286, p. 129461, Jan. 2024. :doi:`10.1016/j.energy.2023.129461`

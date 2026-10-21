@@ -132,7 +132,7 @@ def fit_villalva(
     Raises
     ------
     ValueError
-        If the minimum Villalva shunt resistance is not positive.
+        If the minimum shunt resistance is not positive.
     RuntimeError
         If no valid solution is found.
 

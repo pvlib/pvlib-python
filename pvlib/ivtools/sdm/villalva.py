@@ -74,7 +74,7 @@ def fit_villalva(
     rs_step=1e-4,
     rs_max=None,
 ):
-    r"""Fit Villalva single-diode model parameters from datasheet values.
+    r"""Fit Villalva single-diode model to datasheet values.
 
     Villalva's parameter-extraction method is described in [1]_ and [2]. This
     approach increments the series resistance from zero. For each candidate

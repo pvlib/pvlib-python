@@ -21,6 +21,11 @@ Bug fixes
   is scalar (:issue:`2881`, :pull:`2882`)
 * :py:func:`pvlib.scaling.wvm` no longer returns all NaNs when ``positions``
   contains a single site (:issue:`2895`, :pull:`2896`)
+* :py:func:`pvlib.irradiance.beam_component` and
+  :py:func:`pvlib.irradiance.poa_components` now clip the angle of incidence
+  projection before multiplying by ``dni``, so negative DNI no longer yields
+  positive beam irradiance when the sun is behind the surface.
+  (:issue:`2903`, :pull:`2913`)
 
 Enhancements
 ~~~~~~~~~~~~
@@ -69,3 +74,4 @@ Contributors
 * jason-writer (:ghuser:`jason-writer`)
 * :ghuser:`bfs2021`
 * :ghuser:`xiajiahang`
+* :ghuser:`Noumenon-ai`

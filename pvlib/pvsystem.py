@@ -1756,12 +1756,6 @@ def calcparams_villalva(
 
     References
     ----------
-    .. [1] M. G. Villalva, "Conversor eletrônico de potência trifásico para
-       sistema fotovoltaico conectado à rede elétrica," Ph.D. dissertation,
-       Faculdade de Engenharia Elétrica e de Computação, Universidade Estadual
-       de Campinas (UNICAMP), Campinas, Brazil, 2010.
-       :doi:`10.47749/T/UNICAMP.2010.781324`
-       
     .. [2] M. G. Villalva, J. R. Gazoli, and E. Ruppert Filho, "Comprehensive
        approach to modeling and simulation of photovoltaic arrays," IEEE Trans.
        Power Electron., vol. 24, no. 5, pp. 1198-1208, May 2009.

@@ -1623,6 +1623,7 @@ def test_dc_ohmic_model_ohms_from_percent(cec_dc_snl_ac_system,
     assert m.call_count == 1
 
     assert isinstance(mc.results.dc_ohmic_losses, pd.Series)
+    assert mc.results.dc_ohmic_losses.name == 'p_dc_ohmic_loss'
 
     system = cec_dc_snl_ac_arrays
 
@@ -1639,6 +1640,8 @@ def test_dc_ohmic_model_ohms_from_percent(cec_dc_snl_ac_system,
     assert len(mc.results.dc_ohmic_losses) == len(mc.system.arrays)
 
     assert isinstance(mc.results.dc_ohmic_losses, tuple)
+    for loss in mc.results.dc_ohmic_losses:
+        assert loss.name == 'p_dc_ohmic_loss'
 
 
 @pytest.mark.parametrize("input_type", [tuple, list])
@@ -1660,6 +1663,8 @@ def test_dc_ohmic_model_ohms_from_percent_single_array_list_input(
     mc.run_model_from_effective_irradiance(input_type((data,)))
 
     assert isinstance(mc.results.dc_ohmic_losses, tuple)
+    for loss in mc.results.dc_ohmic_losses:
+        assert loss.name == 'p_dc_ohmic_loss'
     assert len(mc.results.dc_ohmic_losses) == 1
 
 

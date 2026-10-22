@@ -14,8 +14,13 @@ Deprecations
 
 Bug fixes
 ~~~~~~~~~
+* Correct the Series name in ``ModelChain.results.dc_ohmic_losses`` from
+  ``i_mp`` to ``p_dc_ohmic_loss`` when using ``dc_ohms_from_percent``.
+  (:issue:`1959`, :pull:`2912`)
 * :py:func:`pvlib.tracking.calc_surface_orientation` returns scalar when input
   is scalar (:issue:`2881`, :pull:`2882`)
+* :py:func:`pvlib.scaling.wvm` no longer returns all NaNs when ``positions``
+  contains a single site (:issue:`2895`, :pull:`2896`)
 
 Enhancements
 ~~~~~~~~~~~~
@@ -65,7 +70,6 @@ Contributors
 * Chen Yi (:ghuser:`chenyi6758-source`)
 * Rajiv Daxini (:ghuser:`rdaxini`)
 * jason-writer (:ghuser:`jason-writer`)
+* :ghuser:`bfs2021`
+* :ghuser:`xiajiahang`
 * Jakub Krasuski (:ghuser:`Blizzeq`)
-
-
-

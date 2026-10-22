@@ -37,7 +37,7 @@ Documentation
   (:issue:`1715`, :pull:`2883`)
 * Note deprecation of ``king`` model in :py:func:`~pvlib.irradiance.get_total_irradiance`
   and :py:func:`~pvlib.irradiance.get_sky_diffuse` docstrings.
-  (:issue:`2897`)
+  (:issue:`2897`, :pull:`2904`)
 
 
 Testing

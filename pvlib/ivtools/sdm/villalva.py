@@ -154,7 +154,7 @@ def fit_villalva(
        sistema fotovoltaico conectado à rede elétrica," Ph.D. dissertation,
        Faculdade de Engenharia Elétrica e de Computação, Universidade Estadual
        de Campinas (UNICAMP), Campinas, Brazil, 2010.
-       :doi:`10.47749/T/UNICAMP.2010.781324````
+       :doi:`10.47749/T/UNICAMP.2010.781324`
     """
     temp_ref_k = temp_ref + 273.15
 

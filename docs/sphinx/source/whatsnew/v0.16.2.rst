@@ -40,6 +40,9 @@ Documentation
 * Clarify that :py:func:`pvlib.ivtools.sdm.fit_pvsyst_sandia` and
   :py:func:`pvlib.ivtools.sdm.fit_desoto_sandia` require multiple IV curves.
   (:issue:`1715`, :pull:`2883`)
+* Note deprecation of ``king`` model in :py:func:`~pvlib.irradiance.get_total_irradiance`
+  and :py:func:`~pvlib.irradiance.get_sky_diffuse` docstrings.
+  (:issue:`2897`, :pull:`2904`)
 
 
 Testing
@@ -69,3 +72,4 @@ Contributors
 * jason-writer (:ghuser:`jason-writer`)
 * :ghuser:`bfs2021`
 * :ghuser:`xiajiahang`
+* Jakub Krasuski (:ghuser:`Blizzeq`)

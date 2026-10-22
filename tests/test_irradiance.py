@@ -1639,18 +1639,6 @@ def test_louche():
     assert_frame_equal(out, expected)
 
 
-def test_SURFACE_ALBEDOS_deprecated():
-    with pytest.warns(pvlibDeprecationWarning, match='SURFACE_ALBEDOS has been'
-                      ' moved to the albedo module as of v0.11.0. Please use'
-                      ' pvlib.albedo.SURFACE_ALBEDOS.'):
-        irradiance.SURFACE_ALBEDOS
-
-
-@pytest.mark.filterwarnings("ignore:SURFACE_ALBEDOS")
-def test_SURFACE_ALBEDO_equals():
-    assert irradiance.SURFACE_ALBEDOS == albedo.SURFACE_ALBEDOS
-
-
 def test_diffuse_par_spitters():
     solar_zenith, global_diffuse_fraction = np.meshgrid(
         [90, 85, 75, 60, 40, 30, 10, 0], [0.01, 0.1, 0.3, 0.6, 0.8, 0.99]

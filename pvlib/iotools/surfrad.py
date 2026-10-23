@@ -158,7 +158,7 @@ def read_surfrad(filename, map_variables=True):
     data = data.where(~missing, np.nan)
 
     if map_variables:
-        data.rename(columns=VARIABLE_MAP, inplace=True)
+        data = data.rename(columns=VARIABLE_MAP)
     return data, metadata
 
 

@@ -170,7 +170,7 @@ def coverage_nrel(snowfall, poa_irradiance, temp_air, surface_tilt,
     snow_coverage[new_snowfall] = 1.0
     if np.isnan(snow_coverage.iloc[0]):
         snow_coverage.iloc[0] = initial_coverage
-    snow_coverage.ffill(inplace=True)
+    snow_coverage = snow_coverage.ffill()
     snow_coverage -= cumulative_sliding
 
     return snow_coverage.clip(lower=0)

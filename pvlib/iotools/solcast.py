@@ -421,9 +421,8 @@ def _solcast2pvlib(data):
     # rename and convert variables
     for variable in VARIABLE_MAP:
         if variable.solcast_name in data.columns:
-            data.rename(
+            data = data.rename(
                 columns={variable.solcast_name: variable.pvlib_name},
-                inplace=True
             )
             data[variable.pvlib_name] = data[
                 variable.pvlib_name].apply(variable.conversion)

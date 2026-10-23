@@ -1166,6 +1166,75 @@ def test_calcparams_pvsyst(pvsyst_module_params):
     assert_series_equal(
         nNsVth.round(decimals=4), pd.Series([1.6186, 1.7961], index=times))
 
+def test_calcparams_villalva():
+    """Check archived operating-condition results and NaN propagation."""
+    # Reference values archived from
+    # docs/examples/iv-modeling/plot_villalva.py.
+    effective_irradiance = np.array([
+        1000.0,
+        800.0,
+        400.0,
+        np.nan,
+        600.0,
+    ])
+    temp_cell = np.array([
+        25.0,
+        45.0,
+        55.0,
+        25.0,
+        np.nan,
+    ])
+
+    result = pvsystem.calcparams_villalva(
+        effective_irradiance=effective_irradiance,
+        temp_cell=temp_cell,
+        alpha_sc=0.004539,
+        beta_voc=-0.22216,
+        a_ref=2.6373,
+        I_L_ref=5.113999993730909,
+        R_sh_ref=381.68001775625714,
+        R_s=1.065,
+        i_sc_ref=5.099770128570936,
+        v_oc_ref=59.40065126750111,
+        irrad_ref=1000.0,
+        temp_ref=25.0,
+    )
+
+    expected = (
+        np.array([
+            5.113999993730909,
+            4.163823994984727,
+            2.1000679974923635,
+            np.nan,
+            np.nan,
+        ]),
+        np.array([
+            8.196000001605032e-10,
+            1.671475175084771e-08,
+            6.581579176008634e-08,
+            8.196000001605032e-10,
+            np.nan,
+        ]),
+        1.065,
+        381.68001775625714,
+        np.array([
+            2.6373,
+            2.814210950863659,
+            2.902666426295489,
+            2.6373,
+            np.nan,
+        ]),
+    )
+
+    for actual, reference in zip(result, expected):
+        assert_allclose(
+            actual,
+            reference,
+            rtol=1e-10,
+            atol=1e-12,
+            equal_nan=True,
+        )
+
 
 def test_PVSystem_calcparams_desoto(cec_module_params, mocker):
     mocker.spy(pvsystem, 'calcparams_desoto')

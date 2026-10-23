@@ -12,6 +12,7 @@ Functions relevant for single diode models.
    pvsystem.calcparams_cec
    pvsystem.calcparams_desoto
    pvsystem.calcparams_pvsyst
+   pvsystem.calcparams_villalva
    pvsystem.i_from_v
    pvsystem.singlediode
    pvsystem.v_from_i
@@ -39,3 +40,4 @@ Functions for fitting diode models
     ivtools.sdm.fit_cec_sam
     ivtools.sdm.fit_desoto
     ivtools.sdm.fit_desoto_batzelis
+    ivtools.sdm.fit_villalva

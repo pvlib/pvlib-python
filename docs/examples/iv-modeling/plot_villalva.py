@@ -1,5 +1,5 @@
 """
-Villalva single-diode model
+Villalva Iterative Five-Parameter SDM Fitting 
 ===========================
 
 This example extracts single-diode model (SDM) parameters from manufacturer

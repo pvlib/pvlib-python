@@ -16,7 +16,7 @@ Bug fixes
 ~~~~~~~~~
 * Use wall-clock hours and timestamp-specific UTC offsets in
   :py:func:`~pvlib.solarposition.hour_angle` and geometric sunrise/sunset
-  calculations on daylight-saving transition days.
+  calculations on daylight-saving transition days. (:pull:`2923`)
 * Correct the Series name in ``ModelChain.results.dc_ohmic_losses`` from
   ``i_mp`` to ``p_dc_ohmic_loss`` when using ``dc_ohms_from_percent``.
   (:issue:`1959`, :pull:`2912`)

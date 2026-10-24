@@ -473,7 +473,7 @@ def _get_solcast(
 
     if response.status_code == 200:
         j = response.json()
-        df = pd.DataFrame.from_dict(j[list(j.keys())[0]])
+        df = pd.DataFrame(j[list(j.keys())[0]])
         if map_variables:
             return _solcast2pvlib(df)
         else:

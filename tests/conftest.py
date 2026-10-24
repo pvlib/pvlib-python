@@ -56,7 +56,7 @@ def _check_pandas_assert_kwargs(kwargs):
 
 def assert_index_equal(left, right, **kwargs):
     kwargs = _check_pandas_assert_kwargs(kwargs)
-    pd.testing.assert_index_equal(left, right, **kwargs)
+    pd.testing.assert_index_equal(left, right, **kwargs, check_freq=False)
 
 
 def assert_series_equal(left, right, **kwargs):

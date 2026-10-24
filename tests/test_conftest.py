@@ -33,5 +33,10 @@ def test__check_pandas_assert_kwargs(mocker, function_name, pd_version,
         expected_kwargs = {'atol': tol, 'rtol': tol}
     else:
         expected_kwargs = {'check_less_precise': check_less_precise}
+    if function_name == "assert_index_equal":
+        # assert_index_equal in Pandas 3.1.0 warns:
+        # Pandas4Warning: assert_index_equal will check the 'freq' attribute by default in a future version; these freqs <Minute> and None do not match. Pass check_freq=True or check_freq=False to silence this warning
+        # pd.testing.assert_index_equal(left, right, **kwargs)
+        expected_kwargs['check_freq'] = False
 
     spy.assert_called_once_with(*args, **expected_kwargs)

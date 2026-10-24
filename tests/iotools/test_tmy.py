@@ -111,7 +111,11 @@ def test_solaranywhere_tmy3(solaranywhere_index):
     # included to test files with  00:00 timestamps are parsed correctly
     data, meta = tmy.read_tmy3(TMY3_SOLARANYWHERE, encoding='iso-8859-1',
                                map_variables=False)
-    pd.testing.assert_index_equal(data.index, solaranywhere_index)
+    pd.testing.assert_index_equal(
+        data.index,
+        solaranywhere_index,
+        check_freq=False,
+    )
     assert meta['USAF'] == 0
     assert meta['Name'] == 'Burlington  United States'
     assert meta['State'] == 'NA'

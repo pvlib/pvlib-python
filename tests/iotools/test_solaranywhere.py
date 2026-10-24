@@ -74,7 +74,11 @@ def test_read_solaranywhere_high_resolution(high_resolution_index):
     assert data.loc['2021-01-01 07:00:00-05:00', 'Albedo'] == 0.6
     assert data.loc['2021-01-01 07:00:00-05:00', 'WindSpeed (m/s)'] == 0
     # Assert that the index is parsed correctly
-    pd.testing.assert_index_equal(data.index, high_resolution_index)
+    pd.testing.assert_index_equal(
+        data.index,
+        high_resolution_index,
+        check_freq=False,
+    )
 
 
 def test_read_solaranywhere_map_variables():

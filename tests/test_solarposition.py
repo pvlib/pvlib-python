@@ -800,11 +800,50 @@ def test_hour_angle_with_tricky_timezones():
         '2014-11-02 02:00:00',
     ]).tz_localize('America/Havana', ambiguous=[True, True, False, False])
 
-    with pytest.raises((
-        _AmbiguousTimeError,  # pandas 1.x, 2.x
-        ValueError,  # pandas 3.x
-    )):
-        solarposition.hour_angle(times, longitude, eot)
+    # ambiguous local midnight: must not raise, and must not depend on the
+    # timezone label of the same instants
+    ha = solarposition.hour_angle(times, longitude, eot)
+    ha_utc = solarposition.hour_angle(times.tz_convert('UTC'), longitude, eot)
+    assert_allclose((ha - ha_utc + 180) % 360 - 180, 0, atol=1e-9)
+
+
+@pytest.mark.parametrize('tz, day', [
+    ('America/New_York', '2024-03-10'),  # spring forward at 02:00
+    ('America/New_York', '2024-11-03'),  # fall back at 02:00
+    ('Europe/Berlin', '2024-03-31'),
+    ('America/Santiago', '2014-09-07'),  # nonexistent midnight
+])
+def test_hour_angle_dst_transition_day(tz, day):
+    # hour angle is a function of the instant, not of how it is labelled
+    times = pd.date_range(day, periods=30, freq='1h', tz='UTC').tz_convert(tz)
+    eot = np.full(len(times), -3.5)
+    longitude = -74.0
+    ha = solarposition.hour_angle(times, longitude, eot)
+    ha_utc = solarposition.hour_angle(times.tz_convert('UTC'), longitude, eot)
+    utc = times.tz_convert('UTC')
+    utc_hours = np.asarray((utc - utc.normalize()) / pd.Timedelta('1h'))
+    expected = 15. * (utc_hours - 12.) + longitude + eot / 4.
+    assert_allclose((ha - expected + 180) % 360 - 180, 0, atol=1e-9)
+    assert_allclose((ha_utc - expected + 180) % 360 - 180, 0, atol=1e-9)
+
+
+def test_sun_rise_set_transit_geometric_dst_transition_day():
+    # transit, sunrise and sunset on a DST day must be the same instants
+    # whether the request is labelled in local DST time or in UTC-5/-4
+    lat, lon = 40.7, -74.0
+    for day, fixed in [('2024-03-10', 'Etc/GMT+4'),
+                       ('2024-11-03', 'Etc/GMT+5')]:
+        times = pd.DatetimeIndex([pd.Timestamp(day + ' 12:00',
+                                               tz='America/New_York')])
+        doy = times.dayofyear
+        decl = solarposition.declination_spencer71(doy)
+        eot = solarposition.equation_of_time_spencer71(doy)
+        local = solarposition.sun_rise_set_transit_geometric(
+            times, lat, lon, decl, eot)
+        ref = solarposition.sun_rise_set_transit_geometric(
+            times.tz_convert(fixed), lat, lon, decl, eot)
+        for a, b in zip(local, ref):
+            assert abs((a[0] - b[0]).total_seconds()) < 1
 
 
 def test_sun_rise_set_transit_geometric(expected_rise_set_spa, golden_mst):

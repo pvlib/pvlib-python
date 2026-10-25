@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 from pvlib.iotools import tmy
-from tests.conftest import TESTS_DATA_DIR, PVLIB_DATA_DIR
+from tests.conftest import TESTS_DATA_DIR, PVLIB_DATA_DIR, assert_index_equal
 import pytest
 
 # test the API works
@@ -111,10 +111,9 @@ def test_solaranywhere_tmy3(solaranywhere_index):
     # included to test files with  00:00 timestamps are parsed correctly
     data, meta = tmy.read_tmy3(TMY3_SOLARANYWHERE, encoding='iso-8859-1',
                                map_variables=False)
-    pd.testing.assert_index_equal(
+    assert_index_equal(  # from conftest; doesn't compare index frequency attr
         data.index,
         solaranywhere_index,
-        check_freq=False,
     )
     assert meta['USAF'] == 0
     assert meta['Name'] == 'Burlington  United States'

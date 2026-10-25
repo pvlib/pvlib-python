@@ -660,7 +660,7 @@ def test_detect_clearsky_arrays(detect_clearsky_data):
 
 def test_detect_clearsky_irregular_times(detect_clearsky_data):
     expected, cs = detect_clearsky_data
-    times = cs.index.values.copy()
+    times = cs.index.tz_convert(None).to_numpy()  # UTC np.datetime64
     times[0] += pd.Timedelta(1, unit='s')
     times = pd.DatetimeIndex(times)
     match = "does not yet support unequal time intervals"

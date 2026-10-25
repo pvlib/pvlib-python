@@ -428,7 +428,10 @@ def _get_sample_intervals(times, win_length):
     """ Calculates time interval and samples per window for Reno-style clear
     sky detection functions
     """
-    deltas = np.diff(times.values) / np.timedelta64(1, '60s')
+    deltas = (
+        np.diff(times.tz_convert(None).to_numpy())  # UTC np.datetime64
+        / np.timedelta64(1, '60s')
+    )
 
     # determine if we can proceed
     if times.inferred_freq and len(np.unique(deltas)) == 1:

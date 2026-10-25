@@ -660,7 +660,8 @@ def test_detect_clearsky_arrays(detect_clearsky_data):
 
 def test_detect_clearsky_irregular_times(detect_clearsky_data):
     expected, cs = detect_clearsky_data
-    times = (cs.index
+    times = (
+        cs.index
         .tz_convert(None)  # converted to UTC
         .to_numpy(copy=True)  # np.datetime64 + required writability
     )

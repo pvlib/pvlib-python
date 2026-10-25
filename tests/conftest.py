@@ -56,7 +56,10 @@ def _check_pandas_assert_kwargs(kwargs):
 
 def assert_index_equal(left, right, **kwargs):
     kwargs = _check_pandas_assert_kwargs(kwargs)
-    pd.testing.assert_index_equal(left, right, **kwargs, check_freq=False)
+    try:  # check_freq was added in pandas 3.1.0
+        pd.testing.assert_index_equal(left, right, **kwargs, check_freq=False)
+    except TypeError:  # this branch supports prior versions
+        pd.testing.assert_index_equal(left, right, **kwargs)
 
 
 def assert_series_equal(left, right, **kwargs):

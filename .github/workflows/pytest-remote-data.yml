@@ -78,12 +78,15 @@ jobs:
         if: github.event_name == 'push'
 
       - name: Set up conda environment
-        uses: conda-incubator/setup-miniconda@v4
+        uses: mamba-org/setup-micromamba@v3
         with:
-          activate-environment: test_env
           environment-file: ${{ env.REQUIREMENTS }}
-          python-version: ${{ matrix.python-version }}
-          auto-activate-base: false
+          cache-downloads: false
+          cache-environment: false
+          create-args: >-
+            python=${{ matrix.python-version }}
+          condarc: |
+            channel-priority: flexible
         env:
           # build requirement filename.  First replacement is for the python
           # version, second is to add "-min" if needed
@@ -91,7 +94,7 @@ jobs:
 
       - name: List installed package versions
         shell: bash -l {0}  # necessary for conda env to be active
-        run: conda list
+        run: micromamba list
 
       - name: Run tests
         shell: bash -l {0}  # necessary for conda env to be active

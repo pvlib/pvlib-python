@@ -429,7 +429,7 @@ def _get_sample_intervals(times, win_length):
     sky detection functions
     """
     deltas = (
-        np.diff(times.tz_convert(None).to_numpy())  # UTC np.datetime64
+        np.diff(times.tz_localize(None).to_numpy())  # tz-naive np.datetime64
         / np.timedelta64(1, '60s')
     )
 

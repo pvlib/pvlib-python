@@ -51,15 +51,16 @@ def _check_pandas_assert_kwargs(kwargs):
     else:
         kwargs.pop('rtol', None)
         kwargs.pop('atol', None)
+    if Version(pd.__version__) >= Version('3.1.0'):
+        # check_freq was added in pandas 3.1.0
+        # tests written prior to it, may have not taken it into account
+        kwargs['check_freq'] = False
     return kwargs
 
 
 def assert_index_equal(left, right, **kwargs):
     kwargs = _check_pandas_assert_kwargs(kwargs)
-    try:  # check_freq was added in pandas 3.1.0
-        pd.testing.assert_index_equal(left, right, **kwargs, check_freq=False)
-    except TypeError:  # this branch supports prior versions
-        pd.testing.assert_index_equal(left, right, **kwargs)
+    pd.testing.assert_index_equal(left, right, **kwargs)
 
 
 def assert_series_equal(left, right, **kwargs):

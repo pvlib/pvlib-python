@@ -1,6 +1,7 @@
 """
-Calculate the solar position using the NREL SPA algorithm either using
-numpy arrays or compiling the code to machine language with numba.
+Calculate the sun's position using the NREL Solar Position Algorithm
+(SPA) either using numpy arrays or compiling the code to machine language
+with numba.
 """
 
 # Contributors:
@@ -1031,7 +1032,7 @@ def solar_position(unixtime, lat, lon, elev, pressure, temp, delta_t,
 
     """
     Calculate the solar position using the
-    NREL SPA algorithm described in [1].
+    NREL SPA described in [1]_, [2]_.
 
     If numba is installed, the functions can be compiled
     and the code runs quickly. If not, the functions
@@ -1074,8 +1075,8 @@ def solar_position(unixtime, lat, lon, elev, pressure, temp, delta_t,
     Numpy Array with elements:
         apparent zenith,
         zenith,
-        elevation,
         apparent_elevation,
+        elevation,
         azimuth,
         equation_of_time
 

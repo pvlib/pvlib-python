@@ -435,8 +435,10 @@ def _get_sample_intervals(times, win_length):
     )
 
     # determine if we can proceed
-    if (_pandas_infer_freq_BaseOffset_transition_handler(times)
-        and len(np.unique(deltas)) == 1):
+    if (  # infer wrapper is None if no freq is determined
+        _pandas_infer_freq_BaseOffset_transition_handler(times)
+        and len(np.unique(deltas)) == 1
+    ):
         sample_interval = times[1] - times[0]
         sample_interval = sample_interval.seconds / 60  # in minutes
         samples_per_window = int(win_length / sample_interval)
@@ -476,7 +478,7 @@ def _pandas_infer_freq_BaseOffset_transition_handler(times):
     [^1]: pandas PR GH#64679: https://github.com/pandas-dev/pandas/pull/64679
     [^2]: https://pandas.pydata.org/docs/reference/api/pandas.infer_freq.html
     [^3]: https://pandas.pydata.org/docs/reference/api/pandas.tseries.offsets.BaseOffset.html
-    """
+    """  # noqa: E501
     if Version(pd.__version__) < Version("3.1.0rc0"):
         return pd.infer_freq(times)
     with pd.option_context({'future.infer_freq_returns_offset': True}):
@@ -484,6 +486,7 @@ def _pandas_infer_freq_BaseOffset_transition_handler(times):
         base_offset = pd.infer_freq(times)
         # base_offset:=None if unable to infer
         return getattr(base_offset, "freqstr", None)
+
 
 def _degrees_to_index(degrees, coordinate):
     """Transform input degrees to an output index integer.

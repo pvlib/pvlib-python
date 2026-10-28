@@ -14,17 +14,35 @@ Deprecations
 
 Bug fixes
 ~~~~~~~~~
-
+* Correct the Series name in ``ModelChain.results.dc_ohmic_losses`` from
+  ``i_mp`` to ``p_dc_ohmic_loss`` when using ``dc_ohms_from_percent``.
+  (:issue:`1959`, :pull:`2912`)
+* :py:func:`pvlib.tracking.calc_surface_orientation` returns scalar when input
+  is scalar (:issue:`2881`, :pull:`2882`)
+* :py:func:`pvlib.scaling.wvm` no longer returns all NaNs when ``positions``
+  contains a single site (:issue:`2895`, :pull:`2896`)
 
 Enhancements
 ~~~~~~~~~~~~
-
+* Add ``dataset`` parameter to :py:func:`~pvlib.iotools.get_era5`
+  allowing for choosing between ERA5 and ERA5-Land datasets.
+  (:pull:`2780`)
 
 Documentation
 ~~~~~~~~~~~~~
 * Clarified in :py:func:`pvlib.tracking.singleaxis` that the tracker
   rotation minimizes the angle of incidence (AOI) to maximize the use of
   direct normal irradiance (DNI). (:issue:`2314`, :pull:`2869`)
+* Fix the :py:func:`pvlib.spa.solar_position` docstring, which listed
+  outputs ``elevation`` and ``apparent_elevation`` in the wrong order.
+  (:issue:`2886`, :pull:`2887`)
+
+* Clarify that :py:func:`pvlib.ivtools.sdm.fit_pvsyst_sandia` and
+  :py:func:`pvlib.ivtools.sdm.fit_desoto_sandia` require multiple IV curves.
+  (:issue:`1715`, :pull:`2883`)
+* Note deprecation of ``king`` model in :py:func:`~pvlib.irradiance.get_total_irradiance`
+  and :py:func:`~pvlib.irradiance.get_sky_diffuse` docstrings.
+  (:issue:`2897`, :pull:`2904`)
 
 
 Testing
@@ -45,6 +63,13 @@ Maintenance
 
 Contributors
 ~~~~~~~~~~~~
+
+* :ghuser:`anshurajbisoyi98-ctrl`
+* Adam R. Jensen (:ghuser:`AdamRJensen`)
+* Cliff Hansen (:ghuser:`cwhanse`)
 * Chen Yi (:ghuser:`chenyi6758-source`)
 * Rajiv Daxini (:ghuser:`rdaxini`)
-
+* jason-writer (:ghuser:`jason-writer`)
+* :ghuser:`bfs2021`
+* :ghuser:`xiajiahang`
+* Jakub Krasuski (:ghuser:`Blizzeq`)

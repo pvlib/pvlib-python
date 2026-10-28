@@ -32,13 +32,13 @@ solpos = solpos.loc[solpos['apparent_elevation'] > 0, :]
 ax = plt.subplot(1, 1, 1, projection='polar')
 # draw the analemma loops
 points = ax.scatter(np.radians(solpos.azimuth), solpos.apparent_zenith,
-                    s=2, label=None, c=solpos.index.dayofyear,
+                    s=2, label=None, c=solpos.index.day_of_year,
                     cmap='twilight_shifted_r')
 # add and format colorbar
 cbar = ax.figure.colorbar(points)
 times_ticks = pd.date_range('2019-01-01', '2020-01-01', freq='MS', tz=tz)
-cbar.set_ticks(ticks=times_ticks.dayofyear, labels=[], minor=False)
-cbar.set_ticks(ticks=times_ticks.dayofyear+15,
+cbar.set_ticks(ticks=times_ticks.day_of_year, labels=[], minor=False)
+cbar.set_ticks(ticks=times_ticks.day_of_year+15,
                labels=times_ticks.strftime('%b'),
                minor=True)
 cbar.ax.tick_params(which='minor', width=0)
@@ -120,13 +120,13 @@ solpos = solpos.loc[solpos['apparent_elevation'] > 0, :]
 
 fig, ax = plt.subplots()
 points = ax.scatter(solpos.azimuth, solpos.apparent_elevation, s=2,
-                    c=solpos.index.dayofyear, label=None,
+                    c=solpos.index.day_of_year, label=None,
                     cmap='twilight_shifted_r')
 # add and format colorbar
 cbar = fig.colorbar(points)
 times_ticks = pd.date_range('2019-01-01', '2020-01-01', freq='MS', tz=tz)
-cbar.set_ticks(ticks=times_ticks.dayofyear, labels=[], minor=False)
-cbar.set_ticks(ticks=times_ticks.dayofyear+15,
+cbar.set_ticks(ticks=times_ticks.day_of_year, labels=[], minor=False)
+cbar.set_ticks(ticks=times_ticks.day_of_year+15,
                labels=times_ticks.strftime('%b'),
                minor=True)
 cbar.ax.tick_params(which='minor', width=0)

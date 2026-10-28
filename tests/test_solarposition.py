@@ -831,13 +831,16 @@ def test_sun_rise_set_transit_geometric(expected_rise_set_spa, golden_mst):
     test_transit = solarposition._times_to_hours_after_local_midnight(st)
     # convert expected SPA sunrise, sunset, transit to local datetime indices
     expected_sunrise = pd.DatetimeIndex(
-        expected_rise_set_spa["sunrise"].dt.tz_convert(None).to_numpy(), tz="UTC"
+        expected_rise_set_spa["sunrise"].dt.tz_convert(None).to_numpy(),
+        tz="UTC",
     ).tz_convert(golden_mst.tz)
     expected_sunset = pd.DatetimeIndex(
-        expected_rise_set_spa["sunset"].dt.tz_convert(None).to_numpy(), tz="UTC"
+        expected_rise_set_spa["sunset"].dt.tz_convert(None).to_numpy(),
+        tz="UTC",
     ).tz_convert(golden_mst.tz)
     expected_transit = pd.DatetimeIndex(
-        expected_rise_set_spa["transit"].dt.tz_convert(None).to_numpy(), tz="UTC"
+        expected_rise_set_spa["transit"].dt.tz_convert(None).to_numpy(),
+        tz="UTC",
     ).tz_convert(golden_mst.tz)
     # convert expected times to hours since midnight as arrays of floats
     expected_sunrise = solarposition._times_to_hours_after_local_midnight(

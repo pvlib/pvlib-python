@@ -24,6 +24,7 @@ Bug fixes
 
 Enhancements
 ~~~~~~~~~~~~
+* Add ``pandas==3.1.0`` support. (:pull:`2924`)
 * Add ``dataset`` parameter to :py:func:`~pvlib.iotools.get_era5`
   allowing for choosing between ERA5 and ERA5-Land datasets.
   (:pull:`2780`)

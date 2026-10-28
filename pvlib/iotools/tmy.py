@@ -222,7 +222,7 @@ def read_tmy3(filename, coerce_year=None, map_variables=True, encoding=None):
     # shifted_hour is a pd.Series, so use pd.to_timedelta to get a pd.Series of
     # timedeltas
     if coerce_year is not None:
-        data_ymd = data_ymd.map(lambda dt: dt.replace(year=coerce_year))
+        data_ymd = data_ymd.transform(lambda dt: dt.replace(year=coerce_year))
         data_ymd.iloc[-1] = data_ymd.iloc[-1].replace(year=coerce_year+1)
     # NOTE: as of pvlib-0.6.3, min req is pandas-0.18.1, so pd.to_timedelta
     # unit must be in (D,h,m,s,ms,us,ns), but pandas>=0.24 allows unit='hour'

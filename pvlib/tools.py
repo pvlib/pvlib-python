@@ -9,6 +9,7 @@ import warnings
 
 import numpy as np
 import pandas as pd
+from packaging.version import Version
 import zoneinfo
 
 
@@ -214,7 +215,7 @@ def _pandas_to_doy(pd_object):
     -----
     Day of year is determined using UTC, since pandas uses local hour
     """
-    return _pandas_to_utc(pd_object).dayofyear
+    return _pandas_to_utc(pd_object).day_of_year
 
 
 def _pandas_to_utc(pd_object):
@@ -428,10 +429,14 @@ def _get_sample_intervals(times, win_length):
     """ Calculates time interval and samples per window for Reno-style clear
     sky detection functions
     """
-    deltas = np.diff(times.values) / np.timedelta64(1, '60s')
+    deltas = (
+        np.diff(times.tz_localize(None).to_numpy())  # tz-naive np.datetime64
+        / np.timedelta64(1, '60s')
+    )
 
     # determine if we can proceed
-    if times.inferred_freq and len(np.unique(deltas)) == 1:
+    if (_pandas_infer_freq_BaseOffset_transition_handler(times)
+        and len(np.unique(deltas)) == 1):
         sample_interval = times[1] - times[0]
         sample_interval = sample_interval.seconds / 60  # in minutes
         samples_per_window = int(win_length / sample_interval)
@@ -444,6 +449,41 @@ def _get_sample_intervals(times, win_length):
         )
         raise NotImplementedError(message)
 
+
+def _pandas_infer_freq_BaseOffset_transition_handler(times):
+    """
+    Pandas 3.1.0 introduced the following deprecation [^1]:
+        Pandas4Warning: A future version of pandas will return a BaseOffset
+        object instead of a string from infer_freq.
+        Use pd.set_option('future.infer_freq_returns_offset', True) to get the
+        future behavior, or set to False to keep the old behavior and silence
+        this warning.
+        To preserve the string representation, use ``infer_freq(...).freqstr``
+
+    Side-effects must be avoided in user-code.
+
+    pd.infer_freq documentation is at [^2].
+    pd.tseries.offsets.BaseOffset documentation is at [^3].
+
+    Parameters
+    ----------
+    times : DatetimeIndex | TimedeltaIndex | Series | DatetimeLikeArrayMixin
+
+    Returns
+    -------
+    str
+
+    [^1]: pandas PR GH#64679: https://github.com/pandas-dev/pandas/pull/64679
+    [^2]: https://pandas.pydata.org/docs/reference/api/pandas.infer_freq.html
+    [^3]: https://pandas.pydata.org/docs/reference/api/pandas.tseries.offsets.BaseOffset.html
+    """
+    if Version(pd.__version__) < Version("3.1.0rc0"):
+        return pd.infer_freq(times)
+    with pd.option_context({'future.infer_freq_returns_offset': True}):
+        # relies on BaseOffset to work seamlessly with Pandas 4
+        base_offset = pd.infer_freq(times)
+        # base_offset:=None if unable to infer
+        return getattr(base_offset, "freqstr", None)
 
 def _degrees_to_index(degrees, coordinate):
     """Transform input degrees to an output index integer.

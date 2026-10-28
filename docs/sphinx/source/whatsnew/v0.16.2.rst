@@ -27,6 +27,8 @@ Enhancements
 * Add ``dataset`` parameter to :py:func:`~pvlib.iotools.get_era5`
   allowing for choosing between ERA5 and ERA5-Land datasets.
   (:pull:`2780`)
+* Support PySAM on Python 3.14 via the ``nlr-pysam`` package.
+  (:pull:`2872`)
 
 Documentation
 ~~~~~~~~~~~~~
@@ -68,6 +70,7 @@ Contributors
 * Adam R. Jensen (:ghuser:`AdamRJensen`)
 * Cliff Hansen (:ghuser:`cwhanse`)
 * Chen Yi (:ghuser:`chenyi6758-source`)
+* Mohammad Kazemi (:ghuser:`mokazemi`)
 * Rajiv Daxini (:ghuser:`rdaxini`)
 * jason-writer (:ghuser:`jason-writer`)
 * :ghuser:`bfs2021`

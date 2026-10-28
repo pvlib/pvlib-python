@@ -8,7 +8,12 @@ import pytest
 import pvlib
 import requests
 import os
-from tests.conftest import RERUNS, RERUNS_DELAY, requires_ecmwf_credentials
+from tests.conftest import (
+    RERUNS,
+    RERUNS_DELAY,
+    assert_index_equal,
+    requires_ecmwf_credentials,
+)
 
 
 @pytest.fixture
@@ -66,7 +71,7 @@ def test_get_era5_land(params, expected):
     df, meta = pvlib.iotools.get_era5(**params)
     assert np.isclose(meta['longitude'], -80.0)
     assert np.isclose(meta['latitude'], 40.0)
-    pd.testing.assert_index_equal(df.index, expected.index)
+    assert_index_equal(df.index, expected.index)
     assert set(df.columns) == {'ghi', 'temp_air'}
     assert df.notna().all().all()
 

@@ -39,6 +39,8 @@ Documentation
 * Fix the :py:func:`pvlib.spa.solar_position` docstring, which listed
   outputs ``elevation`` and ``apparent_elevation`` in the wrong order.
   (:issue:`2886`, :pull:`2887`)
+* Link the :py:mod:`pvlib.iotools` module from the FAQ entry on irradiance
+  data. (:issue:`1983`)
 * Clarify that :py:func:`pvlib.ivtools.sdm.fit_pvsyst_sandia` and
   :py:func:`pvlib.ivtools.sdm.fit_desoto_sandia` require multiple IV curves.
   (:issue:`1715`, :pull:`2883`)
@@ -72,6 +74,7 @@ Contributors
 * Chen Yi (:ghuser:`chenyi6758-source`)
 * Rajiv Daxini (:ghuser:`rdaxini`)
 * jason-writer (:ghuser:`jason-writer`)
+* :ghuser:`mmporong`
 * :ghuser:`bfs2021`
 * :ghuser:`xiajiahang`
 * Jakub Krasuski (:ghuser:`Blizzeq`)

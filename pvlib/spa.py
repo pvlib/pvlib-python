@@ -1135,11 +1135,6 @@ def transit_sunrise_sunset(dates, lat, lon, delta_t, numthreads):
     .. [1] I. Reda and A. Andreas, Solar position algorithm for solar
        radiation applications. Solar Energy, vol. 76, no. 5, pp. 577-589,
        2004. :doi:`10.1016/j.solener.2003.12.003`
-    References
-    ----------
-    .. [1] I. Reda and A. Andreas, Solar position algorithm for solar
-       radiation applications. Solar Energy, vol. 76, no. 5, pp. 577-589,
-       2004. :doi:`10.1016/j.solener.2003.12.003`
     .. [2] I. Reda, and A. Andreas. "Corrigendum to “Solar position 
        algorithm for solar radiation applications." [Solar Energy 76
        (2004) 577–589] Solar Energy, vol. 81,  no. 6, pp. 838, 2007.

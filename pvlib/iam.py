@@ -103,7 +103,7 @@ def physical(aoi, n=1.526, K=4.0, L=0.002, *, n_ar=None):
     ``iam.physical`` calculates the incidence angle modifier as described in
     [1]_, Section 3, with additional support of an anti-reflective coating.
     The calculation is based on a physical model of reflections, absorption,
-    and transmission through a transparent cover.
+    and transmission through a transparent cover, as described in [2]_.
 
     Parameters
     ----------
@@ -117,7 +117,7 @@ def physical(aoi, n=1.526, K=4.0, L=0.002, *, n_ar=None):
 
     K : numeric, default 4.0
         The glazing extinction coefficient in units of 1/meters.
-        Reference [1] indicates that a value of 4 is reasonable for
+        Reference [1]_ indicates that a value of 4 is reasonable for
         "water white" glass.
 
     L : numeric, default 0.002
@@ -319,8 +319,9 @@ def martin_ruiz_diffuse(surface_tilt, a_r=0.16, c1=0.4244, c2=None):
     Determine the incidence angle modifiers (IAM) for sky diffuse and
     ground-reflected irradiance using the Martin and Ruiz incident angle model.
 
-    As described in [1]_, the IAMs result from integrals that assume the
-    incoming sky diffuse and ground-reflected irradiance are isotropic.
+    As described in [1]_ and corrected in [2]_, the IAMs result from integrals
+    that assume the incoming sky diffuse and ground-reflected irradiance
+    are isotropic.
 
     Parameters
     ----------
@@ -523,6 +524,9 @@ def interp(aoi, theta_ref, iam_ref, method='linear', normalize=True):
 def sapm(aoi, module, upper=None):
     r"""
     Determine the incidence angle modifier (IAM) using the SAPM model.
+
+    Procedures for determining the model coefficients are described in [2]_,
+    with angle of incidence measurement techniques discussed in [3]_.
 
     Parameters
     ----------
@@ -1127,7 +1131,7 @@ def _process_return(target_name, optimize_result):
 def convert(source_name, source_params, target_name, weight=_sin_weight,
             fix_n=True, xtol=None):
     """
-    Convert a source IAM model to a target IAM model.
+    Convert a source IAM model to a target IAM model using the method in [1]_.
 
     Parameters
     ----------
@@ -1246,7 +1250,7 @@ def convert(source_name, source_params, target_name, weight=_sin_weight,
 
 def fit(measured_aoi, measured_iam, model_name, weight=_sin_weight, xtol=None):
     """
-    Find model parameters that best fit the data.
+    Find model parameters that best fit the data using the method in [1]_.
 
     Parameters
     ----------

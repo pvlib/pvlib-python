@@ -425,7 +425,9 @@ def get_acis_available_stations(latitude_range, longitude_range,
                                 **kwargs):
     """
     List weather stations in a given area available from the
-    Applied Climate Information System (ACIS).
+    Applied Climate Information System (ACIS) [1]_.
+
+    Station metadata fields are described in [2]_.
 
     The ``sids`` returned by this function can be used with
     :py:func:`get_acis_station_data` to retrieve weather measurements

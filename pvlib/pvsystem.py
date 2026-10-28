@@ -1787,11 +1787,11 @@ def calcparams_desoto(effective_irradiance, temp_cell,
     -----
     If the reference parameters in the ModuleParameters struct are read
     from a database or library of parameters (e.g. System Advisor
-    Model), it is important to use the same EgRef and dEgdT values that
+    Model [2]_), it is important to use the same EgRef and dEgdT values that
     were used to generate the reference parameters, regardless of the
     actual bandgap characteristics of the semiconductor. For example, in
     the case of the System Advisor Model library, created as described
-    in [3], EgRef and dEgdT for all modules were 1.121 and -0.0002677,
+    in [3]_, EgRef and dEgdT for all modules were 1.121 and -0.0002677,
     respectively.
 
     This table of reference bandgap energies (EgRef), bandgap energy
@@ -1810,7 +1810,7 @@ def calcparams_desoto(effective_irradiance, temp_cell,
          >>> M = np.polyval([-1.26E-4, 2.816E-3, -0.024459, 0.086257, 0.9181],
          ...                AMa) # doctest: +SKIP
 
-         Source: [1]
+         Source: [1]_
 
      Cadmium Telluride (CdTe):
          * EgRef = 1.475
@@ -1819,7 +1819,7 @@ def calcparams_desoto(effective_irradiance, temp_cell,
          >>> M = np.polyval([-2.46E-5, 9.607E-4, -0.0134, 0.0716, 0.9196],
          ...                AMa) # doctest: +SKIP
 
-         Source: [4]
+         Source: [4]_
 
      Copper Indium diSelenide (CIS):
          * EgRef = 1.010
@@ -1828,7 +1828,7 @@ def calcparams_desoto(effective_irradiance, temp_cell,
          >>> M = np.polyval([-3.74E-5, 0.00125, -0.01462, 0.0718, 0.9210],
          ...                AMa) # doctest: +SKIP
 
-         Source: [4]
+         Source: [4]_
 
      Copper Indium Gallium diSelenide (CIGS):
          * EgRef = 1.15
@@ -1844,7 +1844,7 @@ def calcparams_desoto(effective_irradiance, temp_cell,
          * dEgdT = -0.000433
          * M = unknown
 
-         Source: [4]
+         Source: [4]_
     '''
 
     # Boltzmann constant in eV/K, 8.617332478e-05
@@ -1904,6 +1904,7 @@ def calcparams_cec(effective_irradiance, temp_cell,
     model. The CEC model [1]_ differs from the De soto et al.
     model [3]_ by the parameter Adjust. The five values returned by
     calcparams_cec can be used by singlediode to calculate an IV curve.
+    The CEC model is used in the System Advisor Model [2]_.
 
     Parameters
     ----------
@@ -2370,7 +2371,7 @@ def sapm(effective_irradiance, temp_cell, module, *, temperature_ref=25,
     '''
     The Sandia PV Array Performance Model (SAPM) generates 5 points on a
     PV module's I-V curve (Voc, Isc, Ix, Ixx, Vmp/Imp) according to
-    SAND2004-3535. Assumes a reference cell temperature of 25°C.
+    SAND2004-3535 [1]_. Assumes a reference cell temperature of 25°C.
 
     Parameters
     ----------
@@ -2697,6 +2698,8 @@ def singlediode(photocurrent, saturation_current, resistance_series,
     If the method is ``'lambertw'`` then the solution employed to solve the
     implicit diode equation utilizes the Lambert W function to obtain an
     explicit function of :math:`V=f(I)` and :math:`I=f(V)` as shown in [2]_.
+
+    The numerical methods use the approach of Bishop [4]_.
 
     If the method is ``'newton'`` then the root-finding Newton-Raphson method
     is used. It should be safe for well-behaved IV curves, otherwise the

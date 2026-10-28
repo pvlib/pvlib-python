@@ -23,6 +23,7 @@ given spectrum to its response under a reference spectrum, typically the
 AM1.5G spectrum. It represents the relative difference in the performance of
 a PV device under a spectrum different from the reference spectrum, and can be
 used to correct the measured power output of a PV system for spectral effects.
+The spectral mismatch correction for device measurements is standardized in [9]_.
 
 pvlib-python contains several models to estimate the spectral mismatch factor
 using atmospheric variables such as air mass, or calculate it exactly using
@@ -49,16 +50,16 @@ Reference [2]_.
 +=====================================================+=============================+=========+=========+======+======+======+============+===========+
 | :py:func:`Caballero <spectral_factor_caballero>`    | :term:`airmass_absolute`,   |         |         |      |      |      |            |           |
 |                                                     +-----------------------------+         |         |      |      |      |            |           |
-|                                                     |:term:`precipitable_water`,  |   ✓     |    ✓    |  ✓   |   ✓  |  ✓   |     ✓      |   [2]_    |
+|                                                     |:term:`precipitable_water`,  |   ✓     |    ✓    |  ✓   |   ✓  |  ✓   |     ✓      |   [3]_    |
 |                                                     +-----------------------------+         |         |      |      |      |            |           |
 |                                                     | :term:`aod`                 |         |         |      |      |      |            |           |
 +-----------------------------------------------------+-----------------------------+---------+---------+------+------+------+------------+-----------+
 | :py:func:`First Solar <spectral_factor_firstsolar>` | :term:`airmass_absolute`,   |         |         |      |      |      |            |           |
-|                                                     +-----------------------------+         |    ✓    |  ✓   |      |      |            |   [3]_    |
+|                                                     +-----------------------------+         |    ✓    |  ✓   |      |      |            |   [7]_    |
 |                                                     | :term:`precipitable_water`  |         |         |      |      |      |            |           |
 +-----------------------------------------------------+-----------------------------+---------+---------+------+------+------+------------+-----------+
 | :py:func:`JRC <spectral_factor_jrc>`                | :term:`airmass_relative`,   |         |         |      |      |      |            |           |
-|                                                     +-----------------------------+         |    ✓    |  ✓   |      |      |            +   [4]_    |
+|                                                     +-----------------------------+         |    ✓    |  ✓   |      |      |            +   [8]_    |
 |                                                     | :term:`clearsky_index`      |         |         |      |      |      |            |           |
 +-----------------------------------------------------+-----------------------------+---------+---------+------+------+------+------------+-----------+
 | :py:func:`Polo <spectral_factor_polo>`              | :term:`precipitable_water`, |         |         |      |      |      |            |           |
@@ -72,10 +73,10 @@ Reference [2]_.
 |                                                     | :term:`pressure`            |         |         |      |      |      |            |           |
 +-----------------------------------------------------+-----------------------------+---------+---------+------+------+------+------------+-----------+
 | :py:func:`PVSPEC <spectral_factor_pvspec>`          | :term:`airmass_absolute`,   |         |         |      |      |      |            |           |
-|                                                     +-----------------------------+   ✓     |    ✓    |  ✓   |  ✓   |  ✓   |            |   [6]_    |
+|                                                     +-----------------------------+   ✓     |    ✓    |  ✓   |  ✓   |  ✓   |            |   [4]_    |
 |                                                     | clearsky_index              |         |         |      |      |      |            |           |
 +-----------------------------------------------------+-----------------------------+---------+---------+------+------+------+------------+-----------+
-| :py:func:`SAPM <spectral_factor_sapm>`              | :term:`airmass_absolute`    |         |         |      |      |      |            |   [7]_    |
+| :py:func:`SAPM <spectral_factor_sapm>`              | :term:`airmass_absolute`    |         |         |      |      |      |            |   [6]_    |
 +-----------------------------------------------------+-----------------------------+---------+---------+------+------+------+------------+-----------+
 
 

@@ -9,6 +9,8 @@ on a fixed latitude-tilt system.
 Efficiency is independent of system size, so adjusting the system
 capacity is just a matter of setting the desired value, e.g. P_STC = 5000.
 
+The ADR efficiency model is described in [1]_ and [2]_.
+
 Author: Anton Driesse
 """
 

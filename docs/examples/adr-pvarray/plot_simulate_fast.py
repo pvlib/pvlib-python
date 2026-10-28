@@ -13,6 +13,8 @@ This way both PVsyst and ADR models can simulate the same PV module type.
 
 To compare simulation speed, we run them using ``timeit``.
 
+The ADR efficiency model is described in [1]_ and [2]_.
+
 Author: Anton Driesse
 """
 

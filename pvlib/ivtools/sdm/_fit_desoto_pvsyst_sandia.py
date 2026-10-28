@@ -238,6 +238,9 @@ def _update_io(voc, iph, io, rs, rsh, nnsvth):
     """
     Adjusts Io to match Voc using other parameter values.
 
+    The method follows the MATLAB implementation [1]_ and the
+    descriptions in [2]_ [3]_.
+
     Helper function for fit_pvsyst_sandia, fit_desoto_sandia
 
     Description
@@ -429,6 +432,9 @@ def _update_rsh_fixed_pt(vmp, imp, iph, io, rs, rsh, nnsvth):
     """
     Adjust Rsh to match Vmp using other parameter values
 
+    The method follows the MATLAB implementation [1]_ and the
+    descriptions in [2]_.
+
     Helper function for fit_pvsyst_sandia, fit_desoto_sandia
 
     Description
@@ -477,6 +483,9 @@ def _calc_theta_phi_exact(vmp, imp, iph, io, rs, rsh, nnsvth):
     """
     _calc_theta_phi_exact computes Lambert W values appearing in the analytic
     solutions to the single diode equation for the max power point.
+
+    The method follows the MATLAB implementation [1]_ and the
+    descriptions in [2]_ [3]_.
 
     Helper function for fit_pvsyst_sandia
 

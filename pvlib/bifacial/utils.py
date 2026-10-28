@@ -85,6 +85,10 @@ def _unshaded_ground_fraction(tracker_rotation, phi, gcr, height=None,
         Fraction of distance betwen rows (pitch) with direct irradiance
         (unshaded). [unitless]
 
+    Notes
+    -----
+    The geometry and derivation are described in [1]_.
+
     References
     ----------
     .. [1] K. S. Anderson, A. R. Jensen, and C. W. Hansen, "A Bifacial View
@@ -291,6 +295,10 @@ def vf_ground_sky_2d_integ(tracker_rotation, gcr, height, pitch, max_rows=10,
         Integration of view factor over the length between adjacent, interior
         rows.  Shape matches that of ``tracker_rotation``. [unitless]
 
+    Notes
+    -----
+    The geometry and derivation are described in [1]_.
+
     References
     ----------
     .. [1] K. S. Anderson, A. R. Jensen, and C. W. Hansen, "A Bifacial View
@@ -454,6 +462,10 @@ def vf_row_sky_2d_integ(surface_tilt, gcr, x0=0, x1=1):
         Average fraction of the sky dome visible from points in the segment
         from x0 to x1. [unitless]
 
+    Notes
+    -----
+    The geometry and derivation are described in [1]_.
+
     References
     ----------
     .. [1] K. S. Anderson, A. R. Jensen, and C. W. Hansen, "A Bifacial View
@@ -566,6 +578,10 @@ def vf_row_ground_2d_integ(surface_tilt, gcr, height=None, pitch=None,
     vf : numeric
         Integrated view factor to the visible ground on the interval (x0, x1).
         [unitless]
+
+    Notes
+    -----
+    The geometry and derivation are described in [1]_.
 
     References
     ----------

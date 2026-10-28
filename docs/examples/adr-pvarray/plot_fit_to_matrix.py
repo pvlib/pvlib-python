@@ -12,6 +12,8 @@ for such measurements and this example shows how the ADR model
 parameters can be determined with just a few lines of code using
 functions in pvlib-python.
 
+The ADR efficiency model is described in [1]_ and [2]_.
+
 Author: Anton Driesse
 """
 

@@ -31,6 +31,9 @@ Enhancements
 
 Documentation
 ~~~~~~~~~~~~~
+* Add missing reference callouts in docstrings and documentation, correct
+  spectral model citations, and enable Sphinx warnings for unreferenced
+  footnotes. (:issue:`837`)
 * Add :py:func:`pvlib.spa.transit_sunrise_sunset` to the API reference.
   (:issue:`2255`, :pull:`2873`)
 * Clarified in :py:func:`pvlib.tracking.singleaxis` that the tracker
@@ -78,3 +81,4 @@ Contributors
 * :ghuser:`bfs2021`
 * :ghuser:`xiajiahang`
 * Jakub Krasuski (:ghuser:`Blizzeq`)
+* :ghuser:`WhatIsAPM1989`

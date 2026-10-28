@@ -69,7 +69,7 @@ def hsu(rainfall, cleaning_threshold, surface_tilt, pm2_5, pm10,
 
     As recommended by [1]_, the default values of ``depo_veloc``
     are the settling velocities of particulates, i.e., only the gravitational
-    movement of particles.
+    movement of particles, as described in [2]_.
 
     References
     -----------

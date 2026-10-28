@@ -719,7 +719,7 @@ def read_pvgis_tmy(filename, pvgis_format=None, map_variables=True):
 
 
 def get_pvgis_horizon(latitude, longitude, url=URL, **kwargs):
-    """Get horizon data from PVGIS.
+    """Get horizon data from PVGIS [1]_.
 
     Parameters
     ----------

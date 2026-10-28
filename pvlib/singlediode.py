@@ -44,7 +44,7 @@ def estimate_voc(photocurrent, saturation_current, nNsVth):
     -----
     Calculating the open circuit voltage, :math:`V_{oc}`, of an ideal device
     with infinite shunt resistance, :math:`R_{sh} \\to \\infty`, and zero
-    series resistance, :math:`R_s = 0`, yields the following equation [1]. As
+    series resistance, :math:`R_s = 0`, yields the following equation [1]_. As
     an estimate of :math:`V_{oc}` it is useful as an upper bound for the
     bisection method.
 

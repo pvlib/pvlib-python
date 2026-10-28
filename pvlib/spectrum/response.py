@@ -89,7 +89,7 @@ def sr_to_qe(sr, wavelength=None, normalize=False):
 
     Provide wavelengths in nanometers, [nm].
 
-    Conversion is described in [1]_.
+    Conversion is described in [1]_ and [2]_.
 
     .. versionadded:: 0.11.0
 
@@ -188,7 +188,7 @@ def qe_to_sr(qe, wavelength=None, normalize=False):
 
     Provide wavelengths in nanometers, [nm].
 
-    Conversion is described in [1]_.
+    Conversion is described in [1]_ and [2]_.
 
     .. versionadded:: 0.11.0
 

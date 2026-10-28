@@ -371,7 +371,9 @@ def pvsyst_cell(poa_global, temp_air, wind_speed=1.0, u_c=29.0, u_v=0.0,
 
     Notes
     -----
-    The Pvsyst model for cell temperature :math:`T_{C}` is given by
+    The PVsyst model [1]_ has the same form as the Faiman model [2]_,
+    with the added influence of module efficiency and absorption.
+    The cell temperature :math:`T_{C}` is given by
 
     .. math::
        :label: pvsyst

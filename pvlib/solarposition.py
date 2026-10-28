@@ -34,6 +34,8 @@ def get_solarposition(time, latitude, longitude,
     """
     A convenience wrapper for the solar position calculators.
 
+    The default method uses the NLR SPA algorithm [1]_ [2]_ [3]_.
+
     Parameters
     ----------
     time : pandas.DatetimeIndex
@@ -130,7 +132,7 @@ def spa_c(time, latitude, longitude, pressure=101325., altitude=0.,
           raw_spa_output=False):
     r"""
     Calculate the solar position using the NLR C implementation of the
-    NREL SPA.
+    NREL SPA [1]_.
 
     The source files for this code are located in './spa_c_files/', along with
     a README file which describes how the C code is wrapped in Python.
@@ -156,7 +158,7 @@ def spa_c(time, latitude, longitude, pressure=101325., altitude=0.,
     temperature : float, default 12.0
         Temperature in C
     delta_t : float, default 67.0
-        Difference between terrestrial time and UT1.
+        Difference between terrestrial time and UT1 [2]_.
         USNO has previous values and predictions [3]_.
     raw_spa_output : bool, default False
         If true, returns the raw SPA output.
@@ -695,7 +697,7 @@ def pyephem(time, latitude, longitude, altitude=0., pressure=101325.,
 
 def ephemeris(time, latitude, longitude, pressure=101325.0, temperature=12.0):
     """
-    Python-native solar position calculator.
+    Python-native solar position calculator based on [1]_.
     The accuracy of this code is not guaranteed.
     Consider using the built-in spa_c code or the PyEphem library.
 
@@ -1120,6 +1122,8 @@ def equation_of_time_pvcdrom(dayofyear):
     """
     Equation of time from PVCDROM.
 
+    The equation is also described in [1]_.
+
     `PVCDROM`_ is a website by Solar Power Lab at Arizona State
     University (ASU)
 
@@ -1153,9 +1157,9 @@ def equation_of_time_pvcdrom(dayofyear):
 def declination_spencer71(dayofyear):
     """
     Solar declination from Duffie & Beckman and attributed to
-    Spencer (1971) and Iqbal (1983).
+    Spencer (1971) [2]_ and Iqbal (1983).
 
-    See [1]_ for details.
+    See [1]_ and [3]_ for details.
 
     .. warning::
         Return units are radians, not degrees.
@@ -1198,7 +1202,7 @@ def declination_cooper69(dayofyear):
     """
     Solar declination from Duffie & Beckman and attributed to Cooper (1969).
 
-    See [1]_ for details.
+    See [1]_, [2]_, and [3]_ for details.
 
     .. warning::
         Return units are radians, not degrees.
@@ -1244,7 +1248,9 @@ def declination_cooper69(dayofyear):
 def solar_azimuth_analytical(latitude, hourangle, declination, zenith):
     """
     Analytical expression of solar azimuth angle based on spherical
-    trigonometry.
+    trigonometry [1]_ [2]_.
+
+    See also the online descriptions in [3]_ and [4]_.
 
     Parameters
     ----------
@@ -1314,7 +1320,9 @@ def solar_azimuth_analytical(latitude, hourangle, declination, zenith):
 def solar_zenith_analytical(latitude, hourangle, declination):
     """
     Analytical expression of solar zenith angle based on spherical
-    trigonometry.
+    trigonometry [1]_ [2]_ [3]_.
+
+    See also the online descriptions in [4]_ and [5]_.
 
     .. warning:: The analytic form neglects the effect of atmospheric
         refraction.
@@ -1366,6 +1374,8 @@ def solar_zenith_analytical(latitude, hourangle, declination):
 def hour_angle(times, longitude, equation_of_time):
     """
     Hour angle in local solar time. Zero at local solar noon.
+
+    The calculation is described in [1]_, [2]_, and [3]_.
 
     Parameters
     ----------
@@ -1469,7 +1479,7 @@ def _times_to_hours_after_local_midnight(times):
 def sun_rise_set_transit_geometric(times, latitude, longitude, declination,
                                    equation_of_time):
     """
-    Geometric calculation of solar sunrise, sunset, and transit.
+    Geometric calculation of solar sunrise, sunset, and transit [1]_ [2]_.
 
     .. warning:: The geometric calculation assumes a circular earth orbit with
         the sun as a point source at its center, and neglects the effect of

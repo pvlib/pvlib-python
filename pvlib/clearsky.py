@@ -283,10 +283,10 @@ def haurwitz(apparent_zenith):
     Determine clear sky GHI using the Haurwitz model.
 
     Implements the Haurwitz clear sky model for global horizontal
-    irradiance (GHI) as presented in [1, 2]. A report on clear
+    irradiance (GHI) as presented in [1]_ [2]_. A report on clear
     sky models found the Haurwitz model to have the best performance
     in terms of average monthly error among models which require only
-    zenith angle [3].
+    zenith angle [3]_.
 
     Parameters
     ----------
@@ -638,7 +638,7 @@ def _clear_sample_index(clear_windows, samples_per_window, align, H):
 def _clearsky_get_threshold(sample_interval):
     """
     Returns threshold values for kwargs in detect_clearsky. See
-    Table 1 in [1].
+    Table 1 in [1]_.
 
     References
     ----------
@@ -930,7 +930,9 @@ def bird(zenith, airmass_relative, aod380, aod500, precipitable_water,
     """
     Bird Simple Clear Sky Broadband Solar Radiation Model
 
-    Based on NLR Excel implementation by Daryl R. Myers [1, 2].
+    Based on the NLR Excel implementation [3]_ by Daryl R. Myers [2]_
+    of the Bird and Hulstrom model [1]_ [4]_. Corrections to the model
+    are documented in the error reports [5]_.
 
     Bird and Hulstrom define the zenith as the "angle between a line to
     the sun and the local zenith". There is no distinction in the paper

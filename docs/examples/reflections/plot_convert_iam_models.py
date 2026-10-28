@@ -17,8 +17,9 @@ Illustrates how to convert from one IAM model to a different model using
 #
 # Here, we show how to use
 # :py:func:`~pvlib.iam.convert` to estimate parameters for a desired target
-# IAM model from a source IAM model. Model conversion uses a weight
-# function that can assign more influence to some AOI values than others.
+# IAM model from a source IAM model using the method in [1]_.
+# Model conversion uses a weight function that can assign more influence to
+# some AOI values than others.
 # We illustrate how to provide a custom weight function to
 # :py:func:`~pvlib.iam.convert`.
 

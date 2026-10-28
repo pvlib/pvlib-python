@@ -380,10 +380,6 @@ texinfo_documents = [
 
 ipython_warning_is_error = False
 
-# suppress "WARNING: Footnote [1] is not referenced." messages
-# https://github.com/pvlib/pvlib-python/issues/837
-suppress_warnings = ['ref.footnote']
-
 os_re_sep = re.escape(os.path.sep)
 # settings for sphinx-gallery
 sphinx_gallery_conf = {

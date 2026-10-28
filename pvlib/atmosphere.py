@@ -29,7 +29,7 @@ def pres2alt(pressure):
 
     Notes
     ------
-    The following assumptions are made
+    The following assumptions are made in the derivation in [1]_
 
     ============================   ================
     Parameter                      Value
@@ -69,7 +69,7 @@ def alt2pres(altitude):
 
     Notes
     ------
-    The following assumptions are made
+    The following assumptions are made in the derivation in [1]_
 
     ============================   ================
     Parameter                      Value
@@ -98,7 +98,7 @@ def get_absolute_airmass(airmass_relative, pressure=101325.):
     Determine absolute (pressure-adjusted) airmass from relative
     airmass and pressure.
 
-    The calculation for absolute airmass (:math:`AM_a`) is
+    The calculation for absolute airmass (:math:`AM_a`) is given by [1]_
 
     .. math::
         AM_a = AM_r \frac{P}{101325}
@@ -267,7 +267,8 @@ def gueymard94_pw(temp_air, relative_humidity):
     accuracy of this method is approximately 20% for moderate PW (1-3
     cm) and less accurate otherwise.
 
-    The model was developed by expanding Eq. 1 in [2]_:
+    The model is described in [1]_ and was developed by expanding Eq. 1
+    in [2]_:
 
     .. math::
 
@@ -439,7 +440,7 @@ def bird_hulstrom80_aod_bb(aod380, aod500):
     Approximate broadband aerosol optical depth.
 
     Bird and Hulstrom developed a correlation for broadband aerosol optical
-    depth (AOD) using two wavelengths, 380 nm and 500 nm.
+    depth (AOD) using two wavelengths, 380 nm and 500 nm [1]_ [2]_.
 
     Parameters
     ----------
@@ -473,10 +474,14 @@ def bird_hulstrom80_aod_bb(aod380, aod500):
 
 def kasten96_lt(airmass_absolute, precipitable_water, aod_bb):
     """
-    Calculate Linke turbidity  using Kasten pyrheliometric formula.
+    Calculate Linke turbidity using the Kasten pyrheliometric formula.
+
+    The Linke turbidity factor [1]_ is calculated using the Kasten
+    formulations [2]_ [3]_ and the conversion in [5]_. An airmass-independent
+    formulation is discussed in [6]_.
 
     Note that broadband aerosol optical depth (AOD) can be approximated by AOD
-    measured at 700 nm according to Molineaux [4] . Bird and Hulstrom offer an
+    measured at 700 nm according to Molineaux [4]_. Bird and Hulstrom offer an
     alternate approximation using AOD measured at 380 nm and 500 nm.
 
     Based on original implementation by Armel Oumbe.
@@ -561,7 +566,8 @@ def kasten96_lt(airmass_absolute, precipitable_water, aod_bb):
 
 def angstrom_aod_at_lambda(aod0, lambda0, alpha=1.14, lambda1=700.0):
     r"""
-    Get AOD at specified wavelength using Angstrom turbidity model.
+    Get AOD at specified wavelength using the Angstrom turbidity model
+    [1]_ [2]_.
 
     Parameters
     ----------

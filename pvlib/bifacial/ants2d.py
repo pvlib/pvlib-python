@@ -51,6 +51,10 @@ def _shaded_fraction(tracker_rotation, phi, gcr, x0=0, x1=1):
         Fraction of row slant height from the bottom that is shaded from
         direct irradiance.
 
+    Notes
+    -----
+    The shading geometry is described in [1]_.
+
     References
     ----------
     .. [1] Kevin Anderson and Mark Mikofski, "Slope-Aware Backtracking for
@@ -93,7 +97,7 @@ def _ants2d_singleside(tracker_rotation, cos_aoi, phi, gcr, height, pitch,
                        max_rows):
     r"""
     Calculate plane-of-array irradiance components on one side of a row
-    of modules.
+    of modules using the view factor model in [1]_.
 
     Parameters
     ----------

@@ -21,7 +21,7 @@ def pvefficiency_adr(effective_irradiance, temp_cell,
     Calculate PV module efficiency using the ADR model.
 
     The efficiency varies with irradiance and operating temperature
-    and is determined by 5 model parameters as described in [1]_.
+    and is determined by 5 model parameters as described in [1]_ and [2]_.
 
     Parameters
     ----------

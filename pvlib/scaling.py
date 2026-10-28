@@ -89,7 +89,7 @@ def wvm(clearsky_index, positions, cloud_speed, dt=None):
 def _compute_vr(positions, cloud_speed, tmscales):
     """
     Compute the variability reduction factors for each wavelet mode for the
-    Wavelet Variability Model [1-3].
+    Wavelet Variability Model [1]_ [2]_, following the MATLAB code [3]_.
 
     Parameters
     ----------
@@ -159,12 +159,13 @@ def latlon_to_xy(coordinates):
     Convert latitude and longitude in degrees to a coordinate system measured
     in meters from zero deg latitude, zero deg longitude.
 
-    This is a convenience method to support inputs to wvm. Note that the
+    This is a convenience method to support inputs to wvm [3]_, using
+    an earth radius from [1]_. Note that the
     methodology used is only suitable for short distances. For conversions of
     longer distances, users should consider use of Universal Transverse
     Mercator (UTM) or other suitable cartographic projection. Consider
     packages built for cartographic projection such as pyproj (e.g.
-    pyproj.transform()) [2].
+    pyproj.transform()) [2]_.
 
     Parameters
     ----------
@@ -217,7 +218,8 @@ def _compute_wavelet(clearsky_index, dt=None):
     centered moving averages. Smallest scale (filter size of 2) is a degenerate
     case that resembles a Haar wavelet. Returns one level of approximation
     coefficient (CAn) and n levels of detail coefficients (CD1, CD2, ...,
-    CDn-1, CDn).
+    CDn-1, CDn). The transform follows the Wavelet Variability Model [1]_
+    and its MATLAB implementation [2]_.
 
     Parameters
     ----------

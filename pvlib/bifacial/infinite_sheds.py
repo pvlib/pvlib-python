@@ -112,7 +112,7 @@ def _shaded_fraction(solar_zenith, solar_azimuth, surface_tilt,
     Calculate fraction (from the bottom) of row slant height that is shaded
     from direct irradiance by the row in front toward the sun.
 
-    See [1], Eq. 14 and also [2], Eq. 32.
+    See [1]_, Eq. 14 and also [2]_, Eq. 32.
 
     .. math::
         F_x = \\max \\left( 0, \\min \\left(\\frac{\\text{GCR} \\cos \\theta
@@ -173,7 +173,7 @@ def get_irradiance_poa(surface_tilt, surface_azimuth, solar_zenith,
     r"""
     Calculate plane-of-array (POA) irradiance on one side of a row of modules.
 
-    The infinite sheds model [1] assumes the PV system comprises parallel,
+    The infinite sheds model [1]_ assumes the PV system comprises parallel,
     evenly spaced rows on a level, horizontal surface. Rows can be on fixed
     racking or single axis trackers. The model calculates irradiance at a
     location far from the ends of any rows, in effect, assuming that the
@@ -381,7 +381,7 @@ def get_irradiance(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
     """
     Get front and rear irradiance using the infinite sheds model.
 
-    The infinite sheds model [1] assumes the PV system comprises parallel,
+    The infinite sheds model [1]_ assumes the PV system comprises parallel,
     evenly spaced rows on a level, horizontal surface. Rows can be on fixed
     racking or single axis trackers. The model calculates irradiance at a
     location far from the ends of any rows, in effect, assuming that the

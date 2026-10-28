@@ -581,7 +581,7 @@ def get_ground_diffuse(surface_tilt, ghi, albedo=.25, surface_type=None):
     r'''
     Estimate diffuse irradiance on a tilted surface from ground reflections.
 
-    Ground diffuse irradiance is calculated as
+    Ground diffuse irradiance is calculated as in [1]_
 
     .. math::
 
@@ -652,6 +652,8 @@ def isotropic(surface_tilt, dhi, return_components=False):
     r'''
     Determine diffuse irradiance from the sky on a tilted surface using
     the isotropic sky model.
+
+    The isotropic sky diffuse irradiance is calculated as in [1]_:
 
     .. math::
 
@@ -1169,7 +1171,9 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
     horizontal irradiance, direct normal irradiance, extraterrestrial
     irradiance, sun zenith angle, sun azimuth angle, and relative (not
     pressure-corrected) airmass. Optionally a selector may be used to
-    use any of Perez's model coefficient sets.
+    use any of Perez's model coefficient sets [2]_ [3]_ [4]_.
+
+    An empirical validation of the model is provided in [1]_.
 
     Warning
     -------
@@ -2062,9 +2066,9 @@ def dirint(ghi, solar_zenith, times, pressure=101325., use_delta_kt_prime=True,
     Determine DNI from GHI using the DIRINT modification of the DISC
     model.
 
-    Implements the modified DISC model known as "DIRINT" introduced in
-    [1]_. DIRINT predicts direct normal irradiance (DNI) from measured
-    global horizontal irradiance (GHI). DIRINT improves upon the DISC
+    Implements the modification of the DISC model [2]_ known as "DIRINT",
+    introduced in [1]_. DIRINT predicts direct normal irradiance (DNI) from
+    measured global horizontal irradiance (GHI). DIRINT improves upon the DISC
     model by using time-series GHI data and dew point temperature
     information. The effectiveness of the DIRINT model improves with
     each piece of information provided.
@@ -3183,7 +3187,7 @@ def campbell_norman(zenith, transmittance, pressure=101325.0,
                     dni_extra=1367.0):
     '''
     Determine DNI, DHI, GHI from extraterrestrial flux, transmittance,
-    and atmospheric pressure.
+    and atmospheric pressure using the model in [1]_.
 
     Parameters
     ----------
@@ -3235,7 +3239,9 @@ def campbell_norman(zenith, transmittance, pressure=101325.0,
 
 def _get_perez_coefficients(perezmodel):
     '''
-    Find coefficients for the Perez model
+    Find coefficients for the Perez models in [2]_ [3]_ [4]_.
+
+    An empirical validation of the model is provided in [1]_.
 
     Parameters
     ----------
@@ -3884,7 +3890,7 @@ def complete_irradiance(solar_zenith,
 
 def louche(ghi, solar_zenith, datetime_or_doy, max_zenith=90):
     """
-    Determine DNI and DHI from GHI using the Louche model.
+    Determine DNI and DHI from GHI using the Louche model [1]_.
 
     Parameters
     ----------

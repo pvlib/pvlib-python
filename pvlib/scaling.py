@@ -218,11 +218,11 @@ def _compute_wavelet(clearsky_index, dt=None):
     Compute the wavelet transform on the input clear_sky time series.
 
     Uses a top hat wavelet [-1,1,1,-1] shape, based on the difference of
-    successive centered moving averages. Smallest scale (filter size of 2) is
-    a degenerate case that resembles a Haar wavelet. Returns one level of approximation
-    coefficient (CAn) and n levels of detail coefficients (CD1, CD2, ...,
-    CDn-1, CDn). The transform follows the Wavelet Variability Model [1]_
-    and its MATLAB implementation [2]_.
+    successive centered moving averages. Smallest scale (filter size of 2) is a
+    degenerate case that resembles a Haar wavelet. Returns one level of
+    approximation coefficient (CAn) and n levels of detail coefficients (CD1,
+    CD2, ..., CDn-1, CDn). The transform follows the Wavelet Variability Model
+    [1]_ and its MATLAB implementation [2]_.
 
     Parameters
     ----------

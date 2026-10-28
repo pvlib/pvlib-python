@@ -566,8 +566,9 @@ def kasten96_lt(airmass_absolute, precipitable_water, aod_bb):
 
 def angstrom_aod_at_lambda(aod0, lambda0, alpha=1.14, lambda1=700.0):
     r"""
-    Get AOD at specified wavelength using the Angstrom turbidity model
-    [1]_ [2]_.
+    Get AOD at specified wavelength using Angstrom turbidity model.
+
+    The model is described in [1]_ and [2]_.
 
     Parameters
     ----------

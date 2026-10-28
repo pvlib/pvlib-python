@@ -1131,7 +1131,9 @@ def _process_return(target_name, optimize_result):
 def convert(source_name, source_params, target_name, weight=_sin_weight,
             fix_n=True, xtol=None):
     """
-    Convert a source IAM model to a target IAM model using the method in [1]_.
+    Convert a source IAM model to a target IAM model.
+
+    The conversion method is described in [1]_.
 
     Parameters
     ----------
@@ -1250,7 +1252,9 @@ def convert(source_name, source_params, target_name, weight=_sin_weight,
 
 def fit(measured_aoi, measured_iam, model_name, weight=_sin_weight, xtol=None):
     """
-    Find model parameters that best fit the data using the method in [1]_.
+    Find model parameters that best fit the data.
+
+    The fitting method is described in [1]_.
 
     Parameters
     ----------

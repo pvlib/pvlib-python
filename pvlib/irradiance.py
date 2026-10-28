@@ -3187,7 +3187,9 @@ def campbell_norman(zenith, transmittance, pressure=101325.0,
                     dni_extra=1367.0):
     '''
     Determine DNI, DHI, GHI from extraterrestrial flux, transmittance,
-    and atmospheric pressure using the model in [1]_.
+    and atmospheric pressure.
+
+    The model is described in [1]_.
 
     Parameters
     ----------
@@ -3239,7 +3241,9 @@ def campbell_norman(zenith, transmittance, pressure=101325.0,
 
 def _get_perez_coefficients(perezmodel):
     '''
-    Find coefficients for the Perez models in [2]_ [3]_ [4]_.
+    Find coefficients for the Perez model.
+
+    The model coefficient sets are described in [2]_, [3]_, and [4]_.
 
     An empirical validation of the model is provided in [1]_.
 
@@ -3890,7 +3894,9 @@ def complete_irradiance(solar_zenith,
 
 def louche(ghi, solar_zenith, datetime_or_doy, max_zenith=90):
     """
-    Determine DNI and DHI from GHI using the Louche model [1]_.
+    Determine DNI and DHI from GHI using the Louche model.
+
+    The model is described in [1]_.
 
     Parameters
     ----------

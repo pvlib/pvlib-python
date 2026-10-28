@@ -97,7 +97,9 @@ def _ants2d_singleside(tracker_rotation, cos_aoi, phi, gcr, height, pitch,
                        max_rows):
     r"""
     Calculate plane-of-array irradiance components on one side of a row
-    of modules using the view factor model in [1]_.
+    of modules.
+
+    The view factor model is described in [1]_.
 
     Parameters
     ----------

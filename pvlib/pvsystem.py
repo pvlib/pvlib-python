@@ -1901,7 +1901,9 @@ def calcparams_cec(effective_irradiance, temp_cell,
     '''
     Calculates five parameter values for the single diode equation at
     effective irradiance and cell temperature using the CEC
-    model. The CEC model [1]_ differs from the De soto et al.
+    model.
+
+    The CEC model [1]_ differs from the De soto et al.
     model [3]_ by the parameter Adjust. The five values returned by
     calcparams_cec can be used by singlediode to calculate an IV curve.
     The CEC model is used in the System Advisor Model [2]_.
@@ -2370,8 +2372,10 @@ def sapm(effective_irradiance, temp_cell, module, *, temperature_ref=25,
          irradiance_ref=1000):
     '''
     The Sandia PV Array Performance Model (SAPM) generates 5 points on a
-    PV module's I-V curve (Voc, Isc, Ix, Ixx, Vmp/Imp) according to
-    SAND2004-3535 [1]_. Assumes a reference cell temperature of 25°C.
+    PV module's I-V curve (Voc, Isc, Ix, Ixx, Vmp/Imp).
+
+    The model is described in [1]_ and assumes a reference cell
+    temperature of 25°C.
 
     Parameters
     ----------

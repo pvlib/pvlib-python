@@ -261,7 +261,9 @@ def _unit_normal(axis_azimuth, axis_tilt, theta):
 
 def calc_surface_orientation(tracker_theta, axis_tilt=0, axis_azimuth=0):
     """
-    Calculate surface tilt and azimuth for a tracker rotation using [1]_.
+    Calculate the surface tilt and azimuth angles for a given tracker rotation.
+
+    The rotation geometry is described in [1]_.
 
     Parameters
     ----------

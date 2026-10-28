@@ -425,7 +425,9 @@ class Location:
 def lookup_altitude(latitude, longitude):
     """
     Look up location altitude from low-resolution altitude map
-    supplied with pvlib. The data for this map comes from multiple open data
+    supplied with pvlib.
+
+    The data for this map comes from multiple open data
     sources with varying resolutions aggregated by Mapzen [1]_ using
     Joerd [2]_ and distributed as Terrain Tiles [3]_.
 

@@ -637,8 +637,9 @@ def _clear_sample_index(clear_windows, samples_per_window, align, H):
 
 def _clearsky_get_threshold(sample_interval):
     """
-    Returns threshold values for kwargs in detect_clearsky. See
-    Table 1 in [1]_.
+    Returns threshold values for kwargs in detect_clearsky.
+
+    See Table 1 in [1]_.
 
     References
     ----------

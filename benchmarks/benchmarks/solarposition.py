@@ -51,7 +51,7 @@ class SolarPosition:
             self.times_daily, self.lat, self.lon)
 
     def time_sun_rise_set_transit_geometric_full_comparison(self, ndays):
-        dayofyear = self.times_daily.dayofyear
+        dayofyear = self.times_daily.day_of_year
         declination = solarposition.declination_spencer71(dayofyear)
         equation_of_time = solarposition.equation_of_time_spencer71(dayofyear)
         solarposition.sun_rise_set_transit_geometric(

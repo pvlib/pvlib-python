@@ -24,12 +24,15 @@ Bug fixes
 
 Enhancements
 ~~~~~~~~~~~~
+* Add ``pandas==3.1.0`` support. (:pull:`2924`)
 * Add ``dataset`` parameter to :py:func:`~pvlib.iotools.get_era5`
   allowing for choosing between ERA5 and ERA5-Land datasets.
   (:pull:`2780`)
 
 Documentation
 ~~~~~~~~~~~~~
+* Add :py:func:`pvlib.spa.transit_sunrise_sunset` to the API reference.
+  (:issue:`2255`, :pull:`2873`)
 * Clarified in :py:func:`pvlib.tracking.singleaxis` that the tracker
   rotation minimizes the angle of incidence (AOI) to maximize the use of
   direct normal irradiance (DNI). (:issue:`2314`, :pull:`2869`)
@@ -38,7 +41,6 @@ Documentation
   (:issue:`2886`, :pull:`2887`)
 * Link the :py:mod:`pvlib.iotools` module from the FAQ entry on irradiance
   data. (:issue:`1983`)
-
 * Clarify that :py:func:`pvlib.ivtools.sdm.fit_pvsyst_sandia` and
   :py:func:`pvlib.ivtools.sdm.fit_desoto_sandia` require multiple IV curves.
   (:issue:`1715`, :pull:`2883`)

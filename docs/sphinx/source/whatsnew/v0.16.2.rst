@@ -31,13 +31,14 @@ Enhancements
 
 Documentation
 ~~~~~~~~~~~~~
+* Add :py:func:`pvlib.spa.transit_sunrise_sunset` to the API reference.
+  (:issue:`2255`, :pull:`2873`)
 * Clarified in :py:func:`pvlib.tracking.singleaxis` that the tracker
   rotation minimizes the angle of incidence (AOI) to maximize the use of
   direct normal irradiance (DNI). (:issue:`2314`, :pull:`2869`)
 * Fix the :py:func:`pvlib.spa.solar_position` docstring, which listed
   outputs ``elevation`` and ``apparent_elevation`` in the wrong order.
   (:issue:`2886`, :pull:`2887`)
-
 * Clarify that :py:func:`pvlib.ivtools.sdm.fit_pvsyst_sandia` and
   :py:func:`pvlib.ivtools.sdm.fit_desoto_sandia` require multiple IV curves.
   (:issue:`1715`, :pull:`2883`)

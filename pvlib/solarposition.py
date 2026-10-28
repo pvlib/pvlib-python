@@ -772,7 +772,7 @@ def ephemeris(time, latitude, longitude, pressure=101325.0, temperature=12.0):
     time_utc = tools._pandas_to_utc(time)
 
     # strip out the day of the year and calculate the decimal hour
-    DayOfYear = time_utc.dayofyear
+    DayOfYear = time_utc.day_of_year
     DecHours = (time_utc.hour + time_utc.minute/60. + time_utc.second/3600. +
                 time_utc.microsecond/3600.e6)
 

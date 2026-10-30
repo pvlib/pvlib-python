@@ -660,7 +660,11 @@ def test_detect_clearsky_arrays(detect_clearsky_data):
 
 def test_detect_clearsky_irregular_times(detect_clearsky_data):
     expected, cs = detect_clearsky_data
-    times = cs.index.values.copy()
+    times = (
+        cs.index
+        .tz_convert(None)  # converted to UTC
+        .to_numpy(copy=True)  # np.datetime64 + required writability
+    )
     times[0] += pd.Timedelta(1, unit='s')
     times = pd.DatetimeIndex(times)
     match = "does not yet support unequal time intervals"
@@ -782,9 +786,9 @@ def test_bird():
     aod_380nm = 0.15
     b_a = 0.85
     alb = 0.2
-    eot = solarposition.equation_of_time_spencer71(times_utc.dayofyear)
+    eot = solarposition.equation_of_time_spencer71(times_utc.day_of_year)
     hour_angle = solarposition.hour_angle(times, longitude, eot) - 0.5 * 15.
-    declination = solarposition.declination_spencer71(times_utc.dayofyear)
+    declination = solarposition.declination_spencer71(times_utc.day_of_year)
     zenith = solarposition.solar_zenith_analytical(
         np.deg2rad(latitude), np.deg2rad(hour_angle), declination
     )

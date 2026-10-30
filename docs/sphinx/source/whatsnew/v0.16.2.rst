@@ -27,22 +27,29 @@ Bug fixes
 
 Enhancements
 ~~~~~~~~~~~~
+* Add ``pandas==3.1.0`` support. (:pull:`2924`)
 * Add ``dataset`` parameter to :py:func:`~pvlib.iotools.get_era5`
   allowing for choosing between ERA5 and ERA5-Land datasets.
   (:pull:`2780`)
 
 Documentation
 ~~~~~~~~~~~~~
+* Add :py:func:`pvlib.spa.transit_sunrise_sunset` to the API reference.
+  (:issue:`2255`, :pull:`2873`)
 * Clarified in :py:func:`pvlib.tracking.singleaxis` that the tracker
   rotation minimizes the angle of incidence (AOI) to maximize the use of
   direct normal irradiance (DNI). (:issue:`2314`, :pull:`2869`)
 * Fix the :py:func:`pvlib.spa.solar_position` docstring, which listed
   outputs ``elevation`` and ``apparent_elevation`` in the wrong order.
   (:issue:`2886`, :pull:`2887`)
-
+* Link the :py:mod:`pvlib.iotools` module from the FAQ entry on irradiance
+  data. (:issue:`1983`)
 * Clarify that :py:func:`pvlib.ivtools.sdm.fit_pvsyst_sandia` and
   :py:func:`pvlib.ivtools.sdm.fit_desoto_sandia` require multiple IV curves.
   (:issue:`1715`, :pull:`2883`)
+* Note deprecation of ``king`` model in :py:func:`~pvlib.irradiance.get_total_irradiance`
+  and :py:func:`~pvlib.irradiance.get_sky_diffuse` docstrings.
+  (:issue:`2897`, :pull:`2904`)
 
 
 Testing
@@ -70,7 +77,9 @@ Contributors
 * Chen Yi (:ghuser:`chenyi6758-source`)
 * Rajiv Daxini (:ghuser:`rdaxini`)
 * jason-writer (:ghuser:`jason-writer`)
+* :ghuser:`mmporong`
 * :ghuser:`bfs2021`
 * :ghuser:`xiajiahang`
 
 * Xamit Kadirbekov (:ghuser:`kadyrbekovhamit-cyber`) and Daniyal Kadirbekov
+* Jakub Krasuski (:ghuser:`Blizzeq`)

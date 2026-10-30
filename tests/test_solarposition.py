@@ -618,8 +618,8 @@ def test_equation_of_time():
     output = solarposition.spa_python(times, 37.8, -122.25, 100)
     eot = output['equation_of_time']
     eot_rng = eot.max() - eot.min()  # range of values, around 30 minutes
-    eot_1 = solarposition.equation_of_time_spencer71(times.dayofyear)
-    eot_2 = solarposition.equation_of_time_pvcdrom(times.dayofyear)
+    eot_1 = solarposition.equation_of_time_spencer71(times.day_of_year)
+    eot_2 = solarposition.equation_of_time_pvcdrom(times.day_of_year)
     assert np.allclose(eot_1 / eot_rng, eot / eot_rng, atol=0.3)  # spencer
     assert np.allclose(eot_2 / eot_rng, eot / eot_rng, atol=0.4)  # pvcdrom
 
@@ -635,8 +635,8 @@ def test_declination():
                                            sst=True)
     declination = np.deg2rad(declination)
     declination_rng = declination.max() - declination.min()
-    declination_1 = solarposition.declination_cooper69(times.dayofyear)
-    declination_2 = solarposition.declination_spencer71(times.dayofyear)
+    declination_1 = solarposition.declination_cooper69(times.day_of_year)
+    declination_2 = solarposition.declination_spencer71(times.day_of_year)
     a, b = declination_1 / declination_rng, declination / declination_rng
     assert np.allclose(a, b, atol=0.03)  # cooper
     a, b = declination_2 / declination_rng, declination / declination_rng
@@ -652,14 +652,14 @@ def test_analytical_zenith():
     output = solarposition.spa_python(times, lat, lon, 100)
     solar_zenith = np.deg2rad(output['zenith'])  # spa
     # spencer
-    eot = solarposition.equation_of_time_spencer71(times_utc.dayofyear)
+    eot = solarposition.equation_of_time_spencer71(times_utc.day_of_year)
     hour_angle = np.deg2rad(solarposition.hour_angle(times, lon, eot))
-    decl = solarposition.declination_spencer71(times_utc.dayofyear)
+    decl = solarposition.declination_spencer71(times_utc.day_of_year)
     zenith_1 = solarposition.solar_zenith_analytical(lat_rad, hour_angle, decl)
     # pvcdrom and cooper
-    eot = solarposition.equation_of_time_pvcdrom(times_utc.dayofyear)
+    eot = solarposition.equation_of_time_pvcdrom(times_utc.day_of_year)
     hour_angle = np.deg2rad(solarposition.hour_angle(times, lon, eot))
-    decl = solarposition.declination_cooper69(times_utc.dayofyear)
+    decl = solarposition.declination_cooper69(times_utc.day_of_year)
     zenith_2 = solarposition.solar_zenith_analytical(lat_rad, hour_angle, decl)
     assert np.allclose(zenith_1, solar_zenith, atol=0.015)
     assert np.allclose(zenith_2, solar_zenith, atol=0.025)
@@ -675,16 +675,16 @@ def test_analytical_azimuth():
     solar_azimuth = np.deg2rad(output['azimuth'])  # spa
     solar_zenith = np.deg2rad(output['zenith'])
     # spencer
-    eot = solarposition.equation_of_time_spencer71(times_utc.dayofyear)
+    eot = solarposition.equation_of_time_spencer71(times_utc.day_of_year)
     hour_angle = np.deg2rad(solarposition.hour_angle(times, lon, eot))
-    decl = solarposition.declination_spencer71(times_utc.dayofyear)
+    decl = solarposition.declination_spencer71(times_utc.day_of_year)
     zenith = solarposition.solar_zenith_analytical(lat_rad, hour_angle, decl)
     azimuth_1 = solarposition.solar_azimuth_analytical(lat_rad, hour_angle,
                                                        decl, zenith)
     # pvcdrom and cooper
-    eot = solarposition.equation_of_time_pvcdrom(times_utc.dayofyear)
+    eot = solarposition.equation_of_time_pvcdrom(times_utc.day_of_year)
     hour_angle = np.deg2rad(solarposition.hour_angle(times, lon, eot))
-    decl = solarposition.declination_cooper69(times_utc.dayofyear)
+    decl = solarposition.declination_cooper69(times_utc.day_of_year)
     zenith = solarposition.solar_zenith_analytical(lat_rad, hour_angle, decl)
     azimuth_2 = solarposition.solar_azimuth_analytical(lat_rad, hour_angle,
                                                        decl, zenith)
@@ -853,8 +853,8 @@ def test_sun_rise_set_transit_geometric(expected_rise_set_spa, golden_mst):
     latitude = golden_mst.latitude
     longitude = golden_mst.longitude
     eot = solarposition.equation_of_time_spencer71(
-        times_utc.dayofyear)  # minutes
-    decl = solarposition.declination_spencer71(times_utc.dayofyear)  # radians
+        times_utc.day_of_year)  # minutes
+    decl = solarposition.declination_spencer71(times_utc.day_of_year)  # rad
     with pytest.raises(ValueError):
         solarposition.sun_rise_set_transit_geometric(
             times.tz_convert(None), latitude=latitude, longitude=longitude,
@@ -869,12 +869,18 @@ def test_sun_rise_set_transit_geometric(expected_rise_set_spa, golden_mst):
     test_sunset = solarposition._times_to_hours_after_local_midnight(ss)
     test_transit = solarposition._times_to_hours_after_local_midnight(st)
     # convert expected SPA sunrise, sunset, transit to local datetime indices
-    expected_sunrise = pd.DatetimeIndex(expected_rise_set_spa.sunrise.values,
-                                        tz='UTC').tz_convert(golden_mst.tz)
-    expected_sunset = pd.DatetimeIndex(expected_rise_set_spa.sunset.values,
-                                       tz='UTC').tz_convert(golden_mst.tz)
-    expected_transit = pd.DatetimeIndex(expected_rise_set_spa.transit.values,
-                                        tz='UTC').tz_convert(golden_mst.tz)
+    expected_sunrise = pd.DatetimeIndex(
+        expected_rise_set_spa["sunrise"].dt.tz_convert(None).to_numpy(),
+        tz="UTC",
+    ).tz_convert(golden_mst.tz)
+    expected_sunset = pd.DatetimeIndex(
+        expected_rise_set_spa["sunset"].dt.tz_convert(None).to_numpy(),
+        tz="UTC",
+    ).tz_convert(golden_mst.tz)
+    expected_transit = pd.DatetimeIndex(
+        expected_rise_set_spa["transit"].dt.tz_convert(None).to_numpy(),
+        tz="UTC",
+    ).tz_convert(golden_mst.tz)
     # convert expected times to hours since midnight as arrays of floats
     expected_sunrise = solarposition._times_to_hours_after_local_midnight(
         expected_sunrise)

@@ -117,6 +117,30 @@ def hsu(rainfall, cleaning_threshold, surface_tilt, pm2_5, pm10,
     return soiling_ratio
 
 
+def _kimber_cleaning_events(times, rainfall, cleaning_threshold,
+                            rain_accum_period, tol=1e-6):
+    """
+    Flag each time step where ``cleaning_threshold`` of new rain has fallen
+    within ``rain_accum_period``. Rain counted toward an event is used up by
+    it, so only a further ``cleaning_threshold`` of rain makes a new event.
+    ``tol`` [mm] absorbs floating point error in the running sum.
+    """
+    rainfall = np.nan_to_num(rainfall)  # missing rainfall counts as none
+    events = np.zeros(len(rainfall), dtype=bool)
+    start, total = 0, 0.0
+    for i in range(len(rainfall)):
+        total += rainfall[i]
+        while times[i] - times[start] >= rain_accum_period:
+            total -= rainfall[start]
+            start += 1
+        if total < tol:
+            total = 0.0  # no rain in window, drop accumulated rounding error
+        elif total >= cleaning_threshold - tol:
+            events[i] = True
+            start, total = i + 1, 0.0
+    return events
+
+
 def kimber(rainfall, cleaning_threshold=6, soiling_loss_rate=0.0015,
            grace_period=14, max_soiling=0.3, manual_wash_dates=None,
            initial_soiling=0, rain_accum_period=24):
@@ -125,11 +149,11 @@ def kimber(rainfall, cleaning_threshold=6, soiling_loss_rate=0.0015,
     daily loss rate using the Kimber model.
 
     Kimber soiling model [1]_ assumes soiling builds up at a daily rate unless
-    the daily rainfall is greater than a threshold. The model also assumes that
-    if daily rainfall has exceeded the threshold within a grace period, then
-    the ground is too damp to cause soiling build-up. The model also assumes
-    there is a maximum soiling build-up. Scheduled manual washes and rain
-    events are assumed to reset soiling to zero.
+    the daily rainfall meets a cleaning threshold. The model also assumes that
+    for a grace period after rainfall that meets the threshold, the ground is
+    too damp to cause soiling build-up. The model also assumes there is a
+    maximum soiling build-up. Scheduled manual washes and rain events are
+    assumed to reset soiling to zero.
 
     Parameters
     ----------
@@ -140,7 +164,7 @@ def kimber(rainfall, cleaning_threshold=6, soiling_loss_rate=0.0015,
     soiling_loss_rate: float, default 0.0015
         Fraction of energy lost due to one day of soiling. [unitless]
     grace_period : int, default 14
-        Number of days after a rainfall event when it's assumed the ground is
+        Number of days after a cleaning event when it's assumed the ground is
         damp, and so it's assumed there is no soiling. [days]
     max_soiling : float, default 0.3
         Maximum fraction of energy lost due to soiling. Soiling will build up
@@ -179,6 +203,14 @@ def kimber(rainfall, cleaning_threshold=6, soiling_loss_rate=0.0015,
     Rainfall thresholds and grace periods may also vary by region. Please
     consult [1]_ for more information.
 
+    A cleaning event occurs each time `cleaning_threshold` of new rain has
+    fallen within `rain_accum_period`, and the grace period starts at that
+    time step. Rain counted toward a cleaning event cannot count toward
+    another, so light rain after a storm does not extend the grace period.
+    With the default `rain_accum_period` of 24 hours and daily input, a day
+    is a cleaning event if its rainfall meets `cleaning_threshold`, as in
+    [1]_. Missing rainfall values are treated as zero.
+
     References
     ----------
     .. [1] "The Effect of Soiling on Large Grid-Connected Photovoltaic Systems
@@ -198,10 +230,6 @@ def kimber(rainfall, cleaning_threshold=6, soiling_loss_rate=0.0015,
     timestep_interval = (rain_index_vals[1] - rain_index_vals[0])
     day_fraction = timestep_interval / np.timedelta64(24, 'h')
 
-    # accumulate rainfall
-    accumulated_rainfall = rainfall.rolling(
-        rain_accum_period, closed='right').sum()
-
     # soiling rate
     soiling = np.ones_like(rainfall.values) * soiling_loss_rate * day_fraction
     soiling[0] = initial_soiling
@@ -209,10 +237,12 @@ def kimber(rainfall, cleaning_threshold=6, soiling_loss_rate=0.0015,
     soiling = pd.Series(soiling, index=rainfall.index, name='soiling')
 
     # rainfall events that clean the panels
-    rain_events = accumulated_rainfall > cleaning_threshold
+    rain_events = pd.Series(_kimber_cleaning_events(
+        rain_index_vals, rainfall.to_numpy(dtype=float), cleaning_threshold,
+        np.timedelta64(rain_accum_period)), index=rainfall.index)
 
     # grace periods windows during which ground is assumed damp, so no soiling
-    grace_windows = rain_events.rolling(grace_period, closed='right').sum() > 0
+    grace_windows = rain_events.rolling(grace_period, closed='both').sum() > 0
 
     # clean panels by subtracting soiling for indices in grace period windows
     cleaning = pd.Series(float('NaN'), index=rainfall.index)

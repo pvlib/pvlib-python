@@ -80,6 +80,6 @@ Contributors
 * :ghuser:`mmporong`
 * :ghuser:`bfs2021`
 * :ghuser:`xiajiahang`
-
-* Xamit Kadirbekov (:ghuser:`kadyrbekovhamit-cyber`) and Daniyal Kadirbekov
 * Jakub Krasuski (:ghuser:`Blizzeq`)
+* Xamit Kadirbekov (:ghuser:`kadyrbekovhamit-cyber`)
+* Daniyal Kadirbekov

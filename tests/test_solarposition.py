@@ -767,11 +767,9 @@ def test_hour_angle_with_tricky_timezones():
     try:  # transitive dependency to pytz through pandas < 3
         import pytz
         _NonExistentTimeError = pytz.exceptions.NonExistentTimeError
-        _AmbiguousTimeError = pytz.exceptions.AmbiguousTimeError
     except ImportError:  # pragma: no cover
-        # pandas 3.x dropped pytz; these are now raised as ValueError
+        # pandas 3.x dropped pytz; this is now raised as ValueError
         _NonExistentTimeError = ValueError
-        _AmbiguousTimeError = ValueError
 
     eot = np.array([-3.935172, -4.117227, -4.026295, -4.026295])
 
@@ -835,7 +833,7 @@ def test_sun_rise_set_transit_geometric_dst_transition_day():
                        ('2024-11-03', 'Etc/GMT+5')]:
         times = pd.DatetimeIndex([pd.Timestamp(day + ' 12:00',
                                                tz='America/New_York')])
-        doy = times.dayofyear
+        doy = times.day_of_year
         decl = solarposition.declination_spencer71(doy)
         eot = solarposition.equation_of_time_spencer71(doy)
         local = solarposition.sun_rise_set_transit_geometric(

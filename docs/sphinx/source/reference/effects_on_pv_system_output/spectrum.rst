@@ -7,6 +7,7 @@ Spectrum
    :toctree: ../generated/
 
    spectrum.spectrl2
+   spectrum.sedes2
    spectrum.get_example_spectral_response
    spectrum.get_reference_spectra
    spectrum.calc_spectral_mismatch_field

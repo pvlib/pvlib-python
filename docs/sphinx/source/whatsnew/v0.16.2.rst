@@ -21,6 +21,8 @@ Bug fixes
   is scalar (:issue:`2881`, :pull:`2882`)
 * :py:func:`pvlib.scaling.wvm` no longer returns all NaNs when ``positions``
   contains a single site (:issue:`2895`, :pull:`2896`)
+* Fix :py:func:`pvlib.bifacial.power_mismatch_deline` docstring's incorrect derivation
+  of total RMAD from rear RMAD. (:issue:`2929`, :pull:`2930`)
 
 Enhancements
 ~~~~~~~~~~~~

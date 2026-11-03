@@ -1,0 +1,14 @@
+# .git-blame-ignore-revs
+# List of commits that are irrelevant when traversing the blame history.
+# GitHub automatically reads and interprets this file when present.
+# Developers should run blame command as follows to exclude commits in this file:
+# `git blame --ignore-revs-file .git-blame-ignore-revs <file-to-blame>`
+# Or, to persist the exclusion, change the repo's configuration via:
+# `git config blame.ignoreRevsFile .git-blame-ignore-revs`
+#
+# More info at [^1] and [^2]:
+# [^1] https://stackoverflow.com/questions/34957237/can-i-configure-git-blame-to-always-ignore-certain-commits-want-to-fix-git-blam
+# [^2] https://docs.github.com/en/repositories/working-with-files/using-files/viewing-and-understanding-files#ignore-commits-in-the-blame-view
+
+# 2026-07-14 : GH#2805 Line end normalization
+3e903d3662525a2fb9b7cc0b8248508c99a13f5d

@@ -2220,6 +2220,12 @@ def _dirint_coeffs(times, kt_prime, solar_zenith, w, delta_kt_prime):
     -------
     dirint_coeffs : array-like
     """
+    # The coefficient table only covers kt_prime up to 1, so clip larger
+    # values to the table boundary instead of returning NaN coefficients
+    # for them.  Only the value used for the coefficient lookup is
+    # clipped; kt_prime itself is unchanged everywhere else.  See GH 1815.
+    kt_prime = np.minimum(kt_prime, 1.)
+
     kt_prime_bin, zenith_bin, w_bin, delta_kt_prime_bin = \
         _dirint_bins(times, kt_prime, solar_zenith, w, delta_kt_prime)
 

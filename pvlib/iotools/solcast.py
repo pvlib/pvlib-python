@@ -78,6 +78,8 @@ def get_solcast_tmy(
     data : pandas.DataFrame
         containing the values for the parameters requested. The times
         in the DataFrame index indicate the midpoint of each interval.
+        The index is timezone-aware, using the UTC offset returned by
+        the API, or UTC if the returned timestamps have mixed offsets.
     metadata: dict
         latitude and longitude of the request.
 
@@ -179,6 +181,8 @@ def get_solcast_historic(
     data : pandas.DataFrame
         containing the values for the parameters requested. The times
         in the DataFrame index indicate the midpoint of each interval.
+        The index is timezone-aware, using the UTC offset returned by
+        the API, or UTC if the returned timestamps have mixed offsets.
     metadata: dict
         latitude and longitude of the request.
 
@@ -263,6 +267,8 @@ def get_solcast_forecast(
     data : pandas.DataFrame
         Contains the values for the parameters requested. The times
         in the DataFrame index indicate the midpoint of each interval.
+        The index is timezone-aware, using the UTC offset returned by
+        the API, or UTC if the returned timestamps have mixed offsets.
     metadata: dict
         latitude and longitude of the request.
 
@@ -341,6 +347,8 @@ def get_solcast_live(
     data : pandas.DataFrame
         containing the values for the parameters requested. The times
         in the DataFrame index indicate the midpoint of each interval.
+        The index is timezone-aware, using the UTC offset returned by
+        the API, or UTC if the returned timestamps have mixed offsets.
     metadata: dict
         latitude and longitude of the request.
 
@@ -400,6 +408,22 @@ def get_solcast_live(
     return data, {"latitude": latitude, "longitude": longitude}
 
 
+def _parse_period_end(period_end):
+    """Parse Solcast ``period_end`` timestamps to a tz-aware DatetimeIndex.
+
+    Supports both the legacy format (``2025-04-16T06:00:00.0000000Z``) and
+    the ISO 8601 UTC offset format (``2025-04-16T14:00:00+01:30``).
+    If all timestamps share the same UTC offset, that offset is kept;
+    otherwise the timestamps are converted to UTC.
+    """
+    period_end = pd.Series(period_end).astype(str)
+    times = pd.DatetimeIndex(pd.to_datetime(period_end, utc=True))
+    offsets = period_end.str.extract(r'(Z|[+-]\d{2}:?\d{2})$')[0]
+    if len(times) > 0 and offsets.nunique(dropna=False) == 1:
+        times = times.tz_convert(pd.Timestamp(period_end.iloc[0]).tz)
+    return times
+
+
 def _solcast2pvlib(data):
     """Format the data from Solcast to pvlib's conventions.
 
@@ -414,7 +438,7 @@ def _solcast2pvlib(data):
     """
     # move from period_end to period_middle as per pvlib convention
 
-    data["period_mid"] = pd.to_datetime(
+    data["period_mid"] = _parse_period_end(
         data.period_end) - pd.to_timedelta(data.period.values) / 2
     data = data.set_index("period_mid").drop(columns=["period_end", "period"])
 

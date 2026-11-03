@@ -245,7 +245,7 @@ def _interpolate_turbidity(lts, time):
 
     isleap = time_utc.is_leap_year
 
-    dayofyear = time_utc.dayofyear
+    dayofyear = time_utc.day_of_year
     days_leap = _calendar_month_middles(2016)
     days_no_leap = _calendar_month_middles(2015)
 

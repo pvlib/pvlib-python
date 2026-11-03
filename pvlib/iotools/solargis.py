@@ -204,9 +204,8 @@ def get_solargis(latitude, longitude, start, end, variables, api_key,
     if map_variables:
         for variable in VARIABLE_MAP:
             if variable.solargis_name in data.columns:
-                data.rename(
-                    columns={variable.solargis_name: variable.pvlib_name},
-                    inplace=True
+                data = data.rename(
+                    columns={variable.solargis_name: variable.pvlib_name}
                 )
                 data[variable.pvlib_name] = data[
                     variable.pvlib_name].apply(variable.conversion)

@@ -421,9 +421,8 @@ def _solcast2pvlib(data):
     # rename and convert variables
     for variable in VARIABLE_MAP:
         if variable.solcast_name in data.columns:
-            data.rename(
+            data = data.rename(
                 columns={variable.solcast_name: variable.pvlib_name},
-                inplace=True
             )
             data[variable.pvlib_name] = data[
                 variable.pvlib_name].apply(variable.conversion)
@@ -474,7 +473,7 @@ def _get_solcast(
 
     if response.status_code == 200:
         j = response.json()
-        df = pd.DataFrame.from_dict(j[list(j.keys())[0]])
+        df = pd.DataFrame(j[list(j.keys())[0]])
         if map_variables:
             return _solcast2pvlib(df)
         else:

@@ -295,7 +295,7 @@ def get_total_irradiance(surface_tilt, surface_azimuth,
         * klucher
         * haydavies
         * reindl
-        * king
+        * king (deprecated)
         * perez
         * perez-driesse
 
@@ -328,7 +328,7 @@ def get_total_irradiance(surface_tilt, surface_azimuth,
         the list of accepted values.
     model : str, default 'isotropic'
         Irradiance model. Can be one of ``'isotropic'``, ``'klucher'``,
-        ``'haydavies'``, ``'reindl'``, ``'king'``, ``'perez'``,
+        ``'haydavies'``, ``'reindl'``, ``'king'`` (deprecated), ``'perez'``,
         ``'perez-driesse'``.
     model_perez : str, default 'allsitescomposite1990'
         Used only if ``model='perez'``. See :py:func:`~pvlib.irradiance.perez`.
@@ -387,7 +387,7 @@ def get_sky_diffuse(surface_tilt, surface_azimuth,
         * klucher
         * haydavies
         * reindl
-        * king
+        * king (deprecated)
         * perez
         * perez-driesse
 
@@ -415,7 +415,7 @@ def get_sky_diffuse(surface_tilt, surface_azimuth,
         See :term:`airmass_relative`. [unitless]
     model : str, default 'isotropic'
         Irradiance model. Can be one of ``'isotropic'``, ``'klucher'``,
-        ``'haydavies'``, ``'reindl'``, ``'king'``, ``'perez'``,
+        ``'haydavies'``, ``'reindl'``, ``'king'`` (deprecated), ``'perez'``,
         ``'perez-driesse'``.
     model_perez : str, default 'allsitescomposite1990'
         Used only if ``model='perez'``. See :py:func:`~pvlib.irradiance.perez`.
@@ -1937,7 +1937,7 @@ def disc(ghi, solar_zenith, datetime_or_doy, pressure=101325,
 
     datetime_or_doy : int, float, array, pd.DatetimeIndex
         Day of year or array of days of year e.g.
-        pd.DatetimeIndex.dayofyear, or pd.DatetimeIndex.
+        pd.DatetimeIndex.day_of_year, or pd.DatetimeIndex.
 
     pressure : numeric or None, default 101325
         Site pressure. See :term:`pressure`. [Pa]
@@ -2765,7 +2765,7 @@ def erbs(ghi, zenith, datetime_or_doy, min_cos_zenith=0.065, max_zenith=87):
         :term:`solar_zenith`. [°]
     datetime_or_doy : int, float, array, pd.DatetimeIndex
         Day of year or array of days of year e.g.
-        pd.DatetimeIndex.dayofyear, or pd.DatetimeIndex.
+        pd.DatetimeIndex.day_of_year, or pd.DatetimeIndex.
     min_cos_zenith : numeric, default 0.065
         Minimum value of cos(zenith) to allow when calculating global
         clearness index `kt`. Equivalent to zenith = 86.273°.
@@ -2865,7 +2865,7 @@ def erbs_driesse(ghi, zenith, datetime_or_doy=None, dni_extra=None,
 
     datetime_or_doy : int, float, array or pd.DatetimeIndex, optional
         Day of year or array of days of year e.g.
-        pd.DatetimeIndex.dayofyear, or pd.DatetimeIndex.
+        pd.DatetimeIndex.day_of_year, or pd.DatetimeIndex.
         Either ``datetime_or_doy`` or ``dni_extra`` must be provided.
 
     dni_extra : numeric, optional
@@ -2992,7 +2992,7 @@ def orgill_hollands(ghi, zenith, datetime_or_doy, dni_extra=None,
 
     datetime_or_doy : int, float, array or pd.DatetimeIndex, optional
         Day of year or array of days of year e.g.
-        pd.DatetimeIndex.dayofyear, or pd.DatetimeIndex.
+        pd.DatetimeIndex.day_of_year, or pd.DatetimeIndex.
         Either ``datetime_or_doy`` or ``dni_extra`` must be provided.
 
     dni_extra : numeric, optional
@@ -3093,7 +3093,7 @@ def boland(ghi, solar_zenith, datetime_or_doy, a_coeff=8.645, b_coeff=0.613,
         :term:`solar_zenith`. [°]
 
     datetime_or_doy : numeric or pd.DatetimeIndex.
-        Day of year or array of days of year e.g. pd.DatetimeIndex.dayofyear,
+        Day of year or array of days of year e.g. pd.DatetimeIndex.day_of_year,
         or pd.DatetimeIndex.
 
     a_coeff : float, default 8.645
@@ -3897,7 +3897,7 @@ def louche(ghi, solar_zenith, datetime_or_doy, max_zenith=90):
 
     datetime_or_doy : numeric, pandas.DatetimeIndex
         Day of year or array of days of year e.g.
-        pd.DatetimeIndex.dayofyear, or pd.DatetimeIndex.
+        pd.DatetimeIndex.day_of_year, or pd.DatetimeIndex.
 
     Returns
     -------

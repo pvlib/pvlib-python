@@ -17,10 +17,10 @@ jobs:
 
     steps:
       - name: Check out the repository
-        uses: actions/checkout@v4  # This ensures the repository code is available
+        uses: actions/checkout@v7  # This ensures the repository code is available
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: "3.12"
 

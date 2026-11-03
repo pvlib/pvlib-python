@@ -4,6 +4,7 @@ tests for :mod:`pvlib.iotools.bsrn`
 
 import pandas as pd
 import pytest
+import io
 import os
 import tempfile
 from pvlib.iotools import read_bsrn, get_bsrn
@@ -148,3 +149,69 @@ def test_get_bsrn_no_files(bsrn_credentials):
             station='tam',
             username=username,
             password=password)
+
+
+def _mock_bsrn_ftp(mocker, payload):
+    """Patch ftplib.FTP so that get_bsrn 'downloads' the given bytes."""
+    def retrbinary(cmd, callback):
+        callback(payload)
+        return '226 Transfer complete.'
+
+    mock_ftp_class = mocker.patch('pvlib.iotools.bsrn.ftplib.FTP')
+    mock_ftp = mock_ftp_class.return_value.__enter__.return_value
+    mock_ftp.retrbinary.side_effect = retrbinary
+    return mock_ftp
+
+
+def test_get_bsrn_mocked_ftp(expected_index, mocker):
+    # Serve a local test file through a mocked FTP connection; the
+    # result must match read_bsrn on the same file exactly.
+    with open(TESTS_DATA_DIR / 'bsrn-pay0616.dat.gz', 'rb') as f:
+        payload = f.read()
+    mock_ftp = _mock_bsrn_ftp(mocker, payload)
+
+    data, metadata = get_bsrn(station='pay',
+                              start=pd.Timestamp(2016, 6, 1),
+                              end=pd.Timestamp(2016, 6, 29),
+                              username='user', password='pass')
+
+    mock_ftp.cwd.assert_called_once_with('/pay')
+    assert mock_ftp.retrbinary.call_count == 1
+    assert (mock_ftp.retrbinary.call_args.args[0]
+            == 'RETR pay0616.dat.gz')
+    expected_data, expected_metadata = read_bsrn(
+        TESTS_DATA_DIR / 'bsrn-pay0616.dat.gz')
+    pd.testing.assert_frame_equal(data, expected_data)
+    assert metadata.keys() == expected_metadata.keys()
+    for key, expected_value in expected_metadata.items():
+        if isinstance(expected_value, pd.Series):
+            pd.testing.assert_series_equal(metadata[key], expected_value)
+        else:
+            assert metadata[key] == expected_value
+    assert_index_equal(expected_index, data.index)
+
+
+def test_get_bsrn_mocked_ftp_logical_records(mocker):
+    # Non-default logical records must be forwarded to read_bsrn, which
+    # get_bsrn calls with the downloaded gzip TextIOWrapper.
+    with open(TESTS_DATA_DIR / 'bsrn-pay0616.dat.gz', 'rb') as f:
+        payload = f.read()
+    logical_records = ('0100', '0300', '0500')
+    expected_data, _ = read_bsrn(TESTS_DATA_DIR / 'bsrn-pay0616.dat.gz',
+                                 logical_records=logical_records)
+    _mock_bsrn_ftp(mocker, payload)
+    spy = mocker.patch('pvlib.iotools.bsrn.read_bsrn', wraps=read_bsrn)
+
+    data, metadata = get_bsrn(station='pay',
+                              start=pd.Timestamp(2016, 6, 1),
+                              end=pd.Timestamp(2016, 6, 29),
+                              username='user', password='pass',
+                              logical_records=logical_records)
+
+    spy.assert_called_once()
+    buffer_arg, lr_arg = spy.call_args.args
+    assert isinstance(buffer_arg, io.TextIOWrapper)
+    assert lr_arg == logical_records
+    # LR0300 content proves the records were actually parsed
+    assert 'lwu' in data.columns
+    pd.testing.assert_frame_equal(data, expected_data)

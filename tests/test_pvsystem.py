@@ -844,6 +844,61 @@ def test_Array__infer_cell_type():
     assert array._infer_cell_type() is None
 
 
+@pytest.mark.parametrize('module, module_parameters, expected', [
+    # First Solar modules labeled "Thin Film" are CdTe, but that
+    # technology is otherwise mapped to CIGS.  GH 1984
+    (None, pd.Series({'Technology': 'Thin Film'},
+                     name='First_Solar__Inc__FS_4117_3'), 'cdte'),
+    ('First Solar, Inc. FS 4117-3', {'Technology': 'Thin Film'}, 'cdte'),
+    # the name in one channel is enough, even if the other channel
+    # holds an unrelated name
+    ('Some_Other_Brand_Module', pd.Series(
+        {'Technology': 'Thin Film'},
+        name='First_Solar__Inc__FS_4117_3'), 'cdte'),
+    # "Thin Film" modules from other manufacturers are still CIGS, as
+    # are "Thin Film" modules with no name to identify them by
+    (None, pd.Series({'Technology': 'Thin Film'},
+                     name='Auria_Solar_M115000'), 'cigs'),
+    (None, pd.Series({'Technology': 'Thin Film'}), 'cigs'),
+    (None, {'Technology': 'Thin Film'}, 'cigs'),
+    # names merely containing "First Solar" are not First Solar modules
+    (None, pd.Series({'Technology': 'Thin Film'},
+                     name='NotFirst_Solar_Model'), 'cigs'),
+    (None, pd.Series({'Technology': 'Thin Film'},
+                     name='First_Solaris_Model'), 'cigs'),
+    (None, pd.Series({'Technology': 'Thin Film'},
+                     name='OtherBrand_First_Solar_Compatible'), 'cigs'),
+    # First Solar's crystalline silicon (TetraSun) modules are not CdTe
+    (None, pd.Series({'Technology': 'Mono-c-Si'},
+                     name='First_Solar__Inc__TS_295_R11_02'), 'monosi'),
+    # the pre-existing mappings are unchanged
+    (None, {'Technology': 'CdTe'}, 'cdte'),
+    (None, {'Technology': 'Multi-c-Si'}, 'multisi'),
+    (None, {'Material': 'CdTe'}, 'cdte'),
+    (None, {'Material': 'mc-Si'}, 'multisi'),
+])
+def test_Array__infer_cell_type_mappings(module, module_parameters,
+                                         expected):
+    array = pvsystem.Array(mount=pvsystem.FixedMount(0, 180),
+                           module=module,
+                           module_parameters=module_parameters)
+    assert array._infer_cell_type() == expected
+
+
+def test_Array__infer_cell_type_first_solar_cecmod():
+    # GH 1984: First Solar modules labeled "Thin Film" in the CEC
+    # database are CdTe modules
+    cec_modules = pvsystem.retrieve_sam('cecmod')
+    module_parameters = cec_modules['First_Solar__Inc__FS_4117_3']
+    # the override only applies to the "Thin Film" rows; assert the
+    # premise so a future correction of the database entry cannot
+    # silently bypass this test's coverage
+    assert module_parameters['Technology'] == 'Thin Film'
+    array = pvsystem.Array(mount=pvsystem.FixedMount(0, 180),
+                           module_parameters=module_parameters)
+    assert array._infer_cell_type() == 'cdte'
+
+
 def _calcparams_correct_Python_type_numeric_type_cases():
     """
     An auxilary function used in the unit tests named

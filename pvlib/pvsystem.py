@@ -1109,7 +1109,12 @@ class Array:
 
         if 'Technology' in self.module_parameters.keys():
             # CEC module parameter set
-            cell_type = _cell_type_dict[self.module_parameters['Technology']]
+            technology = self.module_parameters['Technology']
+            cell_type = _cell_type_dict[technology]
+            if technology == 'Thin Film' and self._is_first_solar_module():
+                # First Solar modules labeled "Thin Film" are CdTe,
+                # but that technology maps to CIGS above
+                cell_type = 'cdte'
         elif 'Material' in self.module_parameters.keys():
             # Sandia module parameter set
             cell_type = _cell_type_dict[self.module_parameters['Material']]
@@ -1117,6 +1122,33 @@ class Array:
             cell_type = None
 
         return cell_type
+
+    def _is_first_solar_module(self):
+        """
+        Whether the module is made by First Solar, based on the module
+        name.  The name is taken from the ``module`` attribute or, if
+        ``module_parameters`` is a Series, from its name (e.g. the column
+        name when selected from a database retrieved with
+        :py:func:`retrieve_sam`).  The normalized name must start with
+        the manufacturer's name, followed by a non-letter boundary, so
+        that names merely containing "First Solar" do not match.
+
+        Returns
+        -------
+        bool
+
+        """
+        names = [self.module,
+                 getattr(self.module_parameters, 'name', None)]
+        for name in names:
+            if name is None:
+                continue
+            normalized = str(name).lower().replace('_', ' ').strip()
+            if normalized.startswith('first solar'):
+                rest = normalized[len('first solar'):]
+                if not rest or not rest[0].isalpha():
+                    return True
+        return False
 
     def get_aoi(self, solar_zenith, solar_azimuth):
         """

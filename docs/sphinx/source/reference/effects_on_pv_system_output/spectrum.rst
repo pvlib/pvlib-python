@@ -19,3 +19,4 @@ Spectrum
    spectrum.sr_to_qe
    spectrum.qe_to_sr
    spectrum.average_photon_energy
+   spectrum.spectral_binning

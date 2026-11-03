@@ -17,3 +17,6 @@ from pvlib.spectrum.response import (  # noqa: F401
     sr_to_qe,
     qe_to_sr,
 )
+from pvlib.spectrum.spectral_binning import (  # noqa: F401
+    spectral_binning,
+)

@@ -63,6 +63,9 @@ Requirements
 
 Maintenance
 ~~~~~~~~~~~
+* Add file ``.git-blame-ignore-revs`` to exclude commits from blame history.
+  It is used automatically by GitHub. Developers may set this behavior locally with
+  ``git config blame.ignoreRevsFile .git-blame-ignore-revs``.
 
 
 Contributors

@@ -10,5 +10,5 @@
 # [^1] https://stackoverflow.com/questions/34957237/can-i-configure-git-blame-to-always-ignore-certain-commits-want-to-fix-git-blam
 # [^2] https://docs.github.com/en/repositories/working-with-files/using-files/viewing-and-understanding-files#ignore-commits-in-the-blame-view
 
-# 2026-07-14 : Line ending normalization
+# 2026-07-14 : GH#2805 Line end normalization
 3e903d3662525a2fb9b7cc0b8248508c99a13f5d

@@ -933,6 +933,27 @@ def test_dirint_coeffs():
     assert coeffs[3, 2, 6, 3] == 1.032260
 
 
+def test_dirint_coeffs_kt_prime_gt_one():
+    # regression test for gh-1815: the coefficient table only covers
+    # kt_prime up to 1, so larger values must be clipped to the table
+    # boundary instead of producing NaN coefficients
+    times = pd.DatetimeIndex(['2014-06-24T12-0700', '2014-06-24T13-0700',
+                              '2014-06-24T14-0700', '2014-06-24T15-0700'])
+    kt_prime = pd.Series([0.5, 1.0, 1.2, 2.0], index=times)
+    zenith = pd.Series(20., index=times)
+    w = pd.Series(-1, index=times)
+    delta_kt_prime = pd.Series(-1, index=times)
+
+    coeffs = irradiance._dirint_coeffs(times, kt_prime, zenith, w,
+                                       delta_kt_prime)
+
+    assert not np.isnan(coeffs).any()
+    # in-range values are unaffected, out-of-range values get the
+    # coefficients of the boundary kt_prime = 1
+    assert coeffs[0] != coeffs[1]
+    assert coeffs[1] == coeffs[2] == coeffs[3]
+
+
 def test_dirint_min_cos_zenith_max_zenith():
     # map out behavior under difficult conditions with various
     # limiting kwargs settings
@@ -1113,6 +1134,26 @@ def test_gti_dirint():
         columns=expected_col_order, index=times)
 
     assert_frame_equal(output, expected)
+
+
+def test_gti_dirint_kt_prime_gt_one():
+    # regression test for gh-1815: poa_global values large enough to
+    # make kt_prime exceed 1 used to produce NaN dni and dhi, including
+    # for AOI >= 90 degrees
+    times = pd.DatetimeIndex(
+        ['2014-06-24T06-0700', '2014-06-24T09-0700', '2014-06-24T12-0700'])
+    poa_global = np.array([40, 600, 2000])
+    aoi = np.array([100, 70, 10])
+    zenith = np.array([80, 45, 20])
+    azimuth = np.array([90, 135, 180])
+    surface_tilt = 30
+    surface_azimuth = 180
+
+    output = irradiance.gti_dirint(
+        poa_global, aoi, zenith, azimuth, times, surface_tilt,
+        surface_azimuth)
+
+    assert not output.isna().any().any()
 
 
 def test_gti_dirint_data_error():

@@ -21,8 +21,6 @@ Bug fixes
   is scalar (:issue:`2881`, :pull:`2882`)
 * :py:func:`pvlib.scaling.wvm` no longer returns all NaNs when ``positions``
   contains a single site (:issue:`2895`, :pull:`2896`)
-* Fix :py:func:`pvlib.bifacial.power_mismatch_deline` docstring's incorrect derivation
-  of total RMAD from rear RMAD. (:issue:`2929`, :pull:`2930`)
 
 Enhancements
 ~~~~~~~~~~~~
@@ -33,6 +31,8 @@ Enhancements
 
 Documentation
 ~~~~~~~~~~~~~
+* Fix :py:func:`pvlib.bifacial.power_mismatch_deline` incorrect derivation
+  of total RMAD from rear RMAD. (:issue:`2929`, :pull:`2930`)
 * Add :py:func:`pvlib.spa.transit_sunrise_sunset` to the API reference.
   (:issue:`2255`, :pull:`2873`)
 * Clarified in :py:func:`pvlib.tracking.singleaxis` that the tracker

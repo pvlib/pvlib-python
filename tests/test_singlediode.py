@@ -2,6 +2,8 @@
 testing single-diode methods using JW Bishop 1988
 """
 
+import warnings
+
 import numpy as np
 import pandas as pd
 import scipy
@@ -189,6 +191,26 @@ def test_singlediode_lambert_negative_voc(mocker):
     x = np.array([x, x]).T
     outs = pvsystem.singlediode(*x, method="lambertw")
     assert_array_equal(outs["v_oc"], [0, 0])
+
+
+def test_singlediode_lambert_zero_voc():
+    """With v_oc = 0 the bracket passed to find_minimum collapsed to
+    x2 == x3 and scipy raised a RuntimeWarning. See issue #2671.
+    """
+    pytest.importorskip("scipy", minversion="1.15")
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        out = pvsystem.singlediode(0., 1e-12, 0.5, np.inf, 1.8,
+                                   method="lambertw")
+        outs = pvsystem.singlediode(np.array([0., 5.]), 1e-12, 0.5, np.inf,
+                                    1.8, method="lambertw")
+    assert out["v_oc"] == 0
+    assert out["v_mp"] == 0
+    assert out["p_mp"] == 0
+    assert outs["v_mp"][0] == 0
+    assert outs["p_mp"][0] == 0
+    assert 0 < outs["v_mp"][1] < outs["v_oc"][1]
+    assert outs["p_mp"][1] > 0
 
 
 @pytest.mark.parametrize('method', ['lambertw', 'brentq', 'newton',

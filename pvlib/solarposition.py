@@ -1371,13 +1371,8 @@ def hour_angle(times, longitude, equation_of_time):
     ----------
     times : :class:`pandas.DatetimeIndex`
         Corresponding timestamps, must be localized to the timezone for the
-        ``longitude``.
-
-        ``AmbiguousTimeError`` in ``pandas<3``, ``ValueError`` in ``pandas>=3``
-        will be raised if any of the given times are on a day when the local
-        daylight savings transition happens at midnight.  If you're working
-        with such a timezone, consider converting to a non-DST timezone
-        (e.g. GMT-4) before calling this function.
+        ``longitude``. Timezones with daylight saving time are supported,
+        including days with a DST transition.
     longitude : numeric
         Longitude in degrees
     equation_of_time : numeric
@@ -1438,9 +1433,15 @@ def _local_times_from_hours_since_midnight(times, hours):
     if not times.tz:
         raise ValueError('times must be localized')
 
-    # normalize local times to previous local midnight and add the hours until
-    # sunrise, sunset, and transit
-    return times.normalize() + pd.to_timedelta(hours, unit='h')
+    # ``hours`` are wall-clock hours after local midnight that include the
+    # UTC offset of ``times`` (see _hour_angle_to_hours). Adding them as an
+    # elapsed duration to an aware local midnight is wrong on DST-transition
+    # days (and midnight may not exist), so build the instant in UTC instead.
+    tzs = np.array([ts.utcoffset().total_seconds() for ts in times]) / 3600
+    naive_midnight = times.tz_localize(None).normalize()
+    utc_times = naive_midnight + pd.to_timedelta(
+        np.asarray(hours) - tzs, unit='h')
+    return utc_times.tz_localize('UTC').tz_convert(times.tz)
 
 
 def _times_to_hours_after_local_midnight(times):
@@ -1450,17 +1451,13 @@ def _times_to_hours_after_local_midnight(times):
     if not times.tz:
         raise ValueError('times must be localized')
 
-    # Some timezones have a DST shift at midnight:
-    #   11:59pm -> 1:00am - results in a nonexistent midnight
-    #   12:59am -> 12:00am - results in an ambiguous midnight
-    # We remove the timezone before normalizing for this reason.
-    naive_normalized_times = times.tz_localize(None).normalize()
-
-    # Use Pandas functionality for shifting nonexistent times forward
-    normalized_times = naive_normalized_times.tz_localize(
-        times.tz, nonexistent='shift_forward', ambiguous='raise')
-
-    hrs = (times - normalized_times) / pd.Timedelta('1h')
+    # Return wall-clock hours (what the local clock shows), not the time
+    # elapsed since local midnight: the two differ by the DST shift on
+    # transition days, and callers subtract the UTC offset of ``times``.
+    # Working on naive wall-clock times also avoids nonexistent or
+    # ambiguous local midnights.
+    naive_times = times.tz_localize(None)
+    hrs = (naive_times - naive_times.normalize()) / pd.Timedelta('1h')
 
     # ensure array return instead of a version-dependent pandas <T>Index
     return np.array(hrs)

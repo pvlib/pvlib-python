@@ -65,6 +65,10 @@ Requirements
 
 Maintenance
 ~~~~~~~~~~~
+* Move the parsing functionality of the private ``_parse_bsrn`` and
+  ``_parse_epw`` functions into :py:func:`~pvlib.iotools.read_bsrn` and
+  :py:func:`~pvlib.iotools.read_epw`, and remove the private functions.
+  (:issue:`2469`)
 
 
 Contributors
@@ -80,3 +84,4 @@ Contributors
 * :ghuser:`bfs2021`
 * :ghuser:`xiajiahang`
 * Jakub Krasuski (:ghuser:`Blizzeq`)
+* Dresden Goehner (:ghuser:`DresdenGman`)

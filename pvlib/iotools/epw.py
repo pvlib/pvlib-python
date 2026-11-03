@@ -224,87 +224,51 @@ def read_epw(filename, coerce_year=None):
             'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.87 '
             'Safari/537.36')})
         response = urlopen(request)
-        with io.StringIO(response.read().decode(errors='ignore')) as csvdata:
-            data, meta = _parse_epw(csvdata, coerce_year)
+        filename = io.StringIO(response.read().decode(errors='ignore'))
 
-    else:
-        # Assume it's a buffer or accessible via the file system
-        with _file_context_manager(filename, 'r') as csvdata:
-            data, meta = _parse_epw(csvdata, coerce_year)
+    # Assume it's a buffer or accessible via the file system
+    with _file_context_manager(filename, 'r') as csvdata:
+        # Read line with metadata
+        firstline = csvdata.readline()
 
-    return data, meta
+        head = ['loc', 'city', 'state-prov', 'country', 'data_type',
+                'WMO_code', 'latitude', 'longitude', 'TZ', 'altitude']
+        meta = dict(zip(head, firstline.rstrip('\n').split(",")))
 
+        meta['altitude'] = float(meta['altitude'])
+        meta['latitude'] = float(meta['latitude'])
+        meta['longitude'] = float(meta['longitude'])
+        meta['TZ'] = float(meta['TZ'])
 
-def _parse_epw(csvdata, coerce_year=None):
-    """
-    Given a file-like buffer with data in Energy Plus Weather (EPW) format,
-    parse the data into a dataframe.
+        colnames = ['year', 'month', 'day', 'hour', 'minute',
+                    'data_source_unct', 'temp_air', 'temp_dew',
+                    'relative_humidity', 'atmospheric_pressure', 'etr',
+                    'etrn', 'ghi_infrared', 'ghi', 'dni', 'dhi',
+                    'global_hor_illum', 'direct_normal_illum',
+                    'diffuse_horizontal_illum', 'zenith_luminance',
+                    'wind_direction', 'wind_speed', 'total_sky_cover',
+                    'opaque_sky_cover', 'visibility', 'ceiling_height',
+                    'present_weather_observation', 'present_weather_codes',
+                    'precipitable_water', 'aerosol_optical_depth',
+                    'snow_depth', 'days_since_last_snowfall', 'albedo',
+                    'liquid_precipitation_depth',
+                    'liquid_precipitation_quantity']
 
-    Parameters
-    ----------
-    csvdata : file-like buffer
-        a file-like buffer containing data in the EPW format
+        # We only have to skip 6 rows instead of 7 because we have already used
+        # the realine call above.
+        data = pd.read_csv(csvdata, skiprows=6, header=0, names=colnames)
 
-    coerce_year : int, optional
-        If supplied, the year of the data will be set to this value. This can
-        be a useful feature because EPW data is composed of data from
-        different years.
-        Warning: EPW files always have 365*24 = 8760 data rows;
-        be careful with the use of leap years.
+        # Change to single year if requested
+        if coerce_year is not None:
+            data["year"] = coerce_year
 
-    Returns
-    -------
-    data : DataFrame
-        A pandas dataframe with the columns described in the table
-        below. For more detailed descriptions of each component, please
-        consult the EnergyPlus Auxiliary Programs documentation
-        available at: https://energyplus.readthedocs.io/en/latest/.
+        # create index that supplies correct date and time zone information
+        dts = data[['month', 'day']].astype(str).apply(
+            lambda x: x.str.zfill(2))
+        hrs = (data['hour'] - 1).astype(str).str.zfill(2)
+        dtscat = data['year'].astype(str) + dts['month'] + dts['day'] + hrs
+        idx = pd.to_datetime(dtscat, format='%Y%m%d%H')
+        idx = idx.dt.tz_localize(int(meta['TZ'] * 3600))
+        data.index = idx
 
-    metadata : dict
-        The site metadata available in the file.
-
-    See Also
-    --------
-    pvlib.iotools.read_epw
-    """
-    # Read line with metadata
-    firstline = csvdata.readline()
-
-    head = ['loc', 'city', 'state-prov', 'country', 'data_type', 'WMO_code',
-            'latitude', 'longitude', 'TZ', 'altitude']
-    meta = dict(zip(head, firstline.rstrip('\n').split(",")))
-
-    meta['altitude'] = float(meta['altitude'])
-    meta['latitude'] = float(meta['latitude'])
-    meta['longitude'] = float(meta['longitude'])
-    meta['TZ'] = float(meta['TZ'])
-
-    colnames = ['year', 'month', 'day', 'hour', 'minute', 'data_source_unct',
-                'temp_air', 'temp_dew', 'relative_humidity',
-                'atmospheric_pressure', 'etr', 'etrn', 'ghi_infrared', 'ghi',
-                'dni', 'dhi', 'global_hor_illum', 'direct_normal_illum',
-                'diffuse_horizontal_illum', 'zenith_luminance',
-                'wind_direction', 'wind_speed', 'total_sky_cover',
-                'opaque_sky_cover', 'visibility', 'ceiling_height',
-                'present_weather_observation', 'present_weather_codes',
-                'precipitable_water', 'aerosol_optical_depth', 'snow_depth',
-                'days_since_last_snowfall', 'albedo',
-                'liquid_precipitation_depth', 'liquid_precipitation_quantity']
-
-    # We only have to skip 6 rows instead of 7 because we have already used
-    # the realine call above.
-    data = pd.read_csv(csvdata, skiprows=6, header=0, names=colnames)
-
-    # Change to single year if requested
-    if coerce_year is not None:
-        data["year"] = coerce_year
-
-    # create index that supplies correct date and time zone information
-    dts = data[['month', 'day']].astype(str).apply(lambda x: x.str.zfill(2))
-    hrs = (data['hour'] - 1).astype(str).str.zfill(2)
-    dtscat = data['year'].astype(str) + dts['month'] + dts['day'] + hrs
-    idx = pd.to_datetime(dtscat, format='%Y%m%d%H')
-    idx = idx.dt.tz_localize(int(meta['TZ'] * 3600))
-    data.index = idx
-
-    return data, meta
+        return data, meta

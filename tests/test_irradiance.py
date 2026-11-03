@@ -953,6 +953,35 @@ def test_dirint_coeffs_kt_prime_gt_one():
     assert coeffs[0] != coeffs[1]
     assert coeffs[1] == coeffs[2] == coeffs[3]
 
+    # reference: looking up the manually capped kt_prime must give
+    # exactly the same coefficients, i.e. the out-of-range values are
+    # clipped to the table boundary and not just binned together
+    kt_prime_capped = pd.Series([0.5, 1.0, 1.0, 1.0], index=times)
+    coeffs_capped = irradiance._dirint_coeffs(
+        times, kt_prime_capped, zenith, w, delta_kt_prime)
+    np.testing.assert_array_equal(coeffs, coeffs_capped)
+
+    # non-sentinel w and delta_kt_prime values: the clip must not
+    # disturb the other binning dimensions -- the result still matches
+    # the capped reference, and changing either w or delta_kt_prime
+    # alone still changes the selected coefficients
+    w = pd.Series(1.5, index=times)
+    delta_kt_prime = pd.Series(0.05, index=times)
+    coeffs_nonsentinel = irradiance._dirint_coeffs(
+        times, kt_prime, zenith, w, delta_kt_prime)
+    coeffs_nonsentinel_capped = irradiance._dirint_coeffs(
+        times, kt_prime_capped, zenith, w, delta_kt_prime)
+    np.testing.assert_array_equal(coeffs_nonsentinel,
+                                  coeffs_nonsentinel_capped)
+    assert not (coeffs_nonsentinel == coeffs).all()
+    coeffs_w = irradiance._dirint_coeffs(
+        times, kt_prime, zenith, w, pd.Series(-1, index=times))
+    assert not (coeffs_w == coeffs).all()
+    coeffs_delta = irradiance._dirint_coeffs(
+        times, kt_prime, zenith, pd.Series(-1, index=times),
+        delta_kt_prime)
+    assert not (coeffs_delta == coeffs).all()
+
 
 def test_dirint_min_cos_zenith_max_zenith():
     # map out behavior under difficult conditions with various
@@ -1136,7 +1165,7 @@ def test_gti_dirint():
     assert_frame_equal(output, expected)
 
 
-def test_gti_dirint_kt_prime_gt_one():
+def test_gti_dirint_kt_prime_gt_one(mocker):
     # regression test for gh-1815: poa_global values large enough to
     # make kt_prime exceed 1 used to produce NaN dni and dhi, including
     # for AOI >= 90 degrees
@@ -1149,11 +1178,30 @@ def test_gti_dirint_kt_prime_gt_one():
     surface_tilt = 30
     surface_azimuth = 180
 
+    coeffs_spy = mocker.spy(irradiance, '_dirint_coeffs')
+
     output = irradiance.gti_dirint(
         poa_global, aoi, zenith, azimuth, times, surface_tilt,
         surface_azimuth)
 
     assert not output.isna().any().any()
+
+    # the scenario really does exercise the kt_prime > 1 path: the
+    # coefficient lookup is called with unclipped kt_prime values, some
+    # of which exceed 1 (max seen is about 1.54)
+    kt_prime_seen = [call[0][1] for call in coeffs_spy.call_args_list]
+    assert max(np.max(kt_prime) for kt_prime in kt_prime_seen) > 1
+
+    # expected values produced by the fixed implementation; its output
+    # for the original (unscaled, kt_prime <= 1) test_gti_dirint inputs
+    # is unchanged, as verified against the pre-fix behavior
+    expected = pd.DataFrame(array(
+        [[92.98152465,  298.18105688,   41.20292751],
+         [524.21478016,  284.52281756,  323.02676646],
+         [1908.37778828,    0.,        1908.37778828]]),
+        columns=['ghi', 'dni', 'dhi'], index=times)
+
+    assert_frame_equal(output, expected)
 
 
 def test_gti_dirint_data_error():

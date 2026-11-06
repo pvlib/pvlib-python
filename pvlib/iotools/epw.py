@@ -209,6 +209,19 @@ def read_epw(filename, coerce_year=None):
     +-------------------------------+-----------------------------------------+
 
 
+    .. warning:: In hourly EPW files, radiation totals and illuminance
+        averages cover the hour *ending* at the file time; temperature,
+        humidity and pressure are values *at* that time [1]_.
+        ``read_epw`` labels all fields with the *start* of the hour (EPW
+        hour 1 becomes 00:00), while :py:func:`~pvlib.iotools.read_tmy3`
+        uses the *end*.
+
+        To use end-of-hour labels, add one hour to the index:
+        ``data.index = data.index + pd.Timedelta('1h')``. The record for
+        31 December's final hour then has the label 1 January 00:00 of
+        the following year. No records are added or removed.
+
+
     References
     ----------
 

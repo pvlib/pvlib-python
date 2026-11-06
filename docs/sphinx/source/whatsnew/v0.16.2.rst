@@ -50,6 +50,11 @@ Documentation
   and :py:func:`~pvlib.irradiance.get_sky_diffuse` docstrings.
   (:issue:`2897`, :pull:`2904`)
 
+* Document in :py:func:`pvlib.iotools.read_epw` that each record is labeled
+  with the start of its hour, unlike :py:func:`pvlib.iotools.read_tmy3`, and
+  how to label it with the time given in the EPW file. (:issue:`1156`,
+  :pull:`2894`)
+
 
 Testing
 ~~~~~~~
@@ -80,3 +85,4 @@ Contributors
 * :ghuser:`bfs2021`
 * :ghuser:`xiajiahang`
 * Jakub Krasuski (:ghuser:`Blizzeq`)
+* Christoph Deil (:ghuser:`cdeil`)

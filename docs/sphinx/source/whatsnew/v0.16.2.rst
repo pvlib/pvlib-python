@@ -24,6 +24,8 @@ Bug fixes
 
 Enhancements
 ~~~~~~~~~~~~
+* Add the wind-dependent ``freestanding_wind`` PVsyst temperature parameter
+  set and clarify the wind measurement height. (:issue:`2834`)
 * Add ``pandas==3.1.0`` support. (:pull:`2924`)
 * Add ``dataset`` parameter to :py:func:`~pvlib.iotools.get_era5`
   allowing for choosing between ERA5 and ERA5-Land datasets.
@@ -70,6 +72,7 @@ Maintenance
 Contributors
 ~~~~~~~~~~~~
 
+* :ghuser:`sahaja9707`
 * :ghuser:`anshurajbisoyi98-ctrl`
 * Adam R. Jensen (:ghuser:`AdamRJensen`)
 * Cliff Hansen (:ghuser:`cwhanse`)

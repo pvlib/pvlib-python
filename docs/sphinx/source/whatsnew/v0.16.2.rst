@@ -21,6 +21,8 @@ Bug fixes
   is scalar (:issue:`2881`, :pull:`2882`)
 * :py:func:`pvlib.scaling.wvm` no longer returns all NaNs when ``positions``
   contains a single site (:issue:`2895`, :pull:`2896`)
+* :py:func:`pvlib.iam.schlick_diffuse` no longer returns ``inf`` and ``nan``
+  for ``surface_tilt=180`` (:issue:`2939`)
 
 Enhancements
 ~~~~~~~~~~~~
@@ -80,3 +82,4 @@ Contributors
 * :ghuser:`bfs2021`
 * :ghuser:`xiajiahang`
 * Jakub Krasuski (:ghuser:`Blizzeq`)
+* :ghuser:`G26karthik`

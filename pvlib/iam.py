@@ -949,11 +949,16 @@ def schlick_diffuse(surface_tilt):
     # relative transmittance of sky diffuse radiation by PV cover:
     cosB = cosd(surface_tilt)
     sinB = sind(surface_tilt)
-    cuk = (2 / (np.pi * (1 + cosB))) * (
-        (30/7)*np.pi - (160/21)*np.radians(surface_tilt) - (10/3)*np.pi*cosB
-        + (160/21)*cosB*sinB - (5/3)*np.pi*cosB*sinB**2 + (20/7)*cosB*sinB**3
-        - (5/16)*np.pi*cosB*sinB**4 + (16/105)*cosB*sinB**5
-    )  # Eq 4 in [2]
+    with np.errstate(divide='ignore', invalid='ignore'):
+        cuk = (2 / (np.pi * (1 + cosB))) * (
+            (30/7)*np.pi - (160/21)*np.radians(surface_tilt)
+            - (10/3)*np.pi*cosB + (160/21)*cosB*sinB
+            - (5/3)*np.pi*cosB*sinB**2 + (20/7)*cosB*sinB**3
+            - (5/16)*np.pi*cosB*sinB**4 + (16/105)*cosB*sinB**5
+        )  # Eq 4 in [2]
+
+    # a surface facing straight down sees no sky (Eq 4 is 0/0 there)
+    cuk = np.where(np.abs(surface_tilt - 180) < 1e-6, 0, cuk)
 
     # relative transmittance of ground-reflected radiation by PV cover:
     with np.errstate(divide='ignore', invalid='ignore'):  # Eq 6 in [2]

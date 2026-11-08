@@ -283,3 +283,27 @@ def test__file_context_manager():
     buffer = StringIO("test content")
     with tools._file_context_manager(buffer) as obj:
         assert obj.read() == "test content"
+
+
+def test_get_sample_intervals_dst():
+    # GH 2935
+    times = pd.date_range('2026-03-07', '2026-03-10', freq='1min',
+                          tz='America/Vancouver')
+    interval, count = tools._get_sample_intervals(times, 20)
+    assert interval == 1.0
+    assert count == 20
+
+
+def test_get_sample_intervals_naive():
+    # GH 2935
+    times = pd.date_range('2026-01-01', periods=60, freq='1min')
+    interval, count = tools._get_sample_intervals(times, 20)
+    assert interval == 1.0
+    assert count == 20
+
+
+def test_get_sample_intervals_unequal():
+    times = pd.DatetimeIndex(['2026-01-01 00:00', '2026-01-01 00:01',
+                              '2026-01-01 00:05'])
+    with pytest.raises(NotImplementedError, match='unequal time intervals'):
+        tools._get_sample_intervals(times, 20)

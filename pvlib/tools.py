@@ -429,18 +429,17 @@ def _get_sample_intervals(times, win_length):
     """ Calculates time interval and samples per window for Reno-style clear
     sky detection functions
     """
-    deltas = (
-        np.diff(times.tz_localize(None).to_numpy())  # tz-naive np.datetime64
-        / np.timedelta64(1, '60s')
-    )
+    if not isinstance(times, pd.DatetimeIndex):
+        times = pd.DatetimeIndex(times)
+
+    deltas = (times[1:] - times[:-1]) / pd.Timedelta('60s')
 
     # determine if we can proceed
     if (  # infer wrapper is None if no freq is determined
         _pandas_infer_freq_BaseOffset_transition_handler(times)
         and len(np.unique(deltas)) == 1
     ):
-        sample_interval = times[1] - times[0]
-        sample_interval = sample_interval.seconds / 60  # in minutes
+        sample_interval = (times[1] - times[0]).total_seconds() / 60
         samples_per_window = int(win_length / sample_interval)
         return sample_interval, samples_per_window
     else:

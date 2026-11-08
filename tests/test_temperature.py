@@ -425,6 +425,16 @@ def test_prilliman_nans():
     assert_series_equal(actual, expected)
 
 
+def test_prilliman_dst():
+    # GH 2935
+    times = pd.date_range('2026-03-07', '2026-03-10', freq='1min',
+                          tz='America/Vancouver', inclusive='left')
+    cell_temperature = pd.Series(25.0, index=times)
+    wind_speed = pd.Series(1.0, index=times)
+    actual = temperature.prilliman(cell_temperature, wind_speed)
+    assert_series_equal(cell_temperature, actual)
+
+
 def test_glm_conversions():
     # it is easiest and sufficient to test conversion from  & to the same model
     glm = temperature.GenericLinearModel(module_efficiency=0.1,

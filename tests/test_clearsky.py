@@ -710,6 +710,19 @@ def test_detect_clearsky_optimizer_not_failed(
     assert isinstance(clear_samples, pd.Series)
 
 
+def test_detect_clearsky_dst():
+    # GH 2935
+    loc = Location(49.28, -123.12, tz='America/Vancouver')
+    times = pd.date_range('2026-03-07', '2026-03-10', freq='1min',
+                          tz=loc.tz, inclusive='left')
+    ghi = loc.get_clearsky(times)['ghi']
+    result = clearsky.detect_clearsky(ghi, ghi)
+    result_utc = clearsky.detect_clearsky(
+        ghi.tz_convert('UTC'), ghi.tz_convert('UTC')
+    )
+    assert_series_equal(result, result_utc.tz_convert(loc.tz))
+
+
 @pytest.fixture
 def detect_clearsky_helper_data():
     samples_per_window = 3

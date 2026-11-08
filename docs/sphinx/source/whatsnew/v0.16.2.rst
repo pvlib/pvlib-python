@@ -24,7 +24,7 @@ Bug fixes
 
 Enhancements
 ~~~~~~~~~~~~
-* Add ``pandas==3.1.0`` support. (:pull:`2924`)
+* Add ``pandas==3.1.0`` support. (:pull:`2924`, :issue:`2935`, :pull:`2937`)
 * Add ``dataset`` parameter to :py:func:`~pvlib.iotools.get_era5`
   allowing for choosing between ERA5 and ERA5-Land datasets.
   (:pull:`2780`)
@@ -80,3 +80,5 @@ Contributors
 * :ghuser:`bfs2021`
 * :ghuser:`xiajiahang`
 * Jakub Krasuski (:ghuser:`Blizzeq`)
+* S B Pranay (:ghuser:`pranaysb`)
+* :ghuser:`aarmens702-hub`

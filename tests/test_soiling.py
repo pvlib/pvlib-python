@@ -170,6 +170,14 @@ def test_kimber_nowash(greensboro_rain, expected_kimber_nowash):
     assert np.allclose(nowash.values, expected_kimber_nowash['soiling'].values)
 
 
+def test_kimber_tz_naive(greensboro_rain, expected_kimber_nowash):
+    # GH 2935
+    rain_naive = greensboro_rain.copy()
+    rain_naive.index = rain_naive.index.tz_localize(None)
+    actual = kimber(rain_naive)
+    assert np.allclose(actual.values, expected_kimber_nowash['soiling'].values)
+
+
 @pytest.fixture
 def expected_kimber_manwash():
     return pd.read_csv(

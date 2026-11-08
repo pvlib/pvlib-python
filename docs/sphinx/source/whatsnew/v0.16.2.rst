@@ -21,6 +21,9 @@ Bug fixes
   is scalar (:issue:`2881`, :pull:`2882`)
 * :py:func:`pvlib.scaling.wvm` no longer returns all NaNs when ``positions``
   contains a single site (:issue:`2895`, :pull:`2896`)
+* Fix :py:func:`pvlib.clearsky.detect_clearsky` and :py:func:`pvlib.temperature.prilliman`
+  failing on Daylight Saving Time (DST) transition days, and :py:func:`pvlib.soiling.kimber`
+  failing on timezone-naive data. (:issue:`2935`)
 
 Enhancements
 ~~~~~~~~~~~~
@@ -80,3 +83,4 @@ Contributors
 * :ghuser:`bfs2021`
 * :ghuser:`xiajiahang`
 * Jakub Krasuski (:ghuser:`Blizzeq`)
+* S B Pranay (:ghuser:`pranaysb`)

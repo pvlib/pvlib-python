@@ -1697,32 +1697,34 @@ def calcparams_villalva(
 
     The Villalva auxiliary equations convert the fitted reference parameters
     to the five single-diode parameters required by
-    :py:func:`pvlib.pvsystem.singlediode`. The operating-condition equations are
+    :py:func:`pvlib.pvsystem.singlediode`.
+
+    The operating-condition equations are:
 
     .. math::
-    
+
        I_L =
        \left(I_{L,\mathrm{ref}} + \alpha_{sc}\Delta T\right)
        \frac{G}{G_{\mathrm{ref}}},
-    
+
     .. math::
-    
+
        nN_sV_{th} =
        a_{\mathrm{ref}}
        \frac{T_K}{T_{\mathrm{ref},K}},
-    
+
     .. math::
-    
+
        I_{sc}(T) =
        I_{sc,\mathrm{ref}} + \alpha_{sc}\Delta T,
-    
+
     .. math::
-    
+
        V_{oc}(T) =
        V_{oc,\mathrm{ref}} + \beta_{voc}\Delta T,
-    
+
     .. math::
-    
+
        I_0 =
        \frac{
            \frac{R_{sh,\mathrm{ref}} + R_s}{R_{sh,\mathrm{ref}}}
@@ -1731,8 +1733,8 @@ def calcparams_villalva(
        }{
            \exp\left[V_{oc}(T)/(nN_sV_{th})\right] - 1
        }.
-    
-    Here, :math:`\Delta T = T - T_{\mathrm{ref}}`. 
+
+    Here, :math:`\Delta T = T - T_{\mathrm{ref}}`.
     The finite-:math:`R_{sh}` open-circuit relation is used for the
     temperature-dependent saturation current so that the operating-condition
     equations remain consistent with the fitted reference parameters. The
@@ -1824,6 +1826,7 @@ def calcparams_villalva(
         resistance_shunt,
         nNsVth,
     )
+
 
 def calcparams_desoto(effective_irradiance, temp_cell,
                       alpha_sc, a_ref, I_L_ref, I_o_ref, R_sh_ref, R_s,

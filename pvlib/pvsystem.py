@@ -745,6 +745,12 @@ class PVSystem:
         - 'Material' - a string describing the cell type, can be read from
           the Sandia module database.
 
+        A CEC ``Technology`` of ``'Thin Film'`` is not inferred: it is
+        ambiguous (it may be CdTe, CIGS, or another thin-film type), so
+        ``first_solar_spectral_loss`` raises a ``ValueError`` unless
+        user-supplied coefficients are provided or the ``Technology`` is
+        corrected to the actual cell type (e.g. ``'CdTe'``).
+
         Parameters
         ----------
         pw : array-like
@@ -771,6 +777,18 @@ class PVSystem:
                         'first_solar_spectral_coefficients'
                     ]
                 module_type = None
+            elif array.module_parameters.get('Technology') == 'Thin Film':
+                # GH 1984: 'Thin Film' is ambiguous -- it may be CdTe,
+                # CIGS, or another thin-film type -- so do not infer
+                # coefficients from it. The user must specify the actual
+                # cell type or supply coefficients explicitly.
+                raise ValueError(
+                    'Cannot infer First Solar spectral coefficients for '
+                    'a module with CEC Technology "Thin Film": the '
+                    'technology is ambiguous. Set '
+                    'module_parameters["Technology"] to the actual cell '
+                    'type (e.g. "CdTe" for First Solar modules) or supply '
+                    '"first_solar_spectral_coefficients" explicitly.')
             else:
                 module_type = array._infer_cell_type()
                 coefficients = None

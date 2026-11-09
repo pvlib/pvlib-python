@@ -1166,6 +1166,7 @@ def test_calcparams_pvsyst(pvsyst_module_params):
     assert_series_equal(
         nNsVth.round(decimals=4), pd.Series([1.6186, 1.7961], index=times))
 
+
 def test_calcparams_villalva():
     """Check archived operating-condition results and NaN propagation."""
     # Reference values archived from

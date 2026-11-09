@@ -366,6 +366,35 @@ def test_PVSystem_first_solar_spectral_loss(module_parameters, module_type,
     assert_allclose(out, 1, atol=0.5)
 
 
+def test_PVSystem_first_solar_spectral_loss_thin_film():
+    # GH 1984: a CEC Technology of 'Thin Film' is ambiguous (it may be
+    # CdTe, CIGS, or another thin-film type), so coefficients must not
+    # be inferred from it.
+    module_parameters = {'Technology': 'Thin Film'}
+    system = pvsystem.PVSystem(module_parameters=module_parameters)
+    with pytest.raises(ValueError, match='Thin Film'):
+        system.first_solar_spectral_loss(3, 3)
+
+    # the two remedies keep working: correct the Technology, or supply
+    # coefficients explicitly
+    module_parameters_cdte = {'Technology': 'CdTe'}
+    system = pvsystem.PVSystem(module_parameters=module_parameters_cdte)
+    out_cdte = system.first_solar_spectral_loss(3, 3)
+    assert_allclose(out_cdte,
+                    spectrum.spectral_factor_firstsolar(3, 3, 'cdte'))
+
+    module_parameters_coeffs = {
+        'Technology': 'Thin Film',
+        'first_solar_spectral_coefficients': (
+            0.84, -0.03, -0.008, 0.14, 0.04, -0.002)}
+    system = pvsystem.PVSystem(module_parameters=module_parameters_coeffs)
+    out_coeffs = system.first_solar_spectral_loss(3, 3)
+    assert_allclose(out_coeffs,
+                    spectrum.spectral_factor_firstsolar(
+                        3, 3, coefficients=(0.84, -0.03, -0.008, 0.14,
+                                            0.04, -0.002)))
+
+
 def test_PVSystem_multi_array_first_solar_spectral_loss():
     system = pvsystem.PVSystem(
         arrays=[

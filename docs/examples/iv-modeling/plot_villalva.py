@@ -1,5 +1,5 @@
 """
-Villalva Iterative Five-Parameter SDM Fitting 
+Villalva Iterative Five-Parameter SDM Fitting
 ===========================
 
 This example extracts single-diode model (SDM) parameters from manufacturer
@@ -289,7 +289,9 @@ recovery_table["Relative error [%]"] = (
     / recovery_table["Starting value"]
 )
 
-print(f"Known Villalva diode ideality factor: {diode_factor_known:.9f}")  # noqa: E231
+print(
+    f"Known Villalva diode ideality factor: {diode_factor_known:.9f}"
+)  # noqa: E231
 print(recovery_table)
 
 v_validation = np.linspace(0.0, synthetic_points["v_oc"], 300)

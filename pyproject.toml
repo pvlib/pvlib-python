@@ -77,7 +77,6 @@ test = [
     'pytest-timeout',
     'pytest-rerunfailures',
     'pytest-remotedata',
-    'packaging',
 ]
 all = ["pvlib[test,optional,doc]"]
 

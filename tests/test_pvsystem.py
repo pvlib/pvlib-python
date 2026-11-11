@@ -916,6 +916,40 @@ def test_calcparams_desoto_returns_correct_Python_type(numeric_type_funcs,
                for a in out)
 
 
+@pytest.mark.parametrize(
+    "numeric_type_funcs",
+    _calcparams_correct_Python_type_numeric_type_cases(),
+)
+def test_calcparams_villalva_returns_correct_Python_type(
+    numeric_type_funcs,
+):
+    numeric_args = dict(
+        effective_irradiance=numeric_type_funcs[0](800.0),
+        temp_cell=numeric_type_funcs[1](25),
+    )
+
+    out = pvsystem.calcparams_villalva(
+        **numeric_args,
+        alpha_sc=0.004539,
+        beta_voc=-0.22216,
+        a_ref=2.6373,
+        I_L_ref=5.113999993730909,
+        R_sh_ref=381.68001775625714,
+        R_s=1.065,
+        i_sc_ref=5.099770128570936,
+        v_oc_ref=59.40065126750111,
+        irrad_ref=1000.0,
+        temp_ref=25.0,
+    )
+
+    assert all(
+        _calcparams_correct_Python_type_check(
+            a, numeric_args.values()
+        )
+        for a in out
+    )
+
+
 @pytest.mark.parametrize('numeric_type_funcs',
                          _calcparams_correct_Python_type_numeric_type_cases())
 def test_calcparams_cec_returns_correct_Python_type(numeric_type_funcs,

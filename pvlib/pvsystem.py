@@ -1819,13 +1819,30 @@ def calcparams_villalva(
     resistance_series = R_s
     resistance_shunt = R_sh_ref
 
-    return (
+    # Preserve output types based on irradiance and temperature inputs.
+    numeric_args = (effective_irradiance, temp_cell)
+
+    out = (
         photocurrent,
         saturation_current,
         resistance_series,
         resistance_shunt,
         nNsVth,
     )
+
+    if all(map(np.isscalar, numeric_args)):
+        return out
+
+    index = tools.get_pandas_index(*numeric_args)
+
+    if index is None:
+        return np.broadcast_arrays(*out)
+
+    return tuple(
+        pd.Series(a, index=index).rename(None)
+        for a in np.broadcast_arrays(*out)
+    )
+
 
 
 def calcparams_desoto(effective_irradiance, temp_cell,

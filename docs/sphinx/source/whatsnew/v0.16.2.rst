@@ -54,6 +54,10 @@ Documentation
 * Note deprecation of ``king`` model in :py:func:`~pvlib.irradiance.get_total_irradiance`
   and :py:func:`~pvlib.irradiance.get_sky_diffuse` docstrings.
   (:issue:`2897`, :pull:`2904`)
+* Add a gallery example demonstrating Villalva single-diode model
+  parameter extraction at STC and extrapolation to different
+  irradiance and temperature conditions. (:pull:`2878`)
+
 
 
 Testing

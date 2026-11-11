@@ -18,6 +18,11 @@ Bug fixes
 
 Enhancements
 ~~~~~~~~~~~~
+* Add the Villalva single-diode model parameter extraction method
+  :py:func:`pvlib.ivtools.sdm.fit_villalva` and the corresponding
+  operating-condition parameter calculation function
+  :py:func:`pvlib.pvsystem.calcparams_villalva`.
+  (:pull:`2878`)
 
 
 Documentation
@@ -45,5 +50,5 @@ Maintenance
 
 Contributors
 ~~~~~~~~~~~~
-
+* João Frederico S. De Paula (:ghuser:`JFrederico2022`)
 * Chen Yi (:ghuser:`chenyi6758-source`)

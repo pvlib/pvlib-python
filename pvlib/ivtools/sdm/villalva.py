@@ -174,7 +174,11 @@ def fit_villalva(
     r_sh_min = v_mp / (i_sc - i_mp) - (v_oc - v_mp) / i_mp
 
     if r_sh_min <= 0:
-        raise ValueError("Villalva R_sh_min must be positive.")
+        raise ValueError(
+            "Invalid module specifications: the calculated minimum "
+            "shunt resistance is non-positive. Check the consistency "
+            "of v_mp, i_mp, v_oc, and i_sc."
+        )
 
     if rs_max is None:
         rs_max = v_oc / i_sc

@@ -242,7 +242,10 @@ def fit_villalva(
     )
 
     if not np.any(valid_mpp):
-        raise RuntimeError("No valid Villalva solution was found.")
+        raise RuntimeError(
+            "The fitted Villalva SDM parameters resulted in "
+            "invalid maximum power point (MPP) values."
+        )
 
     history = pd.DataFrame(
         {

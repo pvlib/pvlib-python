@@ -21,6 +21,8 @@ Bug fixes
   is scalar (:issue:`2881`, :pull:`2882`)
 * :py:func:`pvlib.scaling.wvm` no longer returns all NaNs when ``positions``
   contains a single site (:issue:`2895`, :pull:`2896`)
+* Declare ``packaging`` as a dependency, so ``import pvlib`` works on a fresh
+  install. (:pull:`2941`)
 
 Enhancements
 ~~~~~~~~~~~~

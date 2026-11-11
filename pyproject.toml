@@ -18,6 +18,7 @@ dependencies = [
     'scipy >= 1.9.2',
     'h5py',
     'tzdata', # ensure all timezones are available in all installs for consistency GH#2795
+    'packaging',
 ]
 license = "BSD-3-Clause"
 classifiers = [
@@ -76,7 +77,6 @@ test = [
     'pytest-timeout',
     'pytest-rerunfailures',
     'pytest-remotedata',
-    'packaging',
 ]
 all = ["pvlib[test,optional,doc]"]
 

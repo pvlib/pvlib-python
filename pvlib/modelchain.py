@@ -1008,7 +1008,8 @@ class ModelChain:
         if isinstance(self.results.dc, tuple):
             Rw = self.system.dc_ohms_from_percent(unwrap=False)
             self.results.dc_ohmic_losses = tuple(
-                pvsystem.dc_ohmic_losses(Rw, df['i_mp'])
+                pvsystem.dc_ohmic_losses(Rw, df['i_mp']).rename(
+                    'p_dc_ohmic_loss')
                 for Rw, df in zip(Rw, self.results.dc)
             )
             for df, loss in zip(self.results.dc, self.results.dc_ohmic_losses):
@@ -1017,7 +1018,7 @@ class ModelChain:
             Rw = self.system.dc_ohms_from_percent()
             self.results.dc_ohmic_losses = pvsystem.dc_ohmic_losses(
                 Rw, self.results.dc['i_mp']
-            )
+            ).rename('p_dc_ohmic_loss')
             self.results.dc['p_mp'] = (self.results.dc['p_mp']
                                        - self.results.dc_ohmic_losses)
         return self

@@ -160,7 +160,7 @@ def rectify_iv_curve(voltage, current, decimals=None):
 
     df = pd.DataFrame(data=np.vstack((voltage, current)).T, columns=['v', 'i'])
     # restrict to first quadrant
-    df.dropna(inplace=True)
+    df = df.dropna()
     df = df[(df['v'] >= 0) & (df['i'] >= 0)]
     # sort pairs on voltage, then current
     df = df.sort_values(by=['v', 'i'], ascending=[True, False])

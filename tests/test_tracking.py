@@ -511,6 +511,9 @@ def test_calc_surface_orientation_types():
         out = tracking.calc_surface_orientation(rotation)
         assert out['surface_tilt'] == pytest.approx(expected_tilt)
         assert out['surface_azimuth'] == pytest.approx(expected_azimuth)
+        # confirm scalar output when input is scalar
+        assert np.isscalar(out['surface_tilt'])
+        assert np.isscalar(out['surface_azimuth'])
 
 
 def test_calc_surface_orientation_kwargs():

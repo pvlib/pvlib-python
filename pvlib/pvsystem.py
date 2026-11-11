@@ -1844,7 +1844,6 @@ def calcparams_villalva(
     )
 
 
-
 def calcparams_desoto(effective_irradiance, temp_cell,
                       alpha_sc, a_ref, I_L_ref, I_o_ref, R_sh_ref, R_s,
                       EgRef=1.121, dEgdT=-0.0002677,

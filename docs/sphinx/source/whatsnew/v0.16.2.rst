@@ -50,5 +50,5 @@ Maintenance
 
 Contributors
 ~~~~~~~~~~~~
-* João Frederico S. De Paula (:ghuser:`JFrederico2022`)
 * Chen Yi (:ghuser:`chenyi6758-source`)
+* João Frederico S. De Paula (:ghuser:`JFrederico2022`)

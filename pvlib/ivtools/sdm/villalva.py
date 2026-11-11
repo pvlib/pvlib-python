@@ -170,7 +170,7 @@ def fit_villalva(
 
     p_mp_ref = v_mp * i_mp
 
-    # Villalva minimum shunt resistance.
+    # Villalva minimum shunt resistance (Eq. 11 in [1]).
     r_sh_min = v_mp / (i_sc - i_mp) - (v_oc - v_mp) / i_mp
 
     if r_sh_min <= 0:

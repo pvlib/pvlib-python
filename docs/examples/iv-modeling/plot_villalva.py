@@ -1,6 +1,6 @@
 """
 Villalva Iterative Five-Parameter SDM Fitting
-===========================
+============================
 
 This example extracts single-diode model (SDM) parameters from manufacturer
 specifications using Villalva's iterative fitting method, validates the fitted
@@ -435,12 +435,3 @@ operating_results = pd.DataFrame(
 
 print(operating_results)
 
-
-# %%
-# API placement
-# -------------
-# The proposed public functions are ``pvlib.ivtools.sdm.fit_villalva`` for
-# reference-condition parameter extraction and
-# ``pvlib.pvsystem.calcparams_villalva`` for the operating-condition
-# auxiliary equations. The actual I-V solution remains in pvlib's existing
-# ``singlediode`` and ``i_from_v`` functions.

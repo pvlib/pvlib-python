@@ -289,8 +289,9 @@ recovery_table["Relative error [%]"] = (
     / recovery_table["Starting value"]
 )
 
+formatted_diode = f"{diode_factor_known:.9f}"
 print(
-    f"Known Villalva diode ideality factor: {diode_factor_known: .9f}"
+    f"Known Villalva diode ideality factor: {formatted_diode}"
 )  # noqa: E231
 print(recovery_table)
 

@@ -290,7 +290,7 @@ recovery_table["Relative error [%]"] = (
 )
 
 print(
-    f"Known Villalva diode ideality factor: {diode_factor_known:.9f}"
+    f"Known Villalva diode ideality factor: {diode_factor_known: .9f}"
 )  # noqa: E231
 print(recovery_table)
 
@@ -434,4 +434,3 @@ operating_results = pd.DataFrame(
 )
 
 print(operating_results)
-

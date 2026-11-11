@@ -462,6 +462,17 @@ def test_schlick_diffuse():
                         rtol=1e-6)
 
 
+def test_schlick_diffuse_upside_down():
+    # facing down: no sky, and the ground term matches the sky term at 0 tilt
+    actual_iam = _iam.schlick_diffuse(np.array([0, 180 - 1e-9, 180]))
+    assert_allclose(actual_iam['sky'], [20 / 21, 0, 0])
+    assert_allclose(actual_iam['ground'], [0, 20 / 21, 20 / 21])
+
+    actual_iam = _iam.schlick_diffuse(180.)
+    assert actual_iam['sky'] == 0
+    assert_allclose(actual_iam['ground'], 20 / 21)
+
+
 @pytest.mark.parametrize('source,source_params,target,expected', [
     ('physical', {'n': 1.5, 'K': 4.5, 'L': 0.004}, 'martin_ruiz',
      {'a_r': 0.174037}),

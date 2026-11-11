@@ -28,6 +28,11 @@ Enhancements
 * Add ``dataset`` parameter to :py:func:`~pvlib.iotools.get_era5`
   allowing for choosing between ERA5 and ERA5-Land datasets.
   (:pull:`2780`)
+* Add the Villalva single-diode model parameter extraction method
+  :py:func:`pvlib.ivtools.sdm.fit_villalva` and the corresponding
+  operating-condition parameter calculation function
+  :py:func:`pvlib.pvsystem.calcparams_villalva`.
+  (:pull:`2878`)
 
 Documentation
 ~~~~~~~~~~~~~
@@ -49,6 +54,10 @@ Documentation
 * Note deprecation of ``king`` model in :py:func:`~pvlib.irradiance.get_total_irradiance`
   and :py:func:`~pvlib.irradiance.get_sky_diffuse` docstrings.
   (:issue:`2897`, :pull:`2904`)
+* Add a gallery example demonstrating Villalva single-diode model
+  parameter extraction at STC and extrapolation to different
+  irradiance and temperature conditions. (:pull:`2878`)
+
 
 
 Testing
@@ -76,6 +85,7 @@ Contributors
 * Chen Yi (:ghuser:`chenyi6758-source`)
 * Rajiv Daxini (:ghuser:`rdaxini`)
 * jason-writer (:ghuser:`jason-writer`)
+* João Frederico S. De Paula (:ghuser:`JFrederico2022`)
 * :ghuser:`mmporong`
 * :ghuser:`bfs2021`
 * :ghuser:`xiajiahang`

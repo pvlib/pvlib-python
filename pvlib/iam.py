@@ -894,6 +894,7 @@ def schlick_diffuse(surface_tilt):
     surface_tilt : numeric
         Surface tilt angle measured from horizontal (e.g. surface facing
         up = 0, surface facing horizon = 90). [degrees]
+        Surface_tilt must be in the range [0, 180]
 
     Returns
     -------
@@ -958,13 +959,13 @@ def schlick_diffuse(surface_tilt):
         )  # Eq 4 in [2]
 
     # a surface facing straight down sees no sky (Eq 4 is 0/0 there)
-    cuk = np.where(np.abs(surface_tilt - 180) < 1e-6, 0, cuk)
+    cuk = np.where(np.abs(surface_tilt - 180) < 1e-3, 0, cuk)
 
     # relative transmittance of ground-reflected radiation by PV cover:
     with np.errstate(divide='ignore', invalid='ignore'):  # Eq 6 in [2]
         cug = 40 / (21 * (1 - cosB)) - (1 + cosB) / (1 - cosB) * cuk
 
-    cug = np.where(surface_tilt < 1e-6, 0, cug)
+    cug = np.where(surface_tilt < 1e-3, 0, cug)
 
     # respect input types:
     if np.isscalar(surface_tilt):

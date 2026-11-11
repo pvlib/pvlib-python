@@ -16,7 +16,7 @@ def _villalva_params_at_rs(
     i_sc,
     a_ref,
 ):
-    """Calculate ``I_L``, ``I_o`` and ``R_sh`` for one candidate ``R_s``."""
+    """Calculate ``I_L``, ``I_o`` and ``R_sh`` for each candidate ``R_s``."""
     exp_voc = np.expm1(v_oc / a_ref)
     exp_vmp = np.expm1((v_mp + i_mp * resistance_series) / a_ref)
 

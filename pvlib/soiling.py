@@ -127,6 +127,10 @@ def _kimber_cleaning_events(times, rainfall, cleaning_threshold,
     """
     rainfall = np.nan_to_num(rainfall)  # missing rainfall counts as none
     events = np.zeros(len(rainfall), dtype=bool)
+    # a step without rain can't raise the running sum, so it can't be an
+    # event; loop over rainy steps only, which are usually a small minority
+    rainy = np.flatnonzero(rainfall)
+    times, rainfall = times[rainy], rainfall[rainy]
     start, total = 0, 0.0
     for i in range(len(rainfall)):
         total += rainfall[i]
@@ -136,7 +140,7 @@ def _kimber_cleaning_events(times, rainfall, cleaning_threshold,
         if total < tol:
             total = 0.0  # no rain in window, drop accumulated rounding error
         elif total >= cleaning_threshold - tol:
-            events[i] = True
+            events[rainy[i]] = True
             start, total = i + 1, 0.0
     return events
 

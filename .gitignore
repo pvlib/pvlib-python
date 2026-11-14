@@ -104,3 +104,6 @@ results
 .beads/
 .claude/
 .runtime/
+
+# uv
+uv.lock

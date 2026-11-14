@@ -9,7 +9,7 @@ description = "A set of functions and classes for simulating the performance of 
 authors = [
     { name = "pvlib python Developers", email = "pvlib-admin@googlegroups.com" },
 ]
-requires-python = ">=3.11"
+requires-python = ">=3.11, <3.15"
 dependencies = [
     'numpy >= 1.23.2',
     'pandas >= 1.5.0',
@@ -49,7 +49,7 @@ dynamic = ["version"]
 optional = [
     'cython',
     'ephem',
-    'nrel-pysam',
+    'nlr-pysam >= 8, < 9',
     'numba >= 0.17.0',
     'solarfactors >= 1.6.1',
     'statsmodels',

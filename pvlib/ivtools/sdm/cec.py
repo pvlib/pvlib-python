@@ -52,7 +52,7 @@ def fit_cec_sam(celltype, v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
     Raises
     ------
     ImportError
-        if NREL-PySAM is not installed.
+        if NLR-PySAM is not installed.
     RuntimeError
         if parameter extraction is not successful.
 
@@ -76,8 +76,8 @@ def fit_cec_sam(celltype, v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
     try:
         from PySAM import PySSC
     except ImportError:
-        raise ImportError("Requires NREL's PySAM package at "
-                          "https://pypi.org/project/NREL-PySAM/.")
+        raise ImportError("Requires NLR's PySAM package at "
+                          "https://pypi.org/project/NLR-PySAM/.")
 
     datadict = {'tech_model': '6parsolve', 'financial_model': None,
                 'celltype': celltype, 'Vmp': v_mp,

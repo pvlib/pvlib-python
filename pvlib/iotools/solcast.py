@@ -349,7 +349,7 @@ def get_solcast_live(
     >>> df, meta = pvlib.iotools.solcast.get_solcast_live(
     >>>     latitude=-33.856784,
     >>>     longitude=151.215297,
-    >>>    api_key="your-key"
+    >>>     api_key="your-key"
     >>> )
 
     you can pass any of the parameters listed in the API docs, like

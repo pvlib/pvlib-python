@@ -159,7 +159,7 @@ def get_solcast_historic(
         Last day of the requested period.
         Must include one of ``end`` or ``duration``.
     duration : optional, ISO 8601 compliant duration
-        Must include either  ``end`` or ``duration``.
+        Must include either ``end`` or ``duration``.
         ISO 8601 compliant duration for the historic data,
         like "P1D" for one day of data.
         Must be within 31 days of ``start``.
@@ -349,7 +349,7 @@ def get_solcast_live(
     >>> df, meta = pvlib.iotools.solcast.get_solcast_live(
     >>>     latitude=-33.856784,
     >>>     longitude=151.215297,
-    >>>    api_key="your-key"
+    >>>     api_key="your-key"
     >>> )
 
     you can pass any of the parameters listed in the API docs, like
@@ -363,7 +363,7 @@ def get_solcast_live(
     >>> )
 
     use ``map_variables=False`` to avoid converting the data
-    to PVLib's conventions.
+    to pvlib's conventions.
 
     >>> df, meta = pvlib.iotools.solcast.get_solcast_live(
     >>>     latitude=-33.856784,
@@ -440,7 +440,7 @@ def _get_solcast(
     Parameters
     ----------
     endpoint : str
-        one of Solcast API endpoint:
+        one of Solcast API endpoints:
             - live/radiation_and_weather
             - forecast/radiation_and_weather
             - historic/radiation_and_weather
@@ -462,7 +462,7 @@ def _get_solcast(
 
     References
     ----------
-    .. [1] `register <https://toolkit.solcast.com.au/register>`
+    .. [1] `register <https://toolkit.solcast.com.au/register>`_
     """
 
     response = requests.get(

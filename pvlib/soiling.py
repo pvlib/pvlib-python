@@ -192,11 +192,9 @@ def kimber(rainfall, cleaning_threshold=6, soiling_loss_rate=0.0015,
     # convert grace_period to timedelta
     grace_period = datetime.timedelta(days=grace_period)
 
-    # get indices as np.datetime64 (UTC), calculate timestep as np.timedelta64,
-    # and convert timestep to fraction of days
-    rain_index_vals = rainfall.index.tz_convert(None).to_numpy()
-    timestep_interval = (rain_index_vals[1] - rain_index_vals[0])
-    day_fraction = timestep_interval / np.timedelta64(24, 'h')
+    # calculate timestep as timedelta and convert to fraction of days
+    timestep_interval = rainfall.index[1] - rainfall.index[0]
+    day_fraction = timestep_interval / pd.Timedelta(days=1)
 
     # accumulate rainfall
     accumulated_rainfall = rainfall.rolling(

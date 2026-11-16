@@ -4,7 +4,7 @@ import datetime
 import numpy as np
 import pandas as pd
 from .conftest import assert_series_equal
-from pvlib.soiling import hsu, kimber
+from pvlib.soiling import hsu, kimber, _kimber_cleaning_events
 from pvlib.iotools import read_tmy3
 from .conftest import TESTS_DATA_DIR, PVLIB_DATA_DIR
 import pytest
@@ -229,3 +229,83 @@ def test_kimber_initial_soil(greensboro_rain, expected_kimber_initial_soil):
     norain = kimber(norain, initial_soiling=0.1)
     # test no rain, soiling reaches maximum
     assert np.allclose(norain.values, expected_kimber_initial_soil)
+
+
+def test_kimber_threshold_inclusive():
+    """Rain equal to cleaning_threshold cleans the panels (GH 2796)"""
+    times = pd.date_range('2020-01-01', periods=4, freq='D', tz='UTC')
+    soiling = kimber(pd.Series([0, 0, 6.0, 0], times), cleaning_threshold=6)
+    assert soiling.iloc[2] == 0
+
+
+@pytest.mark.parametrize('freq, first_clean, last_clean', [
+    ('15min', '2020-01-04 14:00', '2020-01-05 14:00'),
+    ('1h', '2020-01-04 14:00', '2020-01-05 14:00'),
+    ('1D', '2020-01-05', '2020-01-06'),  # daily totals labeled at day end
+])
+def test_kimber_grace_period_resolution(freq, first_clean, last_clean):
+    """Grace period lasts grace_period days from the cleaning event,
+    regardless of input resolution (GH 2796)"""
+    times = pd.date_range('2020-01-01', '2020-01-09', freq='15min', tz='UTC')
+    rain = pd.Series(0.0, times)
+    rain['2020-01-04 12:15':'2020-01-04 15:00'] = 10 / 12  # 10 mm storm
+    rain = rain.resample(freq, label='right', closed='right').sum()
+    soiling = kimber(rain, grace_period=1)
+    clean = soiling.index[soiling == 0][1:]  # skip initial_soiling at t=0
+    assert clean[0] == pd.Timestamp(first_clean, tz='UTC')
+    assert clean[-1] == pd.Timestamp(last_clean, tz='UTC')
+
+
+@pytest.mark.parametrize('rain_mm, event', [
+    # {hour after 2020-01-02 00:00: rain [mm]}, last cleaning event hour
+    ({8: 5, 9: 5, 19: 0.2}, 9),  # drizzle after a dry gap
+    ({8: 5, 9: 5, 10: 0.1, 11: 0.1, 12: 0.1}, 9),  # drizzle, no gap
+    ({8: 5, 9: 5, 18: 5, 19: 5}, 19),  # second storm restarts grace
+    ({8: 2, 9: 2, 10: 2, 11: 2}, 10),  # grace starts at threshold
+    ({8: 2, 9: 2, 12: 2, 13: 2}, 12),  # same with a dry gap
+    ({8: 5, 9: np.nan, 10: 5}, 10),  # missing rainfall counts as zero
+    ({h: 0.2 for h in range(30)}, None),  # 6 mm, but not within 24 h
+    ({8: 2}, None),  # below threshold
+])
+def test_kimber_cleaning_events(rain_mm, event):
+    """Only cleaning_threshold of new rain within rain_accum_period makes a
+    cleaning event (GH 2796)"""
+    times = pd.date_range('2020-01-01', periods=24 * 5, freq='h', tz='UTC')
+    rain = pd.Series(0.0, times)
+    for hour, mm in rain_mm.items():
+        rain.iloc[24 + hour] = mm
+    soiling = kimber(rain, grace_period=1)
+    clean = soiling.index[soiling == 0][1:]  # skip initial_soiling at t=0
+    if event is None:
+        assert len(clean) == 0
+    else:
+        expected = times[24 + event] + pd.Timedelta('1D')
+        assert clean[-1] == expected
+
+
+def test_kimber_cleaning_events_daily():
+    """With daily input, a day is a cleaning event if its rain meets
+    cleaning_threshold, as in Kimber 2006 (GH 2796)"""
+    rng = np.random.default_rng(2796)
+    times = pd.date_range('2020-01-01', periods=3 * 365, freq='D', tz='UTC')
+    rain = rng.random(len(times)) * (rng.random(len(times)) < 0.3) * 15
+    events = _kimber_cleaning_events(
+        times.tz_convert(None).to_numpy(), rain, 6, np.timedelta64(24, 'h'))
+    np.testing.assert_array_equal(events, rain >= 6)
+
+
+def test_kimber_cleaning_events_float_rounding():
+    """Rain summing exactly to cleaning_threshold triggers a cleaning event
+    despite floating point error from earlier rain (GH 2796)"""
+    rng = np.random.default_rng(2796)
+    times = pd.date_range('2020-01-01', periods=24 * 4 * 60, freq='15min')
+    # 0.3 mm tips, stored slightly below 0.3: 50 days of random history,
+    # 2 dry days, then exactly 20 tips (6.0 mm) in 5 hours
+    rain = rng.integers(0, 9, len(times)) * (rng.random(len(times)) < 0.2)
+    rain = rain * 0.3
+    storm = 24 * 4 * 52
+    rain[24 * 4 * 50:] = 0
+    rain[storm:storm + 20] = 0.3
+    events = _kimber_cleaning_events(
+        times.to_numpy(), rain, 6, np.timedelta64(24, 'h'))
+    assert events[storm:].any()

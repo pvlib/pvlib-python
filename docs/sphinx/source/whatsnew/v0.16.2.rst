@@ -21,6 +21,13 @@ Bug fixes
   is scalar (:issue:`2881`, :pull:`2882`)
 * :py:func:`pvlib.scaling.wvm` no longer returns all NaNs when ``positions``
   contains a single site (:issue:`2895`, :pull:`2896`)
+* :py:func:`pvlib.soiling.kimber` now cleans when rainfall equals
+  ``cleaning_threshold``, and the grace period lasts ``grace_period`` days
+  from the cleaning event at any input time resolution. Light rain after a
+  cleaning event no longer extends the grace period. Results will differ
+  from previous versions; with daily input, panels now stay clean for
+  ``grace_period`` days after the day of the cleaning event, rather than
+  ``grace_period - 1``. (:issue:`2796`, :pull:`2943`)
 
 Enhancements
 ~~~~~~~~~~~~
@@ -80,3 +87,4 @@ Contributors
 * :ghuser:`bfs2021`
 * :ghuser:`xiajiahang`
 * Jakub Krasuski (:ghuser:`Blizzeq`)
+* Cameron Gordon (:ghuser:`CameronGordonn`)

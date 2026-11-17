@@ -178,6 +178,9 @@ Maintenance
 * Remove private function :py:func:`pvlib.irradiance._liujordan`.
   (:issue:`2764`, :pull:`2766`)
 * Fix documentation builds on runner images lacking link-type timezones. (:issue:`2795`, :pull:`2809`)
+* Move the well-known text (WKT) POINT formatting repeated in each
+  :py:mod:`pvlib.iotools.psm4` function into a shared private helper,
+  ``pvlib.tools._format_wkt_point``. (:pull:`XXXX`)
 
 
 Contributors
@@ -215,4 +218,5 @@ Contributors
 * Mohammad Kazemi (:ghuser:`mokazemi`)
 * :ghuser:`FrancoisFEM`
 * :ghuser:`weixuan-song`
+* :ghuser:`MoxOmega88`
 

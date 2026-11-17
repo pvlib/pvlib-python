@@ -766,7 +766,7 @@ def get_pvgis_horizon(latitude, longitude, url=URL, **kwargs):
     data.columns = ['horizon_azimuth', 'horizon_elevation']
     # Convert azimuth to pvlib convention (north=0, south=180)
     data['horizon_azimuth'] += 180
-    data.set_index('horizon_azimuth', inplace=True)
+    data = data.set_index('horizon_azimuth')
     data = data['horizon_elevation']  # convert to pd.Series
     data = data[data.index < 360]  # remove duplicate north point (0 and 360)
     return data, metadata

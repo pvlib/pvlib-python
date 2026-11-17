@@ -164,4 +164,4 @@ NumFOCUS
 
 pvlib python is a [NumFOCUS Affiliated Project](https://numfocus.org/sponsored-projects/affiliated-projects)
 
-[![NumFocus Affliated Projects](https://i0.wp.com/numfocus.org/wp-content/uploads/2019/06/AffiliatedProject.png)](https://numfocus.org/sponsored-projects/affiliated-projects)
+[![NumFocus Affiliated Projects](https://i0.wp.com/numfocus.org/wp-content/uploads/2019/06/AffiliatedProject.png)](https://numfocus.org/sponsored-projects/affiliated-projects)

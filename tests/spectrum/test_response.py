@@ -45,8 +45,7 @@ def sr_and_eqe_fixture():
             [1050, 0.4, 0.338752845368667],
         ],
     )
-    df.set_index("wavelength", inplace=True)
-    return df
+    return df.set_index("wavelength")
 
 
 def test_sr_to_qe(sr_and_eqe_fixture):

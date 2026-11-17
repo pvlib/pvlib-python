@@ -21,3 +21,7 @@ jobs:
             
             If AI is used for any portion of this PR, you must vet the content
             for technical accuracy.
+
+            Finally, be sure the PR description includes the PR
+            [checklist](https://github.com/pvlib/pvlib-python/blob/main/.github/PULL_REQUEST_TEMPLATE.md?plain=1),
+            and complete the items you are able to.

@@ -50,9 +50,9 @@ POA components.  This is most easily done with the
 Where can I get irradiance data for my simulation?
 --------------------------------------------------
 
-pvlib has a module called iotools which has several functions for
-retrieving irradiance data as well as reading standard file formats
-such as EPW, TMY2, and TMY3.  See :ref:`weatherdata`.
+pvlib has a module called :py:mod:`pvlib.iotools` which has several
+functions for retrieving irradiance data as well as reading standard file
+formats such as EPW, TMY2, and TMY3.  See :ref:`weatherdata`.
 
 
 Can I use PVsyst (PAN/OND) files with pvlib?

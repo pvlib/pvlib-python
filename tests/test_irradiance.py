@@ -1,5 +1,4 @@
 import datetime
-from collections import OrderedDict
 import warnings
 
 import numpy as np
@@ -73,7 +72,7 @@ def relative_airmass(times):
 # setup for et rad test. put it here for readability
 timestamp = pd.Timestamp('20161026')
 dt_index = pd.DatetimeIndex([timestamp])
-doy = timestamp.dayofyear
+doy = timestamp.day_of_year
 dt_date = timestamp.date()
 dt_datetime = datetime.datetime.combine(dt_date, datetime.time(0))
 dt_np64 = np.datetime64(dt_datetime)
@@ -1252,7 +1251,7 @@ def test_erbs_all_scalar():
     zenith = 10
     doy = 180
 
-    expected = OrderedDict()
+    expected = {}
     expected['dni'] = 8.42358014e+02
     expected['dhi'] = 1.70439297e+02
     expected['kt'] = 7.68919470e-01

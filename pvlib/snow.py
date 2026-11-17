@@ -5,7 +5,13 @@ associated effects on PV module output
 
 import numpy as np
 import pandas as pd
-from pvlib.tools import sind, cosd, tand
+
+from pvlib.tools import (
+    _pandas_infer_freq_BaseOffset_transition_handler,
+    cosd,
+    sind,
+    tand,
+)
 
 
 def _time_delta_in_hours(times):
@@ -58,7 +64,7 @@ def fully_covered_nrel(snowfall, snow_depth=None, threshold_snowfall=1.,
     hourly_snow_rate = snowfall / timestep
     # if we can infer a time frequency, use first snowfall value
     # otherwise the first snowfall value is ignored
-    freq = pd.infer_freq(snowfall.index)
+    freq = _pandas_infer_freq_BaseOffset_transition_handler(snowfall.index)
     if freq is not None:
         timedelta = pd.tseries.frequencies.to_offset(freq) / pd.Timedelta('1h')
         hourly_snow_rate.iloc[0] = snowfall.iloc[0] / timedelta
@@ -170,7 +176,7 @@ def coverage_nrel(snowfall, poa_irradiance, temp_air, surface_tilt,
     snow_coverage[new_snowfall] = 1.0
     if np.isnan(snow_coverage.iloc[0]):
         snow_coverage.iloc[0] = initial_coverage
-    snow_coverage.ffill(inplace=True)
+    snow_coverage = snow_coverage.ffill()
     snow_coverage -= cumulative_sliding
 
     return snow_coverage.clip(lower=0)

@@ -18,8 +18,13 @@ def singleaxis(apparent_zenith, solar_azimuth,
     Determine the rotation angle of a single-axis tracker when given particular
     solar zenith and azimuth angles.
 
-    See [1]_ and [2]_ for details about the equations. Backtracking may be
-    specified, in which case a ground coverage ratio is required.
+    The rotation angle is chosen to minimize the angle of incidence (AOI) of
+    the sun's beam onto the panel, thereby maximizing the use of direct
+    normal irradiance (DNI). Backtracking may be specified, in which case
+    a ground coverage ratio is required. When backtracking, the rotation is
+    adjusted away from the AOI-minimizing angle to avoid row-to-row shading.
+
+   See [1]_ and [2]_ for details about the equations.
 
     Rotation angle is determined in a right-handed coordinate system. The
     tracker ``axis_azimuth`` defines the positive y-axis, the positive x-axis
@@ -298,6 +303,11 @@ def calc_surface_orientation(tracker_theta, axis_tilt=0, axis_azimuth=0):
     # project unit_normal to x-y plane to calculate azimuth
     surface_azimuth = np.degrees(
         np.arctan2(unit_normal[..., 0], unit_normal[..., 1]))
+
+    # above always returns a np.array
+    # return scalar if `tracker_theta` is a scalar
+    if np.isscalar(tracker_theta):
+        surface_azimuth = surface_azimuth.item()
 
     surface_azimuth = np.where(surface_tilt == 0., axis_azimuth - 90.,
                                surface_azimuth)

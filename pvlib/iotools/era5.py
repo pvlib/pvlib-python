@@ -61,6 +61,7 @@ UNITS = {
 
 
 def get_era5(latitude, longitude, start, end, variables, api_key,
+             dataset="reanalysis-era5-single-levels-timeseries",
              map_variables=True, timeout=60,
              url='https://cds.climate.copernicus.eu/api/retrieve/v1/'):
     """
@@ -68,8 +69,9 @@ def get_era5(latitude, longitude, start, end, variables, api_key,
 
     A CDS API key is needed to access this API.  Register for one at [1]_.
 
-    This API [2]_ provides a subset of the full ERA5 dataset.  See [3]_ for
-    the available variables.  Data are available on a 0.25° x 0.25° grid.
+    This API [2]_ provides a subset of parameters of the full ERA5 datasets,
+    see [3]_ for available variables. A comparison of ERA5 and ERA5-land is
+    available in [4]_.
 
     Parameters
     ----------
@@ -87,6 +89,10 @@ def get_era5(latitude, longitude, start, end, variables, api_key,
         See [1]_ for additional options.
     api_key : str
         ECMWF CDS API key.
+    dataset : str, default ``"reanalysis-era5-single-levels-timeseries"``
+        The dataset to query.  May be either
+        ``"reanalysis-era5-single-levels-timeseries"`` or
+        ``"reanalysis-era5-land-timeseries"``. See [4]_ for details.
     map_variables : bool, default True
         When true, renames columns of the DataFrame to pvlib variable names
         where applicable. Also converts units of some variables. See variable
@@ -109,11 +115,26 @@ def get_era5(latitude, longitude, start, end, variables, api_key,
     meta : dict
         Metadata.
 
+    Notes
+    -----
+    Data are returned for the grid point nearest to the requested location.
+    The ERA5 dataset is available on a 0.25° x 0.25° grid, whereas ERA5-Land
+    is available on a finer 0.1° x 0.1° grid [4]_.
+
+    ERA5-Land only covers land surfaces. For locations near the coast, the
+    nearest grid point may lie over water, in which case ERA5-Land returns
+    only missing values (NaN) without raising an error. Similarly, for ERA5
+    the nearest grid point may be over water and therefore not
+    representative of conditions on land, e.g., for air temperature. Check
+    the returned ``meta['latitude']`` and ``meta['longitude']``, and
+    consider adjusting the requested coordinates slightly inland.
+
     References
     ----------
     .. [1] https://cds.climate.copernicus.eu/
     .. [2] https://cds.climate.copernicus.eu/datasets/reanalysis-era5-single-levels-timeseries?tab=overview
     .. [3] https://confluence.ecmwf.int/pages/viewpage.action?pageId=505390919
+    .. [4] https://confluence.ecmwf.int/display/CKB/The+family+of+ERA5+datasets
     """  # noqa: E501
 
     def _to_utc_dt_notz(dt):
@@ -140,7 +161,7 @@ def get_era5(latitude, longitude, start, end, variables, api_key,
             "data_format": "csv"
         }
     }
-    slug = "processes/reanalysis-era5-single-levels-timeseries/execution"
+    slug = f"processes/{dataset}/execution"
     response = requests.post(url + slug, json=params, headers=headers,
                              timeout=timeout)
     submission_response = response.json()
@@ -182,23 +203,28 @@ def get_era5(latitude, longitude, start, end, variables, api_key,
     results_response = response.json()
     download_url = results_response['asset']['value']['href']
 
-    # Step 4: finally, download our dataset.  it's a zipfile of one CSV
+    # Step 4: finally, download our dataset.  it's a zipfile of CSVs; some
+    # datasets (e.g., ERA5-Land) return one CSV per group of parameters
     response = requests.get(download_url, timeout=timeout)
     zipbuffer = BytesIO(response.content)
     archive = zipfile.ZipFile(zipbuffer)
-    filename = archive.filelist[0].filename
-    csvbuffer = StringIO(archive.read(filename).decode('utf-8'))
-    df = pd.read_csv(csvbuffer)
+    filenames = [file.filename for file in archive.filelist]
+    dfs = []
+    for filename in filenames:
+        csvbuffer = StringIO(archive.read(filename).decode('utf-8'))
+        dfs.append(pd.read_csv(csvbuffer))
 
     # and parse into the usual formats
     metadata = submission_response['metadata']  # include messages from ECMWF
     metadata['jobID'] = job_id
-    if not df.empty:
-        metadata['latitude'] = df['latitude'].values[0]
-        metadata['longitude'] = df['longitude'].values[0]
+    if not dfs[0].empty:
+        metadata['latitude'] = dfs[0]['latitude'].values[0]
+        metadata['longitude'] = dfs[0]['longitude'].values[0]
 
-    df.index = pd.to_datetime(df['valid_time']).dt.tz_localize('UTC')
-    df = df.drop(columns=['valid_time', 'latitude', 'longitude'])
+    for i, df in enumerate(dfs):
+        df.index = pd.to_datetime(df['valid_time']).dt.tz_localize('UTC')
+        dfs[i] = df.drop(columns=['valid_time', 'latitude', 'longitude'])
+    df = pd.concat(dfs, axis=1)
 
     if map_variables:
         # convert units and rename

@@ -1,6 +1,7 @@
 """
-Calculate the solar position using the NREL SPA algorithm either using
-numpy arrays or compiling the code to machine language with numba.
+Calculate the sun's position using the NREL Solar Position Algorithm
+(SPA) either using numpy arrays or compiling the code to machine language
+with numba.
 """
 
 # Contributors:
@@ -1031,7 +1032,7 @@ def solar_position(unixtime, lat, lon, elev, pressure, temp, delta_t,
 
     """
     Calculate the solar position using the
-    NREL SPA algorithm described in [1].
+    NREL SPA described in [1]_, [2]_.
 
     If numba is installed, the functions can be compiled
     and the code runs quickly. If not, the functions
@@ -1074,8 +1075,8 @@ def solar_position(unixtime, lat, lon, elev, pressure, temp, delta_t,
     Numpy Array with elements:
         apparent zenith,
         zenith,
-        elevation,
         apparent_elevation,
+        elevation,
         azimuth,
         equation_of_time
 
@@ -1108,7 +1109,9 @@ def solar_position(unixtime, lat, lon, elev, pressure, temp, delta_t,
 def transit_sunrise_sunset(dates, lat, lon, delta_t, numthreads):
     """
     Calculate the sun transit, sunrise, and sunset
-    for a set of dates at a given location.
+    for a set of dates at a given location using the NREL SPA.
+
+    The NREL SPA is documented in [1]_, [2]_.
 
     Parameters
     ----------
@@ -1129,7 +1132,16 @@ def transit_sunrise_sunset(dates, lat, lon, delta_t, numthreads):
     -------
     tuple : (transit, sunrise, sunset) localized to UTC
 
-    """
+    References
+    ----------
+    .. [1] I. Reda and A. Andreas, Solar position algorithm for solar
+       radiation applications. Solar Energy, vol. 76, no. 5, pp. 577-589,
+       2004. :doi:`10.1016/j.solener.2003.12.003`
+    .. [2] I. Reda, and A. Andreas. "Corrigendum to “Solar position
+       algorithm for solar radiation applications." [Solar Energy 76
+       (2004) 577–589] Solar Energy, vol. 81,  no. 6, pp. 838, 2007.
+       :doi:`10.1016/j.solener.2007.01.003`
+   """
 
     if ((dates % 86400) != 0.0).any():
         raise ValueError('Input dates must be at 00:00 UTC')

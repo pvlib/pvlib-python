@@ -345,8 +345,7 @@ def bishop88_i_from_v(voltage, photocurrent, saturation_current,
         except ModuleNotFoundError as e:
             # TODO remove this when our minimum scipy version is >=1.15
             msg = (
-                "method='chandrupatla' requires scipy v1.15 or greater "
-                "(available for Python 3.10+). "
+                "method='chandrupatla' requires scipy v1.15 or greater. "
                 "Select another method, or update your version of scipy."
             )
             raise ImportError(msg) from e
@@ -517,8 +516,7 @@ def bishop88_v_from_i(current, photocurrent, saturation_current,
         except ModuleNotFoundError as e:
             # TODO remove this when our minimum scipy version is >=1.15
             msg = (
-                "method='chandrupatla' requires scipy v1.15 or greater "
-                "(available for Python 3.10+). "
+                "method='chandrupatla' requires scipy v1.15 or greater. "
                 "Select another method, or update your version of scipy."
             )
             raise ImportError(msg) from e
@@ -684,8 +682,7 @@ def bishop88_mpp(photocurrent, saturation_current, resistance_series,
         except ModuleNotFoundError as e:
             # TODO remove this when our minimum scipy version is >=1.15
             msg = (
-                "method='chandrupatla' requires scipy v1.15 or greater "
-                "(available for Python 3.10+). "
+                "method='chandrupatla' requires scipy v1.15 or greater. "
                 "Select another method, or update your version of scipy."
             )
             raise ImportError(msg) from e

@@ -158,7 +158,7 @@ def read_surfrad(filename, map_variables=True):
     data = data.where(~missing, np.nan)
 
     if map_variables:
-        data.rename(columns=VARIABLE_MAP, inplace=True)
+        data = data.rename(columns=VARIABLE_MAP)
     return data, metadata
 
 
@@ -250,7 +250,7 @@ def get_surfrad(station, start, end, map_variables=True,
     station = station.lower()
 
     filenames = [
-        f"{station}/{d.year}/{station}{d.strftime('%y')}{d.dayofyear:03}.dat"  # noqa: E231,E501
+        f"{station}/{d.year}/{station}{d.strftime('%y')}{d.day_of_year:03}.dat"  # noqa: E231,E501
         for d in dates
     ]
 

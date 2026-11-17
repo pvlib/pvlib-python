@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 
 APPARENT_ZENITH_MODELS = ('simple', 'kasten1966', 'kastenyoung1989',
-                          'gueymard1993', 'pickering2002')
+                          'gueymard1993', 'gueymard2003', 'pickering2002')
 TRUE_ZENITH_MODELS = ('youngirvine1967', 'young1994')
 AIRMASS_MODELS = APPARENT_ZENITH_MODELS + TRUE_ZENITH_MODELS
 
@@ -664,7 +664,7 @@ def windspeed_powerlaw(wind_speed_reference, height_reference,
         Exponent based on the surface type. [unitless]
 
     surface_type : string, optional
-        If supplied, overrides ``exponent``. Can be one of the following
+        Mutually exclusive with ``exponent``. Can be one of the following
         (see [1]_):
 
         * ``'unstable_air_above_open_water_surface'``
@@ -723,16 +723,16 @@ def windspeed_powerlaw(wind_speed_reference, height_reference,
     :math:`a` [unitless] depends on the surface type. Some values found in the
     literature [1]_ for :math:`a` are:
 
-    .. table:: Values for the Hellmann-exponent
+    .. table:: Values for the Hellmann-exponent ([1_], Table 2.3).
 
        +-----------+--------------------+------------------+------------------+
        | Stability | Open water surface | Flat, open coast | Cities, villages |
        +===========+====================+==================+==================+
-       | Unstable  | 0.06               | 0.10             | 0.27             |
+       | Unstable  | 0.06               | 0.11             | 0.27             |
        +-----------+--------------------+------------------+------------------+
-       | Neutral   | 0.11               | 0.16             | 0.40             |
+       | Neutral   | 0.10               | 0.16             | 0.34             |
        +-----------+--------------------+------------------+------------------+
-       | Stable    | 0.27               | 0.34             | 0.60             |
+       | Stable    | 0.27               | 0.40             | 0.60             |
        +-----------+--------------------+------------------+------------------+
 
     In a report by Sandia [3]_, the equation was experimentally tested for a

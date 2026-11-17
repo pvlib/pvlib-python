@@ -270,7 +270,7 @@ def sf1d_premises_and_expected():
         (test_data["theta_L"], test_data["theta_R"]),
         (test_data["theta_R"], test_data["theta_L"]),
     )
-    test_data.rename(
+    test_data = test_data.rename(
         columns={
             "theta_L": "shading_row_rotation",
             "theta_R": "shaded_row_rotation",
@@ -279,9 +279,8 @@ def sf1d_premises_and_expected():
             "theta_s": "solar_zenith",  # for the projected solar zenith angle
             "f_s": "shaded_fraction",
         },
-        inplace=True,
     )
-    test_data.drop(columns=["x_L", "z_L", "x_R", "z_R"], inplace=True)
+    test_data = test_data.drop(columns=["x_L", "z_L", "x_R", "z_R"])
     # for the projected solar zenith angle
     # this returns the same psz angle as test_data["solar_zenith"]
     test_data["solar_azimuth"], test_data["axis_azimuth"] = 180, 90

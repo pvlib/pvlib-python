@@ -2,7 +2,7 @@ import pandas as pd
 import pytest
 import pvlib
 from requests.exceptions import HTTPError
-from tests.conftest import RERUNS, RERUNS_DELAY
+from tests.conftest import RERUNS, RERUNS_DELAY, assert_index_equal
 
 
 @pytest.fixture
@@ -39,7 +39,7 @@ def test_get_nasa_power(data_index, ghi_series):
     assert meta['time_standard'] == 'UTC'
     assert meta['title'] == 'NASA/POWER Source Native Resolution Hourly Data'
     # Assert that the index is parsed correctly
-    pd.testing.assert_index_equal(data.index, data_index)
+    assert_index_equal(data.index, data_index)
     # Test one column
     pd.testing.assert_series_equal(data['ALLSKY_SFC_SW_DWN'], ghi_series,
                                    check_freq=False, check_names=False)
@@ -54,7 +54,7 @@ def test_get_nasa_power_pvlib_params_naming(data_index, ghi_series):
                                               end=data_index[-1],
                                               parameters=['ghi'])
     # Assert that the index is parsed correctly
-    pd.testing.assert_index_equal(data.index, data_index)
+    assert_index_equal(data.index, data_index)
     # Test one column
     pd.testing.assert_series_equal(data['ghi'], ghi_series,
                                    check_freq=False)

@@ -236,16 +236,6 @@ def test_parse_period_end(period_end, expected):
     assert str(out.tz) == str(expected.tz)
 
 
-def test_parse_period_end_mixed_offsets():
-    # e.g. a local time series spanning a daylight saving transition
-    out = pvlib.iotools.solcast._parse_period_end(pd.Series(
-        ['2025-04-06T01:00:00+11:00', '2025-04-06T03:00:00+10:00']))
-    expected = pd.DatetimeIndex(
-        ['2025-04-05T14:00:00', '2025-04-05T17:00:00'], tz='UTC')
-    assert str(out.tz) == 'UTC'
-    assert out.equals(expected)
-
-
 @pytest.mark.parametrize("map_variables", [True, False])
 @pytest.mark.parametrize("endpoint,function,params,json_response", [
     (
@@ -354,6 +344,33 @@ def test_get_solcast_forecast(
                 json_response[list(json_response.keys())[0]]
             ),
         )
+
+
+@pytest.mark.parametrize("endpoint,function,key", [
+    ("forecast/radiation_and_weather",
+     pvlib.iotools.get_solcast_forecast, "forecasts"),
+    ("live/radiation_and_weather",
+     pvlib.iotools.get_solcast_live, "estimated_actuals"),
+])
+def test_get_solcast_format_version_3(requests_mock, endpoint, function, key):
+    # response format version 3: ISO 8601 UTC offset and float air_temp
+    requests_mock.get(
+        f"https://api.solcast.com.au/data/{endpoint}",
+        json={key: [
+            {'air_temp': 20.1, 'period_end': '2025-04-16T14:00:00+01:30',
+             'period': 'PT30M'},
+            {'air_temp': 20.6, 'period_end': '2025-04-16T14:30:00+01:30',
+             'period': 'PT30M'},
+        ]})
+    df, _ = function(latitude=0, longitude=0, api_key="1234",
+                     format="json;version=3")
+    assert requests_mock.last_request.qs["format"] == ["json;version=3"]
+    expected_index = pd.DatetimeIndex(
+        ['2025-04-16T13:45:00+01:30', '2025-04-16T14:15:00+01:30'],
+        name='period_mid')
+    assert df.index.equals(expected_index)
+    assert str(df.index.tz) == 'UTC+01:30'
+    assert df['temp_air'].tolist() == [20.1, 20.6]
 
 
 @pytest.mark.parametrize(

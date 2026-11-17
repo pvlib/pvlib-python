@@ -79,7 +79,7 @@ def get_solcast_tmy(
         containing the values for the parameters requested. The times
         in the DataFrame index indicate the midpoint of each interval.
         The index is timezone-aware, using the UTC offset returned by
-        the API, or UTC if the returned timestamps have mixed offsets.
+        the API.
     metadata: dict
         latitude and longitude of the request.
 
@@ -117,8 +117,7 @@ def get_solcast_tmy(
     params = dict(
         latitude=latitude,
         longitude=longitude,
-        format="json",
-        **kwargs
+        **{"format": "json", **kwargs}
     )
 
     data = _get_solcast(
@@ -182,7 +181,7 @@ def get_solcast_historic(
         containing the values for the parameters requested. The times
         in the DataFrame index indicate the midpoint of each interval.
         The index is timezone-aware, using the UTC offset returned by
-        the API, or UTC if the returned timestamps have mixed offsets.
+        the API.
     metadata: dict
         latitude and longitude of the request.
 
@@ -225,8 +224,7 @@ def get_solcast_historic(
         end=end,
         duration=duration,
         api_key=api_key,
-        format="json",
-        **kwargs
+        **{"format": "json", **kwargs}
     )
 
     data = _get_solcast(
@@ -260,7 +258,9 @@ def get_solcast_forecast(
         from Solcast's "period end" convention.
     kwargs:
         Optional parameters passed to the API.
-        See [2]_ for full list of parameters.
+        See [2]_ for full list of parameters. ``format`` defaults to
+        ``"json"``; use ``format="json;version=3"`` to opt in to the
+        Solcast response format version 3 before it becomes the default.
 
     Returns
     -------
@@ -268,7 +268,7 @@ def get_solcast_forecast(
         Contains the values for the parameters requested. The times
         in the DataFrame index indicate the midpoint of each interval.
         The index is timezone-aware, using the UTC offset returned by
-        the API, or UTC if the returned timestamps have mixed offsets.
+        the API.
     metadata: dict
         latitude and longitude of the request.
 
@@ -305,8 +305,7 @@ def get_solcast_forecast(
     params = dict(
         latitude=latitude,
         longitude=longitude,
-        format="json",
-        **kwargs
+        **{"format": "json", **kwargs}
     )
 
     data = _get_solcast(
@@ -340,7 +339,9 @@ def get_solcast_live(
         from Solcast's "period end" convention.
     kwargs:
         Optional parameters passed to the API.
-        See [2]_ for full list of parameters.
+        See [2]_ for full list of parameters. ``format`` defaults to
+        ``"json"``; use ``format="json;version=3"`` to opt in to the
+        Solcast response format version 3 before it becomes the default.
 
     Returns
     -------
@@ -348,7 +349,7 @@ def get_solcast_live(
         containing the values for the parameters requested. The times
         in the DataFrame index indicate the midpoint of each interval.
         The index is timezone-aware, using the UTC offset returned by
-        the API, or UTC if the returned timestamps have mixed offsets.
+        the API.
     metadata: dict
         latitude and longitude of the request.
 
@@ -394,8 +395,7 @@ def get_solcast_live(
     params = dict(
         latitude=latitude,
         longitude=longitude,
-        format="json",
-        **kwargs
+        **{"format": "json", **kwargs}
     )
 
     data = _get_solcast(
@@ -413,15 +413,10 @@ def _parse_period_end(period_end):
 
     Supports both the legacy format (``2025-04-16T06:00:00.0000000Z``) and
     the ISO 8601 UTC offset format (``2025-04-16T14:00:00+01:30``).
-    If all timestamps share the same UTC offset, that offset is kept;
-    otherwise the timestamps are converted to UTC.
+    The API returns all timestamps with a single fixed UTC offset
+    (set by the ``time_zone`` parameter), which is kept.
     """
-    period_end = pd.Series(period_end).astype(str)
-    times = pd.DatetimeIndex(pd.to_datetime(period_end, utc=True))
-    offsets = period_end.str.extract(r'(Z|[+-]\d{2}:?\d{2})$')[0]
-    if len(times) > 0 and offsets.nunique(dropna=False) == 1:
-        times = times.tz_convert(pd.Timestamp(period_end.iloc[0]).tz)
-    return times
+    return pd.DatetimeIndex(pd.to_datetime(period_end))
 
 
 def _solcast2pvlib(data):

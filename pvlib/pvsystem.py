@@ -745,6 +745,11 @@ class PVSystem:
         - 'Material' - a string describing the cell type, can be read from
           the Sandia module database.
 
+        ``'Thin Film'`` is ambiguous and does not identify a cell type.
+        For these modules, supply ``first_solar_spectral_coefficients`` or
+        set ``Technology`` to a known cell type, such as ``'CdTe'`` or
+        ``'CIGS'``. Otherwise, a ``TypeError`` is raised.
+
         Parameters
         ----------
         pw : array-like
@@ -1084,13 +1089,14 @@ class Array:
 
         Returns
         -------
-        cell_type: str
+        cell_type: str or None
+            None if the cell type cannot be inferred.
 
         """
 
         _cell_type_dict = {'Multi-c-Si': 'multisi',
                            'Mono-c-Si': 'monosi',
-                           'Thin Film': 'cigs',
+                           'Thin Film': None,
                            'a-Si/nc': 'asi',
                            'CIS': 'cigs',
                            'CIGS': 'cigs',

@@ -14,6 +14,10 @@ Deprecations
 
 Bug fixes
 ~~~~~~~~~
+* Stop inferring CIGS coefficients for ambiguous ``Thin Film`` modules in
+  :py:meth:`pvlib.pvsystem.PVSystem.first_solar_spectral_loss`. These modules
+  now require an explicit cell technology or user-supplied spectral
+  coefficients. (:issue:`1984`)
 * Correct the Series name in ``ModelChain.results.dc_ohmic_losses`` from
   ``i_mp`` to ``p_dc_ohmic_loss`` when using ``dc_ohms_from_percent``.
   (:issue:`1959`, :pull:`2912`)
@@ -80,3 +84,4 @@ Contributors
 * :ghuser:`bfs2021`
 * :ghuser:`xiajiahang`
 * Jakub Krasuski (:ghuser:`Blizzeq`)
+* :ghuser:`Solarboaters`

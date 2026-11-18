@@ -366,6 +366,32 @@ def test_PVSystem_first_solar_spectral_loss(module_parameters, module_type,
     assert_allclose(out, 1, atol=0.5)
 
 
+@pytest.mark.parametrize('key', ['Technology', 'Material'])
+def test_first_solar_ambiguous_thin_film(key):
+    system = pvsystem.PVSystem(module_parameters={key: 'Thin Film'})
+    assert system.arrays[0]._infer_cell_type() is None
+    with pytest.raises(TypeError, match='both module_type and coefficients'):
+        system.first_solar_spectral_loss(3, 3)
+
+
+@pytest.mark.parametrize('technology, module_type', [
+    ('CdTe', 'cdte'), ('CIGS', 'cigs'), ('CIS', 'cigs')])
+def test_first_solar_explicit_thin_film_technology(technology, module_type):
+    system = pvsystem.PVSystem(module_parameters={'Technology': technology})
+    expected = spectrum.spectral_factor_firstsolar(3, 3, module_type)
+    assert_allclose(system.first_solar_spectral_loss(3, 3), expected)
+
+
+def test_first_solar_thin_film_explicit_coefficients():
+    coefficients = (0.84, -0.03, -0.008, 0.14, 0.04, -0.002)
+    system = pvsystem.PVSystem(module_parameters={
+        'Technology': 'Thin Film',
+        'first_solar_spectral_coefficients': coefficients})
+    expected = spectrum.spectral_factor_firstsolar(
+        3, 3, coefficients=coefficients)
+    assert_allclose(system.first_solar_spectral_loss(3, 3), expected)
+
+
 def test_PVSystem_multi_array_first_solar_spectral_loss():
     system = pvsystem.PVSystem(
         arrays=[

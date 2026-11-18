@@ -352,7 +352,7 @@ def get_acis_station_data(station, start, end, trace_val=0.001,
         names where applicable. See variable :const:`VARIABLE_MAP`.
     trace_val : float, default 0.001
         Value to replace "trace" values in the precipitation data
-    url : str, default: 'https://data.rcc-acis.org/GridData'
+    url : str, default: 'https://data.rcc-acis.org/StnData'
         API endpoint URL
     kwargs:
         Optional parameters passed to ``requests.post``.

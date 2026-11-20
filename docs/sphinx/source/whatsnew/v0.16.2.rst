@@ -24,10 +24,6 @@ Bug fixes
 * Document the URL default :py:func:`pvlib.iotools.get_acis_station_data` actually
   uses. Its docstring named the GridData endpoint; should be StnData.
   (:pull:`2950`)
-* Declare ``packaging`` as a dependency, so ``import pvlib`` works on a fresh
-  install. (:pull:`2941`)
-* ``import pvlib`` no longer fails on a fresh install without ``packaging``.
-  (:pull:`2941`)
 
 Enhancements
 ~~~~~~~~~~~~

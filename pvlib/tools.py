@@ -653,4 +653,4 @@ def _format_wkt_point(latitude, longitude):
     str
         The location as a WKT POINT, e.g. ``'POINT(-105.1800 39.7400)'``.
     """
-    return f'POINT({longitude:.4f} {latitude:.4f})'
+    return f'POINT({longitude:.4f} {latitude:.4f})'  # noqa: E231

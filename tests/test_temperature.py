@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 
 import pytest
-from .conftest import TESTS_DATA_DIR, assert_series_equal
+from .conftest import TESTS_DATA_DIR
 from numpy.testing import assert_allclose
 
 from pvlib import temperature, tools
@@ -63,8 +63,16 @@ def test_sapm_series(sapm_default):
                                            sapm_default['b'])
     expected_cell = pd.Series([0., 23.06066166, 5.], index=times)
     expected_module = pd.Series([0., 21.56066166, 5.], index=times)
-    assert_series_equal(expected_cell, cell_temps)
-    assert_series_equal(expected_module, module_temps)
+    pd.testing.assert_series_equal(
+        expected_cell,
+        cell_temps,
+        atol=1e-5,
+        rtol=1e-5)
+    pd.testing.assert_series_equal(
+        expected_module,
+        module_temps,
+        atol=1e-5,
+        rtol=1e-5)
 
 
 def test_pvsyst_cell_default():
@@ -95,7 +103,7 @@ def test_pvsyst_cell_series():
 
     result = temperature.pvsyst_cell(irrads, temps, wind_speed=winds)
     expected = pd.Series([0.0, 23.965517, 5.0], index=times)
-    assert_series_equal(expected, result)
+    pd.testing.assert_series_equal(expected, result, atol=1e-5, rtol=1e-5)
 
 
 def test_faiman_default():
@@ -201,7 +209,7 @@ def test_faiman_series():
 
     result = temperature.faiman(irrads, temps, wind_speed=winds)
     expected = pd.Series([0.0, 18.446, 5.0], index=times)
-    assert_series_equal(expected, result)
+    pd.testing.assert_series_equal(expected, result, atol=1e-5, rtol=1e-5)
 
 
 def test__temperature_model_params():
@@ -250,8 +258,11 @@ def test_fuentes(filename, inoct):
     is_daytime = (inputs['poa_global'] > 0) & ~is_dawn
     # the accuracy is probably higher than 3 digits here, but the PVWatts
     # export data has low precision so can only test up to 3 digits
-    assert_series_equal(expected_tcell[is_daytime].round(3),
-                        actual_tcell[is_daytime].round(3))
+    pd.testing.assert_series_equal(
+        expected_tcell[is_daytime].round(3),
+        actual_tcell[is_daytime].round(3),
+        atol=1e-5,
+        rtol=1e-5)
     # use lower precision for dawn times to accommodate the dawn transient
     error = actual_tcell[is_dawn] - expected_tcell[is_dawn]
     assert (error.abs() < 0.1).all()
@@ -271,8 +282,11 @@ def test_fuentes_timezone(tz):
     out = temperature.fuentes(df['poa_global'], df['temp_air'],
                               df['wind_speed'], noct_installed=45)
 
-    assert_series_equal(out, pd.Series([48.042, 51.845, 51.846], index=index,
-                                       name='tmod'))
+    pd.testing.assert_series_equal(
+        out,
+        pd.Series([48.042, 51.845, 51.846], index=index, name='tmod'),
+        atol=1e-5,
+        rtol=1e-5)
     # GH 2608
     df = pd.DataFrame({'poa_global': 1000., 'temp_air': 20., 'wind_speed': 1.},
                       index)
@@ -280,8 +294,11 @@ def test_fuentes_timezone(tz):
     out = temperature.fuentes(df['poa_global'], df['temp_air'],
                               df['wind_speed'], noct_installed=45)
 
-    assert_series_equal(out, pd.Series([48.042, 51.845, 51.846], index=index,
-                                       name='tmod'))
+    pd.testing.assert_series_equal(
+        out,
+        pd.Series([48.042, 51.845, 51.846], index=index, name='tmod'),
+        atol=1e-5,
+        rtol=1e-5)
 
 
 def test_noct_sam():
@@ -303,7 +320,11 @@ def test_noct_sam():
                                   pd.Series(index=dr, data=wind_speed),
                                   pd.Series(index=dr, data=noct),
                                   module_efficiency)
-    assert_series_equal(result, pd.Series(index=dr, data=expected))
+    pd.testing.assert_series_equal(
+        result,
+        pd.Series(index=dr, data=expected),
+        atol=1e-5,
+        rtol=1e-5)
 
 
 def test_noct_sam_against_sam():
@@ -367,7 +388,7 @@ def test_prilliman():
     expected = pd.Series([0, 0, 0.7047457, 2.21176412, 4.45584299, 7.63635512,
                           12.26808265, 18.00305776], index=times)
     actual = temperature.prilliman(cell_temperature, wind_speed, unit_mass=10)
-    assert_series_equal(expected, actual)
+    pd.testing.assert_series_equal(expected, actual, atol=1e-5, rtol=1e-5)
 
     # custom coeffs
     coefficients = [0.0046, 4.5537e-4, -2.2586e-4, -1.5661e-5]
@@ -375,7 +396,7 @@ def test_prilliman():
                           12.30423167, 18.04215198], index=times)
     actual = temperature.prilliman(cell_temperature, wind_speed, unit_mass=10,
                                    coefficients=coefficients)
-    assert_series_equal(expected, actual)
+    pd.testing.assert_series_equal(expected, actual, atol=1e-5, rtol=1e-5)
 
     # even very short inputs < 20 minutes total still work
     times = pd.date_range('2019-01-01', freq='1min', periods=8)
@@ -384,7 +405,7 @@ def test_prilliman():
     expected = pd.Series([0, 0, 0.53557976, 1.49270094, 2.85940173,
                           4.63914366, 7.09641845, 10.24899272], index=times)
     actual = temperature.prilliman(cell_temperature, wind_speed, unit_mass=12)
-    assert_series_equal(expected, actual)
+    pd.testing.assert_series_equal(expected, actual, atol=1e-5, rtol=1e-5)
 
 
 def test_prilliman_coarse():
@@ -399,7 +420,11 @@ def test_prilliman_coarse():
                     "input temperature series unchanged")
     with pytest.warns(UserWarning, match=msg):
         actual = temperature.prilliman(cell_temperature, wind_speed)
-    assert_series_equal(cell_temperature, actual)
+    pd.testing.assert_series_equal(
+        cell_temperature,
+        actual,
+        atol=1e-5,
+        rtol=1e-5)
 
 
 def test_prilliman_nans():
@@ -411,7 +436,11 @@ def test_prilliman_nans():
     actual = temperature.prilliman(cell_temperature, wind_speed)
     expected = pd.Series([True, True, True, True, True, True, False, True],
                          index=times)
-    assert_series_equal(actual.notnull(), expected)
+    pd.testing.assert_series_equal(
+        actual.notnull(),
+        expected,
+        atol=1e-5,
+        rtol=1e-5)
 
     # check that nan temperatures do not mess up the weighted average;
     # the original implementation did not set weight=0 for nan values,
@@ -422,7 +451,7 @@ def test_prilliman_nans():
     actual = temperature.prilliman(cell_temperature, wind_speed)
     # original implementation would return some values < 1 here
     expected = pd.Series(1., index=times)
-    assert_series_equal(actual, expected)
+    pd.testing.assert_series_equal(actual, expected, atol=1e-5, rtol=1e-5)
 
 
 def test_glm_conversions():

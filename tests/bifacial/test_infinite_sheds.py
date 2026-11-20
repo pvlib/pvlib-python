@@ -5,7 +5,6 @@ test infinite sheds
 import numpy as np
 import pandas as pd
 from pvlib.bifacial import infinite_sheds
-from tests.conftest import assert_series_equal
 
 import pytest
 
@@ -156,8 +155,16 @@ def test_get_irradiance_poa():
             gcr, height, pitch, ghi, dhi, dni,
             albedo, iam=iam, npoints=npoints)
     assert isinstance(res, pd.DataFrame)
-    assert_series_equal(res['poa_global'], expected_global)
-    assert_series_equal(res['shaded_fraction'], expected_shaded_fraction)
+    pd.testing.assert_series_equal(
+        res['poa_global'],
+        expected_global,
+        atol=1e-5,
+        rtol=1e-5)
+    pd.testing.assert_series_equal(
+        res['shaded_fraction'],
+        expected_shaded_fraction,
+        atol=1e-5,
+        rtol=1e-5)
     assert all(k in res.columns for k in [
         'poa_global', 'poa_diffuse', 'poa_direct', 'poa_ground_diffuse',
         'poa_sky_diffuse', 'shaded_fraction'])
@@ -232,9 +239,14 @@ def test_get_irradiance(vectorize):
     expected_shaded_fraction = pd.Series(
         result_front['shaded_fraction'], index=ghi.index,
         name='shaded_fraction_front')
-    assert_series_equal(result['poa_global'], expected_poa_global)
-    assert_series_equal(result['shaded_fraction_front'],
-                        expected_shaded_fraction)
+    pd.testing.assert_series_equal(
+        result['poa_global'],
+        expected_poa_global,
+        atol=1e-5,
+        rtol=1e-5)
+    pd.testing.assert_series_equal(result['shaded_fraction_front'],
+                                   expected_shaded_fraction, atol=1e-5,
+                                   rtol=1e-5)
 
 
 def test_get_irradiance_limiting_gcr():

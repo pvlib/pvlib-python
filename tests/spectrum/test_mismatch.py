@@ -4,8 +4,6 @@ import pandas as pd
 import numpy as np
 from pvlib import spectrum
 
-from tests.conftest import assert_series_equal
-
 
 def test_calc_spectral_mismatch_field(spectrl2_data):
     # test that the mismatch is calculated correctly with
@@ -137,7 +135,7 @@ def test_spectral_factor_sapm(sapm_module_params, airmass, expected):
     out = spectrum.spectral_factor_sapm(airmass, sapm_module_params)
 
     if isinstance(airmass, pd.Series):
-        assert_series_equal(out, expected, check_less_precise=4)
+        pd.testing.assert_series_equal(out, expected, atol=1e-3, rtol=1e-3)
     else:
         assert_allclose(out, expected, atol=1e-4)
 

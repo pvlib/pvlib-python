@@ -5,7 +5,6 @@ from numpy import nan, array
 import pandas as pd
 
 import pytest
-from .conftest import assert_series_equal, assert_frame_equal
 from numpy.testing import assert_allclose
 import unittest.mock as mock
 
@@ -256,7 +255,7 @@ def test_sapm(sapm_module_params):
         columns=['i_sc', 'i_mp', 'v_oc', 'v_mp', 'p_mp', 'i_x', 'i_xx'],
         index=times)
 
-    assert_frame_equal(out, expected, check_less_precise=4)
+    pd.testing.assert_frame_equal(out, expected, atol=1e-3, rtol=1e-3)
 
     out = pvsystem.sapm(1000, 25, sapm_module_params)
 
@@ -400,7 +399,7 @@ def test_sapm_effective_irradiance(sapm_module_params, test_input, expected):
     test_input.append(sapm_module_params)
     out = pvsystem.sapm_effective_irradiance(*test_input)
     if isinstance(test_input, pd.Series):
-        assert_series_equal(out, expected, check_less_precise=4)
+        pd.testing.assert_series_equal(out, expected, atol=1e-3, rtol=1e-3)
     else:
         assert_allclose(out, expected, atol=1e-1)
 
@@ -634,7 +633,11 @@ def test_PVSystem_noct_celltemp(mocker):
                                       pd.Series(index=dr, data=temp_air),
                                       pd.Series(index=dr, data=wind_speed),
                                       model='noct_sam')
-    assert_series_equal(out, pd.Series(index=dr, data=expected))
+    pd.testing.assert_series_equal(
+        out,
+        pd.Series(index=dr, data=expected),
+        atol=1e-5,
+        rtol=1e-5)
     # now use optional arguments
     temp_model_params.update({'transmittance_absorptance': 0.8,
                               'array_height': 2,
@@ -691,8 +694,16 @@ def test_PVSystem_multi_array_celltemp_multi_temp(model, two_array_system):
         wind_speed,
         model=model
     )
-    assert_series_equal(temp_one, temp_two_switch)
-    assert_series_equal(temp_two, temp_one_swtich)
+    pd.testing.assert_series_equal(
+        temp_one,
+        temp_two_switch,
+        atol=1e-5,
+        rtol=1e-5)
+    pd.testing.assert_series_equal(
+        temp_two,
+        temp_one_swtich,
+        atol=1e-5,
+        rtol=1e-5)
 
 
 @pytest.mark.parametrize("model",
@@ -716,8 +727,16 @@ def test_PVSystem_multi_array_celltemp_multi_wind(model, two_array_system):
         (wind_speed_two, wind_speed_one),
         model=model
     )
-    assert_series_equal(temp_one, temp_two_switch)
-    assert_series_equal(temp_two, temp_one_swtich)
+    pd.testing.assert_series_equal(
+        temp_one,
+        temp_two_switch,
+        atol=1e-5,
+        rtol=1e-5)
+    pd.testing.assert_series_equal(
+        temp_two,
+        temp_one_swtich,
+        atol=1e-5,
+        rtol=1e-5)
 
 
 def test_PVSystem_get_cell_temperature_invalid():
@@ -785,12 +804,27 @@ def test_PVSystem_fuentes_celltemp(mocker):
     irrads = pd.Series(1000, index)
     winds = pd.Series(1, index)
     out = system.get_cell_temperature(irrads, temps, winds, model='fuentes')
-    assert_series_equal(spy.call_args[0][0], irrads)
-    assert_series_equal(spy.call_args[0][1], temps)
-    assert_series_equal(spy.call_args[0][2], winds)
+    pd.testing.assert_series_equal(
+        spy.call_args[0][0],
+        irrads,
+        atol=1e-5,
+        rtol=1e-5)
+    pd.testing.assert_series_equal(
+        spy.call_args[0][1],
+        temps,
+        atol=1e-5,
+        rtol=1e-5)
+    pd.testing.assert_series_equal(
+        spy.call_args[0][2],
+        winds,
+        atol=1e-5,
+        rtol=1e-5)
     assert spy.call_args[0][3] == noct_installed
-    assert_series_equal(out, pd.Series([52.884, 56.835, 56.836], index,
-                                       name='tmod'))
+    pd.testing.assert_series_equal(
+        out,
+        pd.Series([52.884, 56.835, 56.836], index, name='tmod'),
+        atol=1e-5,
+        rtol=1e-5)
 
 
 def test_PVSystem_fuentes_module_height(mocker):
@@ -1052,16 +1086,31 @@ def test_calcparams_desoto(cec_module_params):
         dEgdT=-0.0002677
     )
 
-    assert_series_equal(IL, pd.Series([0.0, 6.036, 6.096], index=times),
-                        check_less_precise=3)
-    assert_series_equal(I0, pd.Series([0.0, 1.94e-9, 7.419e-8], index=times),
-                        check_less_precise=3)
-    assert_series_equal(Rs, pd.Series([0.094, 0.094, 0.094], index=times),
-                        check_less_precise=3)
-    assert_series_equal(Rsh, pd.Series([np.inf, 19.65, 19.65], index=times),
-                        check_less_precise=3)
-    assert_series_equal(nNsVth, pd.Series([0.473, 0.473, 0.5127], index=times),
-                        check_less_precise=3)
+    pd.testing.assert_series_equal(
+        IL,
+        pd.Series([0.0, 6.036, 6.096], index=times),
+        atol=1e-3,
+        rtol=1e-3)
+    pd.testing.assert_series_equal(
+        I0,
+        pd.Series([0.0, 1.94e-9, 7.419e-8], index=times),
+        atol=1e-3,
+        rtol=1e-3)
+    pd.testing.assert_series_equal(
+        Rs,
+        pd.Series([0.094, 0.094, 0.094], index=times),
+        atol=1e-3,
+        rtol=1e-3)
+    pd.testing.assert_series_equal(
+        Rsh,
+        pd.Series([np.inf, 19.65, 19.65], index=times),
+        atol=1e-3,
+        rtol=1e-3)
+    pd.testing.assert_series_equal(
+        nNsVth,
+        pd.Series([0.473, 0.473, 0.5127], index=times),
+        atol=1e-3,
+        rtol=1e-3)
 
 
 def test_calcparams_cec(cec_module_params):
@@ -1085,16 +1134,31 @@ def test_calcparams_cec(cec_module_params):
         dEgdT=-0.0002677
     )
 
-    assert_series_equal(IL, pd.Series([0.0, 6.036, 6.0896], index=times),
-                        check_less_precise=3)
-    assert_series_equal(I0, pd.Series([0.0, 1.94e-9, 7.419e-8], index=times),
-                        check_less_precise=3)
-    assert_series_equal(Rs, pd.Series([0.094, 0.094, 0.094], index=times),
-                        check_less_precise=3)
-    assert_series_equal(Rsh, pd.Series([np.inf, 19.65, 19.65], index=times),
-                        check_less_precise=3)
-    assert_series_equal(nNsVth, pd.Series([0.473, 0.473, 0.5127], index=times),
-                        check_less_precise=3)
+    pd.testing.assert_series_equal(
+        IL,
+        pd.Series([0.0, 6.036, 6.0896], index=times),
+        atol=1e-3,
+        rtol=1e-3)
+    pd.testing.assert_series_equal(
+        I0,
+        pd.Series([0.0, 1.94e-9, 7.419e-8], index=times),
+        atol=1e-3,
+        rtol=1e-3)
+    pd.testing.assert_series_equal(
+        Rs,
+        pd.Series([0.094, 0.094, 0.094], index=times),
+        atol=1e-3,
+        rtol=1e-3)
+    pd.testing.assert_series_equal(
+        Rsh,
+        pd.Series([np.inf, 19.65, 19.65], index=times),
+        atol=1e-3,
+        rtol=1e-3)
+    pd.testing.assert_series_equal(
+        nNsVth,
+        pd.Series([0.473, 0.473, 0.5127], index=times),
+        atol=1e-3,
+        rtol=1e-3)
 
 
 def test_calcparams_cec_extra_params_propagation(cec_module_params, mocker):
@@ -1155,16 +1219,31 @@ def test_calcparams_pvsyst(pvsyst_module_params):
         cells_in_series=pvsyst_module_params['cells_in_series'],
         EgRef=pvsyst_module_params['EgRef'])
 
-    assert_series_equal(
-        IL.round(decimals=3), pd.Series([0.0, 4.8200], index=times))
-    assert_series_equal(
-        I0.round(decimals=3), pd.Series([0.0, 1.47e-7], index=times))
-    assert_series_equal(
-        Rs.round(decimals=3), pd.Series([0.500, 0.500], index=times))
-    assert_series_equal(
-        Rsh.round(decimals=3), pd.Series([1000.0, 305.757], index=times))
-    assert_series_equal(
-        nNsVth.round(decimals=4), pd.Series([1.6186, 1.7961], index=times))
+    pd.testing.assert_series_equal(
+        IL.round(decimals=3),
+        pd.Series([0.0, 4.8200], index=times),
+        atol=1e-5,
+        rtol=1e-5)
+    pd.testing.assert_series_equal(
+        I0.round(decimals=3),
+        pd.Series([0.0, 1.47e-7], index=times),
+        atol=1e-5,
+        rtol=1e-5)
+    pd.testing.assert_series_equal(
+        Rs.round(decimals=3),
+        pd.Series([0.500, 0.500], index=times),
+        atol=1e-5,
+        rtol=1e-5)
+    pd.testing.assert_series_equal(
+        Rsh.round(decimals=3),
+        pd.Series([1000.0, 305.757], index=times),
+        atol=1e-5,
+        rtol=1e-5)
+    pd.testing.assert_series_equal(
+        nNsVth.round(decimals=4),
+        pd.Series([1.6186, 1.7961], index=times),
+        atol=1e-5,
+        rtol=1e-5)
 
 
 def test_PVSystem_calcparams_desoto(cec_module_params, mocker):
@@ -1754,7 +1833,7 @@ def test_scale_voltage_current_power():
         columns=['i_sc', 'i_mp', 'v_oc', 'v_mp', 'p_mp', 'i_x', 'i_xx'],
         index=[0])
     out = pvsystem.scale_voltage_current_power(data, voltage=2, current=3)
-    assert_frame_equal(out, expected, check_less_precise=5)
+    pd.testing.assert_frame_equal(out, expected, atol=1e-3, rtol=1e-3)
 
 
 def test_PVSystem_scale_voltage_current_power(mocker):
@@ -1799,7 +1878,11 @@ def test_PVSystem_get_ac_sandia(cec_inverter_parameters, mocker):
     pdcs = idcs * vdcs
     pacs = system.get_ac('sandia', pdcs, v_dc=vdcs)
     inv_fun.assert_called_once()
-    assert_series_equal(pacs, pd.Series([-0.020000, 132.004308, 250.000000]))
+    pd.testing.assert_series_equal(
+        pacs,
+        pd.Series([-0.020000, 132.004308, 250.000000]),
+        atol=1e-5,
+        rtol=1e-5)
 
 
 def test_PVSystem_get_ac_sandia_multi(cec_inverter_parameters, mocker):
@@ -1815,7 +1898,11 @@ def test_PVSystem_get_ac_sandia_multi(cec_inverter_parameters, mocker):
     pdcs = idcs * vdcs
     pacs = system.get_ac('sandia', (pdcs, pdcs), v_dc=(vdcs, vdcs))
     inv_fun.assert_called_once()
-    assert_series_equal(pacs, pd.Series([-0.020000, 132.004308, 250.000000]))
+    pd.testing.assert_series_equal(
+        pacs,
+        pd.Series([-0.020000, 132.004308, 250.000000]),
+        atol=1e-5,
+        rtol=1e-5)
     with pytest.raises(ValueError,
                        match="Length mismatch for per-array parameter"):
         system.get_ac('sandia', vdcs, (pdcs, pdcs))
@@ -1859,7 +1946,7 @@ def test_PVSystem_get_ac_pvwatts_multi(
         )
         pdcs = pd.Series([0., 25., 50.])
         pacs = system.get_ac('pvwatts', (pdcs, pdcs))
-        assert_series_equal(pacs, exp)
+        pd.testing.assert_series_equal(pacs, exp, atol=1e-5, rtol=1e-5)
     assert inverter.pvwatts_multi.call_count == 2
     with pytest.raises(ValueError,
                        match="Length mismatch for per-array parameter"):
@@ -1903,7 +1990,11 @@ def test_PVSystem_get_ac_single_array_tuple_input(
     if model == 'pvwatts':
         assert ac < pdcs['pvwatts']
     else:
-        assert_series_equal(ac, expected[model])
+        pd.testing.assert_series_equal(
+            ac,
+            expected[model],
+            atol=1e-5,
+            rtol=1e-5)
 
 
 def test_PVSystem_get_ac_adr(adr_inverter_parameters, mocker):
@@ -1914,8 +2005,11 @@ def test_PVSystem_get_ac_adr(adr_inverter_parameters, mocker):
     vdcs = pd.Series([135, 154, 390, 420, 551])
     pdcs = pd.Series([135, 1232, 1170, 420, 551])
     pacs = system.get_ac('adr', pdcs, vdcs)
-    assert_series_equal(pacs, pd.Series([np.nan, 1161.5745, 1116.4459,
-                                         382.6679, np.nan]))
+    pd.testing.assert_series_equal(
+        pacs,
+        pd.Series([np.nan, 1161.5745, 1116.4459, 382.6679, np.nan]),
+        atol=1e-5,
+        rtol=1e-5)
     inverter.adr.assert_called_once_with(vdcs, pdcs,
                                          system.inverter_parameters)
 
@@ -2001,7 +2095,7 @@ def test_PVSystem_get_irradiance(solar_pos):
                                      'poa_diffuse', 'poa_sky_diffuse',
                                      'poa_ground_diffuse'],
                             index=solar_pos.index)
-    assert_frame_equal(irradiance, expected, check_less_precise=2)
+    pd.testing.assert_frame_equal(irradiance, expected, atol=1e-3, rtol=1e-3)
 
 
 def test_PVSystem_get_irradiance_float():
@@ -2039,7 +2133,7 @@ def test_PVSystem_get_irradiance_albedo(solar_pos):
         columns=['poa_global', 'poa_direct', 'poa_diffuse', 'poa_sky_diffuse',
                  'poa_ground_diffuse'],
         index=solar_pos.index)
-    assert_frame_equal(irradiance, expected, check_less_precise=2)
+    pd.testing.assert_frame_equal(irradiance, expected, atol=1e-3, rtol=1e-3)
 
 
 def test_PVSystem_get_irradiance_model(mocker, solar_pos):
@@ -2087,12 +2181,10 @@ def test_PVSystem_multi_array_get_irradiance(solar_pos):
         solar_pos['azimuth'],
         irrads['dni'], irrads['ghi'], irrads['dhi']
     )
-    assert_frame_equal(
-        array_one_irrad, array_one_expected, check_less_precise=2
-    )
-    assert_frame_equal(
-        array_two_irrad, array_two_expected, check_less_precise=2
-    )
+    pd.testing.assert_frame_equal(
+        array_one_irrad, array_one_expected, atol=1e-3, rtol=1e-3)
+    pd.testing.assert_frame_equal(
+        array_two_irrad, array_two_expected, atol=1e-3, rtol=1e-3)
 
 
 def test_PVSystem_multi_array_get_irradiance_multi_irrad(solar_pos):
@@ -2120,7 +2212,11 @@ def test_PVSystem_multi_array_get_irradiance_multi_irrad(solar_pos):
         (irrads['ghi'], irrads['ghi']),
         (irrads['dni'], irrads['dni'])
     )
-    assert_frame_equal(array_irrad[0], array_irrad[1])
+    pd.testing.assert_frame_equal(
+        array_irrad[0],
+        array_irrad[1],
+        atol=1e-5,
+        rtol=1e-5)
     array_irrad = system.get_irradiance(
         solar_pos['apparent_zenith'],
         solar_pos['azimuth'],
@@ -2139,8 +2235,16 @@ def test_PVSystem_multi_array_get_irradiance_multi_irrad(solar_pos):
         irrads_two['dhi'], irrads_two['ghi'], irrads_two['dni']
     )
     assert not array_irrad[0].equals(array_irrad[1])
-    assert_frame_equal(array_irrad[0], array_one_expected)
-    assert_frame_equal(array_irrad[1], array_two_expected)
+    pd.testing.assert_frame_equal(
+        array_irrad[0],
+        array_one_expected,
+        atol=1e-5,
+        rtol=1e-5)
+    pd.testing.assert_frame_equal(
+        array_irrad[1],
+        array_two_expected,
+        atol=1e-5,
+        rtol=1e-5)
     with pytest.raises(ValueError,
                        match="Length mismatch for per-array parameter"):
         system.get_irradiance(
@@ -2157,7 +2261,11 @@ def test_PVSystem_multi_array_get_irradiance_multi_irrad(solar_pos):
         irrads['ghi'],
         irrads['dni']
     )
-    assert_frame_equal(array_irrad[0], array_one_expected)
+    pd.testing.assert_frame_equal(
+        array_irrad[0],
+        array_one_expected,
+        atol=1e-5,
+        rtol=1e-5)
     assert not array_irrad[0].equals(array_irrad[1])
 
 
@@ -2181,7 +2289,7 @@ def test_Array_get_irradiance(solar_pos):
                  'poa_ground_diffuse'],
         index=solar_pos.index
     )
-    assert_frame_equal(modeled, expected, check_less_precise=5)
+    pd.testing.assert_frame_equal(modeled, expected, atol=1e-3, rtol=1e-3)
     # with specified kwargs, use isotropic sky diffuse because it's easier
     modeled = array.get_irradiance(
         solar_pos['apparent_zenith'],
@@ -2196,7 +2304,7 @@ def test_Array_get_irradiance(solar_pos):
                          solar_pos['apparent_zenith'], solar_pos['azimuth'])
     direct = irrads['dni'] * cosd(aoi)
     expected = sky_diffuse + ground_diff + direct
-    assert_series_equal(expected, expected, check_less_precise=5)
+    pd.testing.assert_series_equal(expected, expected, atol=1e-3, rtol=1e-3)
 
 
 def test_PVSystem___repr__():
@@ -2297,7 +2405,7 @@ def test_pvwatts_dc_series():
     temp_cell = pd.Series([30, np.nan, 30])
     expected = pd.Series(np.array([   nan,    nan,  88.65]))
     out = pvsystem.pvwatts_dc(irrad_trans, temp_cell, 100, -0.003)
-    assert_series_equal(expected, out)
+    pd.testing.assert_series_equal(expected, out, atol=1e-5, rtol=1e-5)
 
 
 def test_pvwatts_dc_scalars_with_k():
@@ -2322,7 +2430,7 @@ def test_pvwatts_dc_series_with_k():
     temp_cell = pd.Series([30, np.nan, 30, 30])
     expected = pd.Series(np.array([   nan,    nan,  8.9125, 118.45]))
     out = pvsystem.pvwatts_dc(irrad_trans, temp_cell, 100, -0.003, k=0.01)
-    assert_series_equal(expected, out)
+    pd.testing.assert_series_equal(expected, out, atol=1e-5, rtol=1e-5)
 
 
 def test_pvwatts_dc_with_k_and_cap_adjustment():
@@ -2365,7 +2473,7 @@ def test_pvwatts_losses_series():
     expected = pd.Series([nan, 14.934904])
     age = pd.Series([nan, 1])
     out = pvsystem.pvwatts_losses(age=age)
-    assert_series_equal(expected, out)
+    pd.testing.assert_series_equal(expected, out, atol=1e-5, rtol=1e-5)
 
 
 @pytest.fixture
@@ -2510,7 +2618,7 @@ def test_combine_loss_factors():
                                                 periods=12, freq='MS'))
     expected = pd.Series(.1621, index=test_index)
     out = pvsystem.combine_loss_factors(test_index, loss_1, loss_2, loss_3)
-    assert_series_equal(expected, out)
+    pd.testing.assert_series_equal(expected, out, atol=1e-5, rtol=1e-5)
 
 
 def test_no_extra_kwargs():

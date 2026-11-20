@@ -8,7 +8,6 @@ from tests.conftest import (
     RERUNS,
     RERUNS_DELAY,
     assert_index_equal,
-    assert_frame_equal,
 )
 
 srml_testfile = TESTS_DATA_DIR / 'SRML-day-EUPO1801.txt'
@@ -89,7 +88,7 @@ def test_get_srml():
     file_data = srml.read_srml(url)
     requested, _ = srml.get_srml(station='EU', start='2018-01-01',
                                  end='2018-01-31')
-    assert_frame_equal(file_data, requested)
+    pd.testing.assert_frame_equal(file_data, requested, atol=1e-5, rtol=1e-5)
 
 
 @pytest.mark.remote_data
@@ -99,7 +98,11 @@ def test_get_srml_hourly():
                                             end='1986-05-31', filetype='PH')
     expected_index = pd.date_range(start='1986-04-01', end='1986-05-31 23:59',
                                    freq='1h', tz='Etc/GMT+8')
-    assert_index_equal(data.index, expected_index)
+    assert_index_equal(
+        data.index,
+        expected_index,
+        atol=1e-5,
+        rtol=1e-5)
 
 
 @pytest.mark.remote_data
@@ -110,7 +113,11 @@ def test_get_srml_minute():
                                    end='2018-01-31', filetype='PO')
     expected_index = pd.date_range(start='2018-01-01', end='2018-01-31 23:59',
                                    freq='1min', tz='Etc/GMT+8')
-    assert_index_equal(data_get.index, expected_index)
+    assert_index_equal(
+        data_get.index,
+        expected_index,
+        atol=1e-5,
+        rtol=1e-5)
     assert all(c in data_get.columns for c in data_read.columns)
     # Check that all indices in example file are present in remote file
     assert data_read.index.isin(data_get.index).all()

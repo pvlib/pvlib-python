@@ -3,7 +3,6 @@ import pandas as pd
 import pytest
 from pvlib import albedo
 
-from .conftest import assert_series_equal
 from numpy.testing import assert_allclose
 
 
@@ -48,7 +47,7 @@ def test_inland_water_dvoracek_series():
                                           color_coeff=color_coeffs,
                                           wave_roughness_coeff=roughness_coeffs)   # noqa: E501
     expected = pd.Series([0.1, 0.1, 0.12875, 0.06278, 0.064], index=times)
-    assert_series_equal(expected, result, atol=1e-5)
+    pd.testing.assert_series_equal(expected, result, atol=1e-5, rtol=1e-5)
 
 
 def test_inland_water_dvoracek_series_mix_with_array():
@@ -61,7 +60,7 @@ def test_inland_water_dvoracek_series_mix_with_array():
                                           color_coeff=color_coeffs,
                                           wave_roughness_coeff=roughness_coeffs)   # noqa: E501
     expected = pd.Series([0.08555, 0.07787], index=times)
-    assert_series_equal(expected, result, atol=1e-5)
+    pd.testing.assert_series_equal(expected, result, atol=1e-5, rtol=1e-5)
 
 
 def test_inland_water_dvoracek_invalid():

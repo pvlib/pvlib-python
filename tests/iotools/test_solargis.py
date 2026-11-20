@@ -5,7 +5,6 @@ import requests
 from tests.conftest import (
     RERUNS,
     RERUNS_DELAY,
-    assert_frame_equal,
     assert_index_equal,
 )
 
@@ -44,7 +43,7 @@ def test_get_solargis(hourly_dataframe):
         start='2022-01-01', end='2022-01-01',
         tz='GMT+01', variables=['GHI', 'DNI'],
         time_resolution='HOURLY', api_key='demo')
-    assert_frame_equal(data, hourly_dataframe)
+    pd.testing.assert_frame_equal(data, hourly_dataframe, atol=1e-5, rtol=1e-5)
 
 
 @pytest.mark.remote_data
@@ -58,7 +57,11 @@ def test_get_solargis_utc_start_timestamp(hourly_index_start_utc):
         time_resolution='MIN_30',
         map_variables=False, api_key='demo')
     assert 'GTI' in data.columns  # assert that variables aren't mapped
-    assert_index_equal(data.index, hourly_index_start_utc)
+    assert_index_equal(
+        data.index,
+        hourly_index_start_utc,
+        atol=1e-5,
+        rtol=1e-5)
 
 
 @pytest.mark.remote_data

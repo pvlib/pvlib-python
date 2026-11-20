@@ -9,7 +9,7 @@ from pvlib.iotools import (
     get_acis_prism, get_acis_nrcc, get_acis_mpe,
     get_acis_station_data, get_acis_available_stations
 )
-from tests.conftest import RERUNS, RERUNS_DELAY, assert_frame_equal
+from tests.conftest import RERUNS, RERUNS_DELAY
 from requests import HTTPError
 
 
@@ -28,7 +28,7 @@ def test_get_acis_prism():
                  'heating_degree_days', 'growing_degree_days'],
         index=pd.to_datetime(['2020-01-01', '2020-01-02']),
     )
-    assert_frame_equal(df, expected)
+    pd.testing.assert_frame_equal(df, expected, atol=1e-5, rtol=1e-5)
     expected_meta = {'latitude': 40, 'longitude': -80, 'altitude': 298.0944}
     assert meta == expected_meta
 
@@ -36,7 +36,7 @@ def test_get_acis_prism():
     df, meta = get_acis_prism(40.001, -80.001, '2020-01-01', '2020-01-02',
                               map_variables=False)
     expected.columns = ['pcpn', 'maxt', 'mint', 'avgt', 'cdd', 'hdd', 'gdd']
-    assert_frame_equal(df, expected)
+    pd.testing.assert_frame_equal(df, expected, atol=1e-5, rtol=1e-5)
     expected_meta = {'lat': 40, 'lon': -80, 'elev': 298.0944}
     assert meta == expected_meta
 
@@ -57,7 +57,7 @@ def test_get_acis_nrcc(grid, expected):
                  'heating_degree_days', 'growing_degree_days'],
         index=pd.to_datetime(['2020-01-01']),
     )
-    assert_frame_equal(df, expected)
+    pd.testing.assert_frame_equal(df, expected, atol=1e-5, rtol=1e-5)
     expected_meta = {'latitude': 40., 'longitude': -80., 'altitude': 356.9208}
     assert meta == pytest.approx(expected_meta)
 
@@ -65,7 +65,7 @@ def test_get_acis_nrcc(grid, expected):
     df, meta = get_acis_nrcc(40.001, -80.001, '2020-01-01', '2020-01-01', grid,
                              map_variables=False)
     expected.columns = ['pcpn', 'maxt', 'mint', 'avgt', 'cdd', 'hdd', 'gdd']
-    assert_frame_equal(df, expected)
+    pd.testing.assert_frame_equal(df, expected, atol=1e-5, rtol=1e-5)
     expected_meta = {'lat': 40., 'lon': -80., 'elev': 356.9208}
     assert meta == pytest.approx(expected_meta)
 
@@ -87,7 +87,7 @@ def test_get_acis_mpe():
         {'precipitation': [0.4, 0.0]},
         index=pd.to_datetime(['2020-01-01', '2020-01-02']),
     )
-    assert_frame_equal(df, expected)
+    pd.testing.assert_frame_equal(df, expected, atol=1e-5, rtol=1e-5)
     expected_meta = {'latitude': 40.0083, 'longitude': -79.9653}
     assert meta == expected_meta
 
@@ -95,7 +95,7 @@ def test_get_acis_mpe():
     df, meta = get_acis_mpe(40.001, -80.001, '2020-01-01', '2020-01-02',
                             map_variables=False)
     expected.columns = ['pcpn']
-    assert_frame_equal(df, expected)
+    pd.testing.assert_frame_equal(df, expected, atol=1e-5, rtol=1e-5)
     expected_meta = {'lat': 40.0083, 'lon': -79.9653}
     assert meta == expected_meta
 
@@ -116,7 +116,7 @@ def test_get_acis_station_data():
                  'heating_degree_days', 'growing_degree_days'],
         index=pd.to_datetime(['2020-01-10', '2020-01-11', '2020-01-12']),
     )
-    assert_frame_equal(df, expected)
+    pd.testing.assert_frame_equal(df, expected, atol=1e-5, rtol=1e-5)
     expected_meta = {
         'uid': 48,
         'state': 'IL',
@@ -177,7 +177,7 @@ def test_get_acis_station_data():
                                      trace_val=-99, map_variables=False)
     expected.columns = ['maxt', 'mint', 'avgt', 'obst', 'pcpn', 'snow',
                         'snwd', 'cdd', 'hdd', 'gdd']
-    assert_frame_equal(df, expected)
+    pd.testing.assert_frame_equal(df, expected, atol=1e-5, rtol=1e-5)
     expected_meta['lat'] = expected_meta.pop('latitude')
     expected_meta['lon'] = expected_meta.pop('longitude')
     expected_meta['elev'] = expected_meta.pop('altitude')

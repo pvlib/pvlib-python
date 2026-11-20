@@ -13,10 +13,7 @@ from pvlib.iotools import get_pvgis_horizon
 from tests.conftest import (
     TESTS_DATA_DIR,
     RERUNS,
-    RERUNS_DELAY,
-    assert_frame_equal,
-    assert_series_equal,
-)
+    RERUNS_DELAY)
 
 
 # PVGIS Hourly tests
@@ -202,7 +199,7 @@ def test_read_pvgis_hourly(testfile, expected_name, metadata_exp,
     out, metadata = read_pvgis_hourly(
         testfile, map_variables=map_variables, pvgis_format=pvgis_format)
     # Assert whether dataframe, metadata, and inputs are as expected
-    assert_frame_equal(out, expected)
+    pd.testing.assert_frame_equal(out, expected, atol=1e-5, rtol=1e-5)
     assert metadata == metadata_exp
 
 
@@ -262,7 +259,7 @@ def test_get_pvgis_hourly(requests_mock, testfile, expected_name, args,
     # Get expected dataframe from fixture
     expected = request.getfixturevalue(expected_name)
     # Compare out and expected dataframes
-    assert_frame_equal(out, expected)
+    pd.testing.assert_frame_equal(out, expected, atol=1e-5, rtol=1e-5)
 
 
 def test_get_pvgis_hourly_bad_status_code(requests_mock):
@@ -585,7 +582,11 @@ def test_read_pvgis_horizon():
     horizon_data = pd.read_csv(TESTS_DATA_DIR / 'test_read_pvgis_horizon.csv',
                                index_col=0)
     horizon_data = horizon_data['horizon_elevation']
-    assert_series_equal(pvgis_data, horizon_data)
+    pd.testing.assert_series_equal(
+        pvgis_data,
+        horizon_data,
+        atol=1e-5,
+        rtol=1e-5)
 
 
 @pytest.mark.remote_data

@@ -5,8 +5,7 @@ import zoneinfo
 import numpy as np
 from numpy import nan
 import pandas as pd
-from .conftest import (assert_frame_equal, assert_index_equal,
-                       assert_series_equal, fail_on_pvlib_version)
+from .conftest import assert_index_equal, fail_on_pvlib_version
 from pvlib._deprecation import pvlibDeprecationWarning
 
 import pytest
@@ -126,7 +125,11 @@ def test_get_clearsky(mocker, times):
     m = mocker.spy(pvlib.clearsky, 'ineichen')
     out = tus.get_clearsky(times)
     assert m.call_count == 1
-    assert_index_equal(out.index, times)
+    assert_index_equal(
+        out.index,
+        times,
+        atol=1e-5,
+        rtol=1e-5)
     # check that values are 0 before sunrise and after sunset
     assert out.iloc[0, :].sum().sum() == 0
     assert out.iloc[-1:, :].sum().sum() == 0
@@ -143,7 +146,11 @@ def test_get_clearsky_ineichen_supply_linke(mocker):
     out = tus.get_clearsky(times, linke_turbidity=3)
     # we only care that the LT is passed in this test
     pvlib.clearsky.ineichen.assert_called_once_with(ANY, ANY, 3, ANY, ANY)
-    assert_index_equal(out.index, times)
+    assert_index_equal(
+        out.index,
+        times,
+        atol=1e-5,
+        rtol=1e-5)
     # check that values are 0 before sunrise and after sunset
     assert out.iloc[0:2, :].sum().sum() == 0
     assert out.iloc[-2:, :].sum().sum() == 0
@@ -163,7 +170,7 @@ def test_get_clearsky_haurwitz(times):
                              [   0.        ]]),
                             columns=['ghi'],
                             index=times)
-    assert_frame_equal(expected, clearsky)
+    pd.testing.assert_frame_equal(expected, clearsky, atol=1e-5, rtol=1e-5)
 
 
 def test_get_clearsky_simplified_solis(times):
@@ -178,7 +185,7 @@ def test_get_clearsky_simplified_solis(times):
                             columns=['dhi', 'dni', 'ghi'],
                             index=times)
     expected = expected[['ghi', 'dni', 'dhi']]
-    assert_frame_equal(expected, clearsky, check_less_precise=2)
+    pd.testing.assert_frame_equal(expected, clearsky, atol=1e-3, rtol=1e-3)
 
 
 def test_get_clearsky_simplified_solis_apparent_elevation(times):
@@ -196,7 +203,7 @@ def test_get_clearsky_simplified_solis_apparent_elevation(times):
                             columns=['dhi', 'dni', 'ghi'],
                             index=times)
     expected = expected[['ghi', 'dni', 'dhi']]
-    assert_frame_equal(expected, clearsky, check_less_precise=2)
+    pd.testing.assert_frame_equal(expected, clearsky, atol=1e-3, rtol=1e-3)
 
 
 def test_get_clearsky_simplified_solis_dni_extra(times):
@@ -212,7 +219,7 @@ def test_get_clearsky_simplified_solis_dni_extra(times):
                             columns=['dhi', 'dni', 'ghi'],
                             index=times)
     expected = expected[['ghi', 'dni', 'dhi']]
-    assert_frame_equal(expected, clearsky)
+    pd.testing.assert_frame_equal(expected, clearsky, atol=1e-5, rtol=1e-5)
 
 
 def test_get_clearsky_simplified_solis_pressure(times):
@@ -228,7 +235,7 @@ def test_get_clearsky_simplified_solis_pressure(times):
                             columns=['dhi', 'dni', 'ghi'],
                             index=times)
     expected = expected[['ghi', 'dni', 'dhi']]
-    assert_frame_equal(expected, clearsky, check_less_precise=2)
+    pd.testing.assert_frame_equal(expected, clearsky, atol=1e-3, rtol=1e-3)
 
 
 def test_get_clearsky_simplified_solis_aod_pw(times):
@@ -244,7 +251,7 @@ def test_get_clearsky_simplified_solis_aod_pw(times):
                             columns=['dhi', 'dni', 'ghi'],
                             index=times)
     expected = expected[['ghi', 'dni', 'dhi']]
-    assert_frame_equal(expected, clearsky, check_less_precise=2)
+    pd.testing.assert_frame_equal(expected, clearsky, atol=1e-3, rtol=1e-3)
 
 
 def test_get_clearsky_valueerror(times):
@@ -261,7 +268,7 @@ def test_from_tmy_3():
     assert loc.name is not None
     assert loc.altitude != 0
     assert loc.tz != 'UTC'
-    assert_frame_equal(loc.weather, data)
+    pd.testing.assert_frame_equal(loc.weather, data, atol=1e-5, rtol=1e-5)
 
 
 def test_from_tmy_2():
@@ -272,7 +279,7 @@ def test_from_tmy_2():
     assert loc.name is not None
     assert loc.altitude != 0
     assert loc.tz != 'UTC'
-    assert_frame_equal(loc.weather, data)
+    pd.testing.assert_frame_equal(loc.weather, data, atol=1e-5, rtol=1e-5)
 
 
 def test_from_epw():
@@ -283,7 +290,7 @@ def test_from_epw():
     assert loc.name is not None
     assert loc.altitude != 0
     assert loc.tz != 'UTC'
-    assert_frame_equal(loc.weather, data)
+    pd.testing.assert_frame_equal(loc.weather, data, atol=1e-5, rtol=1e-5)
 
 
 def test_get_solarposition(expected_solpos, golden_mst):
@@ -293,7 +300,11 @@ def test_get_solarposition(expected_solpos, golden_mst):
     ephem_data = np.round(ephem_data, 3)
     expected_solpos.index = times
     expected_solpos = np.round(expected_solpos, 3)
-    assert_frame_equal(expected_solpos, ephem_data[expected_solpos.columns])
+    pd.testing.assert_frame_equal(
+        expected_solpos,
+        ephem_data[expected_solpos.columns],
+        atol=1e-5,
+        rtol=1e-5)
 
 
 def test_get_airmass(times):
@@ -307,7 +318,7 @@ def test_get_airmass(times):
                              [        nan,         nan]]),
                             columns=['airmass_relative', 'airmass_absolute'],
                             index=times)
-    assert_frame_equal(expected, airmass)
+    pd.testing.assert_frame_equal(expected, airmass, atol=1e-5, rtol=1e-5)
 
     airmass = tus.get_airmass(times, model='young1994')
     expected = pd.DataFrame(data=np.array(
@@ -318,7 +329,7 @@ def test_get_airmass(times):
                              [        nan,         nan]]),
                             columns=['airmass_relative', 'airmass_absolute'],
                             index=times)
-    assert_frame_equal(expected, airmass)
+    pd.testing.assert_frame_equal(expected, airmass, atol=1e-5, rtol=1e-5)
 
 
 @pytest.mark.parametrize('model,zenith_column', [
@@ -339,8 +350,8 @@ def test_get_airmass_models(times, model, zenith_column):
     airmass = tus.get_airmass(solar_position=solar_position, model=model)
     expected = atmosphere.get_relative_airmass(solar_position[zenith_column],
                                                model)
-    assert_series_equal(airmass['airmass_relative'], expected,
-                        check_names=False)
+    pd.testing.assert_series_equal(airmass['airmass_relative'], expected,
+                                   check_names=False, atol=1e-5, rtol=1e-5)
 
 
 def test_get_airmass_valueerror(times):

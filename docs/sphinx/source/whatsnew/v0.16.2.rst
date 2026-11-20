@@ -56,6 +56,12 @@ Documentation
 
 Testing
 ~~~~~~~
+* Remove the ``assert_series_equal`` and ``assert_frame_equal`` wrappers
+  in ``tests/conftest.py`` and use ``pandas.testing`` functions directly,
+  with explicit tolerances at every call site. Simplify
+  ``assert_index_equal`` to a thin compatibility shim that passes
+  ``check_freq=False`` only on pandas >= 3.1.0, where the keyword exists.
+  (:issue:`2263`)
 
 
 Benchmarking
@@ -84,3 +90,4 @@ Contributors
 * :ghuser:`xiajiahang`
 * Jakub Krasuski (:ghuser:`Blizzeq`)
 * Dylan Pulver (:ghuser:`dylanpulver`)
+* Dresden Goehner (:ghuser:`DresdenGman`)

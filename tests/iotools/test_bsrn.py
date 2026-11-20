@@ -12,8 +12,7 @@ from tests.conftest import (
     RERUNS,
     RERUNS_DELAY,
     assert_index_equal,
-    requires_bsrn_credentials,
-)
+    requires_bsrn_credentials)
 
 
 @pytest.fixture(scope="module")
@@ -39,7 +38,11 @@ def expected_index():
 ])
 def test_read_bsrn(testfile, expected_index):
     data, metadata = read_bsrn(TESTS_DATA_DIR / testfile)
-    assert_index_equal(expected_index, data.index)
+    assert_index_equal(
+        expected_index,
+        data.index,
+        atol=1e-5,
+        rtol=1e-5)
     assert 'ghi' in data.columns
     assert 'dni_std' in data.columns
     assert 'dhi_min' in data.columns
@@ -50,7 +53,11 @@ def test_read_bsrn(testfile, expected_index):
 def test_read_bsrn_buffer(expected_index):
     with open(TESTS_DATA_DIR / 'bsrn-lr0100-pay0616.dat') as fbuf:
         data, metadata = read_bsrn(fbuf)
-    assert_index_equal(expected_index, data.index)
+    assert_index_equal(
+        expected_index,
+        data.index,
+        atol=1e-5,
+        rtol=1e-5)
     assert 'ghi' in data.columns
     assert 'dni_std' in data.columns
     assert 'dhi_min' in data.columns
@@ -63,7 +70,11 @@ def test_read_bsrn_logical_records(expected_index):
     # and that 0100 is not passed when not specified
     data, metadata = read_bsrn(TESTS_DATA_DIR / 'bsrn-pay0616.dat.gz',
                                logical_records=['0300', '0500'])
-    assert_index_equal(expected_index, data.index)
+    assert_index_equal(
+        expected_index,
+        data.index,
+        atol=1e-5,
+        rtol=1e-5)
     assert 'lwu' in data.columns
     assert 'uva_global' in data.columns
     assert 'uvb_reflected_std' in data.columns
@@ -107,7 +118,11 @@ def test_get_bsrn(expected_index, bsrn_credentials):
         username=username,
         password=password,
         save_path=temp_dir.name)
-    assert_index_equal(expected_index, data.index)
+    assert_index_equal(
+        expected_index,
+        data.index,
+        atol=1e-5,
+        rtol=1e-5)
     assert 'ghi' in data.columns
     assert 'dni_std' in data.columns
     assert 'dhi_min' in data.columns
@@ -115,7 +130,11 @@ def test_get_bsrn(expected_index, bsrn_credentials):
     assert 'relative_humidity' in data.columns
     # test that a local file was saved and is read correctly
     data2, metadata2 = read_bsrn(os.path.join(temp_dir.name, 'tam0616.dat.gz'))
-    assert_index_equal(expected_index, data2.index)
+    assert_index_equal(
+        expected_index,
+        data2.index,
+        atol=1e-5,
+        rtol=1e-5)
     assert 'ghi' in data2.columns
     temp_dir.cleanup()  # explicitly remove temporary directory
 

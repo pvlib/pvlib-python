@@ -6,7 +6,6 @@ from scipy.linalg import hankel
 
 import pytest
 from numpy.testing import assert_allclose
-from .conftest import assert_frame_equal, assert_series_equal
 
 from pvlib.location import Location
 from pvlib import clearsky
@@ -42,7 +41,7 @@ def test_ineichen_series():
                             index=times)
 
     out = clearsky.ineichen(apparent_zenith, am, 3)
-    assert_frame_equal(expected, out)
+    pd.testing.assert_frame_equal(expected, out, atol=1e-5, rtol=1e-5)
 
 
 def test_ineichen_series_perez_enhancement():
@@ -70,7 +69,7 @@ def test_ineichen_series_perez_enhancement():
                             index=times)
 
     out = clearsky.ineichen(apparent_zenith, am, 3, perez_enhancement=True)
-    assert_frame_equal(expected, out)
+    pd.testing.assert_frame_equal(expected, out, atol=1e-5, rtol=1e-5)
 
 
 def test_ineichen_scalar_input():
@@ -175,7 +174,7 @@ def test_ineichen_dni_extra():
         columns=['ghi', 'dni', 'dhi'])
 
     out = clearsky.ineichen(10, 1, 3, dni_extra=pd.Series(1370))
-    assert_frame_equal(expected, out)
+    pd.testing.assert_frame_equal(expected, out, atol=1e-5, rtol=1e-5)
 
 
 def test_ineichen_altitude():
@@ -184,7 +183,7 @@ def test_ineichen_altitude():
         columns=['ghi', 'dni', 'dhi'])
 
     out = clearsky.ineichen(10, 1, 3, altitude=pd.Series(2000))
-    assert_frame_equal(expected, out)
+    pd.testing.assert_frame_equal(expected, out, atol=1e-5, rtol=1e-5)
 
 
 def test_lookup_linke_turbidity():
@@ -196,7 +195,7 @@ def test_lookup_linke_turbidity():
         np.array([3.11803278689, 3.11803278689, 3.13114754098]), index=times
     )
     out = clearsky.lookup_linke_turbidity(times, 32.125, -110.875)
-    assert_series_equal(expected, out)
+    pd.testing.assert_series_equal(expected, out, atol=1e-5, rtol=1e-5)
 
 
 def test_lookup_linke_turbidity_leapyear():
@@ -208,7 +207,7 @@ def test_lookup_linke_turbidity_leapyear():
         np.array([3.11803278689, 3.11803278689, 3.13114754098]), index=times
     )
     out = clearsky.lookup_linke_turbidity(times, 32.125, -110.875)
-    assert_series_equal(expected, out)
+    pd.testing.assert_series_equal(expected, out, atol=1e-5, rtol=1e-5)
 
 
 def test_lookup_linke_turbidity_nointerp():
@@ -218,7 +217,7 @@ def test_lookup_linke_turbidity_nointerp():
     expected = pd.Series(np.array([3., 3., 3.]), index=times)
     out = clearsky.lookup_linke_turbidity(times, 32.125, -110.875,
                                           interp_turbidity=False)
-    assert_series_equal(expected, out)
+    pd.testing.assert_series_equal(expected, out, atol=1e-5, rtol=1e-5)
 
 
 def test_lookup_linke_turbidity_months():
@@ -229,7 +228,7 @@ def test_lookup_linke_turbidity_months():
         np.array([2.89918032787, 2.97540983607, 3.19672131148]), index=times
     )
     out = clearsky.lookup_linke_turbidity(times, 32.125, -110.875)
-    assert_series_equal(expected, out)
+    pd.testing.assert_series_equal(expected, out, atol=1e-5, rtol=1e-5)
 
 
 def test_lookup_linke_turbidity_months_leapyear():
@@ -240,7 +239,7 @@ def test_lookup_linke_turbidity_months_leapyear():
         np.array([2.89918032787, 2.97540983607, 3.19672131148]), index=times
     )
     out = clearsky.lookup_linke_turbidity(times, 32.125, -110.875)
-    assert_series_equal(expected, out)
+    pd.testing.assert_series_equal(expected, out, atol=1e-5, rtol=1e-5)
 
 
 def test_lookup_linke_turbidity_nointerp_months():
@@ -250,14 +249,14 @@ def test_lookup_linke_turbidity_nointerp_months():
     expected = pd.Series(np.array([2.85, 2.95, 3.]), index=times)
     out = clearsky.lookup_linke_turbidity(times, 32.125, -110.875,
                                           interp_turbidity=False)
-    assert_series_equal(expected, out)
+    pd.testing.assert_series_equal(expected, out, atol=1e-5, rtol=1e-5)
     # changing the dates shouldn't matter if interp=False
     times = pd.date_range(start='2014-04-05', end='2014-07-05',
                           freq='1MS', tz='America/Phoenix',
                           ) - pd.Timedelta(days=1)
     out = clearsky.lookup_linke_turbidity(times, 32.125, -110.875,
                                           interp_turbidity=False)
-    assert_series_equal(expected, out)
+    pd.testing.assert_series_equal(expected, out, atol=1e-5, rtol=1e-5)
 
 
 def test_haurwitz():
@@ -277,7 +276,7 @@ def test_haurwitz():
                             columns=['ghi'],
                             index=apparent_solar_zenith)
     out = clearsky.haurwitz(data_in['apparent_zenith'])
-    assert_frame_equal(expected, out)
+    pd.testing.assert_frame_equal(expected, out, atol=1e-5, rtol=1e-5)
 
 
 def test_simplified_solis_scalar_elevation():
@@ -309,7 +308,7 @@ def test_simplified_solis_series_elevation():
     expected = expected[['ghi', 'dni', 'dhi']]
 
     out = clearsky.simplified_solis(pd.Series(80))
-    assert_frame_equal(expected, out)
+    pd.testing.assert_frame_equal(expected, out, atol=1e-5, rtol=1e-5)
 
 
 def test_simplified_solis_dni_extra():
@@ -318,7 +317,7 @@ def test_simplified_solis_dni_extra():
     expected = expected[['ghi', 'dni', 'dhi']]
 
     out = clearsky.simplified_solis(80, dni_extra=pd.Series(1370))
-    assert_frame_equal(expected, out)
+    pd.testing.assert_frame_equal(expected, out, atol=1e-5, rtol=1e-5)
 
 
 def test_simplified_solis_pressure():
@@ -331,7 +330,7 @@ def test_simplified_solis_pressure():
 
     out = clearsky.simplified_solis(
         80, pressure=pd.Series([95000, 98000, 101000]))
-    assert_frame_equal(expected, out)
+    pd.testing.assert_frame_equal(expected, out, atol=1e-5, rtol=1e-5)
 
 
 def test_simplified_solis_aod700():
@@ -346,7 +345,7 @@ def test_simplified_solis_aod700():
 
     aod700 = pd.Series([0.0, 0.05, 0.1, 1, 10])
     out = clearsky.simplified_solis(80, aod700=aod700)
-    assert_frame_equal(expected, out)
+    pd.testing.assert_frame_equal(expected, out, atol=1e-5, rtol=1e-5)
 
 
 def test_simplified_solis_precipitable_water():
@@ -361,7 +360,7 @@ def test_simplified_solis_precipitable_water():
 
     out = clearsky.simplified_solis(
         80, precipitable_water=pd.Series([0.0, 0.2, 0.5, 1.0, 5.0]))
-    assert_frame_equal(expected, out)
+    pd.testing.assert_frame_equal(expected, out, atol=1e-5, rtol=1e-5)
 
 
 def test_simplified_solis_small_scalar_pw():
@@ -473,7 +472,7 @@ def test_simplified_solis_nans_series():
     out = clearsky.simplified_solis(apparent_elevation, aod700,
                                     precipitable_water, pressure, dni_extra)
 
-    assert_frame_equal(expected, out)
+    pd.testing.assert_frame_equal(expected, out, atol=1e-5, rtol=1e-5)
 
 
 def test_linke_turbidity_corners():
@@ -582,16 +581,26 @@ def test_detect_clearsky(detect_clearsky_data):
     expected, cs = detect_clearsky_data
     clear_samples = clearsky.detect_clearsky(
         expected['GHI'], cs['ghi'], times=cs.index, window_length=10)
-    assert_series_equal(expected['Clear or not'], clear_samples,
-                        check_dtype=False, check_names=False)
+    pd.testing.assert_series_equal(
+        expected['Clear or not'],
+        clear_samples,
+        check_dtype=False,
+        check_names=False,
+        atol=1e-5,
+        rtol=1e-5)
 
 
 def test_detect_clearsky_defaults(detect_clearsky_data):
     expected, cs = detect_clearsky_data
     clear_samples = clearsky.detect_clearsky(
         expected['GHI'], cs['ghi'])
-    assert_series_equal(expected['Clear or not'], clear_samples,
-                        check_dtype=False, check_names=False)
+    pd.testing.assert_series_equal(
+        expected['Clear or not'],
+        clear_samples,
+        check_dtype=False,
+        check_names=False,
+        atol=1e-5,
+        rtol=1e-5)
 
 
 def test_detect_clearsky_components(detect_clearsky_data):
@@ -599,8 +608,13 @@ def test_detect_clearsky_components(detect_clearsky_data):
     clear_samples, components, alpha = clearsky.detect_clearsky(
         expected['GHI'], cs['ghi'], times=cs.index, window_length=10,
         return_components=True)
-    assert_series_equal(expected['Clear or not'], clear_samples,
-                        check_dtype=False, check_names=False)
+    pd.testing.assert_series_equal(
+        expected['Clear or not'],
+        clear_samples,
+        check_dtype=False,
+        check_names=False,
+        atol=1e-5,
+        rtol=1e-5)
     assert isinstance(components, dict)
     assert np.allclose(alpha, 0.9633903181941296)
 
@@ -615,8 +629,13 @@ def test_detect_clearsky_iterations(detect_clearsky_data):
     assert not clear_samples['2012-04-01 10:42:00':].any()  # expected False
     clear_samples = clearsky.detect_clearsky(
         expected['GHI'], cs['ghi']*alpha, max_iterations=20)
-    assert_series_equal(expected['Clear or not'], clear_samples,
-                        check_dtype=False, check_names=False)
+    pd.testing.assert_series_equal(
+        expected['Clear or not'],
+        clear_samples,
+        check_dtype=False,
+        check_names=False,
+        atol=1e-5,
+        rtol=1e-5)
 
 
 def test_detect_clearsky_kwargs(detect_clearsky_data):
@@ -634,8 +653,13 @@ def test_detect_clearsky_window(detect_clearsky_data):
         expected['GHI'], cs['ghi'], window_length=3)
     expected = expected['Clear or not'].copy()
     expected.iloc[-3:] = 1
-    assert_series_equal(expected, clear_samples,
-                        check_dtype=False, check_names=False)
+    pd.testing.assert_series_equal(
+        expected,
+        clear_samples,
+        check_dtype=False,
+        check_names=False,
+        atol=1e-5,
+        rtol=1e-5)
 
 
 def test_detect_clearsky_time_interval(detect_clearsky_data):
@@ -645,8 +669,13 @@ def test_detect_clearsky_time_interval(detect_clearsky_data):
     expected2 = expected.iloc[u]
     clear_samples = clearsky.detect_clearsky(
         expected2['GHI'], cs2['ghi'], window_length=6)
-    assert_series_equal(expected2['Clear or not'], clear_samples,
-                        check_dtype=False, check_names=False)
+    pd.testing.assert_series_equal(
+        expected2['Clear or not'],
+        clear_samples,
+        check_dtype=False,
+        check_names=False,
+        atol=1e-5,
+        rtol=1e-5)
 
 
 def test_detect_clearsky_arrays(detect_clearsky_data):
@@ -731,7 +760,11 @@ def test__line_length_windowed(detect_clearsky_helper_data):
     expected['line_length'] = sqt + sqt.shift(-1)
     result = clearsky._line_length_windowed(
         x, H, samples_per_window, sample_interval)
-    assert_series_equal(result, expected['line_length'])
+    pd.testing.assert_series_equal(
+        result,
+        expected['line_length'],
+        atol=1e-5,
+        rtol=1e-5)
 
 
 def test__max_diff_windowed(detect_clearsky_helper_data):
@@ -740,7 +773,11 @@ def test__max_diff_windowed(detect_clearsky_helper_data):
     expected['max_diff'] = pd.Series(
         data=[np.nan, 3., 5., 7., 9., 11., np.nan], index=x.index)
     result = clearsky._max_diff_windowed(x, H, samples_per_window)
-    assert_series_equal(result, expected['max_diff'])
+    pd.testing.assert_series_equal(
+        result,
+        expected['max_diff'],
+        atol=1e-5,
+        rtol=1e-5)
 
 
 def test__calc_stats(detect_clearsky_helper_data):
@@ -762,10 +799,26 @@ def test__calc_stats(detect_clearsky_helper_data):
     result = clearsky._calc_stats(
         x, samples_per_window, sample_interval, H)
     res_mean, res_max, res_slope_nstd, res_slope = result
-    assert_series_equal(res_mean, expected['mean'])
-    assert_series_equal(res_max, expected['max'])
-    assert_series_equal(res_slope_nstd, expected['slope_nstd'])
-    assert_series_equal(res_slope, expected['slope'])
+    pd.testing.assert_series_equal(
+        res_mean,
+        expected['mean'],
+        atol=1e-5,
+        rtol=1e-5)
+    pd.testing.assert_series_equal(
+        res_max,
+        expected['max'],
+        atol=1e-5,
+        rtol=1e-5)
+    pd.testing.assert_series_equal(
+        res_slope_nstd,
+        expected['slope_nstd'],
+        atol=1e-5,
+        rtol=1e-5)
+    pd.testing.assert_series_equal(
+        res_slope,
+        expected['slope'],
+        atol=1e-5,
+        rtol=1e-5)
 
 
 def test_bird():

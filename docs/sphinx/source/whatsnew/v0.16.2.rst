@@ -24,6 +24,9 @@ Bug fixes
 * Document the URL default :py:func:`pvlib.iotools.get_acis_station_data` actually
   uses. Its docstring named the GridData endpoint; should be StnData.
   (:pull:`2950`)
+* :py:func:`pvlib.atmosphere.windspeed_powerlaw` now returns NaN instead of
+  raising ``TypeError`` when scalar inputs include a negative height.
+  (:pull:`2952`)
 
 Enhancements
 ~~~~~~~~~~~~
@@ -84,3 +87,4 @@ Contributors
 * :ghuser:`xiajiahang`
 * Jakub Krasuski (:ghuser:`Blizzeq`)
 * Dylan Pulver (:ghuser:`dylanpulver`)
+* Dukotah Hutcheon (:ghuser:`Dukotah`)

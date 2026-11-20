@@ -769,8 +769,11 @@ def windspeed_powerlaw(wind_speed_reference, height_reference,
         raise ValueError(
             "Either a 'surface_type' or an 'exponent' parameter must be given")
 
-    wind_speed = wind_speed_reference * (
-        (height_desired / height_reference) ** exponent)
+    # np.power returns NaN for a negative base; Python's ** operator returns
+    # a complex number for scalar inputs, which breaks the comparison below
+    with np.errstate(invalid='ignore'):
+        wind_speed = wind_speed_reference * np.power(
+            height_desired / height_reference, exponent)
 
     # if wind speed is negative or complex return NaN
     wind_speed = np.where(np.iscomplex(wind_speed) | (wind_speed < 0),

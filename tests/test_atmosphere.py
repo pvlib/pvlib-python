@@ -333,6 +333,19 @@ def test_windspeed_powerlaw_series(windspeeds_data_powerlaw):
                         result, check_names=False)
 
 
+@pytest.mark.parametrize('wind_ref, height_ref, height_desired, expected', [
+    (10., -2., 5., np.nan),
+    (-10., 2., 5., np.nan),
+    (5., 4., 5., 5.067393209486324),
+])
+def test_windspeed_powerlaw_scalar(wind_ref, height_ref, height_desired,
+                                   expected):
+    result = atmosphere.windspeed_powerlaw(
+        wind_ref, height_ref, height_desired,
+        surface_type='unstable_air_above_open_water_surface')
+    assert_allclose(result, expected)
+
+
 def test_windspeed_powerlaw_invalid():
     with pytest.raises(ValueError, match="Either a 'surface_type' or an "
                        "'exponent' parameter must be given"):

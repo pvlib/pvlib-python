@@ -263,43 +263,42 @@ def _compute_wavelet(clearsky_index, dt=None):
         except AttributeError:  # It must just be a numeric index
             dt = (clearsky_index.index[1] - clearsky_index.index[0])
 
-    # Pad the series on both ends in time and place in a dataframe
-    cs_long = np.pad(vals, (len(vals), len(vals)), 'symmetric')
-    cs_long = pd.DataFrame(cs_long)
+    n = len(vals)
+
+    # Pad the series on both ends in time
+    cs_long = np.pad(vals, (n, n), 'symmetric')
 
     # Compute wavelet time scales
     min_tmscale = np.ceil(np.log(dt)/np.log(2))  # Minimum wavelet timescale
     max_tmscale = int(13 - min_tmscale)  # maximum wavelet timescale
 
     tmscales = np.zeros(max_tmscale)
-    csi_mean = np.zeros([max_tmscale, len(cs_long)])
+    # Only the central (unpadded) region of the averages is retained
+    csi_mean = np.zeros([max_tmscale, n])
     # Skip averaging for the 0th scale
-    csi_mean[0, :] = cs_long.values.flatten()
+    csi_mean[0, :] = cs_long[n:2 * n]
     tmscales[0] = dt
-    # Loop for all time scales we will consider
-    for i in np.arange(1, max_tmscale):
+
+    cs_series = pd.Series(cs_long)
+    for i in range(1, max_tmscale):
         tmscales[i] = 2**i * dt  # Wavelet integration time scale
         intvlen = 2**i  # Wavelet integration time series interval
         # Rolling average, retains only lower frequencies than interval
-        # Produces slightly different end effects than the MATLAB version
-        df = cs_long.rolling(window=intvlen, center=True, min_periods=1).mean()
-        # Fill nan's in both directions
-        df = df.bfill().ffill()
-        # Pop values back out of the dataframe and store
-        csi_mean[i, :] = df.values.flatten()
-        # Shift to account for different indexing in MATLAB moving average
-        csi_mean[i, :] = np.roll(csi_mean[i, :], -1)
-        csi_mean[i, -1] = csi_mean[i, -2]
+        r = cs_series.rolling(window=intvlen, center=True,
+                              min_periods=1).mean().to_numpy()
+        if np.isnan(r).any():
+            # Fill nan's in both directions
+            r = pd.Series(r).bfill().ffill().to_numpy()
+        if n == 0:
+            # Reproduce original behavior for empty inputs
+            csi_mean[i, -1] = csi_mean[i, -2]
+        # Shift by one to match MATLAB moving-average indexing; the
+        # wrap-around end correction lies outside the retained region.
+        csi_mean[i, :] = r[n + 1:2 * n + 1]
 
     # Calculate detail coefficients by difference between successive averages
-    wavelet_long = np.zeros(csi_mean.shape)
-    for i in np.arange(0, max_tmscale-1):
-        wavelet_long[i, :] = csi_mean[i, :] - csi_mean[i+1, :]
-    wavelet_long[-1, :] = csi_mean[-1, :]  # Lowest freq (CAn)
-
-    # Clip off the padding and just return the original time window
-    wavelet = np.zeros([max_tmscale, len(vals)])
-    for i in np.arange(0, max_tmscale):
-        wavelet[i, :] = wavelet_long[i, len(vals): 2*len(vals)]
+    wavelet = np.empty(csi_mean.shape)
+    wavelet[:-1] = csi_mean[:-1] - csi_mean[1:]
+    wavelet[-1, :] = csi_mean[-1, :]  # Lowest freq (CAn)
 
     return wavelet, tmscales

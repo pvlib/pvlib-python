@@ -9,7 +9,7 @@ import warnings
 
 import numpy as np
 import pandas as pd
-from packaging.version import Version
+from pandas.util.version import Version
 import zoneinfo
 
 

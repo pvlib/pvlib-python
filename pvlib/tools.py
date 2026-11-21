@@ -630,3 +630,27 @@ def _file_context_manager(filename_or_object, mode='r', encoding=None):
         # otherwise, assume a filename or path
         context = open(str(filename_or_object), mode=mode, encoding=encoding)
     return context
+
+
+def _format_wkt_point(latitude, longitude):
+    """
+    Format a location as a well-known text (WKT) POINT string.
+
+    The WKT representation of geometry is strict: a POINT object lists
+    longitude first, then latitude, each rounded to four decimal places,
+    with exactly one space between them. This format is required by
+    the NSRDB PSM4 API, see :py:mod:`pvlib.iotools.psm4`.
+
+    Parameters
+    ----------
+    latitude : float or int
+        Latitude in decimal degrees, between -90 and 90, north is positive.
+    longitude : float or int
+        Longitude in decimal degrees, between -180 and 180, east is positive.
+
+    Returns
+    -------
+    str
+        The location as a WKT POINT, e.g. ``'POINT(-105.1800 39.7400)'``.
+    """
+    return f'POINT({longitude:.4f} {latitude:.4f})'  # noqa: E231

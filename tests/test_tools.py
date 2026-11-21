@@ -283,3 +283,27 @@ def test__file_context_manager():
     buffer = StringIO("test content")
     with tools._file_context_manager(buffer) as obj:
         assert obj.read() == "test content"
+
+
+@pytest.mark.parametrize('latitude, longitude, expected', [
+    (39.742, -105.18, 'POINT(-105.1800 39.7420)'),
+    (40, -105, 'POINT(-105.0000 40.0000)'),
+    (-33.86786, 151.20732, 'POINT(151.2073 -33.8679)'),
+    (0, 0, 'POINT(0.0000 0.0000)'),
+    (89.99999, 179.99999, 'POINT(180.0000 90.0000)'),
+    (np.float64(12.3456789), np.float64(-1.23456789),
+     'POINT(-1.2346 12.3457)'),
+])
+def test__format_wkt_point(latitude, longitude, expected):
+    assert tools._format_wkt_point(latitude, longitude) == expected
+
+
+@pytest.mark.parametrize('latitude, longitude', [
+    (39.742, -105.18), (-33.86785, 151.20732), (0, 0), (-90, 180),
+])
+def test__format_wkt_point_matches_legacy_format(latitude, longitude):
+    # the helper replaces the formatting previously inlined in
+    # pvlib.iotools.psm4; it must give the same string
+    legacy = 'POINT(%s %s)' % (('%9.4f' % longitude).strip(),
+                               ('%8.4f' % latitude).strip())
+    assert tools._format_wkt_point(latitude, longitude) == legacy

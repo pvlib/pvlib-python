@@ -174,12 +174,6 @@ def get_nsrdb_psm4_aggregated(latitude, longitude, api_key, email,
     .. [2] `NSRDB GOES Aggregated V4.0.0
        <https://developer.nlr.gov/docs/solar/nsrdb/nsrdb-GOES-aggregated-v4-0-0-download/>`_
     """
-    # The well know text (WKT) representation of geometry notation is strict.
-    # A POINT object is a string with longitude first, then the latitude, with
-    # four decimals each, and exactly one space between them.
-    longitude = ('%9.4f' % longitude).strip()
-    latitude = ('%8.4f' % latitude).strip()
-    # TODO: make format_WKT(object_type, *args) in tools.py
 
     # convert pvlib names in parameters to PSM4 convention
     parameters = [REQUEST_VARIABLE_MAP.get(a, a) for a in parameters]
@@ -192,7 +186,7 @@ def get_nsrdb_psm4_aggregated(latitude, longitude, api_key, email,
         'affiliation': affiliation,
         'reason': PVLIB_PYTHON,
         'mailing_list': 'false',
-        'wkt': 'POINT(%s %s)' % (longitude, latitude),
+        'wkt': tools._format_wkt_point(latitude, longitude),
         'names': year,
         'attributes':  ','.join(parameters),
         'leap_day': str(leap_day).lower(),
@@ -314,12 +308,6 @@ def get_nsrdb_psm4_tmy(latitude, longitude, api_key, email, year='tmy',
     .. [2] `NSRDB GOES Tmy V4.0.0
        <https://developer.nlr.gov/docs/solar/nsrdb/nsrdb-GOES-tmy-v4-0-0-download/>`_
     """
-    # The well know text (WKT) representation of geometry notation is strict.
-    # A POINT object is a string with longitude first, then the latitude, with
-    # four decimals each, and exactly one space between them.
-    longitude = ('%9.4f' % longitude).strip()
-    latitude = ('%8.4f' % latitude).strip()
-    # TODO: make format_WKT(object_type, *args) in tools.py
 
     # convert pvlib names in parameters to PSM4 convention
     parameters = [REQUEST_VARIABLE_MAP.get(a, a) for a in parameters]
@@ -332,7 +320,7 @@ def get_nsrdb_psm4_tmy(latitude, longitude, api_key, email, year='tmy',
         'affiliation': affiliation,
         'reason': PVLIB_PYTHON,
         'mailing_list': 'false',
-        'wkt': 'POINT(%s %s)' % (longitude, latitude),
+        'wkt': tools._format_wkt_point(latitude, longitude),
         'names': year,
         'attributes':  ','.join(parameters),
         'leap_day': str(leap_day).lower(),
@@ -450,12 +438,6 @@ def get_nsrdb_psm4_conus(latitude, longitude, api_key, email, year,
     .. [2] `NSRDB GOES Conus V4.0.0
        <https://developer.nlr.gov/docs/solar/nsrdb/nsrdb-GOES-conus-v4-0-0-download/>`_
     """
-    # The well know text (WKT) representation of geometry notation is strict.
-    # A POINT object is a string with longitude first, then the latitude, with
-    # four decimals each, and exactly one space between them.
-    longitude = ('%9.4f' % longitude).strip()
-    latitude = ('%8.4f' % latitude).strip()
-    # TODO: make format_WKT(object_type, *args) in tools.py
 
     # convert pvlib names in parameters to PSM4 convention
     parameters = [REQUEST_VARIABLE_MAP.get(a, a) for a in parameters]
@@ -468,7 +450,7 @@ def get_nsrdb_psm4_conus(latitude, longitude, api_key, email, year,
         'affiliation': affiliation,
         'reason': PVLIB_PYTHON,
         'mailing_list': 'false',
-        'wkt': 'POINT(%s %s)' % (longitude, latitude),
+        'wkt': tools._format_wkt_point(latitude, longitude),
         'names': year,
         'attributes':  ','.join(parameters),
         'leap_day': str(leap_day).lower(),
@@ -589,12 +571,6 @@ def get_nsrdb_psm4_full_disc(latitude, longitude, api_key, email,
     .. [2] `NSRDB GOES Full Disc V4.0.0
        <https://developer.nlr.gov/docs/solar/nsrdb/nsrdb-GOES-full-disc-v4-0-0-download/>`_
     """
-    # The well know text (WKT) representation of geometry notation is strict.
-    # A POINT object is a string with longitude first, then the latitude, with
-    # four decimals each, and exactly one space between them.
-    longitude = ('%9.4f' % longitude).strip()
-    latitude = ('%8.4f' % latitude).strip()
-    # TODO: make format_WKT(object_type, *args) in tools.py
 
     # convert pvlib names in parameters to PSM4 convention
     parameters = [REQUEST_VARIABLE_MAP.get(a, a) for a in parameters]
@@ -607,7 +583,7 @@ def get_nsrdb_psm4_full_disc(latitude, longitude, api_key, email,
         'affiliation': affiliation,
         'reason': PVLIB_PYTHON,
         'mailing_list': 'false',
-        'wkt': 'POINT(%s %s)' % (longitude, latitude),
+        'wkt': tools._format_wkt_point(latitude, longitude),
         'names': year,
         'attributes':  ','.join(parameters),
         'leap_day': str(leap_day).lower(),
@@ -738,12 +714,6 @@ def get_nsrdb_psm4_polar(latitude, longitude, api_key, email,
     .. [3] `NSRDB Polar V4.0.0
        <https://developer.nlr.gov/docs/solar/nsrdb/nsrdb-polar-v4-0-0-download/>`_
     """
-    # The well know text (WKT) representation of geometry notation is strict.
-    # A POINT object is a string with longitude first, then the latitude, with
-    # four decimals each, and exactly one space between them.
-    longitude = ('%9.4f' % longitude).strip()
-    latitude = ('%8.4f' % latitude).strip()
-    # TODO: make format_WKT(object_type, *args) in tools.py
 
     # convert pvlib names in parameters to PSM4 convention
     parameters = [REQUEST_VARIABLE_MAP.get(a, a) for a in parameters]
@@ -756,7 +726,7 @@ def get_nsrdb_psm4_polar(latitude, longitude, api_key, email,
         'affiliation': affiliation,
         'reason': PVLIB_PYTHON,
         'mailing_list': 'false',
-        'wkt': 'POINT(%s %s)' % (longitude, latitude),
+        'wkt': tools._format_wkt_point(latitude, longitude),
         'names': year,
         'attributes':  ','.join(parameters),
         'leap_day': str(leap_day).lower(),
@@ -887,12 +857,6 @@ def get_nsrdb_psm4_polar_tmy(latitude, longitude, api_key, email, year='tmy',
     .. [3] `NSRDB Polar Tmy V4.0.0
        <https://developer.nlr.gov/docs/solar/nsrdb/nsrdb-polar-tmy-v4-0-0-download/>`_
     """
-    # The well know text (WKT) representation of geometry notation is strict.
-    # A POINT object is a string with longitude first, then the latitude, with
-    # four decimals each, and exactly one space between them.
-    longitude = ('%9.4f' % longitude).strip()
-    latitude = ('%8.4f' % latitude).strip()
-    # TODO: make format_WKT(object_type, *args) in tools.py
 
     # convert pvlib names in parameters to PSM4 convention
     parameters = [REQUEST_VARIABLE_MAP.get(a, a) for a in parameters]
@@ -905,7 +869,7 @@ def get_nsrdb_psm4_polar_tmy(latitude, longitude, api_key, email, year='tmy',
         'affiliation': affiliation,
         'reason': PVLIB_PYTHON,
         'mailing_list': 'false',
-        'wkt': 'POINT(%s %s)' % (longitude, latitude),
+        'wkt': tools._format_wkt_point(latitude, longitude),
         'names': year,
         'attributes':  ','.join(parameters),
         'leap_day': str(leap_day).lower(),

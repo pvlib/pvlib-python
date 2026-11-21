@@ -7,10 +7,8 @@ import pytest
 from pvlib.iotools import solrad
 from tests.conftest import (
     TESTS_DATA_DIR,
-    assert_frame_equal,
     RERUNS,
-    RERUNS_DELAY,
-)
+    RERUNS_DELAY)
 
 
 testfile = TESTS_DATA_DIR / 'abq19056.dat'
@@ -108,7 +106,7 @@ def test_read_solrad(testfile, index, columns, values, dtypes, meta):
     for (col, _dtype) in zip(expected.columns, dtypes):
         expected[col] = expected[col].astype(_dtype)
     out, m = solrad.read_solrad(testfile)
-    assert_frame_equal(out, expected)
+    pd.testing.assert_frame_equal(out, expected, atol=1e-5, rtol=1e-5)
     assert m == meta
 
 
@@ -121,7 +119,11 @@ def test_read_solrad_https():
     local_data, _ = solrad.read_solrad(testfile_mad)
     remote_data, _ = solrad.read_solrad(https_testfile)
     # local file only contains four rows to save space
-    assert_frame_equal(local_data, remote_data.iloc[:4])
+    pd.testing.assert_frame_equal(
+        local_data,
+        remote_data.iloc[:4],
+        atol=1e-5,
+        rtol=1e-5)
 
 
 @pytest.mark.remote_data
@@ -142,7 +144,11 @@ def test_get_solrad(testfile, station):
     expected, _ = solrad.read_solrad(testfile)
     actual = df.reindex(expected.index)
     # ABQ test file has an unexplained NaN in row 4; just verify first 3 rows
-    assert_frame_equal(actual.iloc[:3], expected.iloc[:3])
+    pd.testing.assert_frame_equal(
+        actual.iloc[:3],
+        expected.iloc[:3],
+        atol=1e-5,
+        rtol=1e-5)
 
 
 @pytest.mark.remote_data

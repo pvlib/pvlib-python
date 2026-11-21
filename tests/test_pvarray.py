@@ -2,7 +2,6 @@ import numpy as np
 from numpy import nan
 import pandas as pd
 from numpy.testing import assert_allclose
-from .conftest import assert_series_equal
 import pytest
 
 from pvlib import pvarray
@@ -68,7 +67,7 @@ def test_huld():
     tm = pd.Series([25, 30, 30])
     expected = pd.Series([pdc0, exp_100, 0])
     res = pvarray.huld(eff_irr, tm, pdc0, k=(1, 1, 1, 1, 1, 1))
-    assert_series_equal(res, expected)
+    pd.testing.assert_series_equal(res, expected, atol=1e-5, rtol=1e-5)
     with pytest.raises(ValueError,
                        match='Either k or cell_type must be specified'
                        ):

@@ -7,7 +7,7 @@ from numpy.testing import assert_allclose
 
 import pvlib
 from pvlib import tracking
-from .conftest import TESTS_DATA_DIR, assert_frame_equal, assert_series_equal
+from .conftest import TESTS_DATA_DIR
 
 SINGLEAXIS_COL_ORDER = ['tracker_theta', 'aoi',
                         'surface_azimuth', 'surface_tilt']
@@ -27,7 +27,7 @@ def test_solar_noon():
                           index=index, dtype=np.float64)
     expect = expect[SINGLEAXIS_COL_ORDER]
 
-    assert_frame_equal(expect, tracker_data)
+    pd.testing.assert_frame_equal(expect, tracker_data, atol=1e-5, rtol=1e-5)
 
 
 def test_scalars():
@@ -86,7 +86,7 @@ def test_nans():
          [nan, nan, nan, nan],
          [nan, nan, nan, nan]]),
         columns=['tracker_theta', 'aoi', 'surface_azimuth', 'surface_tilt'])
-    assert_frame_equal(tracker_data, expect)
+    pd.testing.assert_frame_equal(tracker_data, expect, atol=1e-5, rtol=1e-5)
 
 
 def test_arrays_multi():
@@ -122,7 +122,7 @@ def test_azimuth_north_south():
                           index=[0], dtype=np.float64)
     expect = expect[SINGLEAXIS_COL_ORDER]
 
-    assert_frame_equal(expect, tracker_data)
+    pd.testing.assert_frame_equal(expect, tracker_data, atol=1e-5, rtol=1e-5)
 
     tracker_data = tracking.singleaxis(apparent_zenith, apparent_azimuth,
                                        axis_tilt=0, axis_azimuth=0,
@@ -131,7 +131,7 @@ def test_azimuth_north_south():
 
     expect['tracker_theta'] *= -1
 
-    assert_frame_equal(expect, tracker_data)
+    pd.testing.assert_frame_equal(expect, tracker_data, atol=1e-5, rtol=1e-5)
 
 
 def test_max_angle():
@@ -147,7 +147,7 @@ def test_max_angle():
                           index=[0], dtype=np.float64)
     expect = expect[SINGLEAXIS_COL_ORDER]
 
-    assert_frame_equal(expect, tracker_data)
+    pd.testing.assert_frame_equal(expect, tracker_data, atol=1e-5, rtol=1e-5)
 
 
 def test_min_angle():
@@ -163,7 +163,7 @@ def test_min_angle():
                           index=[0], dtype=np.float64)
     expect = expect[SINGLEAXIS_COL_ORDER]
 
-    assert_frame_equal(expect, tracker_data)
+    pd.testing.assert_frame_equal(expect, tracker_data, atol=1e-5, rtol=1e-5)
 
 
 def test_backtrack():
@@ -180,7 +180,7 @@ def test_backtrack():
                           index=[0], dtype=np.float64)
     expect = expect[SINGLEAXIS_COL_ORDER]
 
-    assert_frame_equal(expect, tracker_data)
+    pd.testing.assert_frame_equal(expect, tracker_data, atol=1e-5, rtol=1e-5)
 
     tracker_data = tracking.singleaxis(apparent_zenith, apparent_azimuth,
                                        axis_tilt=0, axis_azimuth=0,
@@ -192,7 +192,7 @@ def test_backtrack():
                           index=[0], dtype=np.float64)
     expect = expect[SINGLEAXIS_COL_ORDER]
 
-    assert_frame_equal(expect, tracker_data)
+    pd.testing.assert_frame_equal(expect, tracker_data, atol=1e-5, rtol=1e-5)
 
 
 def test__unit_normal():
@@ -258,7 +258,7 @@ def test_axis_tilt():
                           index=[0], dtype=np.float64)
     expect = expect[SINGLEAXIS_COL_ORDER]
 
-    assert_frame_equal(expect, tracker_data)
+    pd.testing.assert_frame_equal(expect, tracker_data, atol=1e-5, rtol=1e-5)
 
     tracker_data = tracking.singleaxis(apparent_zenith, apparent_azimuth,
                                        axis_tilt=30, axis_azimuth=0,
@@ -270,7 +270,7 @@ def test_axis_tilt():
                           index=[0], dtype=np.float64)
     expect = expect[SINGLEAXIS_COL_ORDER]
 
-    assert_frame_equal(expect, tracker_data)
+    pd.testing.assert_frame_equal(expect, tracker_data, atol=1e-5, rtol=1e-5)
 
 
 def test_axis_azimuth():
@@ -288,7 +288,7 @@ def test_axis_azimuth():
                           index=[0], dtype=np.float64)
     expect = expect[SINGLEAXIS_COL_ORDER]
 
-    assert_frame_equal(expect, tracker_data)
+    pd.testing.assert_frame_equal(expect, tracker_data, atol=1e-5, rtol=1e-5)
 
     # sun to the east, horizontal south-oriented tracker
     apparent_zenith = pd.Series([30])
@@ -304,7 +304,7 @@ def test_axis_azimuth():
                           index=[0], dtype=np.float64)
     expect = expect[SINGLEAXIS_COL_ORDER]
 
-    assert_frame_equal(expect, tracker_data)
+    pd.testing.assert_frame_equal(expect, tracker_data, atol=1e-5, rtol=1e-5)
 
     # sun to the south, horizontal east-oriented tracker
     apparent_zenith = pd.Series([30])
@@ -320,7 +320,7 @@ def test_axis_azimuth():
                           index=[0], dtype=np.float64)
     expect = expect[SINGLEAXIS_COL_ORDER]
 
-    assert_frame_equal(expect, tracker_data)
+    pd.testing.assert_frame_equal(expect, tracker_data, atol=1e-5, rtol=1e-5)
 
 
 def test_horizon_flat():
@@ -338,7 +338,7 @@ def test_horizon_flat():
          [  0.,  45., 90.,   0.],
          [ nan,  nan,  nan,  nan]]),
         columns=['tracker_theta', 'aoi', 'surface_azimuth', 'surface_tilt'])
-    assert_frame_equal(out, expected)
+    pd.testing.assert_frame_equal(out, expected, atol=1e-5, rtol=1e-5)
 
 
 def test_horizon_tilted():
@@ -354,7 +354,7 @@ def test_horizon_tilted():
          [   0.,  45., 180.,  90.],
          [ 179.,  45., 359.,  90.]]),
         columns=['tracker_theta', 'aoi', 'surface_azimuth', 'surface_tilt'])
-    assert_frame_equal(out, expected)
+    pd.testing.assert_frame_equal(out, expected, atol=1e-5, rtol=1e-5)
 
 
 def test_low_sun_angles():
@@ -443,16 +443,20 @@ def test_slope_aware_backtracking():
         90.0-expected_data['ApparentElevation'], expected_data['SolarAzimuth'],
         axis_tilt, axis_azimuth, max_angle=90.0, backtrack=True, gcr=0.5,
         cross_axis_tilt=cross_axis_tilt)
-    assert_series_equal(sat['tracker_theta'],
-                        expected_data['Backtracking'].rename('tracker_theta'),
-                        check_less_precise=True)
+    pd.testing.assert_series_equal(
+        sat['tracker_theta'],
+        expected_data['Backtracking'].rename('tracker_theta'),
+        atol=1e-3,
+        rtol=1e-3)
     truetracking = tracking.singleaxis(
         90.0-expected_data['ApparentElevation'], expected_data['SolarAzimuth'],
         axis_tilt, axis_azimuth, max_angle=90.0, backtrack=False, gcr=0.5,
         cross_axis_tilt=cross_axis_tilt)
-    assert_series_equal(truetracking['tracker_theta'],
-                        expected_data['TrueTracking'].rename('tracker_theta'),
-                        check_less_precise=True)
+    pd.testing.assert_series_equal(
+        truetracking['tracker_theta'],
+        expected_data['TrueTracking'].rename('tracker_theta'),
+        atol=1e-3,
+        rtol=1e-3)
 
 
 def test_singleaxis_neg_axis_tilt():
@@ -502,8 +506,16 @@ def test_calc_surface_orientation_types():
     expected_tilts = pd.Series(expected_tilts).rename('surface_tilt')
     expected_azimuths = pd.Series(expected_azimuths).rename('surface_azimuth')
     out = tracking.calc_surface_orientation(tracker_theta=rotations)
-    assert_series_equal(expected_tilts, out['surface_tilt'])
-    assert_series_equal(expected_azimuths, out['surface_azimuth'])
+    pd.testing.assert_series_equal(
+        expected_tilts,
+        out['surface_tilt'],
+        atol=1e-5,
+        rtol=1e-5)
+    pd.testing.assert_series_equal(
+        expected_azimuths,
+        out['surface_azimuth'],
+        atol=1e-5,
+        rtol=1e-5)
 
     # float
     for rotation, expected_tilt, expected_azimuth in zip(

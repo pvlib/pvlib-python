@@ -4,7 +4,6 @@ import numpy as np
 from numpy import nan
 from numpy.testing import assert_allclose
 import pandas as pd
-from .conftest import assert_series_equal
 import pytest
 
 from pvlib import atmosphere
@@ -47,7 +46,7 @@ def test_airmass(model, expected, zeniths):
     zeniths = pd.Series(zeniths, index=times)
     expected = pd.Series(expected, index=times)
     out = atmosphere.get_relative_airmass(zeniths, model)
-    assert_series_equal(out, expected, check_less_precise=True)
+    pd.testing.assert_series_equal(out, expected, atol=1e-3, rtol=1e-3)
 
 
 def test_airmass_scalar():
@@ -329,8 +328,9 @@ def test_windspeed_powerlaw_series(windspeeds_data_powerlaw):
         windspeeds_data_powerlaw["height_ref"],
         windspeeds_data_powerlaw["height_desired"],
         surface_type='unstable_air_above_open_water_surface')
-    assert_series_equal(windspeeds_data_powerlaw["wind_calc"],
-                        result, check_names=False)
+    pd.testing.assert_series_equal(windspeeds_data_powerlaw["wind_calc"],
+                                   result, check_names=False, atol=1e-5,
+                                   rtol=1e-5)
 
 
 def test_windspeed_powerlaw_invalid():

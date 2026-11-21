@@ -8,7 +8,6 @@ from pvlib.modelchain import ModelChain
 from pvlib.pvsystem import PVSystem
 from pvlib.location import Location
 
-from .conftest import assert_series_equal, assert_frame_equal
 
 import pytest
 
@@ -356,7 +355,7 @@ def test_run_model_with_irradiance(sapm_dc_snl_ac_system, location):
 
     expected = pd.Series(np.array([187.80746494643176, -0.02]),
                          index=times)
-    assert_series_equal(ac, expected)
+    pd.testing.assert_series_equal(ac, expected, atol=1e-5, rtol=1e-5)
 
 
 @pytest.fixture(scope='function')
@@ -422,14 +421,12 @@ def test_run_model_from_irradiance_arrays_no_loss(
     mc_one.run_model(irradiance)
     mc_two.run_model(irradiance)
     mc_both.run_model(irradiance)
-    assert_frame_equal(
+    pd.testing.assert_frame_equal(
         mc_both.results.dc[0],
-        mc_one.results.dc
-    )
-    assert_frame_equal(
+        mc_one.results.dc, atol=1e-5, rtol=1e-5)
+    pd.testing.assert_frame_equal(
         mc_both.results.dc[1],
-        mc_two.results.dc
-    )
+        mc_two.results.dc, atol=1e-5, rtol=1e-5)
 
 
 @pytest.mark.parametrize("input_type", [tuple, list])
@@ -462,12 +459,10 @@ def test_run_model_from_irradiance_arrays_no_loss_input_type(
     mc_one.run_model(irradiance)
     mc_two.run_model(irradiance)
     mc_both.run_model(input_type((irradiance, irradiance)))
-    assert_frame_equal(
-        mc_both.results.dc[0], mc_one.results.dc
-    )
-    assert_frame_equal(
-        mc_both.results.dc[1], mc_two.results.dc
-    )
+    pd.testing.assert_frame_equal(
+        mc_both.results.dc[0], mc_one.results.dc, atol=1e-5, rtol=1e-5)
+    pd.testing.assert_frame_equal(
+        mc_both.results.dc[1], mc_two.results.dc, atol=1e-5, rtol=1e-5)
 
 
 @pytest.mark.parametrize('inverter', ['adr'])
@@ -644,7 +639,7 @@ def test_run_model_perez(sapm_dc_snl_ac_system, location):
 
     expected = pd.Series(np.array([187.94295642, -2.00000000e-02]),
                          index=times)
-    assert_series_equal(ac, expected)
+    pd.testing.assert_series_equal(ac, expected, atol=1e-5, rtol=1e-5)
 
 
 def test_run_model_gueymard_perez(sapm_dc_snl_ac_system, location):
@@ -662,7 +657,7 @@ def test_run_model_gueymard_perez(sapm_dc_snl_ac_system, location):
 
     expected = pd.Series(np.array([187.94317405, -2.00000000e-02]),
                          index=times)
-    assert_series_equal(ac, expected)
+    pd.testing.assert_series_equal(ac, expected, atol=1e-5, rtol=1e-5)
 
 
 def test_run_model_with_weather_sapm_temp(sapm_dc_snl_ac_system, location,
@@ -677,8 +672,16 @@ def test_run_model_with_weather_sapm_temp(sapm_dc_snl_ac_system, location,
     assert m_sapm.call_count == 1
     # assert_called_once_with cannot be used with series, so need to use
     # assert_series_equal on call_args
-    assert_series_equal(m_sapm.call_args[0][1], weather['temp_air'])  # temp
-    assert_series_equal(m_sapm.call_args[0][2], weather['wind_speed'])  # wind
+    pd.testing.assert_series_equal(
+        m_sapm.call_args[0][1],
+        weather['temp_air'],
+        atol=1e-5,
+        rtol=1e-5)  # temp
+    pd.testing.assert_series_equal(
+        m_sapm.call_args[0][2],
+        weather['wind_speed'],
+        atol=1e-5,
+        rtol=1e-5)  # wind
     assert m_sapm.call_args[1]['model'] == 'sapm'
     assert not mc.results.ac.empty
 
@@ -696,8 +699,16 @@ def test_run_model_with_weather_pvsyst_temp(sapm_dc_snl_ac_system, location,
     m_pvsyst = mocker.spy(sapm_dc_snl_ac_system, 'get_cell_temperature')
     mc.run_model(weather)
     assert m_pvsyst.call_count == 1
-    assert_series_equal(m_pvsyst.call_args[0][1], weather['temp_air'])
-    assert_series_equal(m_pvsyst.call_args[0][2], weather['wind_speed'])
+    pd.testing.assert_series_equal(
+        m_pvsyst.call_args[0][1],
+        weather['temp_air'],
+        atol=1e-5,
+        rtol=1e-5)
+    pd.testing.assert_series_equal(
+        m_pvsyst.call_args[0][2],
+        weather['wind_speed'],
+        atol=1e-5,
+        rtol=1e-5)
     assert m_pvsyst.call_args[1]['model'] == 'pvsyst'
     assert not mc.results.ac.empty
 
@@ -715,8 +726,16 @@ def test_run_model_with_weather_faiman_temp(sapm_dc_snl_ac_system, location,
     m_faiman = mocker.spy(sapm_dc_snl_ac_system, 'get_cell_temperature')
     mc.run_model(weather)
     assert m_faiman.call_count == 1
-    assert_series_equal(m_faiman.call_args[0][1], weather['temp_air'])
-    assert_series_equal(m_faiman.call_args[0][2], weather['wind_speed'])
+    pd.testing.assert_series_equal(
+        m_faiman.call_args[0][1],
+        weather['temp_air'],
+        atol=1e-5,
+        rtol=1e-5)
+    pd.testing.assert_series_equal(
+        m_faiman.call_args[0][2],
+        weather['wind_speed'],
+        atol=1e-5,
+        rtol=1e-5)
     assert m_faiman.call_args[1]['model'] == 'faiman'
     assert not mc.results.ac.empty
 
@@ -733,8 +752,16 @@ def test_run_model_with_weather_fuentes_temp(sapm_dc_snl_ac_system, location,
     m_fuentes = mocker.spy(sapm_dc_snl_ac_system, 'get_cell_temperature')
     mc.run_model(weather)
     assert m_fuentes.call_count == 1
-    assert_series_equal(m_fuentes.call_args[0][1], weather['temp_air'])
-    assert_series_equal(m_fuentes.call_args[0][2], weather['wind_speed'])
+    pd.testing.assert_series_equal(
+        m_fuentes.call_args[0][1],
+        weather['temp_air'],
+        atol=1e-5,
+        rtol=1e-5)
+    pd.testing.assert_series_equal(
+        m_fuentes.call_args[0][2],
+        weather['wind_speed'],
+        atol=1e-5,
+        rtol=1e-5)
     assert m_fuentes.call_args[1]['model'] == 'fuentes'
     assert not mc.results.ac.empty
 
@@ -751,8 +778,16 @@ def test_run_model_with_weather_noct_sam_temp(sapm_dc_snl_ac_system, location,
     m_noct_sam = mocker.spy(sapm_dc_snl_ac_system, 'get_cell_temperature')
     mc.run_model(weather)
     assert m_noct_sam.call_count == 1
-    assert_series_equal(m_noct_sam.call_args[0][1], weather['temp_air'])
-    assert_series_equal(m_noct_sam.call_args[0][2], weather['wind_speed'])
+    pd.testing.assert_series_equal(
+        m_noct_sam.call_args[0][1],
+        weather['temp_air'],
+        atol=1e-5,
+        rtol=1e-5)
+    pd.testing.assert_series_equal(
+        m_noct_sam.call_args[0][2],
+        weather['wind_speed'],
+        atol=1e-5,
+        rtol=1e-5)
     # check that effective_irradiance was used
     assert m_noct_sam.call_args[1] == {
         'effective_irradiance': mc.results.effective_irradiance,
@@ -764,7 +799,11 @@ def test__assign_total_irrad(sapm_dc_snl_ac_system, location, weather,
     data = pd.concat([weather, total_irrad], axis=1)
     mc = ModelChain(sapm_dc_snl_ac_system, location)
     mc._assign_total_irrad(data)
-    assert_frame_equal(mc.results.total_irrad, total_irrad)
+    pd.testing.assert_frame_equal(
+        mc.results.total_irrad,
+        total_irrad,
+        atol=1e-5,
+        rtol=1e-5)
 
 
 def test_prepare_inputs_from_poa(sapm_dc_snl_ac_system, location,
@@ -779,9 +818,17 @@ def test_prepare_inputs_from_poa(sapm_dc_snl_ac_system, location,
     weather_expected = weather_expected[
         ['ghi', 'dhi', 'dni', 'wind_speed', 'temp_air']]
     # weather attribute
-    assert_frame_equal(mc.results.weather, weather_expected)
+    pd.testing.assert_frame_equal(
+        mc.results.weather,
+        weather_expected,
+        atol=1e-5,
+        rtol=1e-5)
     # total_irrad attribute
-    assert_frame_equal(mc.results.total_irrad, total_irrad)
+    pd.testing.assert_frame_equal(
+        mc.results.total_irrad,
+        total_irrad,
+        atol=1e-5,
+        rtol=1e-5)
     assert not pd.isnull(mc.results.solar_position.index[0])
 
 
@@ -845,14 +892,26 @@ def test__prepare_temperature(sapm_dc_snl_ac_system, location, weather,
     mc._assign_total_irrad(data)
     mc._prepare_temperature(data)
     expected = pd.Series([48.928025, 38.080016], index=data.index)
-    assert_series_equal(mc.results.cell_temperature, expected)
+    pd.testing.assert_series_equal(
+        mc.results.cell_temperature,
+        expected,
+        atol=1e-5,
+        rtol=1e-5)
     data['module_temperature'] = [40., 30.]
     mc._prepare_temperature(data)
     expected = pd.Series([42.4, 31.5], index=data.index)
-    assert_series_equal(mc.results.cell_temperature, expected)
+    pd.testing.assert_series_equal(
+        mc.results.cell_temperature,
+        expected,
+        atol=1e-5,
+        rtol=1e-5)
     data['cell_temperature'] = [50., 35.]
     mc._prepare_temperature(data)
-    assert_series_equal(mc.results.cell_temperature, data['cell_temperature'])
+    pd.testing.assert_series_equal(
+        mc.results.cell_temperature,
+        data['cell_temperature'],
+        atol=1e-5,
+        rtol=1e-5)
 
 
 def test__prepare_temperature_len1_weather_tuple(
@@ -865,7 +924,11 @@ def test__prepare_temperature_len1_weather_tuple(
                     spectral_model='no_loss')
     mc.run_model([data])
     expected = pd.Series([42.617244212941394, 30.0], index=data.index)
-    assert_series_equal(mc.results.cell_temperature[0], expected)
+    pd.testing.assert_series_equal(
+        mc.results.cell_temperature[0],
+        expected,
+        atol=1e-5,
+        rtol=1e-5)
 
     data = weather.copy().rename(
         columns={
@@ -875,7 +938,11 @@ def test__prepare_temperature_len1_weather_tuple(
                     spectral_model='no_loss')
     mc.run_model_from_poa([data])
     expected = pd.Series([41.5, 30.0], index=data.index)
-    assert_series_equal(mc.results.cell_temperature[0], expected)
+    pd.testing.assert_series_equal(
+        mc.results.cell_temperature[0],
+        expected,
+        atol=1e-5,
+        rtol=1e-5)
 
     data = weather.copy()[["module_temperature", "ghi"]].rename(
         columns={"ghi": "effective_irradiance"}
@@ -884,7 +951,11 @@ def test__prepare_temperature_len1_weather_tuple(
                     spectral_model='no_loss')
     mc.run_model_from_effective_irradiance([data])
     expected = pd.Series([41.5, 30.0], index=data.index)
-    assert_series_equal(mc.results.cell_temperature[0], expected)
+    pd.testing.assert_series_equal(
+        mc.results.cell_temperature[0],
+        expected,
+        atol=1e-5,
+        rtol=1e-5)
 
 
 def test__prepare_temperature_arrays_weather(sapm_dc_snl_ac_system_same_arrays,
@@ -901,28 +972,56 @@ def test__prepare_temperature_arrays_weather(sapm_dc_snl_ac_system_same_arrays,
     mc._assign_total_irrad((data, data_two))
     mc._prepare_temperature((data, data_two))
     expected = pd.Series([48.928025, 38.080016], index=data.index)
-    assert_series_equal(mc.results.cell_temperature[0], expected)
-    assert_series_equal(mc.results.cell_temperature[1], expected)
+    pd.testing.assert_series_equal(
+        mc.results.cell_temperature[0],
+        expected,
+        atol=1e-5,
+        rtol=1e-5)
+    pd.testing.assert_series_equal(
+        mc.results.cell_temperature[1],
+        expected,
+        atol=1e-5,
+        rtol=1e-5)
     data['module_temperature'] = [40., 30.]
     mc._prepare_temperature((data, data_two))
     expected = pd.Series([42.4, 31.5], index=data.index)
     assert (mc.results.cell_temperature[1] != expected).all()
-    assert_series_equal(mc.results.cell_temperature[0], expected)
+    pd.testing.assert_series_equal(
+        mc.results.cell_temperature[0],
+        expected,
+        atol=1e-5,
+        rtol=1e-5)
     data['cell_temperature'] = [50., 35.]
     mc._prepare_temperature((data, data_two))
-    assert_series_equal(
-        mc.results.cell_temperature[0], data['cell_temperature'])
+    pd.testing.assert_series_equal(
+        mc.results.cell_temperature[0],
+        data['cell_temperature'],
+        atol=1e-5,
+        rtol=1e-5)
     data_two['module_temperature'] = [40., 30.]
     mc._prepare_temperature((data, data_two))
-    assert_series_equal(mc.results.cell_temperature[1], expected)
-    assert_series_equal(
-        mc.results.cell_temperature[0], data['cell_temperature'])
+    pd.testing.assert_series_equal(
+        mc.results.cell_temperature[1],
+        expected,
+        atol=1e-5,
+        rtol=1e-5)
+    pd.testing.assert_series_equal(
+        mc.results.cell_temperature[0],
+        data['cell_temperature'],
+        atol=1e-5,
+        rtol=1e-5)
     data_two['cell_temperature'] = [10.0, 20.0]
     mc._prepare_temperature((data, data_two))
-    assert_series_equal(
-        mc.results.cell_temperature[1], data_two['cell_temperature'])
-    assert_series_equal(
-        mc.results.cell_temperature[0], data['cell_temperature'])
+    pd.testing.assert_series_equal(
+        mc.results.cell_temperature[1],
+        data_two['cell_temperature'],
+        atol=1e-5,
+        rtol=1e-5)
+    pd.testing.assert_series_equal(
+        mc.results.cell_temperature[0],
+        data['cell_temperature'],
+        atol=1e-5,
+        rtol=1e-5)
 
 
 @pytest.mark.parametrize('temp_params,temp_model',
@@ -964,8 +1063,16 @@ def test_run_model_solar_position_weather(
     mc.run_model(weather)
     # assert_called_once_with cannot be used with series, so need to use
     # assert_series_equal on call_args
-    assert_series_equal(m.call_args[1]['temperature'], weather['temp_air'])
-    assert_series_equal(m.call_args[1]['pressure'], weather['pressure'])
+    pd.testing.assert_series_equal(
+        m.call_args[1]['temperature'],
+        weather['temp_air'],
+        atol=1e-5,
+        rtol=1e-5)
+    pd.testing.assert_series_equal(
+        m.call_args[1]['pressure'],
+        weather['pressure'],
+        atol=1e-5,
+        rtol=1e-5)
 
 
 def test_run_model_from_poa(sapm_dc_snl_ac_system, location, total_irrad):
@@ -974,7 +1081,7 @@ def test_run_model_from_poa(sapm_dc_snl_ac_system, location, total_irrad):
     ac = mc.run_model_from_poa(total_irrad).results.ac
     expected = pd.Series(np.array([149.280238, 96.678385]),
                          index=total_irrad.index)
-    assert_series_equal(ac, expected)
+    pd.testing.assert_series_equal(ac, expected, atol=1e-5, rtol=1e-5)
 
 
 @pytest.mark.parametrize("input_type", [tuple, list])
@@ -988,7 +1095,11 @@ def test_run_model_from_poa_arrays(sapm_dc_snl_ac_system_Array, location,
     # arrays have different orientation, but should give same dc power
     # because we are the same passing POA irradiance and air
     # temperature.
-    assert_frame_equal(mc.results.dc[0], mc.results.dc[1])
+    pd.testing.assert_frame_equal(
+        mc.results.dc[0],
+        mc.results.dc[1],
+        atol=1e-5,
+        rtol=1e-5)
 
 
 def test_run_model_from_poa_arrays_solar_position_weather(
@@ -1005,8 +1116,16 @@ def test_run_model_from_poa_arrays_solar_position_weather(
     m = mocker.spy(location, 'get_solarposition')
     mc.run_model_from_poa((data, data2))
     # mc uses only the first weather data for solar position corrections
-    assert_series_equal(m.call_args[1]['temperature'], data['temp_air'])
-    assert_series_equal(m.call_args[1]['pressure'], data['pressure'])
+    pd.testing.assert_series_equal(
+        m.call_args[1]['temperature'],
+        data['temp_air'],
+        atol=1e-5,
+        rtol=1e-5)
+    pd.testing.assert_series_equal(
+        m.call_args[1]['pressure'],
+        data['pressure'],
+        atol=1e-5,
+        rtol=1e-5)
 
 
 @pytest.mark.parametrize("input_type", [lambda x: x[0], tuple, list])
@@ -1020,7 +1139,7 @@ def test_run_model_from_effective_irradiance(sapm_dc_snl_ac_system, location,
     ac = mc.run_model_from_effective_irradiance(input_type((data,))).results.ac
     expected = pd.Series(np.array([149.280238, 96.678385]),
                          index=data.index)
-    assert_series_equal(ac, expected)
+    pd.testing.assert_series_equal(ac, expected, atol=1e-5, rtol=1e-5)
 
 
 @pytest.mark.parametrize("input_type", [tuple, list])
@@ -1036,7 +1155,11 @@ def test_run_model_from_effective_irradiance_multi_array(
     # arrays have different orientation, but should give same dc power
     # because we are the same passing POA irradiance and air
     # temperature.
-    assert_frame_equal(mc.results.dc[0], mc.results.dc[1])
+    pd.testing.assert_frame_equal(
+        mc.results.dc[0],
+        mc.results.dc[1],
+        atol=1e-5,
+        rtol=1e-5)
 
 
 @pytest.mark.parametrize("input_type", [lambda x: x[0], tuple, list])
@@ -1049,7 +1172,7 @@ def test_run_model_from_effective_irradiance_no_poa_global(
     ac = mc.run_model_from_effective_irradiance(input_type((data,))).results.ac
     expected = pd.Series(np.array([149.280238, 96.678385]),
                          index=data.index)
-    assert_series_equal(ac, expected)
+    pd.testing.assert_series_equal(ac, expected, atol=1e-5, rtol=1e-5)
 
 
 def test_run_model_from_effective_irradiance_poa_global_differs(
@@ -1062,7 +1185,7 @@ def test_run_model_from_effective_irradiance_poa_global_differs(
     ac = mc.run_model_from_effective_irradiance(data).results.ac
     expected = pd.Series(np.array([118.302801, 76.099841]),
                          index=data.index)
-    assert_series_equal(ac, expected)
+    pd.testing.assert_series_equal(ac, expected, atol=1e-5, rtol=1e-5)
 
 
 @pytest.mark.parametrize("input_type", [tuple, list])
@@ -1102,7 +1225,11 @@ def test_run_model_from_effective_irradiance_arrays(
     # arrays have different orientation, but should give same dc power
     # because we are the same passing effective irradiance and cell
     # temperature.
-    assert_frame_equal(mc.results.dc[0], mc.results.dc[1])
+    pd.testing.assert_frame_equal(
+        mc.results.dc[0],
+        mc.results.dc[1],
+        atol=1e-5,
+        rtol=1e-5)
     # test that unequal inputs create unequal results
     data_two = data.copy()
     data_two['effective_irradiance'] = data['poa_global'] * 0.5
@@ -1119,13 +1246,21 @@ def test_run_model_from_effective_irradiance_minimal_input(
     mc = ModelChain(sapm_dc_snl_ac_system, location)
     mc.run_model_from_effective_irradiance(data)
     # make sure, for a single Array, the result is the correct type and value
-    assert_series_equal(mc.results.cell_temperature, data['cell_temperature'])
+    pd.testing.assert_series_equal(
+        mc.results.cell_temperature,
+        data['cell_temperature'],
+        atol=1e-5,
+        rtol=1e-5)
     assert not mc.results.dc.empty
     assert not mc.results.ac.empty
     # test with multiple arrays
     mc = ModelChain(sapm_dc_snl_ac_system_Array, location)
     mc.run_model_from_effective_irradiance((data, data))
-    assert_frame_equal(mc.results.dc[0], mc.results.dc[1])
+    pd.testing.assert_frame_equal(
+        mc.results.dc[0],
+        mc.results.dc[1],
+        atol=1e-5,
+        rtol=1e-5)
     assert not mc.results.ac.empty
 
 
@@ -1157,7 +1292,7 @@ def test_run_model_from_poa_singleton_weather_single_array(
     assert isinstance(mc.results.cell_temperature, tuple)
     assert len(mc.results.cell_temperature) == 1
     assert isinstance(mc.results.cell_temperature[0], pd.Series)
-    assert_series_equal(ac, expected)
+    pd.testing.assert_series_equal(ac, expected, atol=1e-5, rtol=1e-5)
 
 
 def test_run_model_from_effective_irradiance_weather_single_array(
@@ -1177,7 +1312,7 @@ def test_run_model_from_effective_irradiance_weather_single_array(
     assert isinstance(mc.results.dc, tuple)
     assert len(mc.results.dc) == 1
     assert isinstance(mc.results.dc[0], pd.DataFrame)
-    assert_series_equal(ac, expected)
+    pd.testing.assert_series_equal(ac, expected, atol=1e-5, rtol=1e-5)
 
 
 def poadc(mc):
@@ -1357,7 +1492,11 @@ def test_pvwatts_dc_multiple_strings(pvwatts_dc_pvwatts_ac_system, location,
     assert not mc2.results.ac.empty
     expected = pd.Series(data=[2., np.nan], index=mc2.results.dc.index,
                          name='p_mp')
-    assert_series_equal(mc2.results.dc / mc1.results.dc, expected)
+    pd.testing.assert_series_equal(
+        mc2.results.dc / mc1.results.dc,
+        expected,
+        atol=1e-5,
+        rtol=1e-5)
 
 
 def acdc(mc):
@@ -1419,7 +1558,11 @@ def test_ac_model_user_func(pvwatts_dc_pvwatts_ac_system, location, weather,
                     aoi_model='no_loss', spectral_model='no_loss')
     mc.run_model(weather)
     assert m.call_count == 1
-    assert_series_equal(mc.results.ac, mc.results.dc)
+    pd.testing.assert_series_equal(
+        mc.results.ac,
+        mc.results.dc,
+        atol=1e-5,
+        rtol=1e-5)
     assert not mc.results.ac.empty
 
 
@@ -1850,12 +1993,21 @@ def test_complete_irradiance_clean_run(sapm_dc_snl_ac_system, location):
 
     mc.complete_irradiance(i)
 
-    assert_series_equal(mc.results.weather['dni'],
-                        pd.Series([2, 3], index=times, name='dni'))
-    assert_series_equal(mc.results.weather['dhi'],
-                        pd.Series([4, 6], index=times, name='dhi'))
-    assert_series_equal(mc.results.weather['ghi'],
-                        pd.Series([9, 5], index=times, name='ghi'))
+    pd.testing.assert_series_equal(
+        mc.results.weather['dni'],
+        pd.Series([2, 3], index=times, name='dni'),
+        atol=1e-5,
+        rtol=1e-5)
+    pd.testing.assert_series_equal(
+        mc.results.weather['dhi'],
+        pd.Series([4, 6], index=times, name='dhi'),
+        atol=1e-5,
+        rtol=1e-5)
+    pd.testing.assert_series_equal(
+        mc.results.weather['ghi'],
+        pd.Series([9, 5], index=times, name='ghi'),
+        atol=1e-5,
+        rtol=1e-5)
 
 
 def test_complete_irradiance(sapm_dc_snl_ac_system, location, mocker):
@@ -1868,24 +2020,30 @@ def test_complete_irradiance(sapm_dc_snl_ac_system, location, mocker):
 
     with pytest.warns(UserWarning):
         mc.complete_irradiance(i[['ghi', 'dni']])
-    assert_series_equal(mc.results.weather['dhi'],
-                        pd.Series([356.543700, 465.44400],
-                                  index=times, name='dhi'))
+    pd.testing.assert_series_equal(
+        mc.results.weather['dhi'],
+        pd.Series([356.543700, 465.44400], index=times, name='dhi'),
+        atol=1e-5,
+        rtol=1e-5)
 
     with pytest.warns(UserWarning):
         mc.complete_irradiance(i[['dhi', 'dni']])
-    assert_series_equal(mc.results.weather['ghi'],
-                        pd.Series([372.103976116, 497.087579068],
-                                  index=times, name='ghi'))
+    pd.testing.assert_series_equal(
+        mc.results.weather['ghi'],
+        pd.Series([372.103976116, 497.087579068], index=times, name='ghi'),
+        atol=1e-5,
+        rtol=1e-5)
 
     # check that clearsky_model is used correctly
     m_ineichen = mocker.spy(location, 'get_clearsky')
     mc.complete_irradiance(i[['dhi', 'ghi']])
     assert m_ineichen.call_count == 1
     assert m_ineichen.call_args[1]['model'] == 'ineichen'
-    assert_series_equal(mc.results.weather['dni'],
-                        pd.Series([49.756966, 62.153947],
-                                  index=times, name='dni'))
+    pd.testing.assert_series_equal(
+        mc.results.weather['dni'],
+        pd.Series([49.756966, 62.153947], index=times, name='dni'),
+        atol=1e-5,
+        rtol=1e-5)
 
 
 @pytest.mark.filterwarnings("ignore:This function is not safe at the moment")
@@ -1904,24 +2062,42 @@ def test_complete_irradiance_arrays(
         mc.complete_irradiance(input_type((weather, weather[1:])))
     mc.complete_irradiance(input_type((weather, weather)))
     for mc_weather in mc.results.weather:
-        assert_series_equal(mc_weather['dni'],
-                            pd.Series([2, 3], index=times, name='dni'))
-        assert_series_equal(mc_weather['dhi'],
-                            pd.Series([4, 6], index=times, name='dhi'))
-        assert_series_equal(mc_weather['ghi'],
-                            pd.Series([9, 5], index=times, name='ghi'))
+        pd.testing.assert_series_equal(
+            mc_weather['dni'],
+            pd.Series([2, 3], index=times, name='dni'),
+            atol=1e-5,
+            rtol=1e-5)
+        pd.testing.assert_series_equal(
+            mc_weather['dhi'],
+            pd.Series([4, 6], index=times, name='dhi'),
+            atol=1e-5,
+            rtol=1e-5)
+        pd.testing.assert_series_equal(
+            mc_weather['ghi'],
+            pd.Series([9, 5], index=times, name='ghi'),
+            atol=1e-5,
+            rtol=1e-5)
     mc = ModelChain(sapm_dc_snl_ac_system_same_arrays, location)
     mc.complete_irradiance(input_type((weather[['ghi', 'dhi']],
                                        weather[['dhi', 'dni']])))
     assert 'dni' in mc.results.weather[0].columns
     assert 'ghi' in mc.results.weather[1].columns
     mc.complete_irradiance(input_type((weather, weather[['ghi', 'dni']])))
-    assert_series_equal(mc.results.weather[0]['dhi'],
-                        pd.Series([4, 6], index=times, name='dhi'))
-    assert_series_equal(mc.results.weather[0]['ghi'],
-                        pd.Series([9, 5], index=times, name='ghi'))
-    assert_series_equal(mc.results.weather[0]['dni'],
-                        pd.Series([2, 3], index=times, name='dni'))
+    pd.testing.assert_series_equal(
+        mc.results.weather[0]['dhi'],
+        pd.Series([4, 6], index=times, name='dhi'),
+        atol=1e-5,
+        rtol=1e-5)
+    pd.testing.assert_series_equal(
+        mc.results.weather[0]['ghi'],
+        pd.Series([9, 5], index=times, name='ghi'),
+        atol=1e-5,
+        rtol=1e-5)
+    pd.testing.assert_series_equal(
+        mc.results.weather[0]['dni'],
+        pd.Series([2, 3], index=times, name='dni'),
+        atol=1e-5,
+        rtol=1e-5)
     assert 'dhi' in mc.results.weather[1].columns
 
 
@@ -2026,20 +2202,32 @@ def test__irrad_for_celltemp():
     effect_irrad = pd.Series(index=total_irrad.index, data=[5., 8.])
     # test with single array inputs
     poa = modelchain._irrad_for_celltemp(total_irrad, effect_irrad)
-    assert_series_equal(poa, total_irrad['poa_global'])
+    pd.testing.assert_series_equal(
+        poa,
+        total_irrad['poa_global'],
+        atol=1e-5,
+        rtol=1e-5)
     poa = modelchain._irrad_for_celltemp(empty, effect_irrad)
-    assert_series_equal(poa, effect_irrad)
+    pd.testing.assert_series_equal(poa, effect_irrad, atol=1e-5, rtol=1e-5)
     # test with tuples
     poa = modelchain._irrad_for_celltemp(
         (total_irrad, total_irrad), (effect_irrad, effect_irrad))
     assert len(poa) == 2
-    assert_series_equal(poa[0], total_irrad['poa_global'])
-    assert_series_equal(poa[1], total_irrad['poa_global'])
+    pd.testing.assert_series_equal(
+        poa[0],
+        total_irrad['poa_global'],
+        atol=1e-5,
+        rtol=1e-5)
+    pd.testing.assert_series_equal(
+        poa[1],
+        total_irrad['poa_global'],
+        atol=1e-5,
+        rtol=1e-5)
     poa = modelchain._irrad_for_celltemp(
         (empty, empty), (effect_irrad, effect_irrad))
     assert len(poa) == 2
-    assert_series_equal(poa[0], effect_irrad)
-    assert_series_equal(poa[1], effect_irrad)
+    pd.testing.assert_series_equal(poa[0], effect_irrad, atol=1e-5, rtol=1e-5)
+    pd.testing.assert_series_equal(poa[1], effect_irrad, atol=1e-5, rtol=1e-5)
 
 
 def test_ModelChain___repr__(sapm_dc_snl_ac_system, location):

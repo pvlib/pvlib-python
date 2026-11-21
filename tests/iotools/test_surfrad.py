@@ -4,10 +4,8 @@ import pytest
 from pvlib.iotools import surfrad
 from tests.conftest import (
     TESTS_DATA_DIR,
-    assert_frame_equal,
     RERUNS,
-    RERUNS_DELAY,
-)
+    RERUNS_DELAY)
 
 testfile = TESTS_DATA_DIR / 'surfrad-slv16001.dat'
 network_testfile = ('ftp://aftp.cmdl.noaa.gov/data/radiation/surfrad/'
@@ -93,7 +91,7 @@ def test_get_surfrad():
     assert df.index[-1] == pd.to_datetime('2016-01-01 23:59+00:00')
 
     expected, _ = surfrad.read_surfrad(testfile)
-    assert_frame_equal(df, expected)
+    pd.testing.assert_frame_equal(df, expected, atol=1e-5, rtol=1e-5)
 
 
 @pytest.mark.remote_data

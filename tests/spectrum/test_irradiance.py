@@ -4,8 +4,6 @@ import pandas as pd
 import numpy as np
 from pvlib import spectrum
 
-from tests.conftest import assert_series_equal
-
 
 def test_get_reference_spectra_am15g():
     # test that the reference spectrum is read and interpolated correctly
@@ -42,7 +40,11 @@ def test_get_reference_spectra(reference_identifier, expected_sums):
     assert standard.index.name == "wavelength"
     assert standard.index.is_monotonic_increasing is True
     expected_sums = pd.Series(expected_sums)  # convert prior to comparison
-    assert_series_equal(np.sum(standard, axis=0), expected_sums, atol=1e-2)
+    pd.testing.assert_series_equal(
+        np.sum(standard, axis=0),
+        expected_sums,
+        atol=1e-5,
+        rtol=1e-5)
 
 
 def test_get_reference_spectra_custom_wavelengths():
@@ -59,7 +61,11 @@ def test_get_reference_spectra_custom_wavelengths():
     assert_equal(len(standard), len(wavelength))
     # check no NaN values were returned
     assert not standard.isna().any().any()  # double any to return one value
-    assert_series_equal(np.sum(standard, axis=0), expected_sums, atol=1e-4)
+    pd.testing.assert_series_equal(
+        np.sum(standard, axis=0),
+        expected_sums,
+        atol=1e-5,
+        rtol=1e-5)
 
 
 def test_get_reference_spectra_invalid_reference():
@@ -87,7 +93,7 @@ def test_average_photon_energy_dataframe():
     ape = spectrum.average_photon_energy(spectra)
     expected = pd.Series([1.36848, 1.45017, 1.40885])
     expected.index = spectra.index
-    assert_series_equal(ape, expected, rtol=1e-4)
+    pd.testing.assert_series_equal(ape, expected, rtol=1e-5, atol=1e-5)
 
 
 def test_average_photon_energy_invalid_type():

@@ -7,8 +7,7 @@ from tests.conftest import (
     RERUNS,
     RERUNS_DELAY,
     assert_index_equal,
-    requires_solaranywhere_credentials,
-)
+    requires_solaranywhere_credentials)
 
 # High spatial resolution and 5-min data, true dynamics enabled
 TESTFILE_HIGH_RESOLUTION = TESTS_DATA_DIR / 'Burlington, United States SolarAnywhere Time Series 20210101 to 20210103 Lat_44_4675 Lon_-73_2075 SA format.csv'  # noqa: E501
@@ -75,9 +74,10 @@ def test_read_solaranywhere_high_resolution(high_resolution_index):
     assert data.loc['2021-01-01 07:00:00-05:00', 'Albedo'] == 0.6
     assert data.loc['2021-01-01 07:00:00-05:00', 'WindSpeed (m/s)'] == 0
     # Assert that the index is parsed correctly
-    assert_index_equal(  # from conftest; doesn't compare index frequency attr
+    assert_index_equal(
         data.index,
         high_resolution_index,
+        atol=1e-5, rtol=1e-5,
     )
 
 

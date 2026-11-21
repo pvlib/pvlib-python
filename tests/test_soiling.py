@@ -3,7 +3,6 @@
 import datetime
 import numpy as np
 import pandas as pd
-from .conftest import assert_series_equal
 from pvlib.soiling import hsu, kimber
 from pvlib.iotools import read_tmy3
 from .conftest import TESTS_DATA_DIR, PVLIB_DATA_DIR
@@ -95,7 +94,11 @@ def test_hsu_no_cleaning(rainfall_input, expected_output):
     result = hsu(rainfall=rainfall, cleaning_threshold=10., surface_tilt=tilt,
                  pm2_5=pm2_5, pm10=pm10, depo_veloc=depo_veloc,
                  rain_accum_period=pd.Timedelta('1h'))
-    assert_series_equal(result, expected_no_cleaning)
+    pd.testing.assert_series_equal(
+        result,
+        expected_no_cleaning,
+        atol=1e-5,
+        rtol=1e-5)
 
 
 def test_hsu(rainfall_input, expected_output_2):
@@ -112,7 +115,11 @@ def test_hsu(rainfall_input, expected_output_2):
                  pm2_5=pm2_5, pm10=pm10, depo_veloc=depo_veloc,
                  rain_accum_period=pd.Timedelta('3h'))
 
-    assert_series_equal(result, expected_output_2)
+    pd.testing.assert_series_equal(
+        result,
+        expected_output_2,
+        atol=1e-5,
+        rtol=1e-5)
 
 
 def test_hsu_defaults(rainfall_input, expected_output_1):

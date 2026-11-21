@@ -252,7 +252,11 @@ def test_read_nsrdb_psm4_map_variables():
                       'relative_humidity', 'solar_zenith', 'SSA', 'albedo',
                       'pressure', 'precipitable_water', 'wind_direction',
                       'wind_speed']
-    assert_index_equal(data.columns, pd.Index(columns_mapped))
+    assert_index_equal(
+        data.columns,
+        pd.Index(columns_mapped),
+        atol=1e-5,
+        rtol=1e-5)
 
 
 def test_read_nsrdb_psm4_quoted_columns_with_commas():

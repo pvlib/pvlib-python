@@ -8,10 +8,8 @@ import requests
 import pytest
 
 from pvlib.iotools import sodapro
-from tests.conftest import TESTS_DATA_DIR, assert_frame_equal
+from tests.conftest import TESTS_DATA_DIR
 
-
-from pvlib._deprecation import pvlibDeprecationWarning
 
 testfile_mcclear_verbose = TESTS_DATA_DIR / 'cams_mcclear_1min_verbose.csv'
 testfile_mcclear_monthly = TESTS_DATA_DIR / 'cams_mcclear_monthly.csv'
@@ -177,7 +175,7 @@ def test_read_cams(testfile, index, columns, values, dtypes):
     expected = generate_expected_dataframe(values, columns, index, dtypes)
     out, metadata = sodapro.read_cams(testfile, integrated=False,
                                       map_variables=True)
-    assert_frame_equal(out, expected, check_less_precise=True)
+    pd.testing.assert_frame_equal(out, expected, atol=1e-3, rtol=1e-3)
 
 
 def test_read_cams_integrated_unmapped_label():
@@ -190,7 +188,7 @@ def test_read_cams_integrated_unmapped_label():
     out, metadata = sodapro.read_cams(testfile_radiation_verbose,
                                       integrated=True, label='right',
                                       map_variables=False)
-    assert_frame_equal(out, expected, check_less_precise=True)
+    pd.testing.assert_frame_equal(out, expected, atol=1e-3, rtol=1e-3)
 
 
 def test_read_cams_metadata():
@@ -236,7 +234,7 @@ def test_get_cams(requests_mock, testfile, index, columns, values, dtypes,
         verbose=False,
         integrated=False)
     expected = generate_expected_dataframe(values, columns, index, dtypes)
-    assert_frame_equal(out, expected, check_less_precise=True)
+    pd.testing.assert_frame_equal(out, expected, atol=1e-3, rtol=1e-3)
 
     # Test if Warning is raised if verbose mode is True and time_step != '1min'
     with pytest.warns(UserWarning, match='Verbose mode only supports'):

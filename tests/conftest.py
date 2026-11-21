@@ -38,39 +38,15 @@ def fail_on_pvlib_version(version):
     return wrapper
 
 
-def _check_pandas_assert_kwargs(kwargs):
-    # handles the change in API related to default
-    # tolerances in pandas 1.1.0.  See pvlib GH #1018
-    if Version(pd.__version__) >= Version('1.1.0'):
-        if kwargs.pop('check_less_precise', False):
-            kwargs['atol'] = 1e-3
-            kwargs['rtol'] = 1e-3
-        else:
-            kwargs['atol'] = 1e-5
-            kwargs['rtol'] = 1e-5
-    else:
-        kwargs.pop('rtol', None)
-        kwargs.pop('atol', None)
-    return kwargs
-
-
 def assert_index_equal(left, right, **kwargs):
-    kwargs = _check_pandas_assert_kwargs(kwargs)
-    if Version(pd.__version__) >= Version('3.1.0'):
-        # check_freq was added in pandas 3.1.0
-        # tests written prior to it, may have not taken it into account
-        kwargs['check_freq'] = False
+    # check_freq was added to pandas.testing.assert_index_equal in pandas
+    # 3.1.0; on older pandas the kwarg does not exist. Only pass it where
+    # the installed pandas supports it. This wrapper can be removed (and
+    # call sites switched to pd.testing.assert_index_equal) once pvlib
+    # requires pandas >= 3.1.0. See #2263 and #2924.
+    if Version(pd.__version__) >= Version("3.1.0"):
+        kwargs["check_freq"] = False
     pd.testing.assert_index_equal(left, right, **kwargs)
-
-
-def assert_series_equal(left, right, **kwargs):
-    kwargs = _check_pandas_assert_kwargs(kwargs)
-    pd.testing.assert_series_equal(left, right, **kwargs)
-
-
-def assert_frame_equal(left, right, **kwargs):
-    kwargs = _check_pandas_assert_kwargs(kwargs)
-    pd.testing.assert_frame_equal(left, right, **kwargs)
 
 
 # commonly used directories in the tests

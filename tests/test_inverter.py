@@ -1,7 +1,6 @@
 import numpy as np
 import pandas as pd
 
-from .conftest import assert_series_equal
 from numpy.testing import assert_allclose
 
 from .conftest import TESTS_DATA_DIR
@@ -15,8 +14,11 @@ def test_adr(adr_inverter_parameters):
     pdcs = pd.Series([135, 1232, 1170, 420, 551])
 
     pacs = inverter.adr(vdcs, pdcs, adr_inverter_parameters)
-    assert_series_equal(pacs, pd.Series([np.nan, 1161.5745, 1116.4459,
-                                         382.6679, np.nan]))
+    pd.testing.assert_series_equal(
+        pacs,
+        pd.Series([np.nan, 1161.5745, 1116.4459, 382.6679, np.nan]),
+        atol=1e-5,
+        rtol=1e-5)
 
 
 def test_adr_vtol(adr_inverter_parameters):
@@ -24,8 +26,11 @@ def test_adr_vtol(adr_inverter_parameters):
     pdcs = pd.Series([135, 1232, 1170, 420, 551])
 
     pacs = inverter.adr(vdcs, pdcs, adr_inverter_parameters, vtol=0.20)
-    assert_series_equal(pacs, pd.Series([104.8223, 1161.5745, 1116.4459,
-                                         382.6679, 513.3385]))
+    pd.testing.assert_series_equal(
+        pacs,
+        pd.Series([104.8223, 1161.5745, 1116.4459, 382.6679, 513.3385]),
+        atol=1e-5,
+        rtol=1e-5)
 
 
 def test_adr_float(adr_inverter_parameters):
@@ -53,7 +58,11 @@ def test_sandia(cec_inverter_parameters):
     pdcs = idcs * vdcs
 
     pacs = inverter.sandia(vdcs, pdcs, cec_inverter_parameters)
-    assert_series_equal(pacs, pd.Series([-0.020000, 132.004308, 250.000000]))
+    pd.testing.assert_series_equal(
+        pacs,
+        pd.Series([-0.020000, 132.004308, 250.000000]),
+        atol=1e-5,
+        rtol=1e-5)
 
 
 def test_sandia_float(cec_inverter_parameters):
@@ -97,7 +106,11 @@ def test_sandia_Pnt_micro():
     pdcs = idcs * vdcs
 
     pacs = inverter.sandia(vdcs, pdcs, inverter_parameters)
-    assert_series_equal(pacs, pd.Series([-0.043, 132.545914746, 240.0]))
+    pd.testing.assert_series_equal(
+        pacs,
+        pd.Series([-0.043, 132.545914746, 240.0]),
+        atol=1e-5,
+        rtol=1e-5)
 
 
 def test_sandia_multi(cec_inverter_parameters):
@@ -106,11 +119,19 @@ def test_sandia_multi(cec_inverter_parameters):
     pdcs = idcs * vdcs
     pacs = inverter.sandia_multi((vdcs, vdcs), (pdcs, pdcs),
                                  cec_inverter_parameters)
-    assert_series_equal(pacs, pd.Series([-0.020000, 132.004278, 250.000000]))
+    pd.testing.assert_series_equal(
+        pacs,
+        pd.Series([-0.020000, 132.004278, 250.000000]),
+        atol=1e-5,
+        rtol=1e-5)
     # with lists instead of tuples
     pacs = inverter.sandia_multi([vdcs, vdcs], [pdcs, pdcs],
                                  cec_inverter_parameters)
-    assert_series_equal(pacs, pd.Series([-0.020000, 132.004278, 250.000000]))
+    pd.testing.assert_series_equal(
+        pacs,
+        pd.Series([-0.020000, 132.004278, 250.000000]),
+        atol=1e-5,
+        rtol=1e-5)
     # with arrays instead of tuples
     pacs = inverter.sandia_multi(np.array([vdcs, vdcs]),
                                  np.array([pdcs, pdcs]),
@@ -168,7 +189,7 @@ def test_pvwatts_series():
     pdc0 = 100
     expected = pd.Series(np.array([np.nan, 0., 47.608436, 95.]))
     out = inverter.pvwatts(pdc, pdc0, 0.95)
-    assert_series_equal(expected, out)
+    pd.testing.assert_series_equal(expected, out, atol=1e-5, rtol=1e-5)
 
 
 def test_pvwatts_multi():
@@ -184,10 +205,18 @@ def test_pvwatts_multi():
     # with Series
     pdc = pd.Series(pdc)
     out = inverter.pvwatts_multi((pdc, pdc), pdc0, 0.95)
-    assert_series_equal(pd.Series(expected), out)
+    pd.testing.assert_series_equal(
+        pd.Series(expected),
+        out,
+        atol=1e-5,
+        rtol=1e-5)
     # with list instead of tuple
     out = inverter.pvwatts_multi([pdc, pdc], pdc0, 0.95)
-    assert_series_equal(pd.Series(expected), out)
+    pd.testing.assert_series_equal(
+        pd.Series(expected),
+        out,
+        atol=1e-5,
+        rtol=1e-5)
 
 
 INVERTER_TEST_MEAS = TESTS_DATA_DIR / 'inverter_fit_snl_meas.csv'

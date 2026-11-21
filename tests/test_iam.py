@@ -8,7 +8,6 @@ import numpy as np
 import pandas as pd
 
 import pytest
-from .conftest import assert_series_equal
 from numpy.testing import assert_allclose
 
 from pvlib import iam as _iam
@@ -23,7 +22,11 @@ def test_ashrae():
     iam = _iam.ashrae(thetas, .05)
     assert_allclose(iam, expected, equal_nan=True)
     iam_series = _iam.ashrae(pd.Series(thetas))
-    assert_series_equal(iam_series, pd.Series(expected))
+    pd.testing.assert_series_equal(
+        iam_series,
+        pd.Series(expected),
+        atol=1e-5,
+        rtol=1e-5)
 
 
 def test_ashrae_scalar():
@@ -49,7 +52,7 @@ def test_physical():
     aoi = pd.Series(aoi)
     iam = _iam.physical(aoi, 1.526, 0.002, 4)
     expected = pd.Series(expected)
-    assert_series_equal(iam, expected)
+    pd.testing.assert_series_equal(iam, expected, atol=1e-5, rtol=1e-5)
 
 
 def test_physical_n1_L0():
@@ -61,7 +64,7 @@ def test_physical_n1_L0():
     aoi = pd.Series(aoi)
     expected = pd.Series(expected)
     iam = _iam.physical(aoi, n=1, L=0)
-    assert_series_equal(iam, expected)
+    pd.testing.assert_series_equal(iam, expected, atol=1e-5, rtol=1e-5)
 
 
 def test_physical_ar():
@@ -121,7 +124,7 @@ def test_martin_ruiz():
     aoi = pd.Series(aoi)
     expected = pd.Series(expected)
     iam = _iam.martin_ruiz(aoi, a_r)
-    assert_series_equal(iam, expected)
+    pd.testing.assert_series_equal(iam, expected, atol=1e-5, rtol=1e-5)
 
 
 def test_martin_ruiz_exception():
@@ -169,8 +172,16 @@ def test_martin_ruiz_diffuse():
     expected_sky = pd.Series(expected_sky, name='iam_sky')
     expected_gnd = pd.Series(expected_gnd, name='iam_ground')
     iam = _iam.martin_ruiz_diffuse(surface_tilt, a_r)
-    assert_series_equal(iam['sky'], expected_sky)
-    assert_series_equal(iam['ground'], expected_gnd)
+    pd.testing.assert_series_equal(
+        iam['sky'],
+        expected_sky,
+        atol=1e-5,
+        rtol=1e-5)
+    pd.testing.assert_series_equal(
+        iam['ground'],
+        expected_gnd,
+        atol=1e-5,
+        rtol=1e-5)
 
 
 def test_iam_interp():
@@ -201,7 +212,7 @@ def test_iam_interp():
     expected = pd.Series(expected)
     iam_mult = np.multiply(0.9, iam_meas)
     iam = _iam.interp(aoi, aoi_meas, iam_mult, normalize=True)
-    assert_series_equal(iam, expected)
+    pd.testing.assert_series_equal(iam, expected, atol=1e-5, rtol=1e-5)
 
     # check beyond reference values
     aoi = np.array([-45, 0, 45, 85, 90, 95, 100, 105, 110])
@@ -291,7 +302,7 @@ def test_sapm(sapm_module_params, aoi, expected):
     out = _iam.sapm(aoi, sapm_module_params)
 
     if isinstance(aoi, pd.Series):
-        assert_series_equal(out, expected, check_less_precise=4)
+        pd.testing.assert_series_equal(out, expected, atol=1e-3, rtol=1e-3)
     else:
         assert_allclose(out, expected, atol=1e-4)
 
@@ -394,7 +405,7 @@ def test_marion_integrate_series(region, N, expected):
     tilt = pd.Series([0, 20, 30], index=idx)
     expected = pd.Series(expected, index=idx)
     actual = _iam.marion_integrate(_iam.ashrae, tilt, region, N)
-    assert_series_equal(actual, expected)
+    pd.testing.assert_series_equal(actual, expected, atol=1e-5, rtol=1e-5)
 
     tilt.iloc[1] = np.nan
     expected.iloc[1] = np.nan
@@ -434,7 +445,7 @@ def test_schlick():
 
     # pandas Series
     actual = _iam.schlick(aoi)
-    assert_series_equal(expected, actual)
+    pd.testing.assert_series_equal(expected, actual, atol=1e-5, rtol=1e-5)
 
 
 def test_schlick_diffuse():
@@ -457,9 +468,16 @@ def test_schlick_diffuse():
     # pandas Series
     idx = pd.date_range('2019-01-01', freq='h', periods=len(surface_tilt))
     actual_iam = _iam.schlick_diffuse(pd.Series(surface_tilt, idx))
-    assert_series_equal(pd.Series(expected_sky, idx), actual_iam['sky'])
-    assert_series_equal(pd.Series(expected_ground, idx), actual_iam['ground'],
-                        rtol=1e-6)
+    pd.testing.assert_series_equal(
+        pd.Series(expected_sky, idx),
+        actual_iam['sky'],
+        atol=1e-5,
+        rtol=1e-5)
+    pd.testing.assert_series_equal(
+        pd.Series(expected_ground, idx),
+        actual_iam['ground'],
+        rtol=1e-5,
+        atol=1e-5)
 
 
 @pytest.mark.parametrize('source,source_params,target,expected', [

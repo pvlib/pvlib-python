@@ -13,7 +13,7 @@ from numpy.testing import assert_allclose
 from pvlib import solarposition, spa
 from pvlib.location import Location
 
-from .conftest import (assert_frame_equal, assert_series_equal, requires_ephem,
+from .conftest import (requires_ephem,
                        requires_numba, requires_pandas_2_0, requires_spa_c)
 
 # setup times and locations to be tested.
@@ -98,7 +98,11 @@ def test_spa_c_physical(expected_solpos, golden_mst):
                                      pressure=82000,
                                      temperature=11)
     expected_solpos.index = times
-    assert_frame_equal(expected_solpos, ephem_data[expected_solpos.columns])
+    pd.testing.assert_frame_equal(
+        expected_solpos,
+        ephem_data[expected_solpos.columns],
+        atol=1e-5,
+        rtol=1e-5)
 
 
 @requires_spa_c
@@ -110,7 +114,11 @@ def test_spa_c_physical_dst(expected_solpos, golden):
                                      pressure=82000,
                                      temperature=11)
     expected_solpos.index = times
-    assert_frame_equal(expected_solpos, ephem_data[expected_solpos.columns])
+    pd.testing.assert_frame_equal(
+        expected_solpos,
+        ephem_data[expected_solpos.columns],
+        atol=1e-5,
+        rtol=1e-5)
 
 
 def test_spa_python_numpy_physical(expected_solpos, golden_mst):
@@ -123,7 +131,11 @@ def test_spa_python_numpy_physical(expected_solpos, golden_mst):
                                           atmos_refract=0.5667,
                                           how='numpy')
     expected_solpos.index = times
-    assert_frame_equal(expected_solpos, ephem_data[expected_solpos.columns])
+    pd.testing.assert_frame_equal(
+        expected_solpos,
+        ephem_data[expected_solpos.columns],
+        atol=1e-5,
+        rtol=1e-5)
 
 
 def test_spa_python_numpy_physical_dst(expected_solpos, golden):
@@ -136,7 +148,11 @@ def test_spa_python_numpy_physical_dst(expected_solpos, golden):
                                           atmos_refract=0.5667,
                                           how='numpy')
     expected_solpos.index = times
-    assert_frame_equal(expected_solpos, ephem_data[expected_solpos.columns])
+    pd.testing.assert_frame_equal(
+        expected_solpos,
+        ephem_data[expected_solpos.columns],
+        atol=1e-5,
+        rtol=1e-5)
 
 
 @pytest.mark.parametrize('delta_t', [65.0, None, np.array([65, 65])])
@@ -163,9 +179,10 @@ def test_sun_rise_set_transit_spa(expected_rise_set_spa, golden, delta_t):
     for col, data in result.items():
         result_rounded[col] = data.dt.round('1s')
 
-    assert_frame_equal(frame, result_rounded,
-                       check_dtype=False  # ignore us/ns dtypes
-                       )
+    pd.testing.assert_frame_equal(frame, result_rounded,
+                                  check_dtype=False, atol=1e-5, rtol=1e-5
+                                  # ignore us/ns dtypes
+                                  )
 
     # test for Golden, CO compare to NLR SPA
     result = solarposition.sun_rise_set_transit_spa(
@@ -178,9 +195,10 @@ def test_sun_rise_set_transit_spa(expected_rise_set_spa, golden, delta_t):
     for col, data in result.items():
         result_rounded[col] = data.dt.round('s').tz_convert('MST')
 
-    assert_frame_equal(expected_rise_set_spa, result_rounded,
-                       check_dtype=False  # ignore us/ns dtypes
-                       )
+    pd.testing.assert_frame_equal(expected_rise_set_spa, result_rounded,
+                                  check_dtype=False, atol=1e-5, rtol=1e-5
+                                  # ignore us/ns dtypes
+                                  )
 
 
 def test_sun_rise_set_transit_spa_local_day():
@@ -215,7 +233,12 @@ def test_sun_rise_set_transit_spa_local_day():
     for col, data in result.items():
         result_rounded[col] = data.dt.round('1s')
 
-    assert_frame_equal(result_rounded, expected, check_dtype=False)
+    pd.testing.assert_frame_equal(
+        result_rounded,
+        expected,
+        check_dtype=False,
+        atol=1e-5,
+        rtol=1e-5)
 
     # positive-offset zone: early-morning-local timestamps are the *previous*
     # calendar day in UTC, the mirror of the case above
@@ -247,7 +270,11 @@ def test_sun_rise_set_transit_ephem(expected_rise_set_ephem, golden):
     result_rounded = pd.DataFrame(index=result.index)
     for col, data in result.items():
         result_rounded[col] = data.dt.round('min').tz_convert('MST')
-    assert_frame_equal(expected_rise_set_ephem, result_rounded)
+    pd.testing.assert_frame_equal(
+        expected_rise_set_ephem,
+        result_rounded,
+        atol=1e-5,
+        rtol=1e-5)
 
     # test next sunrise/sunset with times
     times = pd.DatetimeIndex([datetime.datetime(2015, 1, 2, 3, 0, 0),
@@ -283,7 +310,11 @@ def test_sun_rise_set_transit_ephem(expected_rise_set_ephem, golden):
     result_rounded = pd.DataFrame(index=result.index)
     for col, data in result.items():
         result_rounded[col] = data.dt.round('min').tz_convert('MST')
-    assert_frame_equal(expected, result_rounded)
+    pd.testing.assert_frame_equal(
+        expected,
+        result_rounded,
+        atol=1e-5,
+        rtol=1e-5)
 
     # test previous sunrise/sunset with times
     times = pd.DatetimeIndex([datetime.datetime(2015, 1, 2, 3, 0, 0),
@@ -315,7 +346,11 @@ def test_sun_rise_set_transit_ephem(expected_rise_set_ephem, golden):
     result_rounded = pd.DataFrame(index=result.index)
     for col, data in result.items():
         result_rounded[col] = data.dt.round('min').tz_convert('MST')
-    assert_frame_equal(expected, result_rounded)
+    pd.testing.assert_frame_equal(
+        expected,
+        result_rounded,
+        atol=1e-5,
+        rtol=1e-5)
 
     # test with different timezone
     times = times.tz_convert('UTC')
@@ -330,7 +365,11 @@ def test_sun_rise_set_transit_ephem(expected_rise_set_ephem, golden):
     result_rounded = pd.DataFrame(index=result.index)
     for col, data in result.items():
         result_rounded[col] = data.dt.round('min').tz_convert(times.tz)
-    assert_frame_equal(expected, result_rounded)
+    pd.testing.assert_frame_equal(
+        expected,
+        result_rounded,
+        atol=1e-5,
+        rtol=1e-5)
 
 
 @requires_ephem
@@ -366,7 +405,11 @@ def test_sun_rise_set_transit_ephem_horizon(golden):
     expected = pd.Series(index=times,
                          data=[sunrise_delta],
                          name='sunrise').dt.round('min')
-    assert_series_equal(expected, result_rounded)
+    pd.testing.assert_series_equal(
+        expected,
+        result_rounded,
+        atol=1e-5,
+        rtol=1e-5)
 
 
 @requires_ephem
@@ -377,8 +420,11 @@ def test_pyephem_physical(expected_solpos, golden_mst):
                                        golden_mst.longitude, pressure=82000,
                                        temperature=11)
     expected_solpos.index = times
-    assert_frame_equal(expected_solpos.round(2),
-                       ephem_data[expected_solpos.columns].round(2))
+    pd.testing.assert_frame_equal(
+        expected_solpos.round(2),
+        ephem_data[expected_solpos.columns].round(2),
+        atol=1e-5,
+        rtol=1e-5)
 
 
 @requires_ephem
@@ -389,8 +435,11 @@ def test_pyephem_physical_dst(expected_solpos, golden):
                                        golden.longitude, pressure=82000,
                                        temperature=11)
     expected_solpos.index = times
-    assert_frame_equal(expected_solpos.round(2),
-                       ephem_data[expected_solpos.columns].round(2))
+    pd.testing.assert_frame_equal(
+        expected_solpos.round(2),
+        ephem_data[expected_solpos.columns].round(2),
+        atol=1e-5,
+        rtol=1e-5)
 
 
 @requires_ephem
@@ -435,7 +484,11 @@ def test_ephemeris_physical(expected_solpos, golden_mst):
     expected_solpos.index = times
     expected_solpos = np.round(expected_solpos, 2)
     ephem_data = np.round(ephem_data, 2)
-    assert_frame_equal(expected_solpos, ephem_data[expected_solpos.columns])
+    pd.testing.assert_frame_equal(
+        expected_solpos,
+        ephem_data[expected_solpos.columns],
+        atol=1e-5,
+        rtol=1e-5)
 
 
 def test_ephemeris_physical_dst(expected_solpos, golden):
@@ -447,7 +500,11 @@ def test_ephemeris_physical_dst(expected_solpos, golden):
     expected_solpos.index = times
     expected_solpos = np.round(expected_solpos, 2)
     ephem_data = np.round(ephem_data, 2)
-    assert_frame_equal(expected_solpos, ephem_data[expected_solpos.columns])
+    pd.testing.assert_frame_equal(
+        expected_solpos,
+        ephem_data[expected_solpos.columns],
+        atol=1e-5,
+        rtol=1e-5)
 
 
 def test_ephemeris_physical_no_tz(expected_solpos, golden_mst):
@@ -460,7 +517,11 @@ def test_ephemeris_physical_no_tz(expected_solpos, golden_mst):
     expected_solpos.index = times
     expected_solpos = np.round(expected_solpos, 2)
     ephem_data = np.round(ephem_data, 2)
-    assert_frame_equal(expected_solpos, ephem_data[expected_solpos.columns])
+    pd.testing.assert_frame_equal(
+        expected_solpos,
+        ephem_data[expected_solpos.columns],
+        atol=1e-5,
+        rtol=1e-5)
 
 
 def test_get_solarposition_error(golden):
@@ -497,7 +558,11 @@ def test_get_solarposition_pressure(
     this_expected.index = times
     this_expected = np.round(this_expected, 5)
     ephem_data = np.round(ephem_data, 5)
-    assert_frame_equal(this_expected, ephem_data[this_expected.columns])
+    pd.testing.assert_frame_equal(
+        this_expected,
+        ephem_data[this_expected.columns],
+        atol=1e-5,
+        rtol=1e-5)
 
 
 @pytest.mark.parametrize("altitude, expected", [
@@ -523,7 +588,11 @@ def test_get_solarposition_altitude(
     this_expected.index = times
     this_expected = np.round(this_expected, 5)
     ephem_data = np.round(ephem_data, 5)
-    assert_frame_equal(this_expected, ephem_data[this_expected.columns])
+    pd.testing.assert_frame_equal(
+        this_expected,
+        ephem_data[this_expected.columns],
+        atol=1e-5,
+        rtol=1e-5)
 
 
 @pytest.mark.parametrize("delta_t, method", [
@@ -552,7 +621,11 @@ def test_get_solarposition_deltat(delta_t, method, expected_solpos_multi,
     this_expected.index = times
     this_expected = np.round(this_expected, 5)
     ephem_data = np.round(ephem_data, 5)
-    assert_frame_equal(this_expected, ephem_data[this_expected.columns])
+    pd.testing.assert_frame_equal(
+        this_expected,
+        ephem_data[this_expected.columns],
+        atol=1e-5,
+        rtol=1e-5)
 
 
 @pytest.mark.parametrize("method", ['nrel_numba', 'nrel_numpy'])
@@ -567,7 +640,12 @@ def test_spa_array_delta_t(method):
                                                      delta_t=np.array([67, 0]),
                                                      method=method)
 
-    assert_series_equal(ephem_data['azimuth'], expected, check_names=False)
+    pd.testing.assert_series_equal(
+        ephem_data['azimuth'],
+        expected,
+        check_names=False,
+        atol=1e-5,
+        rtol=1e-5)
 
 
 def test_get_solarposition_no_kwargs(expected_solpos, golden):
@@ -578,7 +656,11 @@ def test_get_solarposition_no_kwargs(expected_solpos, golden):
     expected_solpos.index = times
     expected_solpos = np.round(expected_solpos, 2)
     ephem_data = np.round(ephem_data, 2)
-    assert_frame_equal(expected_solpos, ephem_data[expected_solpos.columns])
+    pd.testing.assert_frame_equal(
+        expected_solpos,
+        ephem_data[expected_solpos.columns],
+        atol=1e-5,
+        rtol=1e-5)
 
 
 @requires_ephem
@@ -591,7 +673,11 @@ def test_get_solarposition_method_pyephem(expected_solpos, golden):
     expected_solpos.index = times
     expected_solpos = np.round(expected_solpos, 2)
     ephem_data = np.round(ephem_data, 2)
-    assert_frame_equal(expected_solpos, ephem_data[expected_solpos.columns])
+    pd.testing.assert_frame_equal(
+        expected_solpos,
+        ephem_data[expected_solpos.columns],
+        atol=1e-5,
+        rtol=1e-5)
 
 
 @pytest.mark.parametrize('delta_t', [64.0, None, np.array([64, 64])])
@@ -602,14 +688,14 @@ def test_nrel_earthsun_distance(delta_t):
     result = solarposition.nrel_earthsun_distance(times, delta_t=delta_t)
     expected = pd.Series(np.array([0.983289204601, 1.01486146446]),
                          index=times)
-    assert_series_equal(expected, result)
+    pd.testing.assert_series_equal(expected, result, atol=1e-5, rtol=1e-5)
 
     if np.size(delta_t) == 1:  # skip the array delta_t
         times = datetime.datetime(2015, 1, 2)
         result = solarposition.nrel_earthsun_distance(times, delta_t=delta_t)
         expected = pd.Series(np.array([0.983289204601]),
                              index=pd.DatetimeIndex([times, ]))
-        assert_series_equal(expected, result)
+        pd.testing.assert_series_equal(expected, result, atol=1e-5, rtol=1e-5)
 
 
 def test_equation_of_time():
@@ -916,7 +1002,12 @@ def test_get_solarposition_microsecond_index(method, tz):
         sp_ns = solarposition.get_solarposition(index_ns, 0, 0, method=method)
         sp_us = solarposition.get_solarposition(index_us, 0, 0, method=method)
 
-    assert_frame_equal(sp_ns, sp_us, check_index_type=False)
+    pd.testing.assert_frame_equal(
+        sp_ns,
+        sp_us,
+        check_index_type=False,
+        atol=1e-5,
+        rtol=1e-5)
 
 
 @requires_pandas_2_0
@@ -932,7 +1023,12 @@ def test_nrel_earthsun_distance_microsecond_index(tz):
     esd_ns = solarposition.nrel_earthsun_distance(index_ns)
     esd_us = solarposition.nrel_earthsun_distance(index_us)
 
-    assert_series_equal(esd_ns, esd_us, check_index_type=False)
+    pd.testing.assert_series_equal(
+        esd_ns,
+        esd_us,
+        check_index_type=False,
+        atol=1e-5,
+        rtol=1e-5)
 
 
 @requires_pandas_2_0
@@ -964,7 +1060,12 @@ def test_rise_set_transit_spa_microsecond_index(tz):
     rst_ns = solarposition.sun_rise_set_transit_spa(index_ns, 40, -80)
     rst_us = solarposition.sun_rise_set_transit_spa(index_us, 40, -80)
 
-    assert_frame_equal(rst_ns, rst_us, check_index_type=False)
+    pd.testing.assert_frame_equal(
+        rst_ns,
+        rst_us,
+        check_index_type=False,
+        atol=1e-5,
+        rtol=1e-5)
 
 
 @requires_pandas_2_0
@@ -1011,7 +1112,11 @@ def test_spa_python_numba_physical(expected_solpos, golden_mst):
                                               atmos_refract=0.5667,
                                               how='numba', numthreads=1)
     expected_solpos.index = times
-    assert_frame_equal(expected_solpos, ephem_data[expected_solpos.columns])
+    pd.testing.assert_frame_equal(
+        expected_solpos,
+        ephem_data[expected_solpos.columns],
+        atol=1e-5,
+        rtol=1e-5)
 
 
 @requires_numba
@@ -1028,7 +1133,11 @@ def test_spa_python_numba_physical_dst(expected_solpos, golden):
                                               atmos_refract=0.5667,
                                               how='numba', numthreads=1)
     expected_solpos.index = times
-    assert_frame_equal(expected_solpos, ephem_data[expected_solpos.columns])
+    pd.testing.assert_frame_equal(
+        expected_solpos,
+        ephem_data[expected_solpos.columns],
+        atol=1e-5,
+        rtol=1e-5)
 
     with pytest.warns(UserWarning):
         # test that we get a warning when reloading to use numpy only

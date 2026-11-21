@@ -5,7 +5,6 @@ import pytest
 from pvlib.iotools import crn
 from tests.conftest import (
     TESTS_DATA_DIR,
-    assert_frame_equal,
     assert_index_equal,
 )
 
@@ -77,13 +76,17 @@ def test_read_crn(testfile, columns_mapped, dtypes):
             expected[col] = expected[col].astype(_dtype)
 
     out = crn.read_crn(testfile)
-    assert_frame_equal(out, expected)
+    pd.testing.assert_frame_equal(out, expected, atol=1e-5, rtol=1e-5)
 
 
 # Test map_variables=False returns correct column names
 def test_read_crn_map_variables(testfile, columns_unmapped, dtypes):
     out = crn.read_crn(testfile, map_variables=False)
-    assert_index_equal(out.columns, pd.Index(columns_unmapped))
+    assert_index_equal(
+        out.columns,
+        pd.Index(columns_unmapped),
+        atol=1e-5,
+        rtol=1e-5)
 
 
 def test_read_crn_problems(testfile_problems, columns_mapped, dtypes):
@@ -103,4 +106,4 @@ def test_read_crn_problems(testfile_problems, columns_mapped, dtypes):
         if _dtype is not None:
             expected[col] = expected[col].astype(_dtype)
     out = crn.read_crn(testfile_problems)
-    assert_frame_equal(out, expected)
+    pd.testing.assert_frame_equal(out, expected, atol=1e-5, rtol=1e-5)

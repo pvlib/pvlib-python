@@ -1,7 +1,7 @@
 import pandas as pd
 from datetime import datetime
 from pvlib.bifacial.pvfactors import pvfactors_timeseries
-from tests.conftest import requires_pvfactors, assert_series_equal
+from tests.conftest import requires_pvfactors
 import pytest
 
 
@@ -47,8 +47,16 @@ def test_pvfactors_timeseries_list(example_values):
     """Test basic pvfactors functionality with list inputs"""
     inputs, outputs = example_values
     ipoa_inc_front, ipoa_inc_back, _, _ = pvfactors_timeseries(**inputs)
-    assert_series_equal(ipoa_inc_front, outputs['expected_ipoa_front'])
-    assert_series_equal(ipoa_inc_back, outputs['expected_ipoa_back'])
+    pd.testing.assert_series_equal(
+        ipoa_inc_front,
+        outputs['expected_ipoa_front'],
+        atol=1e-5,
+        rtol=1e-5)
+    pd.testing.assert_series_equal(
+        ipoa_inc_back,
+        outputs['expected_ipoa_back'],
+        atol=1e-5,
+        rtol=1e-5)
 
 
 @requires_pvfactors
@@ -61,8 +69,16 @@ def test_pvfactors_timeseries_pandas(example_values):
         inputs[key] = pd.Series(inputs[key], index=inputs['timestamps'])
 
     ipoa_inc_front, ipoa_inc_back, _, _ = pvfactors_timeseries(**inputs)
-    assert_series_equal(ipoa_inc_front, outputs['expected_ipoa_front'])
-    assert_series_equal(ipoa_inc_back, outputs['expected_ipoa_back'])
+    pd.testing.assert_series_equal(
+        ipoa_inc_front,
+        outputs['expected_ipoa_front'],
+        atol=1e-5,
+        rtol=1e-5)
+    pd.testing.assert_series_equal(
+        ipoa_inc_back,
+        outputs['expected_ipoa_back'],
+        atol=1e-5,
+        rtol=1e-5)
 
 
 @requires_pvfactors
@@ -78,5 +94,13 @@ def test_pvfactors_scalar_orientation(example_values):
     outputs['expected_ipoa_back'].iloc[1] = 81.72135884745822
 
     ipoa_inc_front, ipoa_inc_back, _, _ = pvfactors_timeseries(**inputs)
-    assert_series_equal(ipoa_inc_front, outputs['expected_ipoa_front'])
-    assert_series_equal(ipoa_inc_back, outputs['expected_ipoa_back'])
+    pd.testing.assert_series_equal(
+        ipoa_inc_front,
+        outputs['expected_ipoa_front'],
+        atol=1e-5,
+        rtol=1e-5)
+    pd.testing.assert_series_equal(
+        ipoa_inc_back,
+        outputs['expected_ipoa_back'],
+        atol=1e-5,
+        rtol=1e-5)

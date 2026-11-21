@@ -24,6 +24,8 @@ Bug fixes
 * Document the URL default :py:func:`pvlib.iotools.get_acis_station_data` actually
   uses. Its docstring named the GridData endpoint; should be StnData.
   (:pull:`2950`)
+* Fix :py:func:`pvlib.inverter.sandia` for Series DC voltage with scalar
+  DC power, preserving the voltage index.
 
 Enhancements
 ~~~~~~~~~~~~
@@ -84,3 +86,4 @@ Contributors
 * :ghuser:`xiajiahang`
 * Jakub Krasuski (:ghuser:`Blizzeq`)
 * Dylan Pulver (:ghuser:`dylanpulver`)
+* :ghuser:`vera-rubin`

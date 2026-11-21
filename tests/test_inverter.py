@@ -56,6 +56,25 @@ def test_sandia(cec_inverter_parameters):
     assert_series_equal(pacs, pd.Series([-0.020000, 132.004308, 250.000000]))
 
 
+@pytest.mark.parametrize('index', [
+    pd.RangeIndex(3),
+    pd.date_range('2026-01-01', periods=3, freq='h'),
+])
+@pytest.mark.parametrize('p_dc, expected', [
+    (0., [-1., -1., -1.]),
+    (1000., [960.9108486129487, 958.2939459459459, 955.6909888646534]),
+    (6000., [5000., 5000., 5000.]),
+])
+def test_sandia_series_voltage_scalar_power(index, p_dc, expected):
+    parameters = dict(Paco=5000., Pdco=5200., Vdco=350., Pso=20., Pnt=1.,
+                      C0=-.000003, C1=.00005, C2=.0005, C3=.0002)
+    voltage = pd.Series([300., 350., 400.], index=index)
+
+    actual = inverter.sandia(voltage, p_dc, parameters)
+
+    assert_series_equal(actual, pd.Series(expected, index=index))
+
+
 def test_sandia_float(cec_inverter_parameters):
     vdcs = 25.
     idcs = 5.5

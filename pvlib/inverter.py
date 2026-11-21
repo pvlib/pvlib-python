@@ -42,6 +42,8 @@ def _sandia_limits(power_ac, p_dc, Paco, Pnt, Pso):
     power_ac = np.minimum(Paco, power_ac)
     min_ac_power = -1.0 * abs(Pnt)
     below_limit = p_dc < Pso
+    if np.isscalar(below_limit):
+        below_limit = np.full_like(power_ac, below_limit, dtype=bool)
     try:
         power_ac[below_limit] = min_ac_power
     except TypeError:  # power_ac is a float

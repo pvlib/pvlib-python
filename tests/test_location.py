@@ -162,28 +162,38 @@ def test_get_clearsky_ineichen_supply_linke(mocker):
 def test_get_clearsky_haurwitz(times):
     tus = Location(32.2, -111, 'US/Arizona', 700, 'Tucson')
     clearsky = tus.get_clearsky(times, model='haurwitz')
-    expected = pd.DataFrame(data=np.array(
-                            [[   0.        ],
-                             [ 242.30085588],
-                             [ 559.38247117],
-                             [ 384.6873791 ],
-                             [   0.        ]]),
-                            columns=['ghi'],
-                            index=times)
+    expected = pd.DataFrame(
+        data=np.array(
+            [
+                [0.0],
+                [242.30085588],
+                [559.38247117],
+                [384.6873791],
+                [0.0],
+            ]
+        ),
+        columns=['ghi'],
+        index=times,
+    )
     pd.testing.assert_frame_equal(expected, clearsky, atol=1e-5, rtol=1e-5)
 
 
 def test_get_clearsky_simplified_solis(times):
     tus = Location(32.2, -111, 'US/Arizona', 700, 'Tucson')
     clearsky = tus.get_clearsky(times, model='simplified_solis')
-    expected = pd.DataFrame(data=np.
-        array([[   0.        ,    0.        ,    0.        ],
-               [  70.00146271,  638.01145669,  236.71136245],
-               [ 101.69729217,  852.51950946,  577.1117803 ],
-               [  86.1679965 ,  755.98048017,  385.59586091],
-               [   0.        ,    0.        ,    0.        ]]),
-                            columns=['dhi', 'dni', 'ghi'],
-                            index=times)
+    expected = pd.DataFrame(
+        data=np.array(
+            [
+                [0.0, 0.0, 0.0],
+                [70.00146271, 638.01145669, 236.71136245],
+                [101.69729217, 852.51950946, 577.1117803],
+                [86.1679965, 755.98048017, 385.59586091],
+                [0.0, 0.0, 0.0],
+            ]
+        ),
+        columns=['dhi', 'dni', 'ghi'],
+        index=times,
+    )
     expected = expected[['ghi', 'dni', 'dhi']]
     pd.testing.assert_frame_equal(expected, clearsky, atol=1e-3, rtol=1e-3)
 
@@ -194,14 +204,19 @@ def test_get_clearsky_simplified_solis_apparent_elevation(times):
                       'apparent_zenith': pd.Series(10, index=times)}
     clearsky = tus.get_clearsky(times, model='simplified_solis',
                                 solar_position=solar_position)
-    expected = pd.DataFrame(data=np.
-        array([[  131.3124497 ,  1001.14754036,  1108.14147919],
-               [  131.3124497 ,  1001.14754036,  1108.14147919],
-               [  131.3124497 ,  1001.14754036,  1108.14147919],
-               [  131.3124497 ,  1001.14754036,  1108.14147919],
-               [  131.3124497 ,  1001.14754036,  1108.14147919]]),
-                            columns=['dhi', 'dni', 'ghi'],
-                            index=times)
+    expected = pd.DataFrame(
+        data=np.array(
+            [
+                [131.3124497, 1001.14754036, 1108.14147919],
+                [131.3124497, 1001.14754036, 1108.14147919],
+                [131.3124497, 1001.14754036, 1108.14147919],
+                [131.3124497, 1001.14754036, 1108.14147919],
+                [131.3124497, 1001.14754036, 1108.14147919],
+            ]
+        ),
+        columns=['dhi', 'dni', 'ghi'],
+        index=times,
+    )
     expected = expected[['ghi', 'dni', 'dhi']]
     pd.testing.assert_frame_equal(expected, clearsky, atol=1e-3, rtol=1e-3)
 
@@ -210,14 +225,19 @@ def test_get_clearsky_simplified_solis_dni_extra(times):
     tus = Location(32.2, -111, 'US/Arizona', 700, 'Tucson')
     clearsky = tus.get_clearsky(times, model='simplified_solis',
                                 dni_extra=1370)
-    expected = pd.DataFrame(data=np.
-        array([[   0.        ,    0.        ,    0.        ],
-               [  67.82281485,  618.15469596,  229.34422063],
-               [  98.53217848,  825.98663808,  559.15039353],
-               [  83.48619937,  732.45218243,  373.59500313],
-               [   0.        ,    0.        ,    0.        ]]),
-                            columns=['dhi', 'dni', 'ghi'],
-                            index=times)
+    expected = pd.DataFrame(
+        data=np.array(
+            [
+                [0.0, 0.0, 0.0],
+                [67.82281485, 618.15469596, 229.34422063],
+                [98.53217848, 825.98663808, 559.15039353],
+                [83.48619937, 732.45218243, 373.59500313],
+                [0.0, 0.0, 0.0],
+            ]
+        ),
+        columns=['dhi', 'dni', 'ghi'],
+        index=times,
+    )
     expected = expected[['ghi', 'dni', 'dhi']]
     pd.testing.assert_frame_equal(expected, clearsky, atol=1e-5, rtol=1e-5)
 
@@ -226,14 +246,19 @@ def test_get_clearsky_simplified_solis_pressure(times):
     tus = Location(32.2, -111, 'US/Arizona', 700, 'Tucson')
     clearsky = tus.get_clearsky(times, model='simplified_solis',
                                 pressure=95000)
-    expected = pd.DataFrame(data=np.
-        array([[   0.        ,    0.        ,    0.        ],
-               [  70.20556637,  635.53091983,  236.17716435],
-               [ 102.08954904,  850.49502085,  576.28465815],
-               [  86.46561686,  753.70744638,  384.90537859],
-               [   0.        ,    0.        ,    0.        ]]),
-                            columns=['dhi', 'dni', 'ghi'],
-                            index=times)
+    expected = pd.DataFrame(
+        data=np.array(
+            [
+                [0.0, 0.0, 0.0],
+                [70.20556637, 635.53091983, 236.17716435],
+                [102.08954904, 850.49502085, 576.28465815],
+                [86.46561686, 753.70744638, 384.90537859],
+                [0.0, 0.0, 0.0],
+            ]
+        ),
+        columns=['dhi', 'dni', 'ghi'],
+        index=times,
+    )
     expected = expected[['ghi', 'dni', 'dhi']]
     pd.testing.assert_frame_equal(expected, clearsky, atol=1e-3, rtol=1e-3)
 
@@ -242,14 +267,19 @@ def test_get_clearsky_simplified_solis_aod_pw(times):
     tus = Location(32.2, -111, 'US/Arizona', 700, 'Tucson')
     clearsky = tus.get_clearsky(times, model='simplified_solis',
                                 aod700=0.25, precipitable_water=2.)
-    expected = pd.DataFrame(data=np.
-        array([[   0.        ,    0.        ,    0.        ],
-               [  85.77821205,  374.58084365,  179.48483117],
-               [ 143.52743364,  625.91745295,  490.06254157],
-               [ 114.63275842,  506.52275195,  312.24711495],
-               [   0.        ,    0.        ,    0.        ]]),
-                            columns=['dhi', 'dni', 'ghi'],
-                            index=times)
+    expected = pd.DataFrame(
+        data=np.array(
+            [
+                [0.0, 0.0, 0.0],
+                [85.77821205, 374.58084365, 179.48483117],
+                [143.52743364, 625.91745295, 490.06254157],
+                [114.63275842, 506.52275195, 312.24711495],
+                [0.0, 0.0, 0.0],
+            ]
+        ),
+        columns=['dhi', 'dni', 'ghi'],
+        index=times,
+    )
     expected = expected[['ghi', 'dni', 'dhi']]
     pd.testing.assert_frame_equal(expected, clearsky, atol=1e-3, rtol=1e-3)
 

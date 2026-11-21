@@ -11,8 +11,6 @@ from pvlib.iotools import sodapro
 from tests.conftest import TESTS_DATA_DIR
 
 
-from pvlib._deprecation import pvlibDeprecationWarning
-
 testfile_mcclear_verbose = TESTS_DATA_DIR / 'cams_mcclear_1min_verbose.csv'
 testfile_mcclear_monthly = TESTS_DATA_DIR / 'cams_mcclear_monthly.csv'
 testfile_radiation_verbose = TESTS_DATA_DIR / 'cams_radiation_1min_verbose.csv'

@@ -57,7 +57,12 @@ def pvfactors_timeseries(
     albedo: float
         Ground albedo
     n_pvrows: int, default 3
-        Number of PV rows to consider in the PV array
+        Number of PV rows to consider in the PV array. The model treats rows
+        as infinite in length but finite in number, so a small ``n_pvrows``
+        produces edge effects, such as fully illuminated ground under the
+        array at low sun elevation, which cause morning and afternoon spikes
+        in rear irradiance. Increasing ``n_pvrows`` reduces these effects but
+        significantly increases runtime.
     index_observed_pvrow: int, default 1
         Index of the PV row whose incident irradiance will be returned. Indices
         of PV rows go from 0 to n_pvrows-1.

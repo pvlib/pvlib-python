@@ -22,7 +22,9 @@ Bug fixes
 * :py:func:`pvlib.scaling.wvm` no longer returns all NaNs when ``positions``
   contains a single site (:issue:`2895`, :pull:`2896`)
 * :py:func:`pvlib.iam.schlick_diffuse` no longer returns ``inf`` and ``nan``
-  for ``surface_tilt=180`` (:issue:`2939`)
+  for ``surface_tilt=180``, and is now accurate close to 0 and 180 degrees,
+  where the closed-form equations lose precision in floating point
+  (:issue:`2939`, :pull:`2942`)
 * Document the URL default :py:func:`pvlib.iotools.get_acis_station_data` actually
   uses. Its docstring named the GridData endpoint; should be StnData.
   (:pull:`2950`)

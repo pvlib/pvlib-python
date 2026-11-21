@@ -864,6 +864,28 @@ def schlick(aoi):
     return iam
 
 
+def _schlick_diffuse_sky(surface_tilt, down_angle):
+    # Eq 4 in [2] of schlick_diffuse; down_angle = 180 - surface_tilt is
+    # passed separately so that callers keep it exact near 0
+    cosB = cosd(surface_tilt)
+    sinB = sind(surface_tilt)
+    with np.errstate(divide='ignore', invalid='ignore'):
+        cuk = (2 / (np.pi * (1 + cosB))) * (
+            (30/7)*np.pi - (160/21)*np.radians(surface_tilt)
+            - (10/3)*np.pi*cosB + (160/21)*cosB*sinB
+            - (5/3)*np.pi*cosB*sinB**2 + (20/7)*cosB*sinB**3
+            - (5/16)*np.pi*cosB*sinB**4 + (16/105)*cosB*sinB**5
+        )
+    # Near 180 degrees the bracket cancels to about h**3 while 1 + cosB is
+    # about h**2 / 2 (h = down_angle in radians), so float64 rounding in the
+    # bracket dominates. Use the series of Eq 4 in h there instead; at
+    # 0.3 degrees its truncation error and the rounding in Eq 4 are both
+    # about 5e-9 relative.
+    h = np.radians(down_angle)
+    cuk_near_180 = h * (4800 - 2025*np.pi*h + 4048*h**2) / (540*np.pi)
+    return np.where(np.abs(down_angle) < 0.3, cuk_near_180, cuk)
+
+
 def schlick_diffuse(surface_tilt):
     r"""
     Determine the incidence angle modifiers (IAM) for sky diffuse and
@@ -948,24 +970,12 @@ def schlick_diffuse(surface_tilt):
     # weighting coefficient w set to 1.0 (so it is omitted)
 
     # relative transmittance of sky diffuse radiation by PV cover:
-    cosB = cosd(surface_tilt)
-    sinB = sind(surface_tilt)
-    with np.errstate(divide='ignore', invalid='ignore'):
-        cuk = (2 / (np.pi * (1 + cosB))) * (
-            (30/7)*np.pi - (160/21)*np.radians(surface_tilt)
-            - (10/3)*np.pi*cosB + (160/21)*cosB*sinB
-            - (5/3)*np.pi*cosB*sinB**2 + (20/7)*cosB*sinB**3
-            - (5/16)*np.pi*cosB*sinB**4 + (16/105)*cosB*sinB**5
-        )  # Eq 4 in [2]
+    cuk = _schlick_diffuse_sky(surface_tilt, 180 - surface_tilt)
 
-    # a surface facing straight down sees no sky (Eq 4 is 0/0 there)
-    cuk = np.where(np.abs(surface_tilt - 180) < 1e-3, 0, cuk)
-
-    # relative transmittance of ground-reflected radiation by PV cover:
-    with np.errstate(divide='ignore', invalid='ignore'):  # Eq 6 in [2]
-        cug = 40 / (21 * (1 - cosB)) - (1 + cosB) / (1 - cosB) * cuk
-
-    cug = np.where(surface_tilt < 1e-3, 0, cug)
+    # relative transmittance of ground-reflected radiation by PV cover.
+    # Eq 6 in [2] equals the sky term at 180 - surface_tilt; computing it
+    # that way avoids the cancellation in Eq 6 near 0 degrees.
+    cug = _schlick_diffuse_sky(180 - surface_tilt, surface_tilt)
 
     # respect input types:
     if np.isscalar(surface_tilt):

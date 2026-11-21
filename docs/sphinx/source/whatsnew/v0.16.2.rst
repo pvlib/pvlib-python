@@ -54,7 +54,7 @@ Documentation
   (:issue:`2897`, :pull:`2904`)
 * Document the effect of ``n_pvrows`` on edge effects and runtime in
   :py:func:`pvlib.bifacial.pvfactors.pvfactors_timeseries`.
-  (:issue:`1398`, :pull:`XXXX`)
+  (:issue:`1398`, :pull:`2954`)
 
 
 Testing

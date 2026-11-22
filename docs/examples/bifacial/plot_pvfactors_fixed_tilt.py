@@ -30,7 +30,7 @@ warnings.filterwarnings(action='ignore', module='pvfactors')
 # %%
 # First, generate the usual modeling inputs:
 
-times = pd.date_range('2021-06-21', '2021-06-22', freq='1T', tz='Etc/GMT+5')
+times = pd.date_range('2021-06-21', '2021-06-22', freq='1min', tz='Etc/GMT+5')
 loc = location.Location(latitude=40, longitude=-80, tz=times.tz)
 sp = loc.get_solarposition(times)
 cs = loc.get_clearsky(times)

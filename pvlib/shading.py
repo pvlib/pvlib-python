@@ -88,7 +88,7 @@ def masking_angle(surface_tilt, gcr, slant_height):
        :doi:`10.1016/0379-6787(84)90017-6`
     .. [2] Gilman, P. et al., (2018). "SAM Photovoltaic Model Technical
        Reference Update", NREL Technical Report NREL/TP-6A20-67399.
-       Available at https://www.nrel.gov/docs/fy18osti/67399.pdf
+       :doi:`10.2172/1429291`
     """
     # The original equation (8 in [1]) requires pitch and collector width,
     # but it's easy to non-dimensionalize it to make it a function of GCR
@@ -229,7 +229,7 @@ def sky_diffuse_passias(masking_angle):
        :doi:`10.1016/0379-6787(84)90017-6`
     .. [2] Gilman, P. et al., (2018). "SAM Photovoltaic Model Technical
        Reference Update", NREL Technical Report NREL/TP-6A20-67399.
-       Available at https://www.nrel.gov/docs/fy18osti/67399.pdf
+       :doi:`10.2172/1429291`
     """
     return 1 - cosd(masking_angle/2)**2
 
@@ -449,11 +449,11 @@ def shaded_fraction1d(
     Tilted row with a pitch of 3 m, a collector width of
     2 m, and row rotations of 30°. In the morning.
 
-    >>> shaded_fraction1d(solar_zenith=80, solar_azimuth=104.5,
+    >>> shaded_fraction1d(solar_zenith=80, solar_azimuth=135,
     ...     axis_azimuth=90, shaded_row_rotation=30, shading_row_rotation=30,
     ...     collector_width=2, pitch=3, axis_tilt=0,
     ...     surface_to_axis_offset=0.05, cross_axis_slope=0)
-    0.6827437712114521
+    0.47755694708090535
 
     **Fixed-tilt north-facing array on sloped terrain**
 
@@ -463,11 +463,11 @@ def shaded_fraction1d(
     10° slope, where their axis is on the most inclined
     direction (zero cross-axis slope). Shaded in the morning.
 
-    >>> shaded_fraction1d(solar_zenith=65, solar_azimuth=75.5,
+    >>> shaded_fraction1d(solar_zenith=80, solar_azimuth=75.5,
     ...     axis_azimuth=270, shaded_row_rotation=50, shading_row_rotation=30,
     ...     collector_width=2.5, pitch=4, axis_tilt=10,
     ...     surface_to_axis_offset=0.05, cross_axis_slope=0)
-    0.6975923460352351
+    0.793244836197256
 
     **N-S single-axis tracker on sloped terrain**
 
@@ -476,10 +476,10 @@ def shaded_fraction1d(
     in the morning. Terrain slope is 7° west-east (east-most
     tracker is higher than the west-most tracker).
 
-    >>> shaded_fraction1d(solar_zenith=50, solar_azimuth=90, axis_azimuth=180,
+    >>> shaded_fraction1d(solar_zenith=80, solar_azimuth=90, axis_azimuth=180,
     ...     shaded_row_rotation=-30, collector_width=1.4, pitch=3, axis_tilt=0,
     ...     surface_to_axis_offset=0.10, cross_axis_slope=7)
-    0.5828961460616938
+    0.8242176864434579
 
     Note the previous example only is valid for the shaded fraction of the
     west-most tracker in the morning, and assuming it is the
@@ -491,10 +491,10 @@ def shaded_fraction1d(
     tracker, you must input the corresponding ``shaded_row_rotation``
     in the afternoon.
 
-    >>> shaded_fraction1d(solar_zenith=50, solar_azimuth=270, axis_azimuth=180,
+    >>> shaded_fraction1d(solar_zenith=80, solar_azimuth=270, axis_azimuth=180,
     ...     shaded_row_rotation=30, collector_width=1.4, pitch=3, axis_tilt=0,
     ...     surface_to_axis_offset=0.10, cross_axis_slope=7)
-    0.4399034444363955
+    0.018002567182254348
 
     You must switch the input/output depending on the
     sign of the projected solar zenith angle. See

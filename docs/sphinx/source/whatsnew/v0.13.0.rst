@@ -1,0 +1,112 @@
+.. _whatsnew_01300:
+
+
+v0.13.0 (June 7, 2025)
+----------------------
+
+Breaking Changes
+~~~~~~~~~~~~~~~~
+* The functions :py:func:`~pvlib.iotools.read_pvgis_hourly` and
+  :py:func:`~pvlib.iotools.get_pvgis_hourly` now return ``(data,meta)``
+  following the iotools convention instead of ``(data,inputs,meta)``.
+  The ``inputs`` dictionary is now included in ``meta``, which
+  has changed structure to accommodate it. (:pull:`2462`)
+* The functions :py:func:`~pvlib.iotools.read_pvgis_tmy` and
+  :py:func:`~pvlib.iotools.get_pvgis_tmy` now return ``(data,meta)``
+  following the iotools convention instead of ``(data,months_selected,inputs,meta)``.
+  (:pull:`2470`)
+* :py:func:`~pvlib.iotools.get_pvgis_tmy` now defaults to ``coerce_year=1990``,
+  whereas the default behavior previously was to use the years of the selected
+  months for the TMY index. (:pull:`2474`)
+* Remove ``outputformat='basic'`` option in :py:func:`~pvlib.iotools.get_pvgis_tmy`.
+  (:pull:`2416`)
+
+Deprecations
+~~~~~~~~~~~~
+* The following ``parse_`` functions in :py:mod:`pvlib.iotools` are deprecated,
+  with the corresponding ``read_`` functions taking their place: (:issue:`2444`, :pull:`2458`,
+  :pull:`2467`, :pull:`2466`)
+
+  - :py:func:`~pvlib.iotools.parse_epw`
+  - :py:func:`!pvlib.iotools.parse_psm3`
+  - :py:func:`~pvlib.iotools.parse_cams`
+  - :py:func:`~pvlib.iotools.parse_bsrn`
+
+* The ``server`` parameter in :py:func:`~pvlib.iotools.get_cams` has been renamed
+  to ``url`` to be consistent with the other iotools.
+  :pull:`2463`
+* Rename parameter name ``g_poa_effective`` to ``effective_irradiance`` in
+  :py:func:`~pvlib.pvsystem.PVSystem.pvwatts_dc` and :py:func:`~pvlib.pvsystem.pvwatts_dc`.
+  (:issue:`1253`, :pull:`2235`)
+
+Bug fixes
+~~~~~~~~~
+* :py:func:`pvlib.iotools.get_pvgis_tmy` now returns the correct dtypes when
+  when ``outputformat='epw'``. (:issue:`2399`, :pull:`2417`)
+
+Enhancements
+~~~~~~~~~~~~
+* :py:mod:`pvlib.ivtools.sdm` is now a subpackage. (:issue:`2252`, :pull:`2256`)
+* Add a function for estimating PVsyst SDM parameters from IEC 61853-1 matrix
+  data (:py:func:`~pvlib.ivtools.sdm.fit_pvsyst_iec61853_sandia_2025`). (:issue:`2185`, :pull:`2429`)
+* The parameters for the Ix and Ixx points are now optional when using
+  :py:func:`pvlib.pvsystem.sapm` directly and through
+  :py:class:`~pvlib.pvsystem.PVSystem` and :py:class:`~pvlib.modelchain.ModelChain`.
+  (:issue:`2402`, :pull:`2433`)
+* Add optional arguments ``temperature_ref`` and ``irradiance_ref`` to
+  :py:func:`~pvlib.pvsystem.sapm` (:issue:`2432`, :pull:`2434`)
+* Add NREL NSRDB PSM v4 API client to :py:mod:`pvlib.iotools`. See
+  :py:func:`~pvlib.iotools.get_nsrdb_psm4_aggregated`,
+  :py:func:`~pvlib.iotools.get_nsrdb_psm4_tmy`,
+  :py:func:`~pvlib.iotools.get_nsrdb_psm4_conus`,
+  :py:func:`~pvlib.iotools.get_nsrdb_psm4_full_disc`, and
+  :py:func:`~pvlib.iotools.read_nsrdb_psm4`. (:issue:`2326`, :pull:`2378`, :pull:`2445`)
+* :py:mod:`pvlib.bifacial.infinite_sheds` no longer emits "invalid value" warnings
+  when supplying irradiance arrays with nighttime zero values. (:issue:`2450`, :pull:`2451`)
+* Add ``'semi_integrated'`` parameters for the PVsyst temperature model.
+  (:issue:`2330`, :pull:`2415`)
+
+Documentation
+~~~~~~~~~~~~~
+* Add a supporting reference to :py:func:`pvlib.atmosphere.get_relative_airmass` (:issue:`2390`, :pull:`2424`)
+* Document how ``np.nan`` values are handled by :py:func:`~pvlib.spectrum.average_photon_energy`
+  (:issue:`2423`, :pull:`2426`)
+* Clarify which SAPM coefficients are required by the ``module`` parameter in
+  :py:func:`~pvlib.pvsystem.sapm` (:issue:`2392`, :pull:`2435`)
+* Add gallery example on calculating irradiance at crop level for agriPV systems.
+  (:pull:`2459`)
+* Update references in :py:func:`~pvlib.irradiance.get_extra_radiation`
+  (:issue:`2333`, :pull:`2347`)
+* Update references in :py:func:`~pvlib.iotools.get_cams` and :py:func:`~pvlib.iotools.read_cams`
+  (:issue:`2427`, :pull:`2457`)
+* Fix ``Edit on GitHub`` links in stable documentation so they point to the tagged repository version matching the build environment (e.g., v0.12.0). (:issue:`2456`, :pull:`2460`)
+* Fix a minor issue with calculation of solar position in the OEDI 9068 gallery page. (:pull:`2468`)
+
+Requirements
+~~~~~~~~~~~~
+* ``wheel`` is no longer a build dependency. (:pull:`2439`)
+
+Maintenance
+~~~~~~~~~~~
+* Update ``pyproject.toml`` to replace deprecated license table and
+  classifiers. (:issue:`2440`, :pull:`2441`)
+
+Contributors
+~~~~~~~~~~~~
+* Cliff Hansen (:ghuser:`cwhanse`)
+* Rajiv Daxini (:ghuser:`RDaxini`)
+* Will Hobbs (:ghuser:`williamhobbs`)
+* Kevin Anderson (:ghuser:`kandersolar`)
+* Will Holmgren (:ghuser:`wholmgren`)
+* Muhammad Rebaal (:ghuser:`Muhammad-Rebaal`)
+* Echedey Luis (:ghuser:`echedey-ls`)
+* omahs (:ghuser:`omahs`)
+* Adam R. Jensen (:ghuser:`AdamRJensen`)
+* Marion Schroedter-Homscheidt (:ghuser:`mschroedter`)
+* Anton Driesse (:ghuser:`adriesse`)
+* Mark Mikofski (:ghuser:`mikofski`)
+* Ioannis Sifnaios (:ghuser:`IoannisSifnaios`)
+* Mark Campanelli (:ghuser:`markcampanelli`)
+* Paul Gilman (:ghuser:`cpaulgilman`)
+* Yu Xie (:ghuser:`xieyupku`)
+* Grant Buster (:ghuser:`grantbuster`)

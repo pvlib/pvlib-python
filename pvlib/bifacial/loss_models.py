@@ -115,8 +115,8 @@ def power_mismatch_deline(
 
     .. math::
 
-       RMAD(k \cdot X + c) = RMAD(X) \cdot k \frac{k \bar{X}}{k \bar{X} + c}
-       = RMAD(X) \cdot \frac{k}{1 + \frac{c}{k \bar{X}}}
+       RMAD(k \cdot X + c) = RMAD(X) \frac{k \bar{X}}{k \bar{X} + c}
+       = RMAD(X) \cdot \frac{1}{1 + \frac{c}{k \bar{X}}}
 
     by similarity with equation (2) of [1]_:
 
@@ -128,14 +128,14 @@ def power_mismatch_deline(
 
     .. math::
 
-       RMAD_{total} = RMAD_{rear} \frac{\phi_{Bifi}}
+       RMAD_{total} = RMAD_{rear} \frac{1}
        {1 + \frac{G_{front}}{\phi_{Bifi} \bar{G}_{rear}}}
 
     See Also
     --------
     `solarfactors <https://github.com/pvlib/solarfactors/>`_
         Calculate the irradiance at different points of the module.
-    `bifacial_radiance <https://github.com/NREL/bifacial_radiance>`_
+    `bifacial_radiance <https://github.com/NatLabRockies/bifacial_radiance>`_
         Calculate the irradiance at different points of the module.
 
     References

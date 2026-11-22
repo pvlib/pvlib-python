@@ -4,12 +4,10 @@ to calculate clear sky GHI, DNI, and DHI.
 """
 
 import os
-from collections import OrderedDict
 import calendar
 
 import numpy as np
 import pandas as pd
-from scipy.optimize import minimize_scalar
 from scipy.linalg import hankel
 import h5py
 
@@ -20,46 +18,46 @@ from pvlib.tools import _degrees_to_index
 def ineichen(apparent_zenith, airmass_absolute, linke_turbidity,
              altitude=0, dni_extra=1364., perez_enhancement=False):
     '''
-    Determine clear sky GHI, DNI, and DHI from Ineichen/Perez model.
+    Determine clear-sky GHI, DNI, and DHI using the Ineichen/Perez model.
 
-    Implements the Ineichen and Perez clear sky model for global
-    horizontal irradiance (GHI), direct normal irradiance (DNI), and
-    calculates the clear-sky diffuse horizontal (DHI) component as the
-    difference between GHI and DNI*cos(zenith) as presented in [1]_ [2]_. A
-    report on clear sky models found the Ineichen/Perez model to have
+    The Ineichen and Perez clear sky model [1]_ [2]_ estimates global
+    horizontal irradiance (GHI) and direct normal irradiance (DNI). Diffuse
+    horizontal irradiance (DHI) is then computed as DHI = GHI - DNI*cos(zenith)
+    Analysis of clear sky models found the Ineichen/Perez model to have
     excellent performance with a minimal input data set [3]_.
 
-    Default values for monthly Linke turbidity provided by SoDa [4]_, [5]_.
+    The Ineichen/Perez model requires Linke turbidity as input. Monthly
+    averages of gridded Linke turbidity (historical data from SoDa [4]_, [5]_)
+    are available using :py:func:`~pvlib.clearsky.lookup_linke_turbidity`.
 
     Parameters
     -----------
     apparent_zenith : numeric
-        Refraction corrected solar zenith angle in degrees.
+        Refraction-corrected solar zenith angle. [°]
 
     airmass_absolute : numeric
-        Pressure corrected airmass.
+        Pressure-corrected airmass. [unitless]
 
     linke_turbidity : numeric
-        Linke Turbidity.
+        Linke turbidity. [unitless]
 
     altitude : numeric, default 0
-        Altitude above sea level in meters.
+        Altitude above sea level. [m]
 
-    dni_extra : numeric, default 1364
-        Extraterrestrial irradiance. The units of ``dni_extra``
-        determine the units of the output.
+    dni_extra : numeric, default 1364 Wm⁻²
+        Extraterrestrial irradiance.
 
     perez_enhancement : bool, default False
-        Controls if the Perez enhancement factor should be applied.
-        Setting to True may produce spurious results for times when
+        If ``True``, the Perez enhancement factor is applied.
+        The Perez enhancement factor may produce spurious results when
         the Sun is near the horizon and the airmass is high.
         See https://github.com/pvlib/pvlib-python/issues/435
 
     Returns
     -------
-    clearsky : DataFrame (if Series input) or OrderedDict of arrays
-        DataFrame/OrderedDict contains the columns/keys
-        ``'dhi', 'dni', 'ghi'``.
+    clearsky : DataFrame (if Series input) or dict of arrays
+        Contains the columns/keys ``'dhi', 'dni', 'ghi'``, with the same
+        unit as the input parameter ``dni_extra``.
 
     See also
     --------
@@ -85,6 +83,11 @@ def ineichen(apparent_zenith, airmass_absolute, linke_turbidity,
 
     .. [5] J. Remund, et. al., "Worldwide Linke Turbidity Information", Proc.
        ISES Solar World Congress, June 2003. Goteborg, Sweden.
+
+    Examples
+    --------
+    See :ref:`Clearsky modeling examples <clearsky-examples>`
+
     '''  # noqa: E501
 
     # ghi is calculated using either the equations in [1] by setting
@@ -134,7 +137,7 @@ def ineichen(apparent_zenith, airmass_absolute, linke_turbidity,
 
     dhi = ghi - dni*cos_zenith
 
-    irrads = OrderedDict()
+    irrads = {}
     irrads['ghi'] = ghi
     irrads['dni'] = dni
     irrads['dhi'] = dhi
@@ -169,6 +172,13 @@ def lookup_linke_turbidity(time, latitude, longitude, filepath=None,
     Returns
     -------
     turbidity : Series
+
+    Notes
+    -----
+    Linke turbidity is obtained from a file of historical monthly averages.
+    The returned value for each time is either the monthly value or an
+    interpolated value to smooth the transition between months.
+    Interpolation is done on the day of year as determined by UTC.
     """
 
     # The .h5 file 'LinkeTurbidities.h5' contains a single 2160 x 4320 x 12
@@ -201,28 +211,12 @@ def lookup_linke_turbidity(time, latitude, longitude, filepath=None,
     if interp_turbidity:
         linke_turbidity = _interpolate_turbidity(lts, time)
     else:
-        months = time.month - 1
+        months = tools._pandas_to_utc(time).month - 1
         linke_turbidity = pd.Series(lts[months], index=time)
 
     linke_turbidity /= 20.
 
     return linke_turbidity
-
-
-def _is_leap_year(year):
-    """Determine if a year is leap year.
-
-    Parameters
-    ----------
-    year : numeric
-
-    Returns
-    -------
-    isleap : array of bools
-    """
-    isleap = ((np.mod(year, 4) == 0) &
-              ((np.mod(year, 100) != 0) | (np.mod(year, 400) == 0)))
-    return isleap
 
 
 def _interpolate_turbidity(lts, time):
@@ -247,14 +241,11 @@ def _interpolate_turbidity(lts, time):
     # Jan 1 - Jan 15 and Dec 16 - Dec 31.
     lts_concat = np.concatenate([[lts[-1]], lts, [lts[0]]])
 
-    # handle leap years
-    try:
-        isleap = time.is_leap_year
-    except AttributeError:
-        year = time.year
-        isleap = _is_leap_year(year)
+    time_utc = tools._pandas_to_utc(time)
 
-    dayofyear = time.dayofyear
+    isleap = time_utc.is_leap_year
+
+    dayofyear = time_utc.day_of_year
     days_leap = _calendar_month_middles(2016)
     days_no_leap = _calendar_month_middles(2015)
 
@@ -324,13 +315,13 @@ def haurwitz(apparent_zenith):
     '''
 
     cos_zenith = tools.cosd(apparent_zenith.values)
-    clearsky_ghi = np.zeros_like(apparent_zenith.values)
+    ghi_clear = np.zeros_like(apparent_zenith.values)
     cos_zen_gte_0 = cos_zenith > 0
-    clearsky_ghi[cos_zen_gte_0] = (1098.0 * cos_zenith[cos_zen_gte_0] *
-                                   np.exp(-0.059/cos_zenith[cos_zen_gte_0]))
+    ghi_clear[cos_zen_gte_0] = (1098.0 * cos_zenith[cos_zen_gte_0] *
+                                np.exp(-0.059/cos_zenith[cos_zen_gte_0]))
 
     df_out = pd.DataFrame(index=apparent_zenith.index,
-                          data=clearsky_ghi,
+                          data=ghi_clear,
                           columns=['ghi'])
 
     return df_out
@@ -371,8 +362,8 @@ def simplified_solis(apparent_elevation, aod700=0.1, precipitable_water=1.,
 
     Returns
     -------
-    clearsky : DataFrame (if Series input) or OrderedDict of arrays
-        DataFrame/OrderedDict contains the columns/keys
+    clearsky : DataFrame (if Series input) or dict of arrays
+        DataFrame/dict contains the columns/keys
         ``'dhi', 'dni', 'ghi'``.
 
     References
@@ -416,7 +407,7 @@ def simplified_solis(apparent_elevation, aod700=0.1, precipitable_water=1.,
     ghi = i0p * np.exp(-taug/sin_elev**g) * sin_elev
     dhi = i0p * np.exp(-taud/sin_elev**d)
 
-    irrads = OrderedDict()
+    irrads = {}
     irrads['ghi'] = ghi
     irrads['dni'] = dni
     irrads['dhi'] = dhi
@@ -680,22 +671,26 @@ def detect_clearsky(measured, clearsky, times=None, infer_limits=False,
                     var_diff=0.005, slope_dev=8, max_iterations=20,
                     return_components=False):
     """
-    Detects clear sky times according to the algorithm developed by Reno
-    and Hansen for GHI measurements. The algorithm [1]_ was designed and
-    validated for analyzing GHI time series only. Users may attempt to
-    apply it to other types of time series data using different filter
-    settings, but should be skeptical of the results.
+    Detects clear sky times using the algorithm developed by Reno
+    and Hansen.
 
-    The algorithm detects clear sky times by comparing statistics for a
+    The algorithm [1]_ was designed and
+    validated for analyzing GHI time series. Jordan and Hansen [2]_ extended
+    the algorithm to plane-of-array (POA) irradiance measurements.
+
+    The algorithm [1]_ detects clear sky times by comparing statistics for a
     measured time series and an expected clearsky time series.
     Statistics are calculated using a sliding time window (e.g., 10
     minutes). An iterative algorithm identifies clear periods, uses the
     identified periods to estimate bias in the clearsky data, scales the
     clearsky data and repeats.
 
-    Clear times are identified by meeting 5 criteria. Default values for
+    Clear times are identified by meeting five criteria. Default values for
     these thresholds are appropriate for 10 minute windows of 1 minute
-    GHI data.
+    GHI data. For data at longer intervals, it is recommended
+    to set ``infer_limits=True`` to use the thresholds from [2]_.
+
+    For POA data, ``clearsky`` must be on the same plane as ``measured``.
 
     Parameters
     ----------
@@ -710,8 +705,8 @@ def detect_clearsky(measured, clearsky, times=None, infer_limits=False,
         If True, does not use passed in kwargs (or defaults), but instead
         interpolates these values from Table 1 in [2]_.
     window_length : int, default 10
-        Length of sliding time window in minutes. Must be greater than 2
-        periods.
+        Length of sliding time window in minutes. Each window must contain at
+        least three data points.
     mean_diff : float, default 75
         Threshold value for agreement between mean values of measured
         and clearsky in each interval, see Eq. 6 in [1]. [W/m2]
@@ -720,8 +715,6 @@ def detect_clearsky(measured, clearsky, times=None, infer_limits=False,
         clearsky values in each interval, see Eq. 7 in [1]. [W/m2]
     lower_line_length : float, default -5
         Lower limit of line length criterion from Eq. 8 in [1].
-        Criterion satisfied when lower_line_length < line length difference
-        < upper_line_length.
     upper_line_length : float, default 10
         Upper limit of line length criterion from Eq. 8 in [1].
     var_diff : float, default 0.005
@@ -733,7 +726,7 @@ def detect_clearsky(measured, clearsky, times=None, infer_limits=False,
         change in successive values, see Eqs. 12 through 14 in [1].
     max_iterations : int, default 20
         Maximum number of times to apply a different scaling factor to
-        the clearsky and redetermine clear_samples. Must be 1 or larger.
+        the clearsky and redetermine ``clear_samples``. Must be 1 or larger.
     return_components : bool, default False
         Controls if additional output should be returned. See below.
 
@@ -743,21 +736,25 @@ def detect_clearsky(measured, clearsky, times=None, infer_limits=False,
         Boolean array or Series of whether or not the given time is
         clear. Return type is the same as the input type.
 
-    components : OrderedDict, optional
+    components : dict, optional
         Dict of arrays of whether or not the given time window is clear
-        for each condition. Only provided if return_components is True.
+        for each condition. Only provided if ``return_components`` is True.
 
     alpha : scalar, optional
-        Scaling factor applied to the clearsky_ghi to obtain the
-        detected clear_samples. Only provided if return_components is
+        Scaling factor applied to ``clearsky`` to obtain the
+        detected ``clear_samples``. Only provided if ``return_components`` is
         True.
 
     Raises
     ------
     ValueError
-        If measured is not a Series and times is not provided
+        If ``measured`` is not a Series and times is not provided.
+    ValueError
+        If a window contains less than three data points.
+    ValueError
+        If the measured data is not sufficient to fill a window.
     NotImplementedError
-        If timestamps are not equally spaced
+        If timestamps are not equally spaced.
 
     References
     ----------
@@ -811,13 +808,29 @@ def detect_clearsky(measured, clearsky, times=None, infer_limits=False,
 
     # if infer_limits, find threshold values using the sample interval
     if infer_limits:
-        window_length, mean_diff, max_diff, lower_line_length, \
-            upper_line_length, var_diff, slope_dev = \
-                _clearsky_get_threshold(sample_interval)
+        (
+            window_length,
+            mean_diff,
+            max_diff,
+            lower_line_length,
+            upper_line_length,
+            var_diff,
+            slope_dev,
+        ) = _clearsky_get_threshold(sample_interval)
 
         # recalculate samples_per_window using returned window_length
-        _, samples_per_window = \
-            tools._get_sample_intervals(times, window_length)
+        sample_interval, samples_per_window = tools._get_sample_intervals(
+            times, window_length
+        )
+
+    if samples_per_window < 3:
+        raise ValueError(
+            f"Samples per window of {samples_per_window}"
+            " found. Each window must contain at least 3 data"
+            " points."
+            f" Window length of {window_length} found. Increase"
+            f" window length to {3 * sample_interval} or longer."
+        )
 
     # check that we have enough data to produce a nonempty hankel matrix
     if len(times) < samples_per_window:
@@ -874,25 +887,11 @@ def detect_clearsky(measured, clearsky, times=None, infer_limits=False,
         clear_meas = meas[clear_samples]
         clear_clear = clear[clear_samples]
 
-        def rmse(alpha):
-            return np.sqrt(np.mean((clear_meas - alpha*clear_clear)**2))
-
-        optimize_result = minimize_scalar(rmse)
-        if not optimize_result.success:
-            try:
-                message = "Optimizer exited unsuccessfully: " \
-                           + optimize_result.message
-            except AttributeError:
-                message = "Optimizer exited unsuccessfully: \
-                           No message explaining the failure was returned. \
-                           If you would like to see this message, please \
-                           update your scipy version (try version 1.8.0 \
-                           or beyond)."
-            raise RuntimeError(message)
-
-        else:
-            alpha = optimize_result.x
-
+        # Compute arg min of MSE between model and observations
+        C = (clear_clear**2).sum()
+        if not (pd.isna(C) or C == 0):  # safety check
+            # only update alpha if C is strictly positive
+            alpha = (clear_meas * clear_clear).sum() / C
         if round(alpha*10000) == round(previous_alpha*10000):
             break
     else:
@@ -905,7 +904,7 @@ def detect_clearsky(measured, clearsky, times=None, infer_limits=False,
         clear_samples = pd.Series(clear_samples, index=times)
 
     if return_components:
-        components = OrderedDict()
+        components = {}
         components['mean_diff_flag'] = c1
         components['max_diff_flag'] = c2
         components['line_length_flag'] = c3
@@ -931,7 +930,7 @@ def bird(zenith, airmass_relative, aod380, aod500, precipitable_water,
     """
     Bird Simple Clear Sky Broadband Solar Radiation Model
 
-    Based on NREL Excel implementation by Daryl R. Myers [1, 2].
+    Based on NLR Excel implementation by Daryl R. Myers [1, 2].
 
     Bird and Hulstrom define the zenith as the "angle between a line to
     the sun and the local zenith". There is no distinction in the paper
@@ -941,8 +940,8 @@ def bird(zenith, airmass_relative, aod380, aod500, precipitable_water,
     zenith is never explicitly defined in the report, since the purpose
     was to compare existing clear sky models with "rigorous radiative
     transfer models" (RTM) it is possible that apparent zenith was
-    obtained as output from the RTM. However, the implentation presented
-    in PVLIB is tested against the NREL Excel implementation by Daryl
+    obtained as output from the RTM. However, the implementation presented
+    in PVLIB is tested against the NLR Excel implementation by Daryl
     Myers which uses an analytical expression for solar zenith instead
     of apparent zenith.
 
@@ -971,8 +970,8 @@ def bird(zenith, airmass_relative, aod380, aod500, precipitable_water,
 
     Returns
     -------
-    clearsky : DataFrame (if Series input) or OrderedDict of arrays
-        DataFrame/OrderedDict contains the columns/keys
+    clearsky : DataFrame (if Series input) or dict of arrays
+        DataFrame/dict contains the columns/keys
         ``'dhi', 'dni', 'ghi', 'direct_horizontal'`` in  [W/m^2].
 
     See also
@@ -990,13 +989,13 @@ def bird(zenith, airmass_relative, aod380, aod500, precipitable_water,
     .. [2] Daryl R. Myers, "Solar Radiation: Practical Modeling for Renewable
        Energy Applications", pp. 46-51 CRC Press (2013)
 
-    .. [3] `NREL Bird Clear Sky Model <http://rredc.nrel.gov/solar/models/
-       clearsky/>`_
+    .. [3] `Bird Clear Sky Model <http://www.nlr.gov/grid/solar-resource/
+       clearsky.html>`_
 
-    .. [4] `SERI/TR-642-761 <https://www.nrel.gov/docs/legosti/old/761.pdf>`_
+    .. [4] SERI/TR-642-761 :doi:`10.2172/6510849`
 
-    .. [5] `Error Reports <http://rredc.nrel.gov/solar/models/clearsky/
-       error_reports.html>`_
+    .. [5] `Error Reports <http://www.nlr.gov/grid/solar-resource/
+       clearsky-error-reports.html>`_
     """
     etr = dni_extra  # extraradiation
     ze_rad = np.deg2rad(zenith)  # zenith in radians
@@ -1039,8 +1038,8 @@ def bird(zenith, airmass_relative, aod380, aod500, precipitable_water,
     gh = (id_nh + ias) / (1.0 - albedo * rs)
     diffuse_horiz = gh - id_nh
     # TODO: be DRY, use decorator to wrap methods that need to return either
-    # OrderedDict or DataFrame instead of repeating this boilerplate code
-    irrads = OrderedDict()
+    # dict or DataFrame instead of repeating this boilerplate code
+    irrads = {}
     irrads['direct_horizontal'] = id_nh
     irrads['ghi'] = gh
     irrads['dni'] = id_

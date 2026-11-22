@@ -1,3 +1,5 @@
+.. py:module:: pvlib.irradiance
+
 .. currentmodule:: pvlib
 
 Irradiance
@@ -6,9 +8,10 @@ Irradiance
 .. toctree::
    :maxdepth: 2
 
-   class-methods
-   components
-   transposition
    decomposition
+   transposition
+   reverse-transposition
+   angle-of-incidence
    clearness-index
-   albedo
+   extraterrestrial-radiation
+   other

@@ -1,3 +1,7 @@
+.. py:module:: pvlib.bifacial.infinite_sheds
+.. py:module:: pvlib.bifacial.pvfactors
+.. py:module:: pvlib.bifacial.ants2d
+
 .. currentmodule:: pvlib
 
 Bifacial
@@ -11,6 +15,7 @@ Functions for calculating front and back surface irradiance
    bifacial.pvfactors.pvfactors_timeseries
    bifacial.infinite_sheds.get_irradiance
    bifacial.infinite_sheds.get_irradiance_poa
+   bifacial.ants2d.get_irradiance
 
 Loss models that are specific to bifacial PV systems
 
@@ -18,6 +23,9 @@ Loss models that are specific to bifacial PV systems
    :toctree: generated/
 
    bifacial.power_mismatch_deline
+
+.. py:module:: pvlib.bifacial.utils
+.. currentmodule:: pvlib
 
 Utility functions for bifacial modeling
 

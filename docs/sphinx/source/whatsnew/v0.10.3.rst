@@ -29,7 +29,7 @@ Bug fixes
 * Fixed CAMS error message handler in
   :py:func:`pvlib.iotools.get_cams`. (:issue:`1799`, :pull:`1905`)
 * Fix mapping of the dew point column to ``temp_dew`` when ``map_variables``
-  is True in :py:func:`pvlib.iotools.get_psm3`. (:pull:`1920`)
+  is True in :py:func:`!pvlib.iotools.get_psm3`. (:pull:`1920`)
 * Fix :py:class:`pvlib.modelchain.ModelChain` to use attribute `clearsky_model`.
   (:pull:`1924`)
 

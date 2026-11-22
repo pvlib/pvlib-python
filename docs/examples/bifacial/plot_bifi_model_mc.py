@@ -40,7 +40,7 @@ warnings.filterwarnings(action='ignore', module='pvfactors')
 # create site location and times characteristics
 lat, lon = 36.084, -79.817
 tz = 'Etc/GMT+5'
-times = pd.date_range('2021-06-21', '2021-6-22', freq='1T', tz=tz)
+times = pd.date_range('2021-06-21', '2021-6-22', freq='1min', tz=tz)
 
 # create site system characteristics
 axis_tilt = 0

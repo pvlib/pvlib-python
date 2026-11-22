@@ -6,6 +6,7 @@ This module contains the Location class.
 
 import pathlib
 import datetime
+import zoneinfo
 
 import pandas as pd
 import pytz
@@ -13,18 +14,20 @@ import h5py
 
 from pvlib import solarposition, clearsky, atmosphere, irradiance
 from pvlib.tools import _degrees_to_index
+from pvlib._deprecation import warn_deprecated
 
 
 class Location:
     """
     Location objects are convenient containers for latitude, longitude,
-    timezone, and altitude data associated with a particular
-    geographic location. You can also assign a name to a location object.
+    time zone, and altitude data associated with a particular geographic
+    location. You can also assign a name to a location object.
 
-    Location objects have two timezone attributes:
+    Location objects have a time-zone attribute ``tz`` (IANA timezone string).
 
-        * ``tz`` is a IANA timezone string.
-        * ``pytz`` is a pytz timezone object.
+    .. deprecated:: 0.15.2
+
+       The ``pytz`` attribute is deprecated. Use ``tz`` instead.
 
     Location objects support the print method.
 
@@ -38,12 +41,16 @@ class Location:
         Positive is east of the prime meridian.
         Use decimal degrees notation.
 
-    tz : str, int, float, or pytz.timezone, default 'UTC'.
-        See
-        http://en.wikipedia.org/wiki/List_of_tz_database_time_zones
-        for a list of valid time zones.
-        pytz.timezone objects will be converted to strings.
-        ints and floats must be in hours from UTC.
+    tz : time zone as str, int, float, or datetime.tzinfo, default 'UTC'.
+        See http://en.wikipedia.org/wiki/List_of_tz_database_time_zones for a
+        list of valid name strings. An ``int`` or ``float`` must be a
+        whole-number hour offsets from UTC that can be converted to the
+        IANA-supported 'Etc/GMT-N' format. (Note the limited range of the
+        offset N and its sign-change convention.) Time zones from the
+        ``zoneinfo`` packages may also be passed.
+
+        The `tz` attribute is represented as a valid IANA time zone name
+        string.
 
     altitude : float, optional
         Altitude from sea level in meters.
@@ -54,43 +61,89 @@ class Location:
     name : string, optional
         Sets the name attribute of the Location object.
 
+    Raises
+    ------
+    ValueError
+        when the time zone ``tz`` cannot be converted.
+
+    zoneinfo.ZoneInfoNotFoundError
+        when the time zone ``tz`` is not recognizable as an IANA time zone by
+        the ``zoneinfo.ZoneInfo`` initializer used for internal time-zone
+        representation.
+
     See also
     --------
     pvlib.pvsystem.PVSystem
     """
 
-    def __init__(self, latitude, longitude, tz='UTC', altitude=None,
-                 name=None):
-
+    def __init__(
+        self, latitude, longitude, tz='UTC', altitude=None, name=None
+    ):
         self.latitude = latitude
         self.longitude = longitude
-
-        if isinstance(tz, str):
-            self.tz = tz
-            self.pytz = pytz.timezone(tz)
-        elif isinstance(tz, datetime.timezone):
-            self.tz = 'UTC'
-            self.pytz = pytz.UTC
-        elif isinstance(tz, datetime.tzinfo):
-            self.tz = tz.zone
-            self.pytz = tz
-        elif isinstance(tz, (int, float)):
-            self.tz = tz
-            self.pytz = pytz.FixedOffset(tz*60)
-        else:
-            raise TypeError('Invalid tz specification')
+        self.tz = tz
 
         if altitude is None:
             altitude = lookup_altitude(latitude, longitude)
 
         self.altitude = altitude
-
         self.name = name
 
     def __repr__(self):
         attrs = ['name', 'latitude', 'longitude', 'altitude', 'tz']
+        # Use None as getattr default in case __repr__ is called during
+        # initialization before all attributes have been assigned.
         return ('Location: \n  ' + '\n  '.join(
-            f'{attr}: {getattr(self, attr)}' for attr in attrs))
+            f'{attr}: {getattr(self, attr, None)}' for attr in attrs))
+
+    @property
+    def tz(self):
+        """The location's IANA time-zone string."""
+        return str(self._zoneinfo)
+
+    @tz.setter
+    def tz(self, tz_):
+        # self._zoneinfo holds single source of time-zone truth as IANA name.
+        if isinstance(tz_, str):
+            self._zoneinfo = zoneinfo.ZoneInfo(tz_)
+        elif isinstance(tz_, int):
+            tz_str = f"Etc/GMT{-tz_:+d}"  # noqa: E231
+            self._zoneinfo = zoneinfo.ZoneInfo(tz_str)
+        elif isinstance(tz_, float):
+            if tz_ % 1 != 0:
+                raise TypeError(
+                    "Floating-point tz has non-zero fractional part: "
+                    f"{tz_}. Only whole-number offsets are supported."
+                )
+
+            tz_str = f"Etc/GMT{-int(tz_):+d}"  # noqa: E231
+            self._zoneinfo = zoneinfo.ZoneInfo(tz_str)
+        elif isinstance(tz_, datetime.tzinfo):
+            # Includes time zones generated by zoneinfo packages.
+            self._zoneinfo = zoneinfo.ZoneInfo(str(tz_))
+        else:
+            raise TypeError(
+                f"invalid tz specification: {tz_}, must be an IANA time zone "
+                "string, a whole-number int/float UTC offset, or a "
+                "datetime.tzinfo object (including subclasses)"
+            )
+
+    @property
+    def pytz(self):  # pragma: no cover
+        """The location's pytz time zone (read only).
+
+        .. deprecated:: 0.15.2
+            The ``pytz`` attribute is deprecated. Use the ``tz`` property
+            instead.
+        """
+        warn_deprecated(
+            since='0.15.2',
+            removal='0.17.0',
+            name='pytz',
+            obj_type='attribute',
+            alternative='tz',
+        )
+        return pytz.timezone(str(self._zoneinfo))
 
     @classmethod
     def from_tmy(cls, tmy_metadata, tmy_data=None, **kwargs):
@@ -328,7 +381,7 @@ class Location:
 
         return airmass
 
-    def get_sun_rise_set_transit(self, times, method='pyephem', **kwargs):
+    def get_sun_rise_set_transit(self, times, method='spa', **kwargs):
         """
         Calculate sunrise, sunset and transit times.
 
@@ -336,7 +389,7 @@ class Location:
         ----------
         times : DatetimeIndex
             Must be localized to the Location
-        method : str, default 'pyephem'
+        method : str, default 'spa'
             'pyephem', 'spa', or 'geometric'
 
         kwargs :

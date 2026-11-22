@@ -47,7 +47,7 @@ array.
 # described in Figure 1 (A), [1]_. We will cover this case for educational
 # purposes, although it can be achieved with the packages
 # `solarfactors <https://github.com/pvlib/solarfactors/>`_ and
-# `bifacial_radiance <https://github.com/NREL/bifacial_radiance>`_.
+# `bifacial_radiance <https://github.com/NatLabRockies/bifacial_radiance>`_.
 #
 # Here we set and plot the global irradiance level of each cell.
 

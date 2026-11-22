@@ -32,6 +32,8 @@ class SeasonalTiltMount(pvsystem.AbstractMount):
     surface_azimuth: float = 180.0
 
     def get_orientation(self, solar_zenith, solar_azimuth):
+        # note: determining tilt based on month may produce different
+        # results depending on the time zone of the timestamps
         tilts = [self.monthly_tilts[m-1] for m in solar_zenith.index.month]
         return pd.DataFrame({
             'surface_tilt': tilts,
@@ -94,6 +96,6 @@ results = pd.DataFrame({
     'Seasonal 20/40 Production': mc.results.ac,
     'Fixed 30 Production': mc2.results.ac,
 })
-results.resample('m').sum().plot()
+results.resample('ME').sum().plot()
 plt.ylabel('Monthly Production')
 plt.show()

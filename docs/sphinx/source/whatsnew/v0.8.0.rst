@@ -19,7 +19,7 @@ Breaking changes
 
 * :py:func:`pvlib.iotools.read_tmy3` can now only read local data files because
   the NREL RREDC server hosting the TMY3 dataset has been retired. For
-  fetching TMY data from NREL servers, :py:func:`pvlib.iotools.get_psm3` is
+  fetching TMY data from NREL servers, :py:func:`!pvlib.iotools.get_psm3` is
   now recommended to retrieve newer PSM3 data over the older TMY3 data.
   (:issue:`996`) (:pull:`1004`)
 

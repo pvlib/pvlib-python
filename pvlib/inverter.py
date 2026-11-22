@@ -114,10 +114,10 @@ def sandia(v_dc, p_dc, inverter):
     References
     ----------
     .. [1] D. King, S. Gonzalez, G. Galbraith, W. Boyson, "Performance Model
-       for Grid-Connected Photovoltaic Inverters", SAND2007-5036, Sandia
-       National Laboratories.
-
-    .. [2] System Advisor Model web page. https://sam.nrel.gov.
+       for Grid-Connected Photovoltaic Inverters", Sandia National
+       Laboratories, Albuquerque, N.M., USA, SAND2007-5036, Sept. 2007.
+       :doi:`10.2172/920449`
+    .. [2] System Advisor Model web page. https://sam.nlr.gov.
 
     See also
     --------
@@ -176,11 +176,13 @@ def sandia_multi(v_dc, p_dc, inverter):
     References
     ----------
     .. [1] D. King, S. Gonzalez, G. Galbraith, W. Boyson, "Performance Model
-       for Grid-Connected Photovoltaic Inverters", SAND2007-5036, Sandia
-       National Laboratories.
+       for Grid-Connected Photovoltaic Inverters", Sandia National
+       Laboratories, Albuquerque, N.M., USA, SAND2007-5036, Sept. 2007.
+       :doi:`10.2172/920449`
     .. [2] C. Hansen, J. Johnson, R. Darbali-Zamora, N. Gurule. "Modeling
        Efficiency Of Inverters With Multiple Inputs", 49th IEEE Photovoltaic
        Specialist Conference, Philadelphia, PA, USA. June 2022.
+       :doi:`10.1109/PVSC48317.2022.9938490`
 
     See also
     --------
@@ -272,6 +274,7 @@ def adr(v_dc, p_dc, inverter, vtol=0.10):
     .. [1] A. Driesse, "Beyond the Curves: Modeling the Electrical Efficiency
        of Photovoltaic Inverters", 33rd IEEE Photovoltaic Specialist
        Conference (PVSC), June 2008
+       :doi:`10.1109/PVSC.2008.4922827`
 
     See also
     --------
@@ -332,7 +335,7 @@ def adr(v_dc, p_dc, inverter, vtol=0.10):
 
 def pvwatts(pdc, pdc0, eta_inv_nom=0.96, eta_inv_ref=0.9637):
     r"""
-    NREL's PVWatts inverter model.
+    NLR's PVWatts inverter model.
 
     The PVWatts inverter model [1]_ calculates inverter efficiency :math:`\eta`
     as a function of input DC power :math:`P_{dc}`
@@ -385,8 +388,8 @@ def pvwatts(pdc, pdc0, eta_inv_nom=0.96, eta_inv_ref=0.9637):
 
     References
     ----------
-    .. [1] A. P. Dobos, "PVWatts Version 5 Manual,"
-       http://pvwatts.nrel.gov/downloads/pvwattsv5.pdf (2014).
+    .. [1] A. P. Dobos, "PVWatts Version 5 Manual", NREL, Golden, CO, USA,
+       Technical Report NREL/TP-6A20-62641, 2014, :doi:`10.2172/1158421`.
     """
 
     pac0 = eta_inv_nom * pdc0
@@ -411,7 +414,7 @@ def pvwatts(pdc, pdc0, eta_inv_nom=0.96, eta_inv_ref=0.9637):
 
 def pvwatts_multi(pdc, pdc0, eta_inv_nom=0.96, eta_inv_ref=0.9637):
     r"""
-    Extend NREL's PVWatts inverter model for multiple MPP inputs.
+    Extend NLR's PVWatts inverter model for multiple MPP inputs.
 
     DC input power is summed over MPP inputs to obtain the DC power
     input to the PVWatts inverter model. See :py:func:`pvlib.inverter.pvwatts`
@@ -487,8 +490,9 @@ def fit_sandia(ac_power, dc_power, dc_voltage, dc_voltage_level, p_ac_0, p_nt):
     References
     ----------
     .. [1] D. King, S. Gonzalez, G. Galbraith, W. Boyson, "Performance Model
-       for Grid-Connected Photovoltaic Inverters", SAND2007-5036, Sandia
-       National Laboratories.
+       for Grid-Connected Photovoltaic Inverters", Sandia National
+       Laboratories, Albuquerque, N.M., USA, SAND2007-5036, Sept. 2007.
+       :doi:`10.2172/920449`
     .. [2] Sandia Inverter Model page, PV Performance Modeling Collaborative
        https://pvpmc.sandia.gov/modeling-steps/dc-to-ac-conversion/sandia-inverter-model/
     .. [3] W. Bower, et al., "Performance Test Protocol for Evaluating

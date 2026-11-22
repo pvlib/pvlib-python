@@ -1,6 +1,6 @@
 """
 The ``bifacial.pvfactors`` module contains functions for modeling back surface
-plane-of-array irradiance using an external implementaton of the pvfactors
+plane-of-array irradiance using an external implementation of the pvfactors
 model (either ``solarfactors`` or the original ``pvfactors``).
 """
 

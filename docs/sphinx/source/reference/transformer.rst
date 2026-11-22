@@ -3,7 +3,7 @@
 Transformer losses
 ==================
 
-Methods to account for losses in transformers
+Functions to account for losses in transformers
 
 .. autosummary::
    :toctree: generated/

@@ -9,6 +9,8 @@ import warnings
 import io
 import os
 
+from pvlib.tools import _file_context_manager
+
 BSRN_FTP_URL = "ftp.bsrn.awi.de"
 
 BSRN_LR0100_COL_SPECS = [(0, 3), (4, 9), (10, 16), (16, 22), (22, 27),
@@ -39,10 +41,9 @@ BSRN_LR0300_COLUMNS = ['day', 'minute', 'gri', 'gri_std', 'gri_min', 'gri_max',
 BSRN_LR0500_COLUMNS = ['day', 'minute', 'uva_global', 'uva_global_std',
                        'uva_global_min', 'uva_global_max', 'uvb_direct',
                        'uvb_direct_std', 'uvb_direct_min', 'uvb_direct_max',
-                       'empty', 'empty', 'empty', 'empty',
+                       'empty', 'empty', 'empty', 'empty', 'empty', 'empty',
                        'uvb_global', 'uvb_global_std', 'uvb_global_min',
                        'uvb_global_max', 'uvb_diffuse', 'uvb_diffuse_std',
-                       'uvb_diffuse', 'uvb_diffuse_std',
                        'uvb_diffuse_min', 'uvb_diffuse_max',
                        'uvb_reflected', 'uvb_reflected_std',
                        'uvb_reflected_min', 'uvb_reflected_max']
@@ -109,7 +110,7 @@ def get_bsrn(station, start, end, username, password,
     UserWarning
         If one or more requested files are missing a UserWarning is returned
         with a list of the filenames missing. If no files match the specified
-        station and timeframe a seperate UserWarning is given.
+        station and timeframe a separate UserWarning is given.
 
     Notes
     -----
@@ -136,7 +137,7 @@ def get_bsrn(station, start, end, username, password,
 
     See Also
     --------
-    pvlib.iotools.read_bsrn, pvlib.iotools.parse_bsrn
+    pvlib.iotools.read_bsrn
 
     References
     ----------
@@ -145,9 +146,9 @@ def get_bsrn(station, start, end, username, password,
         <https://bsrn.awi.de/>`_
     .. [2] `BSRN Data Retrieval via FTP
        <https://bsrn.awi.de/data/data-retrieval-via-ftp/>`_
-    .. [4] `BSRN Data Release Guidelines
+    .. [3] `BSRN Data Release Guidelines
        <https://bsrn.awi.de/data/conditions-of-data-release/>`_
-    .. [3] `Update of the Technical Plan for BSRN Data Management, 2013,
+    .. [4] `Update of the Technical Plan for BSRN Data Management, 2013,
        Global Climate Observing System (GCOS) GCOS-174.
        <https://bsrn.awi.de/fileadmin/user_upload/bsrn.awi.de/Publications/gcos-174.pdf>`_
     """  # noqa: E501
@@ -159,8 +160,7 @@ def get_bsrn(station, start, end, username, password,
     end = pd.to_datetime(end)
 
     # Generate list files to download based on start/end (SSSMMYY.dat.gz)
-    filenames = pd.date_range(
-        start, end.replace(day=1) + pd.DateOffset(months=1), freq='1M')\
+    filenames = pd.date_range(start.date().replace(day=1), end, freq='1MS')\
         .strftime(f"{station}%m%y.dat.gz").tolist()
 
     # Create FTP connection
@@ -191,7 +191,7 @@ def get_bsrn(station, start, end, username, password,
                 bio.seek(0)  # reset buffer to start of file
                 gzip_file = io.TextIOWrapper(gzip.GzipFile(fileobj=bio),
                                              encoding='latin1')
-                dfi, metadata = parse_bsrn(gzip_file, logical_records)
+                dfi, metadata = _parse_bsrn(gzip_file, logical_records)
                 dfs.append(dfi)
             # FTP client raises an error if the file does not exist on server
             except ftplib.error_perm as e:
@@ -217,7 +217,7 @@ def get_bsrn(station, start, end, username, password,
     return data, metadata
 
 
-def parse_bsrn(fbuf, logical_records=('0100',)):
+def _parse_bsrn(fbuf, logical_records=('0100',)):
     """
     Parse a file-like buffer of a BSRN station-to-archive file.
 
@@ -320,7 +320,7 @@ def parse_bsrn(fbuf, logical_records=('0100',)):
         LR_0100 = LR_0100.reindex(sorted(LR_0100.columns), axis='columns')
         LR_0100.columns = BSRN_LR0100_COLUMNS
         # Set datetime index
-        LR_0100.index = (start_date+pd.to_timedelta(LR_0100['day']-1, unit='d')
+        LR_0100.index = (start_date+pd.to_timedelta(LR_0100['day']-1, unit='D')
                          + pd.to_timedelta(LR_0100['minute'], unit='minutes'))
         # Drop empty, minute, and day columns
         LR_0100 = LR_0100.drop(columns=['empty', 'day', 'minute'])
@@ -334,7 +334,7 @@ def parse_bsrn(fbuf, logical_records=('0100',)):
                               na_values=[-999.0, -99.9],
                               colspecs=BSRN_LR0300_COL_SPECS,
                               names=BSRN_LR0300_COLUMNS)
-        LR_0300.index = (start_date+pd.to_timedelta(LR_0300['day']-1, unit='d')
+        LR_0300.index = (start_date+pd.to_timedelta(LR_0300['day']-1, unit='D')
                          + pd.to_timedelta(LR_0300['minute'], unit='minutes'))
         LR_0300 = LR_0300.drop(columns=['day', 'minute']).astype(float)
         dfs.append(LR_0300)
@@ -351,13 +351,13 @@ def parse_bsrn(fbuf, logical_records=('0100',)):
         # Sort columns to match original order and assign column names
         LR_0500 = LR_0500.reindex(sorted(LR_0500.columns), axis='columns')
         LR_0500.columns = BSRN_LR0500_COLUMNS
-        LR_0500.index = (start_date+pd.to_timedelta(LR_0500['day']-1, unit='d')
+        LR_0500.index = (start_date+pd.to_timedelta(LR_0500['day']-1, unit='D')
                          + pd.to_timedelta(LR_0500['minute'], unit='minutes'))
         LR_0500 = LR_0500.drop(columns=['empty', 'day', 'minute'])
         dfs.append(LR_0500)
 
     if len(dfs):
-        data = pd.concat(dfs, axis='columns')
+        data = pd.concat(dfs, axis='columns', sort=False)
     else:
         data = _empty_dataframe_from_logical_records(logical_records)
         metadata = {}
@@ -377,12 +377,12 @@ def read_bsrn(filename, logical_records=('0100',)):
 
     BSRN files are freely available and can be accessed via FTP [3]_. The
     username and password for the BSRN FTP server can be obtained for free as
-    described in the BSRN's Data Release Guidelines [3]_.
+    described in the BSRN's Data Release Guidelines [4]_.
 
     Parameters
     ----------
     filename: str or path-like
-        Name or path of a BSRN station-to-archive data file
+        Name, path, or in-memory buffer of a BSRN station-to-archive data file
     logical_records: list or tuple, default: ('0100',)
         List of the logical records (LR) to parse. Options include: '0100',
         '0300', and '0500'.
@@ -439,7 +439,7 @@ def read_bsrn(filename, logical_records=('0100',)):
 
     See Also
     --------
-    pvlib.iotools.parse_bsrn, pvlib.iotools.get_bsrn
+    pvlib.iotools.get_bsrn
 
     References
     ----------
@@ -457,7 +457,7 @@ def read_bsrn(filename, logical_records=('0100',)):
     if str(filename).endswith('.gz'):  # check if file is a gzipped (.gz) file
         open_func, mode = gzip.open, 'rt'
     else:
-        open_func, mode = open, 'r'
+        open_func, mode = _file_context_manager, 'r'
     with open_func(filename, mode) as f:
-        content = parse_bsrn(f, logical_records)
+        content = _parse_bsrn(f, logical_records)
     return content

@@ -16,9 +16,11 @@ def hsu(rainfall, cleaning_threshold, surface_tilt, pm2_5, pm10,
     Calculates soiling ratio given particulate and rain data using the
     Fixed Velocity model from Humboldt State University (HSU).
 
-    The HSU soiling model [1]_ returns the soiling ratio, a value between zero
-    and one which is equivalent to (1 - transmission loss). Therefore a soiling
-    ratio of 1.0 is equivalent to zero transmission loss.
+    The HSU soiling model [1]_ returns the soiling ratio, a value between
+    zero and one which is equivalent to (1 - transmission loss).
+    Therefore a soiling ratio of 1.0 is equivalent to zero transmission loss.
+    Due to the mathematical form of the HSU model, the soiling ratio has a
+    minimum of approximately 0.6563. See ``Notes`` for details.
 
     Parameters
     ----------
@@ -53,6 +55,21 @@ def hsu(rainfall, cleaning_threshold, surface_tilt, pm2_5, pm10,
     -------
     soiling_ratio : Series
         Values between 0 and 1. Equal to 1 - transmission loss.
+
+    Notes
+    -------
+    Due to the mathematical form of the HSU model
+    (``SR = 1 - 0.3437 * erf(0.17 * ω^0.8473)``),
+    the soiling ratio has a minimum value of approximately 0.6563
+    (i.e., maximum transmission loss of ~34.37%), regardless of
+    the accumulated particulate mass. The HSU model is developed
+    (validated) for accumulated mass densities up to 10 g/m²,
+    corresponding to a soiling ratio of approximately 0.6875.
+    See [1]_ for details.
+
+    As recommended by [1]_, the default values of ``depo_veloc``
+    are the settling velocities of particulates, i.e., only the gravitational
+    movement of particles.
 
     References
     -----------
@@ -175,9 +192,9 @@ def kimber(rainfall, cleaning_threshold=6, soiling_loss_rate=0.0015,
     # convert grace_period to timedelta
     grace_period = datetime.timedelta(days=grace_period)
 
-    # get indices as numpy datetime64, calculate timestep as numpy timedelta64,
+    # get indices as np.datetime64 (UTC), calculate timestep as np.timedelta64,
     # and convert timestep to fraction of days
-    rain_index_vals = rainfall.index.values
+    rain_index_vals = rainfall.index.tz_convert(None).to_numpy()
     timestep_interval = (rain_index_vals[1] - rain_index_vals[0])
     day_fraction = timestep_interval / np.timedelta64(24, 'h')
 

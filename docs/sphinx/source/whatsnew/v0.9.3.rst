@@ -14,7 +14,7 @@ Enhancements
   (:issue:`1516`, :pull:`1518`)
 * New module to calculate spectral mismatch from field spectral measurements
   :py:func:`~pvlib.spectrum.get_example_spectral_response`
-  :py:func:`~pvlib.spectrum.get_am15g`
+  :py:func:`!pvlib.spectrum.get_am15g`
   :py:func:`~pvlib.spectrum.calc_spectral_mismatch_field`
   (:issue:`1523`, :pull:`1524`)
 * Added Townsend-Powers monthly snow loss model:

@@ -100,7 +100,7 @@ fig, ax = plt.subplots()
 for cross_axis_tilt in [0, 5, 10]:
     tracker_data = tracking.singleaxis(
         apparent_zenith=solpos['apparent_zenith'],
-        apparent_azimuth=solpos['azimuth'],
+        solar_azimuth=solpos['azimuth'],
         axis_tilt=0,  # flat because the axis is perpendicular to the slope
         axis_azimuth=180,  # N-S axis, azimuth facing south
         max_angle=90,
@@ -156,7 +156,7 @@ print('Cross-axis tilt:', '{:0.01f}°'.format(cross_axis_tilt))
 
 tracker_data = tracking.singleaxis(
     apparent_zenith=solpos['apparent_zenith'],
-    apparent_azimuth=solpos['azimuth'],
+    solar_azimuth=solpos['azimuth'],
     axis_tilt=axis_tilt,  # no longer flat because the terrain imparts a tilt
     axis_azimuth=axis_azimuth,
     max_angle=90,

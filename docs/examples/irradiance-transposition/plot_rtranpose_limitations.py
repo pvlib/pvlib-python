@@ -28,7 +28,7 @@ Author: Anton Driesse
 #
 # In this example we look at a single point in time and consider a full range
 # of possible GHI and POA global values as shown in figures 3 and 4 of [1]_.
-# Then we use :py:meth:`pvlib.irradiance.ghi_from_poa_driesse_2023` to estimate
+# Then we use :py:meth:`pvlib.irradiance.ghi_from_poa_driesse_2024` to estimate
 # the original GHI from POA global.
 #
 # References
@@ -45,7 +45,7 @@ import matplotlib.pyplot as plt
 
 from pvlib.irradiance import (erbs_driesse,
                               get_total_irradiance,
-                              ghi_from_poa_driesse_2023,
+                              ghi_from_poa_driesse_2024,
                               )
 
 matplotlib.rcParams['axes.grid'] = True
@@ -92,7 +92,7 @@ poa_global = irrads['poa_global']
 
 poa_test = 200
 
-ghi_hat = ghi_from_poa_driesse_2023(surface_tilt, surface_azimuth,
+ghi_hat = ghi_from_poa_driesse_2024(surface_tilt, surface_azimuth,
                                     solar_zenith, solar_azimuth,
                                     poa_test,
                                     dni_extra,
@@ -156,7 +156,7 @@ poa_global = irrads['poa_global']
 # out, other times not.
 #
 
-result = ghi_from_poa_driesse_2023(surface_tilt, surface_azimuth,
+result = ghi_from_poa_driesse_2024(surface_tilt, surface_azimuth,
                                    solar_zenith, solar_azimuth,
                                    poa_global,
                                    dni_extra,

@@ -5,10 +5,13 @@
 # Required
 version: 2
 
+sphinx:
+    configuration: docs/sphinx/source/conf.py
+
 build:
    os: ubuntu-lts-latest
    tools:
-     python: "3.11"
+     python: "3.12"
    jobs:
      # fetch the full history so that setuptools_scm can determine the
      # correct version string for long PRs with many commits

@@ -4,26 +4,28 @@ Functions for the infinite sheds bifacial irradiance model.
 
 import numpy as np
 import pandas as pd
-from pvlib.tools import cosd, sind, tand
+from pvlib.tools import cosd, sind, tand, atand
 from pvlib.bifacial import utils
 from pvlib.irradiance import beam_component, aoi, haydavies
 
 
-def _poa_ground_shadows(poa_ground, f_gnd_beam, df, vf_gnd_sky):
+def _poa_ground_shadows(ghi, dhi, albedo, f_gnd_beam, vf_gnd_sky):
     """
     Reduce ground-reflected irradiance to the tilted plane (poa_ground) to
     account for shadows on the ground.
 
     Parameters
     ----------
-    poa_ground : numeric
-        Ground reflected irradiance on the tilted surface, assuming full GHI
-        illumination on all of the ground. [W/m^2]
+    ghi : numeric
+        Global horizontal irradiance, with no adjustments. [W/m^2]
+    dhi : numeric
+        Diffuse horizontal irradiance, with no adjustments. [W/m^2]
+    albedo : numeric
+        Ground albedo, the ratio of reflected to incident irradiance of the
+        ground surface. [W/m^2]
     f_gnd_beam : numeric
         Fraction of the distance between rows that is illuminated (unshaded).
         [unitless]
-    df : numeric
-        Diffuse fraction, the ratio of DHI to GHI. [unitless]
     vf_gnd_sky : numeric
         View factor from the ground to the sky, integrated along the distance
         between rows. [unitless]
@@ -35,26 +37,13 @@ def _poa_ground_shadows(poa_ground, f_gnd_beam, df, vf_gnd_sky):
         ground. [W/m^2]
 
     """
-    return poa_ground * (f_gnd_beam*(1 - df) + df*vf_gnd_sky)
+    return albedo * (f_gnd_beam * (ghi - dhi) + vf_gnd_sky * dhi)
 
 
 def _poa_sky_diffuse_pv(dhi, gcr, surface_tilt):
     r"""
     Integrated view factors from the shaded and unshaded parts of
     the row slant height to the sky.
-
-    Parameters
-    ----------
-    f_x : numeric
-        Fraction of row slant height from the bottom that is shaded from
-        direct irradiance. [unitless]
-    surface_tilt : numeric
-        Surface tilt angle in degrees from horizontal, e.g., surface facing up
-        = 0, surface facing horizon = 90. [degree]
-    gcr : float
-        Ratio of row slant length to row spacing (pitch). [unitless]
-    npoints : int, default 100
-        Number of points for integration. [unitless]
 
     A detailed calculation would be
 
@@ -71,9 +60,6 @@ def _poa_sky_diffuse_pv(dhi, gcr, surface_tilt):
 
     Parameters
     ----------
-    f_x : numeric
-        Fraction of row slant height from the bottom that is shaded from
-        direct irradiance. [unitless]
     dhi : numeric
         Diffuse horizontal irradiance (DHI). [W/m^2]
     gcr : float
@@ -88,7 +74,7 @@ def _poa_sky_diffuse_pv(dhi, gcr, surface_tilt):
     poa_sky_diffuse_pv : numeric
         Total sky diffuse irradiance incident on the PV surface. [W/m^2]
     """
-    vf_integ = utils.vf_row_sky_2d_integ(surface_tilt, gcr, 0., 1.)
+    vf_integ = utils.vf_row_sky_2d_integ(surface_tilt, gcr, x0=0., x1=1.)
     return dhi * vf_integ
 
 
@@ -115,7 +101,8 @@ def _poa_ground_pv(poa_ground, gcr, surface_tilt):
     numeric
         Ground diffuse irradiance on the row plane. [W/m^2]
     """
-    vf_integ = utils.vf_row_ground_2d_integ(surface_tilt, gcr, 0., 1.)
+    vf_integ = utils.vf_row_ground_2d_integ(surface_tilt, gcr, x0=0., x1=1.,
+                                            g0=0., g1=1.)
     return poa_ground * vf_integ
 
 
@@ -164,7 +151,7 @@ def _shaded_fraction(solar_zenith, solar_azimuth, surface_tilt,
        :doi:`10.1109/PVSC40753.2019.8980572`.
     .. [2] Kevin Anderson and Mark Mikofski, "Slope-Aware Backtracking for
        Single-Axis Trackers", Technical Report NREL/TP-5K00-76626, July 2020.
-       https://www.nrel.gov/docs/fy20osti/76626.pdf
+       :doi:`10.2172/1660126`
     """
     tan_phi = utils._solar_projection_tangent(
         solar_zenith, solar_azimuth, surface_azimuth)
@@ -182,7 +169,7 @@ def _shaded_fraction(solar_zenith, solar_azimuth, surface_tilt,
 def get_irradiance_poa(surface_tilt, surface_azimuth, solar_zenith,
                        solar_azimuth, gcr, height, pitch, ghi, dhi, dni,
                        albedo, model='isotropic', dni_extra=None, iam=1.0,
-                       npoints=100, vectorize=False):
+                       npoints=None, vectorize=None):
     r"""
     Calculate plane-of-array (POA) irradiance on one side of a row of modules.
 
@@ -249,19 +236,31 @@ def get_irradiance_poa(surface_tilt, surface_azimuth, solar_zenith,
         Incidence angle modifier, the fraction of direct irradiance incident
         on the surface that is not reflected away. [unitless]
 
-    npoints : int, default 100
+    npoints : int, optional
         Number of discretization points for calculating integrated view
         factors.
 
-    vectorize : bool, default False
+        .. deprecated:: 0.16.0
+           Integrated view factors are now calculated analytically, so
+           this parameter now has no effect and will be removed in the
+           future.
+
+    vectorize : bool, optional
         If True, vectorize the view factor calculation across ``surface_tilt``.
         This increases speed with the cost of increased memory usage.
+
+        .. deprecated:: 0.16.0
+           Integrated view factors are now calculated more efficiently, so
+           there is no need to disable vectorization to save memory.
+           This parameter now has no effect and will be removed in the
+           future.
 
     Returns
     -------
     output : dict or DataFrame
-        Output is a DataFrame when input ghi is a Series. See Notes for
-        descriptions of content.
+        Output is a ``pandas.DataFrame`` when ``ghi`` is a Series.
+        Otherwise it is a dict of ``numpy.ndarray``
+        See Notes for descriptions of content.
 
     Notes
     -----
@@ -298,7 +297,8 @@ def get_irradiance_poa(surface_tilt, surface_azimuth, solar_zenith,
         sky_diffuse_comps_horizontal = haydavies(0, 180, dhi, dni, dni_extra,
                                                  solar_zenith, solar_azimuth,
                                                  return_components=True)
-        circumsolar_horizontal = sky_diffuse_comps_horizontal['circumsolar']
+        circumsolar_horizontal = \
+            sky_diffuse_comps_horizontal['poa_circumsolar']
 
         # Call haydavies a second time where circumsolar_normal is facing
         # directly towards sun, and can be added to DNI
@@ -306,7 +306,7 @@ def get_irradiance_poa(surface_tilt, surface_azimuth, solar_zenith,
                                              dni, dni_extra, solar_zenith,
                                              solar_azimuth,
                                              return_components=True)
-        circumsolar_normal = sky_diffuse_comps_normal['circumsolar']
+        circumsolar_normal = sky_diffuse_comps_normal['poa_circumsolar']
 
         dhi = dhi - circumsolar_horizontal
         dni = dni + circumsolar_normal
@@ -318,15 +318,18 @@ def get_irradiance_poa(surface_tilt, surface_azimuth, solar_zenith,
     max_rows = np.ceil(height / (pitch * tand(5)))
     # fraction of ground between rows that is illuminated accounting for
     # shade from panels. [1], Eq. 4
-    f_gnd_beam = utils._unshaded_ground_fraction(
-        surface_tilt, surface_azimuth, solar_zenith, solar_azimuth, gcr)
+    tanphi = utils._solar_projection_tangent(solar_zenith, solar_azimuth,
+                                             surface_azimuth)
+    phi = atand(tanphi)
+    f_gnd_beam = utils._unshaded_ground_fraction(surface_tilt, phi, gcr)
+
     # integrated view factor from the ground to the sky, integrated between
     # adjacent rows interior to the array
     # method differs from [1], Eq. 7 and Eq. 8; height is defined at row
     # center rather than at row lower edge as in [1].
     vf_gnd_sky = utils.vf_ground_sky_2d_integ(
-        surface_tilt, gcr, height, pitch, max_rows, npoints,
-        vectorize)
+        surface_tilt, gcr, height, pitch, g0=0, g1=1, max_rows=max_rows,
+        npoints=npoints, vectorize=vectorize)
     # fraction of row slant height that is shaded from direct irradiance
     f_x = _shaded_fraction(solar_zenith, solar_azimuth, surface_tilt,
                            surface_azimuth, gcr)
@@ -338,18 +341,11 @@ def get_irradiance_poa(surface_tilt, surface_azimuth, solar_zenith,
     # and restricted views
     # this is a deviation from [1], because the row to ground view factor
     # is accounted for in a different manner
-    ground_diffuse = ghi * albedo
-
-    # diffuse fraction
-    diffuse_fraction = np.clip(dhi / ghi, 0., 1.)
-    # make diffuse fraction 0 when ghi is small
-    diffuse_fraction = np.where(ghi < 0.0001, 0., diffuse_fraction)
-
     # Reduce ground-reflected irradiance because other rows in the array
     # block irradiance from reaching the ground.
     # [2], Eq. 9
-    ground_diffuse = _poa_ground_shadows(
-        ground_diffuse, f_gnd_beam, diffuse_fraction, vf_gnd_sky)
+    ground_diffuse = _poa_ground_shadows(ghi, dhi, albedo, f_gnd_beam,
+                                         vf_gnd_sky)
 
     # Ground-reflected irradiance on the row surface accounting for
     # the view to the ground. This deviates from [1], Eq. 10, 11 and
@@ -372,7 +368,7 @@ def get_irradiance_poa(surface_tilt, surface_azimuth, solar_zenith,
         'poa_global': poa_global, 'poa_direct': poa_direct,
         'poa_diffuse': poa_diffuse, 'poa_ground_diffuse': poa_gnd_pv,
         'poa_sky_diffuse': poa_sky_pv, 'shaded_fraction': f_x}
-    if isinstance(poa_global, pd.Series):
+    if isinstance(ghi, pd.Series):
         output = pd.DataFrame(output)
     return output
 
@@ -381,7 +377,7 @@ def get_irradiance(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
                    gcr, height, pitch, ghi, dhi, dni,
                    albedo, model='isotropic', dni_extra=None, iam_front=1.0,
                    iam_back=1.0, bifaciality=0.8, shade_factor=-0.02,
-                   transmission_factor=0, npoints=100, vectorize=False):
+                   transmission_factor=0, npoints=None, vectorize=None):
     """
     Get front and rear irradiance using the infinite sheds model.
 
@@ -471,13 +467,25 @@ def get_irradiance(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
         module's cells due to module features such as busbars, junction box,
         etc. A negative value is a reduction in back irradiance. [unitless]
 
-    npoints : int, default 100
+    npoints : int, optional
         Number of discretization points for calculating integrated view
         factors.
 
-    vectorize : bool, default False
+        .. deprecated:: 0.16.0
+
+           This parameter has no effect; integrated view factors are now
+           calculated exactly instead of with discretized approximations.
+           This parameter will be removed in the future.
+
+    vectorize : bool, optional
         If True, vectorize the view factor calculation across ``surface_tilt``.
         This increases speed with the cost of increased memory usage.
+
+        .. deprecated:: 0.16.0
+
+           This parameter has no effect; calculations are now vectorized
+           with no memory usage penality.
+           This parameter will be removed in the future.
 
     Returns
     -------

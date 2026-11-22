@@ -18,8 +18,8 @@ Deprecations
 
 Enhancements
 ~~~~~~~~~~~~
-* Added ``map_variables`` option to :py:func:`pvlib.iotools.get_psm3` and
-  :py:func:`pvlib.iotools.read_psm3` (:pull:`1374`)
+* Added ``map_variables`` option to :py:func:`!pvlib.iotools.get_psm3` and
+  :py:func:`!pvlib.iotools.read_psm3` (:pull:`1374`)
 * Added ``pvlib.bifacial.infinite_sheds``, containing a model for irradiance
   on front and back surfaces of bifacial arrays. (:pull:`717`)
 * Added ``map_variables`` option to :func:`~pvlib.iotools.read_crn` (:pull:`1368`)

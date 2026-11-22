@@ -6,6 +6,8 @@ import io
 from urllib.request import urlopen, Request
 import pandas as pd
 
+from pvlib.tools import _file_context_manager
+
 
 def read_epw(filename, coerce_year=None):
     r'''
@@ -23,7 +25,8 @@ def read_epw(filename, coerce_year=None):
     Parameters
     ----------
     filename : String
-        Can be a relative file path, absolute file path, or url.
+        Can be a relative file path, absolute file path, url, or in-memory
+        file buffer.
 
     coerce_year : int, optional
         If supplied, the year of the data will be set to this value. This can
@@ -42,10 +45,6 @@ def read_epw(filename, coerce_year=None):
 
     metadata : dict
         The site metadata available in the file.
-
-    See Also
-    --------
-    pvlib.iotools.parse_epw
 
     Notes
     -----
@@ -214,7 +213,7 @@ def read_epw(filename, coerce_year=None):
     ----------
 
     .. [1] `EnergyPlus documentation, Auxiliary Programs
-       <https://energyplus.net/documentation>`_
+       <https://energyplus.readthedocs.io/en/latest/>`_
     '''
 
     if str(filename).startswith('http'):
@@ -226,18 +225,17 @@ def read_epw(filename, coerce_year=None):
             'Safari/537.36')})
         response = urlopen(request)
         with io.StringIO(response.read().decode(errors='ignore')) as csvdata:
-            data, meta = parse_epw(csvdata, coerce_year)
+            data, meta = _parse_epw(csvdata, coerce_year)
 
     else:
-        # Assume it's accessible via the file system
-        with open(str(filename), 'r') as csvdata:
-            data, meta = parse_epw(csvdata, coerce_year)
-
+        # Assume it's a buffer or accessible via the file system
+        with _file_context_manager(filename, 'r') as csvdata:
+            data, meta = _parse_epw(csvdata, coerce_year)
 
     return data, meta
 
 
-def parse_epw(csvdata, coerce_year=None):
+def _parse_epw(csvdata, coerce_year=None):
     """
     Given a file-like buffer with data in Energy Plus Weather (EPW) format,
     parse the data into a dataframe.
@@ -260,7 +258,7 @@ def parse_epw(csvdata, coerce_year=None):
         A pandas dataframe with the columns described in the table
         below. For more detailed descriptions of each component, please
         consult the EnergyPlus Auxiliary Programs documentation
-        available at: https://energyplus.net/documentation.
+        available at: https://energyplus.readthedocs.io/en/latest/.
 
     metadata : dict
         The site metadata available in the file.

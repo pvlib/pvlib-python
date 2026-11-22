@@ -13,13 +13,6 @@ Recreating Figure 5-1A from the SPECTRL2 NREL Technical Report.
 # This example recreates an example figure from the SPECTRL2 NREL Technical
 # Report [1]_. The figure shows modeled spectra at hourly intervals across
 # a single morning.
-#
-# References
-# ----------
-# .. [1] Bird, R, and Riordan, C., 1984, "Simple solar spectral model for
-#    direct and diffuse irradiance on horizontal and tilted planes at the
-#    earth's surface for cloudless atmospheres", NREL Technical Report
-#    TR-215-2436 doi:10.2172/5986936.
 
 # %%
 # The SPECTRL2 model has several inputs; some can be calculated with pvlib,
@@ -53,9 +46,10 @@ relative_airmass = atmosphere.get_relative_airmass(solpos.apparent_zenith,
 
 # %%
 # With all the necessary inputs in hand we can model spectral irradiance using
-# :py:func:`pvlib.spectrum.spectrl2`.  Note that because we are calculating
-# the spectra for more than one set of conditions, we will get back 2-D
-# arrays (one dimension for wavelength, one for time).
+# :py:func:`pvlib.spectrum.spectrl2`. Note that because we are calculating
+# the spectra for more than one set of conditions, the spectral irradiance
+# components will be returned in a dictionary as 2-D arrays, with one dimension
+# for wavelength and one for time.
 
 spectra = spectrum.spectrl2(
     apparent_zenith=solpos.apparent_zenith,
@@ -95,3 +89,11 @@ plt.show()
 # position and the solar position calculation in the technical report does not
 # exactly match the one used here.  However, the differences are minor enough
 # to not materially change the spectra.
+
+# %%
+# References
+# ----------
+# .. [1] Bird, R, and Riordan, C., 1984, "Simple solar spectral model for
+#    direct and diffuse irradiance on horizontal and tilted planes at the
+#    earth's surface for cloudless atmospheres", NREL Technical Report
+#    TR-215-2436 :doi:`10.2172/5986936`

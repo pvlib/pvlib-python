@@ -2,11 +2,15 @@
 Collection of functions used in pvlib_python
 """
 
+import contextlib
 import datetime as dt
+from datetime import timezone
+import warnings
+
 import numpy as np
 import pandas as pd
-import pytz
-import warnings
+from pandas.util.version import Version
+import zoneinfo
 
 
 def cosd(angle):
@@ -119,22 +123,22 @@ def atand(number):
 
 def localize_to_utc(time, location):
     """
-    Converts or localizes a time series to UTC.
+    Converts ``time`` to UTC, localizing if necessary using location.
 
     Parameters
     ----------
     time : datetime.datetime, pandas.DatetimeIndex,
            or pandas.Series/DataFrame with a DatetimeIndex.
-    location : pvlib.Location object
+    location : pvlib.Location object (unused if ``time`` is localized)
 
     Returns
     -------
-    pandas object localized to UTC.
+    datetime.datetime or pandas object localized to UTC.
     """
     if isinstance(time, dt.datetime):
         if time.tzinfo is None:
-            time = pytz.timezone(location.tz).localize(time)
-        time_utc = time.astimezone(pytz.utc)
+            time = time.replace(tzinfo=zoneinfo.ZoneInfo(location.tz))
+        time_utc = time.astimezone(timezone.utc)
     else:
         try:
             time_utc = time.tz_convert('UTC')
@@ -160,11 +164,11 @@ def datetime_to_djd(time):
     """
 
     if time.tzinfo is None:
-        time_utc = pytz.utc.localize(time)
+        time_utc = time.replace(tzinfo=timezone.utc)
     else:
-        time_utc = time.astimezone(pytz.utc)
+        time_utc = time.astimezone(timezone.utc)
 
-    djd_start = pytz.utc.localize(dt.datetime(1899, 12, 31, 12))
+    djd_start = dt.datetime(1899, 12, 31, 12, tzinfo=timezone.utc)
     djd = (time_utc - djd_start).total_seconds() * 1.0/(60 * 60 * 24)
 
     return djd
@@ -187,10 +191,10 @@ def djd_to_datetime(djd, tz='UTC'):
        The resultant datetime localized to tz
     """
 
-    djd_start = pytz.utc.localize(dt.datetime(1899, 12, 31, 12))
+    djd_start = dt.datetime(1899, 12, 31, 12, tzinfo=timezone.utc)
 
     utc_time = djd_start + dt.timedelta(days=djd)
-    return utc_time.astimezone(pytz.timezone(tz))
+    return utc_time.astimezone(zoneinfo.ZoneInfo(tz))
 
 
 def _pandas_to_doy(pd_object):
@@ -206,8 +210,32 @@ def _pandas_to_doy(pd_object):
     Returns
     -------
     dayofyear
+
+    Notes
+    -----
+    Day of year is determined using UTC, since pandas uses local hour
     """
-    return pd_object.dayofyear
+    return _pandas_to_utc(pd_object).day_of_year
+
+
+def _pandas_to_utc(pd_object):
+    """
+    Converts a pandas datetime-like object to UTC, if localized.
+    Otherwise, assume UTC.
+
+    Parameters
+    ----------
+    pd_object : DatetimeIndex or Timestamp
+
+    Returns
+    -------
+    pandas object localized to or assumed to be UTC.
+    """
+    try:
+        pd_object_utc = pd_object.tz_convert('UTC')
+    except TypeError:
+        pd_object_utc = pd_object
+    return pd_object_utc
 
 
 def _doy_to_datetimeindex(doy, epoch_year=2014):
@@ -230,7 +258,7 @@ def _doy_to_datetimeindex(doy, epoch_year=2014):
 
 
 def _datetimelike_scalar_to_doy(time):
-    return pd.DatetimeIndex([pd.Timestamp(time)]).dayofyear
+    return _pandas_to_doy(_datetimelike_scalar_to_datetimeindex(time))
 
 
 def _datetimelike_scalar_to_datetimeindex(time):
@@ -401,10 +429,16 @@ def _get_sample_intervals(times, win_length):
     """ Calculates time interval and samples per window for Reno-style clear
     sky detection functions
     """
-    deltas = np.diff(times.values) / np.timedelta64(1, '60s')
+    deltas = (
+        np.diff(times.tz_localize(None).to_numpy())  # tz-naive np.datetime64
+        / np.timedelta64(1, '60s')
+    )
 
     # determine if we can proceed
-    if times.inferred_freq and len(np.unique(deltas)) == 1:
+    if (  # infer wrapper is None if no freq is determined
+        _pandas_infer_freq_BaseOffset_transition_handler(times)
+        and len(np.unique(deltas)) == 1
+    ):
         sample_interval = times[1] - times[0]
         sample_interval = sample_interval.seconds / 60  # in minutes
         samples_per_window = int(win_length / sample_interval)
@@ -416,6 +450,42 @@ def _get_sample_intervals(times, win_length):
             'periods, leap days, etc.'
         )
         raise NotImplementedError(message)
+
+
+def _pandas_infer_freq_BaseOffset_transition_handler(times):
+    """
+    Pandas 3.1.0 introduced the following deprecation [^1]:
+        Pandas4Warning: A future version of pandas will return a BaseOffset
+        object instead of a string from infer_freq.
+        Use pd.set_option('future.infer_freq_returns_offset', True) to get the
+        future behavior, or set to False to keep the old behavior and silence
+        this warning.
+        To preserve the string representation, use ``infer_freq(...).freqstr``
+
+    Side-effects must be avoided in user-code.
+
+    pd.infer_freq documentation is at [^2].
+    pd.tseries.offsets.BaseOffset documentation is at [^3].
+
+    Parameters
+    ----------
+    times : DatetimeIndex | TimedeltaIndex | Series | DatetimeLikeArrayMixin
+
+    Returns
+    -------
+    str
+
+    [^1]: pandas PR GH#64679: https://github.com/pandas-dev/pandas/pull/64679
+    [^2]: https://pandas.pydata.org/docs/reference/api/pandas.infer_freq.html
+    [^3]: https://pandas.pydata.org/docs/reference/api/pandas.tseries.offsets.BaseOffset.html
+    """  # noqa: E501
+    if Version(pd.__version__) < Version("3.1.0rc0"):
+        return pd.infer_freq(times)
+    with pd.option_context({'future.infer_freq_returns_offset': True}):
+        # relies on BaseOffset to work seamlessly with Pandas 4
+        base_offset = pd.infer_freq(times)
+        # base_offset:=None if unable to infer
+        return getattr(base_offset, "freqstr", None)
 
 
 def _degrees_to_index(degrees, coordinate):
@@ -445,14 +515,14 @@ def _degrees_to_index(degrees, coordinate):
         inputmax = 180
         outputmax = 4320
     else:
-        raise IndexError("coordinate must be 'latitude' or 'longitude'.")
+        raise ValueError("coordinate must be 'latitude' or 'longitude'.")
 
     inputrange = inputmax - inputmin
     scale = outputmax/inputrange  # number of indices per degree
     center = inputmin + 1 / scale / 2  # shift to center of index
     outputmax -= 1  # shift index to zero indexing
     index = (degrees - center) * scale
-    err = IndexError('Input, %g, is out of range (%g, %g).' %
+    err = ValueError('Input, %g, is out of range (%g, %g).' %
                      (degrees, inputmin, inputmax))
 
     # If the index is still out of bounds after rounding, raise an error.
@@ -534,3 +604,53 @@ def normalize_max2one(a):
     except ValueError:  # fails for pandas objects
         res = a.div(a.abs().max(axis=0, skipna=True))
     return res
+
+
+def _file_context_manager(filename_or_object, mode='r', encoding=None):
+    """
+    Open a filename/path for reading, or pass a file-like object
+    through unchanged.
+
+    Parameters
+    ----------
+    filename_or_object : str, path-like, or file-like object
+        The filename/path or object to convert to an object
+
+    Returns
+    -------
+    context : context manager
+        A file-like object to be used via python's "with [context] as buffer:"
+        syntax.
+    """
+
+    if hasattr(filename_or_object, "read"):
+        # already a file-like object
+        context = contextlib.nullcontext(filename_or_object)
+    else:
+        # otherwise, assume a filename or path
+        context = open(str(filename_or_object), mode=mode, encoding=encoding)
+    return context
+
+
+def _format_wkt_point(latitude, longitude):
+    """
+    Format a location as a well-known text (WKT) POINT string.
+
+    The WKT representation of geometry is strict: a POINT object lists
+    longitude first, then latitude, each rounded to four decimal places,
+    with exactly one space between them. This format is required by
+    the NSRDB PSM4 API, see :py:mod:`pvlib.iotools.psm4`.
+
+    Parameters
+    ----------
+    latitude : float or int
+        Latitude in decimal degrees, between -90 and 90, north is positive.
+    longitude : float or int
+        Longitude in decimal degrees, between -180 and 180, east is positive.
+
+    Returns
+    -------
+    str
+        The location as a WKT POINT, e.g. ``'POINT(-105.1800 39.7400)'``.
+    """
+    return f'POINT({longitude:.4f} {latitude:.4f})'  # noqa: E231

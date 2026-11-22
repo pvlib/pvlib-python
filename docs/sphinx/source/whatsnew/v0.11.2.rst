@@ -1,0 +1,99 @@
+.. _whatsnew_01120:
+
+
+v0.11.2 (December 16, 2024)
+---------------------------
+
+Deprecations
+~~~~~~~~~~~~
+* Deprecate terms ``dni_clearsky`` and ``clearsky_dni``, replace with ``dni_clear`` and ``ghi_clear``.
+  Affected functions are :py:func:`~pvlib.irradiance.dirindex`, :py:func:`~pvlib.irradiance.dni`
+  and :py:func:`~pvlib.irradiance.clearsky_index`.
+
+Enhancements
+~~~~~~~~~~~~
+* Add :py:func:`~pvlib.atmosphere.rh_from_tdew` and :py:func:`~pvlib.atmosphere.tdew_from_rh`.
+  (:issue:`1744`, :pull:`2286`)
+* :py:func:`~pvlib.ivtools.sdm.fit_desoto` now allows input of initial
+  parameter guesses. (:issue:`1014`, :pull:`2291`)
+
+Bug Fixes
+~~~~~~~~~
+* :py:meth:`~pvlib.pvsystem.PVSystem.get_irradiance` accepts float inputs.
+  (:issue:`1338`, :pull:`2227`)
+* Handle DST transitions that happen at midnight in :py:func:`pvlib.solarposition.hour_angle`
+  (:issue:`2132` :pull:`2133`)
+* Change ``dni_extra`` to a required parameter in :py:func:`pvlib.irradiance.ghi_from_poa_driesse_2023`
+  (:issue:`2279` :pull:`2331`)
+* :py:func:`~pvlib.spa.julian_day_dt` now accounts for the 10 day difference
+  between Julian and Gregorian calendars prior to the year 1582. (:issue:`2077`, :pull:`2249`)
+* Correct sign of temperature coefficient ``dEgdT`` in :py:func:`~pvlib.ivtools.sdm.fit_desoto_sandia`.
+  Results may differ slightly from previous versions. (:issue:`2311`, :pull:`2322`)
+
+Documentation
+~~~~~~~~~~~~~
+* Edit docstrings for :py:func:`~pvlib.pvsystem.dc_ohms_from_percent` and
+  :py:func:`~pvlib.pvsystem.dc_ohmic_losses` for clarity. (:issue:`1601`, :pull:`2229`)
+* Add 'freestanding' and 'insulated' `racking_model` options for cell
+  temperature calculation in :py:class:`~pvlib.pvsystem.PVSystem`,
+  :py:class:`~pvlib.pvsystem.SingleAxisTrackerMount`, and
+  :py:class:`~pvlib.pvsystem.FixedMount` docstrings. Various formatting edits
+  for clarity. (:issue:`1942`, :pull:`2232`)
+* Update :py:func:`~pvlib.irradiance.reindl` to include definitions of terms
+  and a new "notes" section (:issue:`2183`, :pull:`2193`)
+* Clarify the error message in :py:func:`~pvlib.clearsky.detect_clearsky` when
+  windows contain fewer than three data points (:issue:`2005`, :pull:`2281`)
+* Clarify mounting cases for parameters for :py:func:`~pvlib.temperature.sapm_module`,
+  :py:func:`~pvlib.temperature.sapm_cell` and :py:func:`~pvlib.temperature.pvsyst_cell`.
+  (:issue:`1323`, :pull:`2293`)
+* Add an example to :py:func:`~pvlib.pvsystem.retrieve_sam` docstring to
+  demonstrate how to retrieve a database from the SAM repo. (:pull:`2313`)
+* Add a new citation style guide (:ref:`reference_style`) to the contributing
+  page. (:issue:`2202`, :pull:`2226`)
+* Explain how to write docstrings for new functions in :ref:`example-docstring`
+  (:discuss:`2081`, :pull:`2254`)
+* Add a section in the style guide for parameter naming and units best practices.
+  See :ref:`documentation-units`. (:issue:`2205`, :pull:`2248`)
+* Add a new :ref:`nomenclature` page, in place of the Variables and Symbols
+  page, using the sphinx glossary directive. (:issue:`1421`, :pull:`2234`)
+* Add the following variables to the :ref:`nomenclature` page:
+
+  - `spectra` and `spectra_components` (:issue:`2150`, :pull:`2264`)
+
+
+Testing
+~~~~~~~
+* Update test files to track new PVGIS 5.3 data. (:pull:`2305`)
+
+Maintenance
+~~~~~~~~~~~
+* Add a decorator to deprecate renamed keyword arguments in functions,
+  :py:func:`pvlib._deprecation.renamed_kwarg_warning`. (:pull:`2237`)
+
+
+Contributors
+~~~~~~~~~~~~
+* Cliff Hansen (:ghuser:`cwhanse`)
+* Rajiv Daxini (:ghuser:`RDaxini`)
+* Dave Pitts (:ghuser:`dgapitts`)
+* Kurt Rhee (:ghuser:`kurt-rhee`)
+* Mark Mikofski (:ghuser:`mikofski`)
+* Roma Koulikov (:ghuser:`matsuobasho`)
+* Echedey Luis (:ghuser:`echedey-ls`)
+* Kevin Anderson (:ghuser:`kandersolar`)
+* Scott Nelson (:ghuser:`scttnlsn`)
+* Ioannis Sifnaios (:ghuser:`IoannisSifnaios`)
+* Adam R. Jensen (:ghuser:`AdamRJensen`)
+* Anton Driesse (:ghuser:`adriesse`)
+* Will Holmgren (:ghuser:`wholmgren`)
+* Umay Akkoseoglu (:ghuser:`uakkoseo`)
+* Mark Campanelli (:ghuser:`markcampanelli`)
+* :ghuser:`iblasi`
+* Hiromasa Ihara (:ghuser:`miettal`)
+* Yunho Kee (:ghuser:`yhkee0404`)
+* Hamilton Kibbe (:ghuser:`hamiltonkibbe`)
+* Felix Korbelius (:ghuser:`FelixKoTU`)
+* Michael Deceglie (:ghuser:`mdeceglie`)
+* Will Hobbs (:ghuser:`williamhobbs`)
+* Todd Karin (:ghuser:`toddkarin`)
+* Lucas Schneeberger (:ghuser:`lucasschn`)

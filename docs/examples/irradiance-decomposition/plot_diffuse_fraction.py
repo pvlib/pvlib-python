@@ -35,7 +35,7 @@ greensboro, metadata = read_tmy3(DATA_DIR / '723170TYA.CSV', coerce_year=1990,
 # NOTE: TMY3 files timestamps indicate the end of the hour, so shift indices
 # back 30-minutes to calculate solar position at center of the interval
 solpos = get_solarposition(
-    greensboro.index.shift(freq="-30T"), latitude=metadata['latitude'],
+    greensboro.index.shift(freq="-30min"), latitude=metadata['latitude'],
     longitude=metadata['longitude'], altitude=metadata['altitude'],
     pressure=greensboro.pressure*100,  # convert from millibar to Pa
     temperature=greensboro.temp_air)
@@ -44,7 +44,7 @@ solpos.index = greensboro.index  # reset index to end of the hour
 # %%
 # pvlib Decomposition Functions
 # -----------------------------
-# Methods for separating DHI into diffuse and direct components include:
+# Methods for separating GHI into diffuse and direct components include:
 # `DISC`_, `DIRINT`_, `Erbs`_, and `Boland`_.
 
 # %%
@@ -52,7 +52,7 @@ solpos.index = greensboro.index  # reset index to end of the hour
 # ----
 #
 # DISC :py:func:`~pvlib.irradiance.disc` is an empirical correlation developed
-# at SERI (now NREL) in 1987. The direct normal irradiance (DNI) is related to
+# at SERI (now NLR) in 1987. The direct normal irradiance (DNI) is related to
 # clearness index (kt) by two polynomials split at kt = 0.6, then combined with
 # an exponential relation with airmass.
 
@@ -112,7 +112,7 @@ out_boland = out_boland.rename(
 # ----------------
 # In the plots below we compare the four decomposition models to the TMY3 file
 # for Greensboro, North Carolina. We also compare the clearness index, kt, with
-# GHI normalized by a reference irradiance, E0 = 1000 [W/m^2], to highlight
+# GHI normalized by a reference irradiance, E0 = 1000 [Wm⁻²], to highlight
 # spikes caused when cosine of zenith approaches zero, particularly at sunset.
 #
 # First we combine the dataframes for the decomposition models and the TMY3
@@ -216,5 +216,5 @@ f.tight_layout()
 # correlations, which include additional variables such as airmass. These
 # methods seem to reduce DNI spikes over 1000 [W/m^2].
 #
-# .. _TMY3: https://www.nrel.gov/docs/fy08osti/43156.pdf
-# .. _NSRDB: https://www.nrel.gov/docs/fy12osti/54824.pdf
+# .. _TMY3: https://doi.org/10.2172/928611
+# .. _NSRDB: https://doi.org/10.2172/1054832

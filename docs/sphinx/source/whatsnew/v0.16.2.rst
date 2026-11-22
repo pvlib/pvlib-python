@@ -6,7 +6,8 @@ v0.16.2 (Anticipated December, 2026)
 
 Breaking Changes
 ~~~~~~~~~~~~~~~~
-
+* ``ModelChain`` no longer fills NaN with 0 in DC power and AC power.
+  (:issue:`1409`, :pull:`2955`)
 
 Deprecations
 ~~~~~~~~~~~~

@@ -28,7 +28,7 @@ Bug fixes
   when ``encoding`` is not specified: UTF-8 if the file starts with a byte
   order mark or is valid UTF-8, otherwise Windows-1252. Previously the
   platform's default encoding was used, so the result depended on the
-  operating system's locale. (:pull:`1888`)
+  operating system's locale. (:pull:`2959`)
 
 Enhancements
 ~~~~~~~~~~~~
@@ -41,7 +41,7 @@ Enhancements
   :py:func:`pvlib.inverter.extract_inverter_characteristics` to extract the
   efficiency curves and ratings from that content. A ``ValueError`` naming the
   missing OND keys is raised when the file lacks required data.
-  Based on work by :ghuser:`cwhanse`. (:pull:`1888`)
+  Based on work by :ghuser:`cwhanse`. (:pull:`1888`, :pull:`2959`)
 
 Documentation
 ~~~~~~~~~~~~~

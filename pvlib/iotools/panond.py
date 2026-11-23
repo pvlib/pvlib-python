@@ -2,6 +2,9 @@
 Get .PAN or .OND file data into a nested dictionary.
 """
 
+import codecs
+import io
+
 
 def _num_type(value):
     """
@@ -101,6 +104,27 @@ def _parse_panond(fbuf):
     return component_info
 
 
+def _decode_panond(raw):
+    """
+    Decode the bytes of a .pan or .ond file when the encoding is not given.
+
+    A UTF-8 byte order mark selects UTF-8; otherwise the bytes are decoded as
+    UTF-8 if they are valid UTF-8, and as Windows-1252 if not.
+    """
+    try:
+        if raw.startswith(codecs.BOM_UTF8):
+            return raw.decode('utf-8-sig')
+        try:
+            return raw.decode('utf-8')
+        except UnicodeDecodeError:
+            return raw.decode('cp1252')
+    except UnicodeDecodeError as err:
+        raise ValueError(
+            "Could not detect the encoding of the file (tried UTF-8 and "
+            "Windows-1252). Specify it with the `encoding` parameter."
+        ) from err
+
+
 def read_panond(filename, encoding=None):
     """
     Retrieve Module or Inverter data from a .pan or .ond text file,
@@ -112,8 +136,10 @@ def read_panond(filename, encoding=None):
         Name or path of a .pan/.ond file
 
     encoding : str, optional
-        Encoding of the file.  Some files may require specifying
-        ``encoding='utf-8-sig'`` to import correctly.
+        Encoding of the file. If not specified, the encoding is detected:
+        UTF-8 if the file starts with a UTF-8 byte order mark or is valid
+        UTF-8, otherwise Windows-1252 (cp1252). The result does not depend on
+        the platform's default encoding.
 
     Returns
     -------
@@ -128,7 +154,9 @@ def read_panond(filename, encoding=None):
     for use by PVsyst. At time of publication, no documentation for these
     files was available. So, this parser is based on inferred logic, rather
     than anything specified by PVsyst.  At time of creation, tested
-    .pan/.ond files used UTF-8 encoding.
+    .pan/.ond files used UTF-8 encoding. PVsyst has used UTF-8 since
+    version 6.80; older files and some files from manufacturers use
+    Windows-1252.
 
     The parser assumes that the file being parsed uses indentation of two
     spaces ('  ') to create a new level in a nested dictionary, and that
@@ -148,7 +176,12 @@ def read_panond(filename, encoding=None):
     that event the user would need to convert to the desired datatype.
     """
 
-    with open(filename, "r", encoding=encoding) as fbuf:
-        content = _parse_panond(fbuf)
+    if encoding is None:
+        with open(filename, "rb") as fbuf:
+            raw = fbuf.read()
+        content = _parse_panond(io.StringIO(_decode_panond(raw)))
+    else:
+        with open(filename, "r", encoding=encoding) as fbuf:
+            content = _parse_panond(fbuf)
 
     return content

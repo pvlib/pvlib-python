@@ -221,7 +221,7 @@ OND_FILE_CPS = TESTS_DATA_DIR / 'CPS SCH275KTL-DO-US-800-250kW_275kVA_1.OND'
 
 
 def test_ond_to_sandia():
-    content = read_panond(OND_FILE, encoding='utf-8-sig')
+    content = read_panond(OND_FILE)
     data = content['PVObject_']
     result = inverter.ond_to_sandia_inv(data)
     expected = {'Paco': 40000.,
@@ -238,7 +238,7 @@ def test_ond_to_sandia():
 
 def test_ond_to_sandia_other_file():
     # a second OND file, with a different rated power and voltage range
-    content = read_panond(OND_FILE_CPS, encoding='utf-8-sig')['PVObject_']
+    content = read_panond(OND_FILE_CPS)['PVObject_']
     result = inverter.ond_to_sandia_inv(content)
     assert result['Paco'] == 1000. * content['Converter']['PMaxOUT']
     assert result['Pnt'] == content['Night_Loss']
@@ -246,7 +246,7 @@ def test_ond_to_sandia_other_file():
 
 
 def test_extract_inverter_characteristics():
-    content = read_panond(OND_FILE, encoding='utf-8-sig')['PVObject_']
+    content = read_panond(OND_FILE)['PVObject_']
     result = inverter.extract_inverter_characteristics(content)
     assert set(result) == {'ac_power', 'dc_power', 'dc_voltage',
                            'dc_voltage_level', 'p_ac_0', 'p_nt'}

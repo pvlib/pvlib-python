@@ -659,7 +659,8 @@ def extract_inverter_characteristics(content):
     if missing:
         raise ValueError(
             "The OND content lacks data required to extract inverter "
-            "characteristics. Missing OND keys: " + ', '.join(missing))
+            "characteristics. Missing OND keys: "
+            + ', '.join(dict.fromkeys(missing)))
 
     return {'ac_power': np.array(ac_power), 'dc_power': np.array(dc_power),
             'dc_voltage': np.array(dc_voltage),

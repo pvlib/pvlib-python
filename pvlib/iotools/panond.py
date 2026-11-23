@@ -146,6 +146,16 @@ def read_panond(filename, encoding=None):
         file. The value of datatypes are assumed during reading. The value
         units are the default used by PVsyst.
 
+    Raises
+    ------
+    ValueError
+        If ``encoding`` is not specified and the file can be decoded neither
+        as UTF-8 nor as Windows-1252.
+
+    See Also
+    --------
+    pvlib.inverter.ond_to_sandia_inv
+
     Notes
     -----
     The parser is intended for use with .pan and .ond files that were created

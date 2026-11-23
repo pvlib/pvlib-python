@@ -299,6 +299,14 @@ def test_ond_to_sandia_missing_data_lists_all_keys(tmp_path):
         inverter.extract_inverter_characteristics(content)
 
 
+def test_extract_inverter_characteristics_empty_content():
+    with pytest.raises(ValueError) as excinfo:
+        inverter.extract_inverter_characteristics({})
+    message = str(excinfo.value)
+    assert message.count('Converter,') == 1
+    assert 'Night_Loss' in message
+
+
 def test_ond_to_sandia_wrong_voltage_count(tmp_path):
     path = _write_modified_ond(tmp_path, '530.0,720.0,850.0,', '530.0,720.0,')
     content = read_panond(path, encoding='utf-8')['PVObject_']

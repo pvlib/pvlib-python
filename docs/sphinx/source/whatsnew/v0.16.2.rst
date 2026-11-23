@@ -41,7 +41,7 @@ Enhancements
   :py:func:`pvlib.inverter.extract_inverter_characteristics` to extract the
   efficiency curves and ratings from that content. A ``ValueError`` naming the
   missing OND keys is raised when the file lacks required data.
-  (:pull:`1888`)
+  Based on work by :ghuser:`cwhanse`. (:pull:`1888`)
 
 Documentation
 ~~~~~~~~~~~~~

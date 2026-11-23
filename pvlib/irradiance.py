@@ -15,18 +15,8 @@ from scipy.optimize import bisect
 from pvlib import atmosphere, solarposition, tools
 import pvlib  # used to avoid dni name collision in complete_irradiance
 
-from pvlib._deprecation import pvlibDeprecationWarning, deprecated
+from pvlib._deprecation import deprecated
 import warnings
-
-
-# Deprecation warning based on https://peps.python.org/pep-0562/
-def __getattr__(attr):
-    if attr == 'SURFACE_ALBEDOS':
-        warnings.warn(f"{attr} has been moved to the albedo module as of "
-                      "v0.11.0. Please use pvlib.albedo.SURFACE_ALBEDOS.",
-                      pvlibDeprecationWarning)
-        return pvlib.albedo.SURFACE_ALBEDOS
-    raise AttributeError(f"module {__name__!r} has no attribute {attr!r}")
 
 
 def get_extra_radiation(datetime_or_doy, solar_constant=1366.1,

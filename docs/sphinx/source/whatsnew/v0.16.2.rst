@@ -24,6 +24,11 @@ Bug fixes
 * Document the URL default :py:func:`pvlib.iotools.get_acis_station_data` actually
   uses. Its docstring named the GridData endpoint; should be StnData.
   (:pull:`2950`)
+* :py:func:`pvlib.iotools.read_panond` now detects the encoding of the file
+  when ``encoding`` is not specified: UTF-8 if the file starts with a byte
+  order mark or is valid UTF-8, otherwise Windows-1252. Previously the
+  platform's default encoding was used, so the result depended on the
+  operating system's locale. (:pull:`1888`)
 
 Enhancements
 ~~~~~~~~~~~~
@@ -31,6 +36,12 @@ Enhancements
 * Add ``dataset`` parameter to :py:func:`~pvlib.iotools.get_era5`
   allowing for choosing between ERA5 and ERA5-Land datasets.
   (:pull:`2780`)
+* Add :py:func:`pvlib.inverter.ond_to_sandia_inv` to determine parameters for
+  :py:func:`pvlib.inverter.sandia` from the content of a PVsyst OND file, and
+  :py:func:`pvlib.inverter.extract_inverter_characteristics` to extract the
+  efficiency curves and ratings from that content. A ``ValueError`` naming the
+  missing OND keys is raised when the file lacks required data.
+  (:pull:`1888`)
 
 Documentation
 ~~~~~~~~~~~~~
@@ -84,3 +95,4 @@ Contributors
 * :ghuser:`xiajiahang`
 * Jakub Krasuski (:ghuser:`Blizzeq`)
 * Dylan Pulver (:ghuser:`dylanpulver`)
+* :ghuser:`dihannahdi`

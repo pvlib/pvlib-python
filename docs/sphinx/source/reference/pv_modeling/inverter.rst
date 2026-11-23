@@ -20,3 +20,5 @@ Functions for fitting inverter models
    :toctree: ../generated/
 
    inverter.fit_sandia
+   inverter.extract_inverter_characteristics
+   inverter.ond_to_sandia_inv

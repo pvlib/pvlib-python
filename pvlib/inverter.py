@@ -553,55 +553,148 @@ def fit_sandia(ac_power, dc_power, dc_voltage, dc_voltage_level, p_ac_0, p_nt):
             'C0': c0, 'C1': c1, 'C2': c2, 'C3': c3, 'Pnt': p_nt}
 
 
-def ond_to_sandia_inv(content):
+def extract_inverter_characteristics(content):
     """
-    Get parameters for :py:func:`pvlib.inverter.sandia` from content of a
-    PVsyst OND file.
-    
+    Extract the efficiency curves and ratings needed to fit an inverter
+    model from the content of a PVsyst OND file.
+
+    The returned values are those required by :py:func:`fit_sandia`, and can
+    be used as input to other inverter model fitting procedures.
+
     Parameters
     ----------
     content : dict
-        OND file content from the nested dict returned from 
-        :py:func:`pvlib.iotools.panond.read_panond`
+        OND file content, i.e., the ``'PVObject_'`` entry of the nested dict
+        returned by :py:func:`pvlib.iotools.read_panond`.
 
     Returns
     -------
     dict
-        Parameters for :py:func:`pvlib.inverter.sandia`
+        A dict with the following keys:
 
+        * ``ac_power`` : numpy.ndarray - AC power output at each data point
+          [W].
+        * ``dc_power`` : numpy.ndarray - DC power input at each data point
+          [W].
+        * ``dc_voltage`` : numpy.ndarray - DC input voltage at each data point
+          [V].
+        * ``dc_voltage_level`` : numpy.ndarray - DC input voltage level at
+          each data point, one of ``'Vmin'``, ``'Vnom'`` or ``'Vmax'``.
+        * ``p_ac_0`` : float - Rated AC power of the inverter [W], from
+          ``PNomConv``.
+        * ``p_nt`` : float - Night tare, i.e., power consumed by the inverter
+          when it is not delivering AC power [W], from ``Night_Loss``.
+
+    Raises
+    ------
+    ValueError
+        If the content lacks data that is required, e.g., night-time
+        consumption or the efficiency curves at the three DC voltage levels.
+        The message names the missing OND keys. No default values are
+        substituted for missing data.
+
+    See Also
+    --------
+    pvlib.inverter.ond_to_sandia_inv
+    pvlib.inverter.fit_sandia
+    pvlib.iotools.read_panond
+
+    Notes
+    -----
+    Many OND files do not contain all of the required data.
     """
-    # get power unit
-    if content['Converter']['UnitAffEnum'] == 'kW':
-        multiplier = 1000.
-    else:
-        multiplier = 1.
-    # to fit pvlib.inverter.sandia, we need ac_power, dc_power, dc_voltage,
-    # dc_voltage_level, p_ac_0, p_nt
-    p_ac_0 = content['Converter']['PNomConv'] * multiplier
-    p_nt = content['Night_Loss']
-    # assemble ac_power and dc_power
-    ac_power = []
-    dc_power = []
-    dc_voltage = []
-    dc_voltage_level = []
-    voltages = content['Converter']['VNomEff']
-    if voltages[-1] =='':
-        voltages = voltages[:-1]
-    voltage_lvls = ['Vmin', 'Vnom', 'Vmax']
-    for v, lvl, profile in zip(voltages, voltage_lvls,
-                      ['ProfilPIOV1', 'ProfilPIOV2', 'ProfilPIOV3']):
-        data = content['Converter'][profile]
-        npts = int(data['NPtsEff'])
-        for p in range(1, npts+1):
-            dc_voltage.append(v)
-            dc_voltage_level.append(lvl)
-            vals = data['Point_' + str(p)]
-            ac_power.append(vals[1])
-            dc_power.append(vals[0])
-    dc_power = np.array(dc_power)
-    ac_power = np.array(ac_power)
-    dc_voltage = np.array(dc_voltage)
-    dc_voltage_level = np.array(dc_voltage_level)
-    return fit_sandia(ac_power, dc_power, 
-                      dc_voltage, dc_voltage_level,
-                      p_ac_0, p_nt)
+    missing = []
+
+    def get(*keys):
+        # follow keys down the nested dict; record the missing key's path
+        node = content
+        for i, key in enumerate(keys):
+            if not isinstance(node, dict) or node.get(key) is None:
+                missing.append('.'.join(keys[:i + 1]))
+                return None
+            node = node[key]
+        return node
+
+    unit = get('Converter', 'UnitAffEnum')
+    if unit is not None and unit not in ('kW', 'W'):
+        raise ValueError("Unsupported power unit in OND key "
+                         f"'Converter.UnitAffEnum': {unit!r}")
+    p_ac_0 = get('Converter', 'PNomConv')
+    if p_ac_0 is not None and unit is not None:
+        p_ac_0 = p_ac_0 * (1000. if unit == 'kW' else 1.)
+    p_nt = get('Night_Loss')
+
+    voltages = get('Converter', 'VNomEff')
+    if voltages is not None:
+        if not isinstance(voltages, list):
+            voltages = [voltages]
+        # the OND list has a trailing comma
+        voltages = [v for v in voltages if v != '']
+        if len(voltages) != 3:
+            raise ValueError("OND key 'Converter.VNomEff' must hold three "
+                             f"voltages, found {len(voltages)}")
+
+    ac_power, dc_power, dc_voltage, dc_voltage_level = [], [], [], []
+    levels = ['Vmin', 'Vnom', 'Vmax']
+    for n, level in enumerate(levels, start=1):
+        profile = f'ProfilPIOV{n}'
+        npts = get('Converter', profile, 'NPtsEff')
+        if npts is None:
+            continue
+        if int(npts) < 1:
+            missing.append(f'Converter.{profile}.Point_1')
+            continue
+        for p in range(1, int(npts) + 1):
+            point = get('Converter', profile, f'Point_{p}')
+            if point is None:
+                continue
+            if not isinstance(point, list) or len(point) < 2:
+                raise ValueError(f"OND key 'Converter.{profile}.Point_{p}' "
+                                 "must hold a DC power and an AC power")
+            dc_power.append(point[0])
+            ac_power.append(point[1])
+            dc_voltage_level.append(level)
+            if voltages is not None:
+                dc_voltage.append(voltages[n - 1])
+
+    if missing:
+        raise ValueError(
+            "The OND content lacks data required to extract inverter "
+            "characteristics. Missing OND keys: " + ', '.join(missing))
+
+    return {'ac_power': np.array(ac_power), 'dc_power': np.array(dc_power),
+            'dc_voltage': np.array(dc_voltage),
+            'dc_voltage_level': np.array(dc_voltage_level),
+            'p_ac_0': p_ac_0, 'p_nt': p_nt}
+
+
+def ond_to_sandia_inv(content):
+    """
+    Get parameters for :py:func:`pvlib.inverter.sandia` from the content of a
+    PVsyst OND file.
+
+    Parameters
+    ----------
+    content : dict
+        OND file content, i.e., the ``'PVObject_'`` entry of the nested dict
+        returned by :py:func:`pvlib.iotools.read_panond`.
+
+    Returns
+    -------
+    dict
+        Parameters for :py:func:`pvlib.inverter.sandia`. See
+        :py:func:`pvlib.inverter.fit_sandia`.
+
+    Raises
+    ------
+    ValueError
+        If the content lacks data required for the fit. See
+        :py:func:`pvlib.inverter.extract_inverter_characteristics`.
+
+    See Also
+    --------
+    pvlib.inverter.extract_inverter_characteristics
+    pvlib.inverter.fit_sandia
+    pvlib.iotools.read_panond
+    """
+    return fit_sandia(**extract_inverter_characteristics(content))

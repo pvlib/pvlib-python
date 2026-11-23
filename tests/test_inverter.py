@@ -1,3 +1,5 @@
+import re
+
 import numpy as np
 import pandas as pd
 
@@ -214,7 +216,10 @@ def test_fit_sandia(infilen, expected):
     assert expected == pytest.approx(result, rel=1e-3)
 
 
-OND_FILE = DATA_DIR / 'Huawei_Sun2000_40KTL_US_SLR.OND'
+OND_FILE = TESTS_DATA_DIR / 'Huawei_Sun2000_40KTL_US_SLR.OND'
+OND_FILE_CPS = TESTS_DATA_DIR / 'CPS SCH275KTL-DO-US-800-250kW_275kVA_1.OND'
+
+
 def test_ond_to_sandia():
     content = read_panond(OND_FILE, encoding='utf-8-sig')
     data = content['PVObject_']
@@ -229,3 +234,83 @@ def test_ond_to_sandia():
                 'C2': -0.0004676856528,
                 'C3': -0.0009031894907}
     assert expected == pytest.approx(result, rel=1e-8)
+
+
+def test_ond_to_sandia_other_file():
+    # a second OND file, with a different rated power and voltage range
+    content = read_panond(OND_FILE_CPS, encoding='utf-8-sig')['PVObject_']
+    result = inverter.ond_to_sandia_inv(content)
+    assert result['Paco'] == 1000. * content['Converter']['PMaxOUT']
+    assert result['Pnt'] == content['Night_Loss']
+    assert all(np.isfinite(list(result.values())))
+
+
+def test_extract_inverter_characteristics():
+    content = read_panond(OND_FILE, encoding='utf-8-sig')['PVObject_']
+    result = inverter.extract_inverter_characteristics(content)
+    assert set(result) == {'ac_power', 'dc_power', 'dc_voltage',
+                           'dc_voltage_level', 'p_ac_0', 'p_nt'}
+    # three voltage levels with eight points each
+    assert len(result['ac_power']) == 24
+    assert len(result['dc_power']) == 24
+    assert len(result['dc_voltage']) == 24
+    assert list(result['dc_voltage_level'][::8]) == ['Vmin', 'Vnom', 'Vmax']
+    assert list(result['dc_voltage'][::8]) == [530., 720., 850.]
+    assert result['dc_power'][1] == 4000.
+    assert result['ac_power'][1] == 3868.
+    assert result['p_ac_0'] == 40000.
+    assert result['p_nt'] == 1.
+    # the extracted values are the inputs of fit_sandia
+    expected = inverter.ond_to_sandia_inv(content)
+    assert inverter.fit_sandia(**result) == pytest.approx(expected)
+
+
+def _write_modified_ond(tmp_path, old, new):
+    text = OND_FILE.read_text(encoding='utf-8-sig')
+    assert old in text
+    path = tmp_path / 'modified.OND'
+    path.write_text(text.replace(old, new, 1), encoding='utf-8')
+    return path
+
+
+@pytest.mark.parametrize('old, new, missing_key', [
+    ('Night_Loss=', 'Night_LossX=', 'Night_Loss'),
+    ('PNomConv=', 'PNomConvX=', 'Converter.PNomConv'),
+    ('UnitAffEnum=', 'UnitAffEnumX=', 'Converter.UnitAffEnum'),
+    ('VNomEff=', 'VNomEffX=', 'Converter.VNomEff'),
+    ('ProfilPIOV1=', 'ProfilPIOVX=', 'Converter.ProfilPIOV1'),
+    ('ProfilPIOV2=', 'ProfilPIOVX=', 'Converter.ProfilPIOV2'),
+    ('ProfilPIOV3=', 'ProfilPIOVX=', 'Converter.ProfilPIOV3'),
+    ('NPtsEff=', 'NPtsEffX=', 'Converter.ProfilPIOV1.NPtsEff'),
+    ('Point_3=', 'PointX_3=', 'Converter.ProfilPIOV1.Point_3'),
+])
+def test_ond_to_sandia_missing_data(tmp_path, old, new, missing_key):
+    path = _write_modified_ond(tmp_path, old, new)
+    content = read_panond(path, encoding='utf-8')['PVObject_']
+    with pytest.raises(ValueError, match=re.escape(missing_key)):
+        inverter.ond_to_sandia_inv(content)
+
+
+def test_ond_to_sandia_missing_data_lists_all_keys(tmp_path):
+    path = _write_modified_ond(tmp_path, 'Night_Loss=', 'Night_LossX=')
+    text = path.read_text(encoding='utf-8')
+    path.write_text(text.replace('ProfilPIOV3=', 'ProfilPIOVX=', 1),
+                    encoding='utf-8')
+    content = read_panond(path, encoding='utf-8')['PVObject_']
+    with pytest.raises(ValueError,
+                       match=r'Night_Loss.*Converter\.ProfilPIOV3'):
+        inverter.extract_inverter_characteristics(content)
+
+
+def test_ond_to_sandia_wrong_voltage_count(tmp_path):
+    path = _write_modified_ond(tmp_path, '530.0,720.0,850.0,', '530.0,720.0,')
+    content = read_panond(path, encoding='utf-8')['PVObject_']
+    with pytest.raises(ValueError, match='VNomEff.*three voltages'):
+        inverter.extract_inverter_characteristics(content)
+
+
+def test_ond_to_sandia_unsupported_unit(tmp_path):
+    path = _write_modified_ond(tmp_path, 'UnitAffEnum=kW', 'UnitAffEnum=MW')
+    content = read_panond(path, encoding='utf-8')['PVObject_']
+    with pytest.raises(ValueError, match='UnitAffEnum'):
+        inverter.extract_inverter_characteristics(content)

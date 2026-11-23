@@ -70,7 +70,6 @@ def test_read_panond_detects_cp1252(tmp_path):
 
 
 def test_read_panond_explicit_encoding(tmp_path):
-    # an explicit encoding is used as given, without detection
     text = _ond_text_with_manufacturer('25°C')
     path = tmp_path / 'utf8.OND'
     path.write_bytes(text.encode('utf-8'))

@@ -106,23 +106,21 @@ def _parse_panond(fbuf):
 
 def _decode_panond(raw):
     """
-    Decode the bytes of a .pan or .ond file when the encoding is not given.
-
-    A UTF-8 byte order mark selects UTF-8; otherwise the bytes are decoded as
-    UTF-8 if they are valid UTF-8, and as Windows-1252 if not.
+    Decode the bytes of a .pan or .ond file: UTF-8 if there is a byte order
+    mark or the bytes are valid UTF-8, otherwise Windows-1252.
     """
-    try:
-        if raw.startswith(codecs.BOM_UTF8):
-            return raw.decode('utf-8-sig')
+    if raw.startswith(codecs.BOM_UTF8):
+        encodings = ['utf-8-sig']
+    else:
+        encodings = ['utf-8', 'cp1252']
+    for encoding in encodings:
         try:
-            return raw.decode('utf-8')
+            return raw.decode(encoding)
         except UnicodeDecodeError:
-            return raw.decode('cp1252')
-    except UnicodeDecodeError as err:
-        raise ValueError(
-            "Could not detect the encoding of the file (tried UTF-8 and "
-            "Windows-1252). Specify it with the `encoding` parameter."
-        ) from err
+            pass
+    raise ValueError(
+        f"Could not decode the file as {' or '.join(encodings)}. "
+        "Specify the encoding with the `encoding` parameter.")
 
 
 def read_panond(filename, encoding=None):

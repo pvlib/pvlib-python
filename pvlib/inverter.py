@@ -606,7 +606,6 @@ def extract_inverter_characteristics(content):
     missing = []
 
     def get(*keys):
-        # follow keys down the nested dict; record the missing key's path
         node = content
         for i, key in enumerate(keys):
             if not isinstance(node, dict) or node.get(key) is None:

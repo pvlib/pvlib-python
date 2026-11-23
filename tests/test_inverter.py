@@ -237,7 +237,6 @@ def test_ond_to_sandia():
 
 
 def test_ond_to_sandia_other_file():
-    # a second OND file, with a different rated power and voltage range
     content = read_panond(OND_FILE_CPS)['PVObject_']
     result = inverter.ond_to_sandia_inv(content)
     assert result['Paco'] == 1000. * content['Converter']['PMaxOUT']
@@ -250,7 +249,6 @@ def test_extract_inverter_characteristics():
     result = inverter.extract_inverter_characteristics(content)
     assert set(result) == {'ac_power', 'dc_power', 'dc_voltage',
                            'dc_voltage_level', 'p_ac_0', 'p_nt'}
-    # three voltage levels with eight points each
     assert len(result['ac_power']) == 24
     assert len(result['dc_power']) == 24
     assert len(result['dc_voltage']) == 24
@@ -260,7 +258,6 @@ def test_extract_inverter_characteristics():
     assert result['ac_power'][1] == 3868.
     assert result['p_ac_0'] == 40000.
     assert result['p_nt'] == 1.
-    # the extracted values are the inputs of fit_sandia
     expected = inverter.ond_to_sandia_inv(content)
     assert inverter.fit_sandia(**result) == pytest.approx(expected)
 

@@ -1,10 +1,11 @@
 import numpy as np
 import pandas as pd
-
-from .conftest import assert_series_equal
 from numpy.testing import assert_allclose
 
+from .conftest import assert_series_equal
 from .conftest import TESTS_DATA_DIR
+from .conftest import requires_statsmodels
+
 import pytest
 
 from pvlib import inverter
@@ -202,12 +203,32 @@ INVERTER_TEST_SIM = TESTS_DATA_DIR / 'inverter_fit_snl_sim.csv'
                           'Pso': 10., 'C0': 1e-6, 'C1': 1e-4, 'C2': 1e-2,
                           'C3': 1e-3, 'Pnt': 1.}),
 ])
-def test_fit_sandia(infilen, expected):
+def test_fit_sandia_lab(infilen, expected):
     curves = pd.read_csv(infilen)
     dc_power = curves['ac_power'] / curves['efficiency']
-    result = inverter.fit_sandia(ac_power=curves['ac_power'],
-                                 dc_power=dc_power,
-                                 dc_voltage=curves['dc_voltage'],
-                                 dc_voltage_level=curves['dc_voltage_level'],
-                                 p_ac_0=expected['Paco'], p_nt=expected['Pnt'])
+    result = inverter.fit_sandia_lab(
+        ac_power=curves['ac_power'], dc_power=dc_power,
+        dc_voltage=curves['dc_voltage'],
+        dc_voltage_level=curves['dc_voltage_level'],
+        p_ac_0=expected['Paco'], p_nt=expected['Pnt'])
     assert expected == pytest.approx(result, rel=1e-3)
+
+
+@requires_statsmodels
+def test_fit_sandia_field():
+    pdc = np.arange(start=100., stop=1300., step=100.)
+    vdc = np.array([550., 600., 650, 550., 600., 650, 550., 600., 650,
+                    550., 600., 650])
+    params = {'Paco': 1200, 'Pdco': 1300, 'Pso': 10, 'C0': 1e-6, 'C1': 1e-7,
+              'C2': 1e-7, 'C3': 1e-7, 'Vdco': 600}
+    # pac was computed with pvlib.inverter._sandia_eff
+    pac = np.array([83.6134, 176.535, 269.476, 362.442, 455.422, 548.421,
+                    641.45, 734.489, 827.547, 920.638, 1013.74, 1106.85])
+    p = inverter.fit_sandia_field(pac, pdc, vdc, params['Paco'],
+                                  params['Vdco'])
+    # Pdco, Pso, C0 should be within 1%
+    for k in ['Pdco', 'Pso', 'C0']:
+        assert np.isclose(p[k], params[k], rtol=1e-2)
+    # looser tolerance for C1, C2, C3, so test AC power
+    pred_ac = inverter._sandia_eff(vdc, pdc, p)
+    assert_allclose(pred_ac, pac, rtol=2e-5)

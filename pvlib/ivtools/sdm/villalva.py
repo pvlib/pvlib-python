@@ -22,13 +22,21 @@ def _villalva_params_at_rs(
 
     p_mp = v_mp * i_mp
 
-    # Algebraic combination of Villalva's equations:
+    # Algebraic combination of Eqs. (3), (9), and (10)
+    # in Villalva et al. (2009).
     #
+    # The photocurrent is calculated using Eq. (10):
     # I_L = (R_sh + R_s) / R_sh * I_sc
     #
+    # The saturation current is derived from Eq. (3)
+    # evaluated at open-circuit conditions (I = 0, V = V_oc):
     # I_o = (I_L - V_oc / R_sh) / (exp(V_oc / a_ref) - 1)
     #
-    # and the R_sh(R_s) relation obtained at the MPP.
+    # Unlike Eq. (6), this expression retains the shunt current
+    # contribution and does not assume I_L = I_sc.
+    #
+    # Substituting these expressions into Eq. (9) yields
+    # the R_sh(R_s) relation used below.
     a_term = (
         v_mp * i_sc
         - v_mp * i_sc * exp_vmp / exp_voc
@@ -144,6 +152,15 @@ def fit_villalva(
     :py:func:`pvlib.pvsystem.calcparams_villalva`. I-V curve points can then
     be calculated with :py:func:`pvlib.pvsystem.singlediode` or
     :py:func:`pvlib.pvsystem.i_from_v`.
+    
+    To align with pvlib's naming conventions, some parameter names differ
+    from those used in Villalva et al. [1]_. The photocurrent
+    :math:`I_{pv}` is denoted by ``I_L``, the shunt resistance
+    :math:`R_p` by ``R_sh``, and the modified diode ideality factor at
+    reference conditions :math:`aV_{t,n}` by ``a_ref``. The diode ideality
+    factor :math:`a` is denoted by ``diode_factor``, and the temperature
+    coefficients :math:`K_I` and :math:`K_V` by ``alpha_sc`` and
+    ``beta_voc``, respectively.
 
     References
     ----------

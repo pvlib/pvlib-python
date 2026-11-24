@@ -6,6 +6,12 @@ v0.16.2 (Anticipated December, 2026)
 
 Breaking Changes
 ~~~~~~~~~~~~~~~~
+* ``ModelChain`` no longer infers cell type for modules in the CEC database
+  with Technology of 'Thin Film'. Previously cell type 'cigs' was assigned
+  for all such modules, which is incorrect for some. Cell type is used to
+  infer default parameters for :py:func:`pvlib.spectrum.spectral_factor_firstsolar`
+  Users should assign spectral model parameters in ``PVSystem.module_parameters``
+  or set ``PVSystem.Technology`` to the correct cell type.
 
 
 Deprecations

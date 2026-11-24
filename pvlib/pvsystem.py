@@ -774,7 +774,13 @@ class PVSystem:
             else:
                 module_type = array._infer_cell_type()
                 coefficients = None
-
+                if (module_type is None):
+                    msg = (
+                        "No parameters provided for the First Solar",
+                        " spectral model and pvlib could not infer spectral model",
+                        "parameters from the module parameters."
+                        )
+                    raise ValueError(msg)
             return spectrum.spectral_factor_firstsolar(
                 pw, airmass_absolute, module_type, coefficients
             )
@@ -1090,7 +1096,7 @@ class Array:
 
         _cell_type_dict = {'Multi-c-Si': 'multisi',
                            'Mono-c-Si': 'monosi',
-                           'Thin Film': 'cigs',
+                           'Thin Film': None,
                            'a-Si/nc': 'asi',
                            'CIS': 'cigs',
                            'CIGS': 'cigs',

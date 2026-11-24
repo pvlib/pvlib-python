@@ -776,10 +776,9 @@ class PVSystem:
                 coefficients = None
                 if (module_type is None):
                     msg = (
-                        "No parameters provided for the First Solar",
-                        " spectral model and pvlib could not infer spectral model",
-                        "parameters from the module parameters."
-                        )
+                        "No parameters provided for the First Solar spectral",
+                        " model and pvlib could not infer spectral model",
+                        " parameters from the module parameters.")
                     raise ValueError(msg)
             return spectrum.spectral_factor_firstsolar(
                 pw, airmass_absolute, module_type, coefficients

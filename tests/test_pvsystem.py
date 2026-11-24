@@ -855,7 +855,7 @@ def test_Array__infer_cell_type():
     assert array._infer_cell_type() is None
     array = pvsystem.Array(mount=pvsystem.FixedMount(0, 180),
                            module_parameters={'Technology': 'Multi-c-Si'})
-    assert array._infer_cell_type()=='multisi'
+    assert array._infer_cell_type() == 'multisi'
 
 
 def _calcparams_correct_Python_type_numeric_type_cases():

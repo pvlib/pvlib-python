@@ -52,6 +52,9 @@ Documentation
 * Note deprecation of ``king`` model in :py:func:`~pvlib.irradiance.get_total_irradiance`
   and :py:func:`~pvlib.irradiance.get_sky_diffuse` docstrings.
   (:issue:`2897`, :pull:`2904`)
+* Clarify timestamp labels in :py:func:`~pvlib.iotools.get_cams` and
+  :py:func:`~pvlib.iotools.read_cams`, including how to align subdaily SoDa
+  data with CAMS interval-end timestamps. (:issue:`2699`)
 
 
 Testing
@@ -84,3 +87,4 @@ Contributors
 * :ghuser:`xiajiahang`
 * Jakub Krasuski (:ghuser:`Blizzeq`)
 * Dylan Pulver (:ghuser:`dylanpulver`)
+* :ghuser:`maoji-y`

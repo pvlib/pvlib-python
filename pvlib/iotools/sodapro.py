@@ -91,8 +91,10 @@ def get_cams(latitude, longitude, start, end, email, identifier='mcclear',
         Whether to return radiation parameters as integrated values (Wh/m^2)
         or as average irradiance values (W/m^2) (pvlib preferred units)
     label : {'right', 'left'}, optional
-        Which bin edge label to label time-step with. The default is 'left' for
-        all time steps except for '1M' which has a default of 'right'.
+        Use the start (``'left'``) or end (``'right'``) of the observation
+        period as the index label. The default is ``'left'`` except for
+        monthly data (``'1M'``). For monthly data, ``'right'`` is the default
+        and labels observations with the last calendar day of the month.
     map_variables: bool, default: True
         When true, renames columns of the DataFrame to pvlib variable names
         where applicable. See variable :const:`VARIABLE_MAP`.
@@ -112,6 +114,12 @@ def get_cams(latitude, longitude, start, end, email, identifier='mcclear',
     -----
     In order to use the CAMS services, users must register for a free SoDa
     account using an email address [2]_.
+
+    SoDa provides both endpoints in the ``Observation period`` column. For
+    example, the 15-minute interval from 10:00 to 10:15 UTC is labeled 10:00
+    UTC by default. Use ``label='right'`` to label it 10:15 UTC, following
+    the interval-end convention documented for subdaily CAMS time series in
+    the Atmosphere Data Store [5]_.
 
     The returned data DataFrame includes the following fields:
 
@@ -170,6 +178,8 @@ def get_cams(latitude, longitude, start, end, email, identifier='mcclear',
        266, pp. 112092. :doi:`10.1016/j.solener.2023.112092`
     .. [4] `CAMS gridded solar radiation documentation.
        <https://ads.atmosphere.copernicus.eu/datasets/cams-gridded-solar-radiation>`_
+    .. [5] `ECMWF, CAMS solar radiation time-series data documentation.
+       <https://confluence.ecmwf.int/pages/viewpage.action?pageId=266592908>`_
     """
     try:
         time_step_str = TIME_STEPS_MAP[time_step]
@@ -259,8 +269,10 @@ def read_cams(filename, integrated=False, label=None, map_variables=True):
         Whether to return radiation parameters as integrated values (Wh/m^2)
         or as average irradiance values (W/m^2) (pvlib preferred units)
     label : {'right', 'left'}, optional
-        Which bin edge label to label time-step with. The default is 'left' for
-        all time steps except for '1M' which has a default of 'right'.
+        Use the start (``'left'``) or end (``'right'``) of the observation
+        period as the index label. The default is ``'left'`` except for
+        monthly data (``'1M'``). For monthly data, ``'right'`` is the default
+        and labels observations with the last calendar day of the month.
     map_variables: bool, default: True
         When true, renames columns of the Dataframe to pvlib variable names
         where applicable. See variable :const:`VARIABLE_MAP`.

@@ -1783,6 +1783,18 @@ def calcparams_villalva(
         Product of diode ideality factor, cells in series, and cell thermal
         voltage at the operating condition. [V]
 
+    Notes
+    -----
+    To align with pvlib's naming conventions, some parameter names differ
+    from those used in [1]_. The photocurrent :math:`I_{pv}` is denoted
+    by ``photocurrent`` (:math:`I_L`), the shunt resistance :math:`R_p`
+    by ``resistance_shunt`` (:math:`R_{sh}`), and the modified diode
+    ideality factor :math:`aV_t` by ``nNsVth``. At reference conditions,
+    :math:`I_{pv,n}` and :math:`aV_{t,n}` correspond to ``I_L_ref`` and
+    ``a_ref``, respectively. The temperature coefficients :math:`K_I`
+    and :math:`K_V` are denoted by ``alpha_sc`` and ``beta_voc``,
+    respectively.
+
     References
     ----------
     .. [1] M. G. Villalva, J. R. Gazoli, and E. Ruppert Filho, "Comprehensive

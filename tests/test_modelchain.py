@@ -1282,6 +1282,31 @@ def test_singlediode_dc_arrays(location, dc_model,
         assert isinstance(dc, (pd.Series, pd.DataFrame))
 
 
+@pytest.mark.parametrize('dc_model', ['cec'])
+def test_singlediode_nan_policy(location, dc_model,
+                                cec_dc_snl_ac_arrays):
+    times = pd.date_range('20160101 1200-0700', periods=2, freq='6h')
+    weather = pd.DataFrame({'ghi': [500, np.nan],
+                            'dni': [800, 0], 'dhi': [100, 0]},
+                           index=times)
+    temp_model_params = {'a': -3.40641, 'b': -0.0842075, 'deltaT': 3}
+    temp_model = 'sapm'
+    system = cec_dc_snl_ac_arrays
+    for array in system.arrays:
+        array.temperature_model_parameters = temp_model_params
+    mc = ModelChain(system, location,
+                    aoi_model='no_loss', spectral_model='no_loss',
+                    temperature_model=temp_model)
+    mc.run_model(weather)
+    assert isinstance(mc.results.dc, tuple)
+    assert len(mc.results.dc) == system.num_arrays
+    # check each array
+    for dc in mc.results.dc:
+        assert isinstance(dc, (pd.Series, pd.DataFrame))
+        # ghi is NaN at 2nd time step, all DC outputs should be NaN
+        assert (dc.iloc[1, :].isna()).all()
+
+
 @pytest.mark.parametrize('temp_model', [
     'sapm_temp', 'faiman_temp', 'pvsyst_temp', 'fuentes_temp',
     'noct_sam_temp'])

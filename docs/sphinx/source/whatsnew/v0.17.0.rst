@@ -1,0 +1,46 @@
+.. _whatsnew_0_X_Y:
+
+
+v0.X.Y (Month XX, 20YY)
+-----------------------
+
+Breaking Changes
+~~~~~~~~~~~~~~~~
+* ``ModelChain`` no longer fills NaN with 0 in DC power and AC power.
+  (:issue:`1409`, :pull:`2955`)
+
+Deprecations
+~~~~~~~~~~~~
+
+
+Bug fixes
+~~~~~~~~~
+
+
+Enhancements
+~~~~~~~~~~~~
+
+
+Documentation
+~~~~~~~~~~~~~
+
+
+Testing
+~~~~~~~
+
+
+Benchmarking
+~~~~~~~~~~~~
+
+
+Requirements
+~~~~~~~~~~~~
+
+
+Maintenance
+~~~~~~~~~~~
+
+
+Contributors
+~~~~~~~~~~~~
+* Cliff Hansen (:ghuser:`cwhanse`)

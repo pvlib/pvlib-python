@@ -1282,6 +1282,40 @@ def test_singlediode_dc_arrays(location, dc_model,
         assert isinstance(dc, (pd.Series, pd.DataFrame))
 
 
+@pytest.mark.parametrize('case', ['cec_dc', 'pvwatts_ac'])
+def test_nan_policy(location, case, cec_dc_snl_ac_arrays,
+                    pvwatts_dc_pvwatts_ac_system_arrays):
+    times = pd.date_range('20160101 1200-0700', periods=2, freq='6h')
+    weather = pd.DataFrame({'ghi': [500, np.nan],
+                            'dni': [800, 0], 'dhi': [100, 0]},
+                           index=times)
+    temp_model_params = {'a': -3.40641, 'b': -0.0842075, 'deltaT': 3}
+    temp_model = 'sapm'
+    cases = {'cec_dc': cec_dc_snl_ac_arrays,
+             'pvwatts_ac': pvwatts_dc_pvwatts_ac_system_arrays}
+    system = cases[case]
+    for array in system.arrays:
+        array.temperature_model_parameters = temp_model_params
+    mc = ModelChain(system, location,
+                    aoi_model='no_loss', spectral_model='no_loss',
+                    temperature_model=temp_model)
+    mc.run_model(weather)
+    assert isinstance(mc.results.dc, tuple)
+    assert len(mc.results.dc) == system.num_arrays
+    # check each array
+    for dc in mc.results.dc:
+        # ghi is NaN at 2nd time step, all DC outputs should be NaN
+        if isinstance(dc, pd.DataFrame):
+            assert (dc.iloc[1, :].isna()).all()
+        elif isinstance(dc, pd.Series):
+            assert np.isnan(dc.iloc[1])
+        else:
+            assert False
+    assert isinstance(mc.results.ac, (pd.Series))
+    # ghi is NaN at 2nd time step, AC output should be NaN
+    assert np.isnan(mc.results.ac.iloc[1])
+
+
 @pytest.mark.parametrize('temp_model', [
     'sapm_temp', 'faiman_temp', 'pvsyst_temp', 'fuentes_temp',
     'noct_sam_temp'])

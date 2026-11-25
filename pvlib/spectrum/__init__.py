@@ -1,4 +1,5 @@
 from pvlib.spectrum.spectrl2 import spectrl2  # noqa: F401
+from pvlib.spectrum.sedes2 import sedes2  # noqa: F401
 from pvlib.spectrum.mismatch import (  # noqa: F401
     calc_spectral_mismatch_field,
     spectral_factor_caballero,

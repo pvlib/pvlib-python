@@ -18,3 +18,4 @@ Transposition models
    irradiance.klucher
    irradiance.reindl
    irradiance.king
+   irradiance.muneer

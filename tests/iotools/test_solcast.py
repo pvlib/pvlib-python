@@ -185,11 +185,55 @@ def test_get_solcast_tmy(
                 ['2023-09-20 01:45:00+00:00', '2023-09-20 01:15:00+00:00'],
                 dtype='datetime64[ns, UTC]', name='period_mid', freq=None)
         )
-    )
+    ),
+    (
+        # new standard API format: float air_temp, ISO 8601 UTC offset
+        pd.DataFrame(
+            [[942, 843, 1017.4, 30.2, 7.8, 316, 1010, -2, 4.6, 16.4,
+              '2023-09-20T12:00:00+10:00', 'PT30M', 90],
+             [936, 832, 1017.9, 29.8, 7.9, 316, 996, -14, 4.5, 16.3,
+              '2023-09-20T11:30:00+10:00', 'PT30M', 0]],
+            columns=[
+                'dni', 'ghi', 'surface_pressure', 'air_temp', 'wind_speed_10m',
+                'wind_direction_10m', 'gti', 'azimuth', 'dewpoint_temp',
+                'precipitable_water', 'period_end', 'period', 'zenith'],
+            index=pd.RangeIndex(start=0, stop=2, step=1)
+        ),
+        pd.DataFrame(
+            [[9.4200e+02, 8.4300e+02, 1.0174e+05, 3.0200e+01, 7.8000e+00,
+              3.1600e+02, 1.0100e+03, 2.0000e+00, 4.6000e+00, 1.6400e+00, 90],
+             [9.3600e+02, 8.3200e+02, 1.0179e+05, 2.9800e+01, 7.9000e+00,
+              3.1600e+02, 9.9600e+02, 1.4000e+01, 4.5000e+00, 1.6300e+00, 0]],
+            columns=[
+                'dni', 'ghi', 'pressure', 'temp_air', 'wind_speed',
+                'wind_direction', 'poa_global', 'solar_azimuth',
+                'temp_dew', 'precipitable_water', 'solar_zenith'],
+            index=pd.DatetimeIndex(
+                ['2023-09-20 11:45:00+10:00', '2023-09-20 11:15:00+10:00'],
+                name='period_mid', freq=None)
+        )
+    ),
 ])
 def test_solcast2pvlib(in_df, out_df):
     df = pvlib.iotools.solcast._solcast2pvlib(in_df)
     pd.testing.assert_frame_equal(df.astype(float), out_df.astype(float))
+    assert df.index.tz is not None
+
+
+@pytest.mark.parametrize("period_end,expected", [
+    # legacy format, 7 fractional-second digits and Z suffix
+    (['2025-04-16T06:00:00.0000000Z', '2025-04-16T06:30:00.0000000Z'],
+     ['2025-04-16T06:00:00+00:00', '2025-04-16T06:30:00+00:00']),
+    # new standard format, explicit UTC offset
+    (['2025-04-16T14:00:00+01:30', '2025-04-16T14:30:00+01:30'],
+     ['2025-04-16T14:00:00+01:30', '2025-04-16T14:30:00+01:30']),
+    (['2025-04-16T06:00:00+00:00'], ['2025-04-16T06:00:00+00:00']),
+])
+def test_parse_period_end(period_end, expected):
+    out = pvlib.iotools.solcast._parse_period_end(pd.Series(period_end))
+    expected = pd.DatetimeIndex(pd.to_datetime(expected))
+    assert out.equals(expected)
+    assert str(out.tz) == str(expected.tz)
 
 
 @pytest.mark.parametrize("map_variables", [True, False])
@@ -300,6 +344,33 @@ def test_get_solcast_forecast(
                 json_response[list(json_response.keys())[0]]
             ),
         )
+
+
+@pytest.mark.parametrize("endpoint,function,key", [
+    ("forecast/radiation_and_weather",
+     pvlib.iotools.get_solcast_forecast, "forecasts"),
+    ("live/radiation_and_weather",
+     pvlib.iotools.get_solcast_live, "estimated_actuals"),
+])
+def test_get_solcast_format_version_3(requests_mock, endpoint, function, key):
+    # response format version 3: ISO 8601 UTC offset and float air_temp
+    requests_mock.get(
+        f"https://api.solcast.com.au/data/{endpoint}",
+        json={key: [
+            {'air_temp': 20.1, 'period_end': '2025-04-16T14:00:00+01:30',
+             'period': 'PT30M'},
+            {'air_temp': 20.6, 'period_end': '2025-04-16T14:30:00+01:30',
+             'period': 'PT30M'},
+        ]})
+    df, _ = function(latitude=0, longitude=0, api_key="1234",
+                     format="json;version=3")
+    assert requests_mock.last_request.qs["format"] == ["json;version=3"]
+    expected_index = pd.DatetimeIndex(
+        ['2025-04-16T13:45:00+01:30', '2025-04-16T14:15:00+01:30'],
+        name='period_mid')
+    assert df.index.equals(expected_index)
+    assert str(df.index.tz) == 'UTC+01:30'
+    assert df['temp_air'].tolist() == [20.1, 20.6]
 
 
 @pytest.mark.parametrize(

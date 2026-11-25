@@ -78,6 +78,8 @@ def get_solcast_tmy(
     data : pandas.DataFrame
         containing the values for the parameters requested. The times
         in the DataFrame index indicate the midpoint of each interval.
+        The index is timezone-aware, using the UTC offset returned by
+        the API.
     metadata: dict
         latitude and longitude of the request.
 
@@ -115,8 +117,7 @@ def get_solcast_tmy(
     params = dict(
         latitude=latitude,
         longitude=longitude,
-        format="json",
-        **kwargs
+        **{"format": "json", **kwargs}
     )
 
     data = _get_solcast(
@@ -179,6 +180,8 @@ def get_solcast_historic(
     data : pandas.DataFrame
         containing the values for the parameters requested. The times
         in the DataFrame index indicate the midpoint of each interval.
+        The index is timezone-aware, using the UTC offset returned by
+        the API.
     metadata: dict
         latitude and longitude of the request.
 
@@ -221,8 +224,7 @@ def get_solcast_historic(
         end=end,
         duration=duration,
         api_key=api_key,
-        format="json",
-        **kwargs
+        **{"format": "json", **kwargs}
     )
 
     data = _get_solcast(
@@ -256,13 +258,17 @@ def get_solcast_forecast(
         from Solcast's "period end" convention.
     kwargs:
         Optional parameters passed to the API.
-        See [2]_ for full list of parameters.
+        See [2]_ for full list of parameters. ``format`` defaults to
+        ``"json"``; use ``format="json;version=3"`` to opt in to the
+        Solcast response format version 3 before it becomes the default.
 
     Returns
     -------
     data : pandas.DataFrame
         Contains the values for the parameters requested. The times
         in the DataFrame index indicate the midpoint of each interval.
+        The index is timezone-aware, using the UTC offset returned by
+        the API.
     metadata: dict
         latitude and longitude of the request.
 
@@ -299,8 +305,7 @@ def get_solcast_forecast(
     params = dict(
         latitude=latitude,
         longitude=longitude,
-        format="json",
-        **kwargs
+        **{"format": "json", **kwargs}
     )
 
     data = _get_solcast(
@@ -334,13 +339,17 @@ def get_solcast_live(
         from Solcast's "period end" convention.
     kwargs:
         Optional parameters passed to the API.
-        See [2]_ for full list of parameters.
+        See [2]_ for full list of parameters. ``format`` defaults to
+        ``"json"``; use ``format="json;version=3"`` to opt in to the
+        Solcast response format version 3 before it becomes the default.
 
     Returns
     -------
     data : pandas.DataFrame
         containing the values for the parameters requested. The times
         in the DataFrame index indicate the midpoint of each interval.
+        The index is timezone-aware, using the UTC offset returned by
+        the API.
     metadata: dict
         latitude and longitude of the request.
 
@@ -386,8 +395,7 @@ def get_solcast_live(
     params = dict(
         latitude=latitude,
         longitude=longitude,
-        format="json",
-        **kwargs
+        **{"format": "json", **kwargs}
     )
 
     data = _get_solcast(
@@ -398,6 +406,17 @@ def get_solcast_live(
     )
 
     return data, {"latitude": latitude, "longitude": longitude}
+
+
+def _parse_period_end(period_end):
+    """Parse Solcast ``period_end`` timestamps to a tz-aware DatetimeIndex.
+
+    Supports both the legacy format (``2025-04-16T06:00:00.0000000Z``) and
+    the ISO 8601 UTC offset format (``2025-04-16T14:00:00+01:30``).
+    The API returns all timestamps with a single fixed UTC offset
+    (set by the ``time_zone`` parameter), which is kept.
+    """
+    return pd.DatetimeIndex(pd.to_datetime(period_end))
 
 
 def _solcast2pvlib(data):
@@ -414,7 +433,7 @@ def _solcast2pvlib(data):
     """
     # move from period_end to period_middle as per pvlib convention
 
-    data["period_mid"] = pd.to_datetime(
+    data["period_mid"] = _parse_period_end(
         data.period_end) - pd.to_timedelta(data.period.values) / 2
     data = data.set_index("period_mid").drop(columns=["period_end", "period"])
 

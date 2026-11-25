@@ -20,6 +20,7 @@ TEMPERATURE_MODEL_PARAMETERS = {
         'insulated_back_glass_polymer': {'a': -2.81, 'b': -.0455, 'deltaT': 0},
     },
     'pvsyst': {'freestanding': {'u_c': 29.0, 'u_v': 0},
+               'freestanding_wind': {'u_c': 25.0, 'u_v': 1.2},
                'insulated': {'u_c': 15.0, 'u_v': 0},
                'semi_integrated': {'u_c': 20.0, 'u_v': 0}}
 }
@@ -342,8 +343,8 @@ def pvsyst_cell(poa_global, temp_air, wind_speed=1.0, u_c=29.0, u_v=0.0,
 
     wind_speed : numeric, default 1.0
         Wind speed in m/s measured at the same height for which the wind loss
-        factor was determined.  The default value 1.0 m/s is the wind
-        speed at module height used to determine NOCT. [m/s]
+        factor was determined. See Notes for the ``freestanding_wind``
+        parameter set. [m/s]
 
     u_c : float, default 29.0
         Combined heat loss factor coefficient. The default value is
@@ -388,15 +389,23 @@ def pvsyst_cell(poa_global, temp_air, wind_speed=1.0, u_c=29.0, u_v=0.0,
     factors provided represent the combined effect of convection, radiation and
     conduction, and their values are experimentally determined.
 
-    +-----------------+---------------+---------------+
-    | Mounting        | :math:`U_{c}` | :math:`U_{v}` |
-    +=================+===============+===============+
-    | freestanding    | 29.0          | 0.0           |
-    +-----------------+---------------+---------------+
-    | insulated       | 15.0          | 0.0           |
-    +-----------------+---------------+---------------+
-    | semi_integrated | 20.0          | 0.0           |
-    +-----------------+---------------+---------------+
+    +-------------------+---------------+---------------+
+    | Parameter set     | :math:`U_{c}` | :math:`U_{v}` |
+    +===================+===============+===============+
+    | freestanding      | 29.0          | 0.0           |
+    +-------------------+---------------+---------------+
+    | freestanding_wind | 25.0          | 1.2           |
+    +-------------------+---------------+---------------+
+    | insulated         | 15.0          | 0.0           |
+    +-------------------+---------------+---------------+
+    | semi_integrated   | 20.0          | 0.0           |
+    +-------------------+---------------+---------------+
+
+    The ``freestanding_wind`` parameters are the PVUSA correlation described
+    in [3]_ for open-rack systems with wind speed data. Standard meteorological
+    wind speed is measured at 10 m above ground. The wind loss coefficient
+    must be appropriate for the measurement height; these coefficients are
+    not universal. Use coefficients fitted to the installation when available.
 
     Mounting cases can be described in terms of air flow across and around the
     rear-facing surface of the module:
@@ -416,6 +425,11 @@ def pvsyst_cell(poa_global, temp_air, wind_speed=1.0, u_c=29.0, u_v=0.0,
 
     .. [2] Faiman, D. (2008). "Assessing the outdoor operating temperature of
        photovoltaic modules." Progress in Photovoltaics 16(4): 307-315.
+
+    .. [3] PVsyst SA, "Heat transfer coefficients (U-values)," PVsyst
+       documentation. [Online]. Available:
+       https://www.pvsyst.com/help/project-design/array-and-system-losses/array-thermal-losses/u-value-measurement.html.
+       [Accessed: 8-Nov-2026].
 
     Examples
     --------

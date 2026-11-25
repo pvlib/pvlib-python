@@ -78,6 +78,14 @@ def test_pvsyst_cell_kwargs():
     assert_allclose(result, 33.315, 0.001)
 
 
+def test_pvsyst_cell_freestanding_wind():
+    params = temperature._temperature_model_params(
+        'pvsyst', 'freestanding_wind')
+    result = temperature.pvsyst_cell(1000, 20, wind_speed=np.array([0, 5]),
+                                     **params)
+    assert_allclose(result, [52.4, 46.12903226])
+
+
 def test_pvsyst_cell_ndarray():
     temps = np.array([0, 10, 5])
     irrads = np.array([0, 500, 0])

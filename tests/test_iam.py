@@ -462,6 +462,29 @@ def test_schlick_diffuse():
                         rtol=1e-6)
 
 
+def test_schlick_diffuse_near_0_and_180():
+    # Eq 4 near 180 degrees and Eq 6 near 0 degrees lose precision in
+    # float64; expected values were computed from them with 60-digit
+    # arithmetic
+    surface_tilt = np.array([179.5, 179.9, 179.99, 179.9999, 179.999999, 180])
+    expected_sky = np.array([2.44073643107e-2, 4.92686113684e-3,
+                             4.93712941647e-4, 4.93826018196e-6,
+                             4.93827147824e-8, 0])
+    actual_iam = _iam.schlick_diffuse(surface_tilt)
+    assert_allclose(actual_iam['sky'], expected_sky, rtol=1e-8)
+
+    surface_tilt = np.array([0, 1e-4, 1e-3, 0.01, 0.1, 0.5])
+    expected_ground = np.array([0, 4.93826018180e-6, 4.93815737467e-5,
+                                4.93712941647e-4, 4.92686113684e-3,
+                                2.44073643107e-2])
+    actual_iam = _iam.schlick_diffuse(surface_tilt)
+    assert_allclose(actual_iam['ground'], expected_ground, rtol=1e-8)
+
+    actual_iam = _iam.schlick_diffuse(180.)
+    assert actual_iam['sky'] == 0
+    assert_allclose(actual_iam['ground'], 20 / 21)
+
+
 @pytest.mark.parametrize('source,source_params,target,expected', [
     ('physical', {'n': 1.5, 'K': 4.5, 'L': 0.004}, 'martin_ruiz',
      {'a_r': 0.174037}),

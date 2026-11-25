@@ -152,7 +152,7 @@ def fit_villalva(
     :py:func:`pvlib.pvsystem.calcparams_villalva`. I-V curve points can then
     be calculated with :py:func:`pvlib.pvsystem.singlediode` or
     :py:func:`pvlib.pvsystem.i_from_v`.
-    
+
     To align with pvlib's naming conventions, some parameter names differ
     from those used in Villalva et al. [1]_. The photocurrent
     :math:`I_{pv}` is denoted by ``I_L``, the shunt resistance

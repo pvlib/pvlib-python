@@ -135,7 +135,11 @@ def get_pvgis_hourly(latitude, longitude, start=None, end=None,
     Returns
     -------
     data : pandas.DataFrame
-        Time-series of hourly data, see Notes for fields
+        Hourly data indexed by the PVGIS timestamps in UTC. The irradiance
+        timestamp depends on the radiation database. For PVGIS-SARAH it
+        is the time of the satellite observation at the site. For PVGIS-ERA5
+        the irradiance is averaged over the hour and labeled at ``HH:30``
+        [5]_. See Notes for fields.
     metadata : dict
         Dictionary containing metadata
 
@@ -205,6 +209,8 @@ def get_pvgis_hourly(latitude, longitude, start=None, end=None,
        <https://joint-research-centre.ec.europa.eu/photovoltaic-geographical-information-system-pvgis/getting-started-pvgis/api-non-interactive-service_en>`_
     .. [4] `PVGIS horizon profile tool
        <https://ec.europa.eu/jrc/en/PVGIS/tools/horizon>`_
+    .. [5] `PVGIS 5 user manual, hourly radiation data
+       <https://joint-research-centre.ec.europa.eu/photovoltaic-geographical-information-system-pvgis/using-pvgis-5/pvgis-5-user-manual_en>`_
     """  # noqa: E501
     # use requests to format the query string by passing params dictionary
     params = {'lat': latitude, 'lon': longitude, 'outputformat': outputformat,
@@ -486,7 +492,9 @@ def get_pvgis_tmy(latitude, longitude, outputformat='json', usehorizon=True,
     Returns
     -------
     data : pandas.DataFrame
-        the weather data
+        Hourly weather data. CSV and JSON use ``HH:00`` index labels. See the
+        irradiance time offset [2]_ for the underlying irradiance timestamp.
+        For EPW, see :func:`~pvlib.iotools.read_epw` for index parsing.
     metadata : list or dict
         file metadata
 
@@ -504,10 +512,11 @@ def get_pvgis_tmy(latitude, longitude, outputformat='json', usehorizon=True,
     References
     ----------
     .. [1] `PVGIS <https://ec.europa.eu/jrc/en/pvgis>`_
-    .. [2] `PVGIS TMY tool <https://ec.europa.eu/jrc/en/PVGIS/tools/tmy>`_
+    .. [2] `PVGIS TMY tool
+       <https://joint-research-centre.ec.europa.eu/photovoltaic-geographical-information-system-pvgis/using-pvgis-5/pvgis-5-tools/pvgis-typical-meteorological-year-tmy-generator_en>`_
     .. [3] `PVGIS horizon profile tool
        <https://ec.europa.eu/jrc/en/PVGIS/tools/horizon>`_
-    """
+    """  # noqa: E501
     # use requests to format the query string by passing params dictionary
     params = {'lat': latitude, 'lon': longitude, 'outputformat': outputformat}
     # pvgis only likes 0 for False, and 1 for True, not strings, also the

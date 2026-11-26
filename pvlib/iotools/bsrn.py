@@ -95,8 +95,9 @@ def get_bsrn(station, start, end, username, password,
     -------
     data: DataFrame
         timeseries data from the BSRN archive, see
-        :func:`pvlib.iotools.read_bsrn` for fields. An empty DataFrame is
-        returned if no data was found for the time period.
+        :func:`pvlib.iotools.read_bsrn` for fields. The UTC index labels the
+        start of each measurement interval. An empty DataFrame is returned if
+        no data was found for the requested dates.
     metadata: dict
         metadata for the last available monthly file.
 

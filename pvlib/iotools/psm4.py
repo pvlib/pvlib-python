@@ -137,7 +137,8 @@ def get_nsrdb_psm4_aggregated(latitude, longitude, api_key, email,
     Returns
     -------
     data : pandas.DataFrame
-        timeseries data from NLR PSM4
+        Time series indexed by the timestamps supplied by NSRDB. See
+        :func:`~pvlib.iotools.read_nsrdb_psm4` for how the index is built.
     metadata : dict
         metadata from NLR PSM4 about the record, see
         :func:`pvlib.iotools.read_nsrdb_psm4` for fields
@@ -269,7 +270,8 @@ def get_nsrdb_psm4_tmy(latitude, longitude, api_key, email, year='tmy',
     Returns
     -------
     data : pandas.DataFrame
-        timeseries data from NLR PSM4
+        Time series indexed by the timestamps supplied by NSRDB. See
+        :func:`~pvlib.iotools.read_nsrdb_psm4` for how the index is built.
     metadata : dict
         metadata from NLR PSM4 about the record, see
         :func:`pvlib.iotools.read_nsrdb_psm4` for fields
@@ -401,7 +403,8 @@ def get_nsrdb_psm4_conus(latitude, longitude, api_key, email, year,
     Returns
     -------
     data : pandas.DataFrame
-        timeseries data from NLR PSM4
+        Time series indexed by the timestamps supplied by NSRDB. See
+        :func:`~pvlib.iotools.read_nsrdb_psm4` for how the index is built.
     metadata : dict
         metadata from NLR PSM4 about the record, see
         :func:`pvlib.iotools.read_nsrdb_psm4` for fields
@@ -534,7 +537,8 @@ def get_nsrdb_psm4_full_disc(latitude, longitude, api_key, email,
     Returns
     -------
     data : pandas.DataFrame
-        timeseries data from NLR PSM4
+        Time series indexed by the timestamps supplied by NSRDB. See
+        :func:`~pvlib.iotools.read_nsrdb_psm4` for how the index is built.
     metadata : dict
         metadata from NLR PSM4 about the record, see
         :func:`pvlib.iotools.read_nsrdb_psm4` for fields
@@ -674,7 +678,8 @@ def get_nsrdb_psm4_polar(latitude, longitude, api_key, email,
     Returns
     -------
     data : pandas.DataFrame
-        timeseries data from NLR PSM4 Polar
+        Time series indexed by the timestamps supplied by NSRDB. See
+        :func:`~pvlib.iotools.read_nsrdb_psm4` for how the index is built.
     metadata : dict
         metadata from NLR PSM4 about the record, see
         :func:`pvlib.iotools.read_nsrdb_psm4` for fields
@@ -817,7 +822,8 @@ def get_nsrdb_psm4_polar_tmy(latitude, longitude, api_key, email, year='tmy',
     Returns
     -------
     data : pandas.DataFrame
-        timeseries data from NLR PSM4 Polar TMY
+        Time series indexed by the timestamps supplied by NSRDB. See
+        :func:`~pvlib.iotools.read_nsrdb_psm4` for how the index is built.
     metadata : dict
         metadata from NLR PSM4, see
         :func:`pvlib.iotools.read_nsrdb_psm4` for fields
@@ -912,7 +918,11 @@ def read_nsrdb_psm4(filename, map_variables=True):
     Returns
     -------
     data : pandas.DataFrame
-        timeseries data from NLR PSM4
+        Time series indexed by the file's ``Year``, ``Month``, ``Day``,
+        ``Hour``, and ``Minute`` columns, localized using its ``Time Zone``
+        metadata. The positions of these timestamps within the hour can vary
+        with dataset and resolution. For example, hourly Polar single-year
+        files can use ``HH:00`` and hourly Polar TMY files can use ``HH:30``.
     metadata : dict
         metadata from NLR PSM4 about the record, see notes for fields
 

@@ -234,8 +234,9 @@ def read_midc_raw_data_from_nrel(site, start, end, variable_map={},
 
     Returns
     -------
-    data:
-        Dataframe with DatetimeIndex localized to the station location.
+    data : pandas.DataFrame
+        DataFrame indexed by the timestamps in the raw data, localized to
+        the time zone specified in the file header.
 
     Raises
     ------

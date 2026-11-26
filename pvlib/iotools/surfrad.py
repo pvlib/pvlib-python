@@ -215,7 +215,8 @@ def get_surfrad(station, start, end, map_variables=True,
     Returns
     -------
     data : pd.DataFrame
-        Dataframe with data from SURFRAD.
+        Time series with a UTC index. Each timestamp marks the end of the
+        averaging interval [4]_.
     meta : dict
         Metadata.
 
@@ -242,7 +243,9 @@ def get_surfrad(station, start, end, map_variables=True,
        `SURFRAD Archive <ftp://aftp.cmdl.noaa.gov/data/radiation/surfrad/>`_
     .. [3] `NOAA SURFRAD HTTP Index
        <https://gml.noaa.gov/aftp/data/radiation/surfrad/>`_
-    """
+    .. [4] `NOAA SURFRAD data format
+       <https://gml.noaa.gov/aftp/data/radiation/surfrad/Bondville_IL/README_SURFRAD.txt>`_
+    """  # noqa: E501
     start = pd.to_datetime(start)
     end = pd.to_datetime(end)
 

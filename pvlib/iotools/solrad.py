@@ -166,7 +166,8 @@ def get_solrad(station, start, end,
     Returns
     -------
     data : pd.DataFrame
-        Dataframe with data from SOLRAD.
+        Time series with a UTC index. Each timestamp marks the end of the
+        averaging interval [2]_.
     meta : dict
         Metadata.
 

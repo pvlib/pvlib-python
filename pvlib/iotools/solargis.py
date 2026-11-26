@@ -106,7 +106,9 @@ def get_solargis(latitude, longitude, start, end, variables, api_key,
     Returns
     -------
     data : DataFrame
-        DataFrame containing time series data.
+        Time series indexed by timestamps from the Solargis API.
+        ``timestamp_type`` selects the start, center (default), or end of
+        each interval.
     meta : dict
         Dictionary containing metadata.
 

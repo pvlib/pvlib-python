@@ -52,6 +52,8 @@ Documentation
 * Note deprecation of ``king`` model in :py:func:`~pvlib.irradiance.get_total_irradiance`
   and :py:func:`~pvlib.irradiance.get_sky_diffuse` docstrings.
   (:issue:`2897`, :pull:`2904`)
+* Document time index conventions for NSRDB PSM4, PVGIS, CAMS, Solargis,
+  BSRN, SURFRAD, SOLRAD, and MIDC readers. (:issue:`2963`)
 
 
 Testing
@@ -87,3 +89,4 @@ Contributors
 * :ghuser:`xiajiahang`
 * Jakub Krasuski (:ghuser:`Blizzeq`)
 * Dylan Pulver (:ghuser:`dylanpulver`)
+* :ghuser:`maoji-y`

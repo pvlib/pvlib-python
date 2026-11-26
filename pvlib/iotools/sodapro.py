@@ -104,7 +104,10 @@ def get_cams(latitude, longitude, start, end, email, identifier='mcclear',
     Returns
     -------
     data: pandas.DataFrame
-        Timeseries data, see Notes for columns
+        Time series data indexed by the start (``label='left'``) or end
+        (``label='right'``) of the observation interval. Daily and monthly
+        data use dates without a timezone. For monthly data, ``label='right'``
+        (the default) uses the last day of the month. See Notes for columns.
     metadata: dict
         Metadata of the requested time-series
 
@@ -120,7 +123,7 @@ def get_cams(latitude, longitude, start, end, email, identifier='mcclear',
     ========================  ======  =========================================
     **Mapped field names are returned when the map_variables argument is True**
     ---------------------------------------------------------------------------
-    Observation period        str     Beginning/end of time period
+    Observation period        str     Start and end of the observation interval
     TOA, ghi_extra            float   Horizontal radiation at top of atmosphere
     Clear sky GHI, ghi_clear  float   Clear sky global radiation on horizontal
     Clear sky BHI, bhi_clear  float   Clear sky beam radiation on horizontal

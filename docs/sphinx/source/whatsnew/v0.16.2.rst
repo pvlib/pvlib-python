@@ -52,6 +52,8 @@ Documentation
 * Note deprecation of ``king`` model in :py:func:`~pvlib.irradiance.get_total_irradiance`
   and :py:func:`~pvlib.irradiance.get_sky_diffuse` docstrings.
   (:issue:`2897`, :pull:`2904`)
+* Standardize unit formatting in :py:mod:`pvlib.temperature` docstrings to
+  comply with the style guide. (:issue:`2519`)
 
 
 Testing
@@ -87,3 +89,4 @@ Contributors
 * :ghuser:`xiajiahang`
 * Jakub Krasuski (:ghuser:`Blizzeq`)
 * Dylan Pulver (:ghuser:`dylanpulver`)
+* :ghuser:`kunaalxoxo`

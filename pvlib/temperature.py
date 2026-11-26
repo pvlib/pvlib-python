@@ -64,13 +64,13 @@ def sapm_cell(poa_global, temp_air, wind_speed, a, b, deltaT,
     Parameters
     ----------
     poa_global : numeric
-        Total incident irradiance [W/m^2].
+        Total incident irradiance. [Wm⁻²]
 
     temp_air : numeric
-        Ambient dry bulb temperature [C].
+        Ambient dry bulb temperature. [°C]
 
     wind_speed : numeric
-        Wind speed at a height of 10 meters [m/s].
+        Wind speed at a height of 10 meters. [m/s]
 
     a : float
         Parameter :math:`a` in :eq:`sapm1`.
@@ -79,15 +79,16 @@ def sapm_cell(poa_global, temp_air, wind_speed, a, b, deltaT,
         Parameter :math:`b` in :eq:`sapm1`.
 
     deltaT : float
-        Parameter :math:`\Delta T` in :eq:`sapm2` [C].
+        Parameter :math:`\Delta T` in :eq:`sapm2`. [°C]
 
     irrad_ref : float, default 1000
         Reference irradiance, parameter :math:`E_{0}` in
-        :eq:`sapm2` [W/m^2].
+        :eq:`sapm2`. [Wm⁻²]
 
     Returns
     -------
-    numeric, values in degrees C.
+    numeric
+        Cell temperature. [°C]
 
     Notes
     -----
@@ -107,14 +108,15 @@ def sapm_cell(poa_global, temp_air, wind_speed, a, b, deltaT,
     The module back surface temperature :math:`T_{m}` is implemented in
     :py:func:`~pvlib.temperature.sapm_module`.
 
-    Inputs to the model are plane-of-array irradiance :math:`E` (W/m2) and
-    ambient air temperature :math:`T_{a}` (C). Model parameters depend both on
+    Inputs to the model are plane-of-array irradiance :math:`E` (Wm⁻²) and
+    ambient air temperature :math:`T_{a}` (°C). Model parameters depend both on
     the module construction and its mounting. Parameter sets are provided in
     [1]_ for representative modules and mounting, and are coded for convenience
     in :data:`~pvlib.temperature.TEMPERATURE_MODEL_PARAMETERS`.
 
     +---------------+----------------+-------+---------+---------------------+
-    | Module        | Mounting       | a     | b       | :math:`\Delta T [C]`|
+    | Module        | Mounting       | a     | b       | :math:`\Delta T`    |
+    |               |                |       |         | [°C]                |
     +===============+================+=======+=========+=====================+
     | glass/glass   | open rack      | -3.47 | -0.0594 | 3                   |
     +---------------+----------------+-------+---------+---------------------+
@@ -171,13 +173,13 @@ def sapm_module(poa_global, temp_air, wind_speed, a, b):
     Parameters
     ----------
     poa_global : numeric
-        Total incident irradiance [W/m^2].
+        Total incident irradiance. [Wm⁻²]
 
     temp_air : numeric
-        Ambient dry bulb temperature [C].
+        Ambient dry bulb temperature. [°C]
 
     wind_speed : numeric
-        Wind speed at a height of 10 meters [m/s].
+        Wind speed at a height of 10 meters. [m/s]
 
     a : float
         Parameter :math:`a` in :eq:`sapm1mod`.
@@ -187,7 +189,8 @@ def sapm_module(poa_global, temp_air, wind_speed, a, b):
 
     Returns
     -------
-    numeric, values in degrees C.
+    numeric
+        Module back surface temperature. [°C]
 
     Notes
     -----
@@ -198,8 +201,8 @@ def sapm_module(poa_global, temp_air, wind_speed, a, b):
 
        T_{m} = E \times \exp (a + b \times WS) + T_{a}
 
-    Inputs to the model are plane-of-array irradiance :math:`E` (W/m2) and
-    ambient air temperature :math:`T_{a}` (C). Model outputs are surface
+    Inputs to the model are plane-of-array irradiance :math:`E` (Wm⁻²) and
+    ambient air temperature :math:`T_{a}` (°C). Model outputs are surface
     temperature at the back of the module :math:`T_{m}` and cell temperature
     :math:`T_{C}`. Model parameters depend both on the module construction and
     its mounting. Parameter sets are provided in [1]_ for representative
@@ -207,7 +210,8 @@ def sapm_module(poa_global, temp_air, wind_speed, a, b):
     :data:`~pvlib.temperature.TEMPERATURE_MODEL_PARAMETERS`.
 
     +---------------+----------------+-------+---------+---------------------+
-    | Module        | Mounting       | a     | b       | :math:`\Delta T [C]`|
+    | Module        | Mounting       | a     | b       | :math:`\Delta T`    |
+    |               |                |       |         | [°C]                |
     +===============+================+=======+=========+=====================+
     | glass/glass   | open rack      | -3.47 | -0.0594 | 3                   |
     +---------------+----------------+-------+---------+---------------------+
@@ -255,21 +259,22 @@ def sapm_cell_from_module(module_temperature, poa_global, deltaT,
     Parameters
     ----------
     module_temperature : numeric
-        Temperature of back of module surface [C].
+        Temperature of back of module surface. [°C]
 
     poa_global : numeric
-        Total incident irradiance [W/m^2].
+        Total incident irradiance. [Wm⁻²]
 
     deltaT : float
-        Parameter :math:`\Delta T` in :eq:`sapm2_cell_from_mod` [C].
+        Parameter :math:`\Delta T` in :eq:`sapm2_cell_from_mod`. [°C]
 
     irrad_ref : float, default 1000
         Reference irradiance, parameter :math:`E_{0}` in
-        :eq:`sapm2` [W/m^2].
+        :eq:`sapm2`. [Wm⁻²]
 
     Returns
     -------
-    numeric, values in degrees C.
+    numeric
+        Cell temperature. [°C]
 
     Notes
     -----
@@ -289,7 +294,8 @@ def sapm_cell_from_module(module_temperature, poa_global, deltaT,
     :data:`~pvlib.temperature.TEMPERATURE_MODEL_PARAMETERS`.
 
     +---------------+----------------+-------+---------+---------------------+
-    | Module        | Mounting       | a     | b       | :math:`\Delta T [C]`|
+    | Module        | Mounting       | a     | b       | :math:`\Delta T`    |
+    |               |                |       |         | [°C]                |
     +===============+================+=======+=========+=====================+
     | glass/glass   | open rack      | -3.47 | -0.0594 | 3                   |
     +---------------+----------------+-------+---------+---------------------+
@@ -335,39 +341,39 @@ def pvsyst_cell(poa_global, temp_air, wind_speed=1.0, u_c=29.0, u_v=0.0,
     Parameters
     ----------
     poa_global : numeric
-        Total incident irradiance [W/m^2].
+        Total incident irradiance. [Wm⁻²]
 
     temp_air : numeric
-        Ambient dry bulb temperature [C].
+        Ambient dry bulb temperature. [°C]
 
     wind_speed : numeric, default 1.0
-        Wind speed in m/s measured at the same height for which the wind loss
-        factor was determined.  The default value 1.0 m/s is the wind
-        speed at module height used to determine NOCT. [m/s]
+        Wind speed measured at the same height for which the wind loss factor
+        was determined. [m/s] The default value 1.0 m/s is the wind speed at
+        module height used to determine NOCT.
 
     u_c : float, default 29.0
-        Combined heat loss factor coefficient. The default value is
+        Combined heat loss factor coefficient. [Wm⁻²°C⁻¹] The default value is
         representative of freestanding modules with the rear surfaces exposed
         to open air (e.g., rack mounted). Parameter :math:`U_{c}` in
         :eq:`pvsyst`.
-        :math:`\left[\frac{\text{W}/{\text{m}^2}}{\text{C}}\right]`
 
     u_v : float, default 0.0
-        Combined heat loss factor influenced by wind. Parameter :math:`U_{v}`
-        in :eq:`pvsyst`.
-        :math:`\left[ \frac{\text{W}/\text{m}^2}{\text{C}\ \left( \text{m/s} \right)} \right]`
+        Combined heat loss factor influenced by wind. [Wm⁻²°C⁻¹(m/s)⁻¹]
+        Parameter :math:`U_{v}` in :eq:`pvsyst`.
 
     module_efficiency : numeric, default 0.1
-        Module external efficiency as a fraction. Parameter :math:`\eta_{m}`
-        in :eq:`pvsyst`. Calculate as
+        Module external efficiency as a fraction. [unitless] Parameter
+        :math:`\eta_{m}` in :eq:`pvsyst`. Calculate as
         :math:`\eta_{m} = DC\ power / (POA\ irradiance \times module\ area)`.
 
     alpha_absorption : numeric, default 0.9
-        Absorption coefficient. Parameter :math:`\alpha` in :eq:`pvsyst`.
+        Absorption coefficient. [unitless] Parameter :math:`\alpha` in
+        :eq:`pvsyst`.
 
     Returns
     -------
-    numeric, values in degrees Celsius
+    numeric
+        Cell temperature. [°C]
 
     Notes
     -----
@@ -378,8 +384,8 @@ def pvsyst_cell(poa_global, temp_air, wind_speed=1.0, u_c=29.0, u_v=0.0,
 
         T_{C} = T_{a} + \frac{\alpha E (1 - \eta_{m})}{U_{c} + U_{v} \times WS}
 
-    Inputs to the model are plane-of-array irradiance :math:`E` (W/m2), ambient
-    air temperature :math:`T_{a}` (C) and wind speed :math:`WS` (m/s). Model
+    Inputs to the model are plane-of-array irradiance :math:`E` (Wm⁻²), ambient
+    air temperature :math:`T_{a}` (°C) and wind speed :math:`WS` (m/s). Model
     output is cell temperature :math:`T_{C}`. Model parameters depend both on
     the module construction and its mounting. Parameters are provided in
     [1]_ for open (freestanding), close (insulated), and intermediate
@@ -444,31 +450,30 @@ def faiman(poa_global, temp_air, wind_speed=1.0, u0=25.0, u1=6.84):
     Parameters
     ----------
     poa_global : numeric
-        Total incident irradiance [W/m^2].
+        Total incident irradiance. [Wm⁻²]
 
     temp_air : numeric
-        Ambient dry bulb temperature [C].
+        Ambient dry bulb temperature. [°C]
 
     wind_speed : numeric, default 1.0
-        Wind speed in m/s measured at the same height for which the wind loss
-        factor was determined.  The default value 1.0 m/s is the wind
-        speed at module height used to determine NOCT. [m/s]
+        Wind speed measured at the same height for which the wind loss factor
+        was determined. [m/s] The default value 1.0 m/s is the wind speed at
+        module height used to determine NOCT.
 
     u0 : numeric, default 25.0
-        Combined heat loss factor coefficient. The default value is for module
-        temperature determined by Faiman for 7 silicon modules
-        in the Negev desert on an open rack at 30.9° tilt.
-        :math:`\left[\frac{\text{W}/{\text{m}^2}}{\text{C}}\right]`
+        Combined heat loss factor coefficient. [Wm⁻²°C⁻¹] The default value is
+        for module temperature determined by Faiman for 7 silicon modules in
+        the Negev desert on an open rack at 30.9° tilt.
 
     u1 : numeric, default 6.84
-        Combined heat loss factor influenced by wind. The default value is
-        for module temperature determined by Faiman for 7 silicon modules
-        in the Negev desert on an open rack at 30.9° tilt.
-        :math:`\left[ \frac{\text{W}/\text{m}^2}{\text{C}\ \left( \text{m/s} \right)} \right]`
+        Combined heat loss factor influenced by wind. [Wm⁻²°C⁻¹(m/s)⁻¹] The
+        default value is for module temperature determined by Faiman for 7
+        silicon modules in the Negev desert on an open rack at 30.9° tilt.
 
     Returns
     -------
-    numeric, values in degrees Celsius
+    numeric
+        Cell or module temperature. [°C]
 
     Notes
     -----
@@ -523,47 +528,45 @@ def faiman_rad(poa_global, temp_air, wind_speed=1.0, ir_down=None,
     Parameters
     ----------
     poa_global : numeric
-        Total incident irradiance [W/m^2].
+        Total incident irradiance. [Wm⁻²]
 
     temp_air : numeric
-        Ambient dry bulb temperature [C].
+        Ambient dry bulb temperature. [°C]
 
     wind_speed : numeric, default 1.0
         Wind speed measured at the same height for which the wind loss
-        factor was determined.  The default value 1.0 m/s is the wind
-        speed at module height used to determine NOCT. [m/s]
+        factor was determined. [m/s] The default value 1.0 m/s is the wind
+        speed at module height used to determine NOCT.
 
     ir_down : numeric, default 0.0
         Downwelling infrared radiation from the sky, measured on a horizontal
-        surface. [W/m^2]
+        surface. [Wm⁻²]
 
     u0 : numeric, default 25.0
-        Combined heat loss factor coefficient. The default value is for module
-        temperature determined by Faiman for 7 silicon modules
-        in the Negev desert on an open rack at 30.9° tilt.
-        :math:`\left[\frac{\text{W}/{\text{m}^2}}{\text{C}}\right]`
+        Combined heat loss factor coefficient. [Wm⁻²°C⁻¹] The default value is
+        for module temperature determined by Faiman for 7 silicon modules in
+        the Negev desert on an open rack at 30.9° tilt.
 
     u1 : numeric, default 6.84
-        Combined heat loss factor influenced by wind. The default value is for
-        module temperature determined by Faiman for 7 silicon modules
-        in the Negev desert on an open rack at 30.9° tilt.
-        :math:`\left[ \frac{\text{W}/\text{m}^2}{\text{C}\ \left( \text{m/s} \right)} \right]`
+        Combined heat loss factor influenced by wind. [Wm⁻²°C⁻¹(m/s)⁻¹] The
+        default value is for module temperature determined by Faiman for 7
+        silicon modules in the Negev desert on an open rack at 30.9° tilt.
 
     sky_view : numeric, default 1.0
         Effective view factor limiting the radiative exchange between the
-        module and the sky. For a tilted array the expressions
+        module and the sky. [unitless] For a tilted array the expressions
         (1 + 3*cos(tilt)) / 4 can be used as a first estimate for sky_view
         as discussed in [4]_. The default value is for a horizontal module.
-        [unitless]
 
     emissivity : numeric, default 0.88
-        Infrared emissivity of the module surface facing the sky. The default
-        value represents the middle of a range of values found in the
-        literature. [unitless]
+        Infrared emissivity of the module surface facing the sky. [unitless]
+        The default value represents the middle of a range of values found in
+        the literature.
 
     Returns
     -------
-    numeric, values in degrees Celsius
+    numeric
+        Cell or module temperature. [°C]
 
     Notes
     -----
@@ -629,24 +632,23 @@ def ross(poa_global, temp_air, noct=None, k=None):
     Parameters
     ----------
     poa_global : numeric
-        Total incident irradiance. [W/m⁻²]
+        Total incident irradiance. [Wm⁻²]
 
     temp_air : numeric
-        Ambient dry bulb temperature. [C]
+        Ambient dry bulb temperature. [°C]
 
     noct : numeric, optional
-        Nominal operating cell temperature [C], determined at conditions of
-        800 W/m⁻² irradiance, 20 C ambient air temperature and 1 m/s wind.
+        Nominal operating cell temperature. [°C] Determined at conditions of
+        800 Wm⁻² irradiance, 20 °C ambient air temperature and 1 m/s wind.
         If ``noct`` is not provided, ``k`` is required.
-    k: numeric, optional
-        Ross coefficient [Km²W⁻¹], which is an alternative to employing
-        NOCT in Ross's equation. If ``k`` is not provided, ``noct`` is
-        required.
+    k : numeric, optional
+        Ross coefficient, which is an alternative to employing NOCT in Ross's
+        equation. [Km²W⁻¹] If ``k`` is not provided, ``noct`` is required.
 
     Returns
     -------
     cell_temperature : numeric
-        Cell temperature. [C]
+        Cell temperature. [°C]
 
     Notes
     -----
@@ -754,27 +756,27 @@ def fuentes(poa_global, temp_air, wind_speed, noct_installed, module_height=5,
     Parameters
     ----------
     poa_global : pandas Series
-        Total incident irradiance [W/m^2]
+        Total incident irradiance. [Wm⁻²]
 
     temp_air : pandas Series
-        Ambient dry bulb temperature [C]
+        Ambient dry bulb temperature. [°C]
 
     wind_speed : pandas Series
-        Wind speed [m/s]
+        Wind speed. [m/s]
 
     noct_installed : float
         The "installed" nominal operating cell temperature as defined in [1]_.
-        PVWatts assumes this value to be 45 C for rack-mounted arrays and
-        49 C for roof mount systems with restricted air flow around the
-        module.  [C]
+        [°C] PVWatts assumes this value to be 45 °C for rack-mounted arrays and
+        49 °C for roof mount systems with restricted air flow around the
+        module.
 
     module_height : float, default 5.0
-        The height above ground of the center of the module. The PVWatts
-        default is 5.0 [m]
+        The height above ground of the center of the module. [m] The PVWatts
+        default is 5.0 m.
 
     wind_height : float, default 9.144
-        The height above ground at which ``wind_speed`` is measured. The
-        PVWatts default is 9.144 [m]
+        The height above ground at which ``wind_speed`` is measured. [m] The
+        PVWatts default is 9.144 m.
 
     emissivity : float, default 0.84
         The effectiveness of the module at radiating thermal energy. [unitless]
@@ -784,23 +786,23 @@ def fuentes(poa_global, temp_air, wind_speed, noct_installed, module_height=5,
         energy in the module. [unitless]
 
     surface_tilt : float, default 30
-        Module tilt from horizontal. If not provided, the default value
-        of 30 degrees from [1]_ and [2]_ is used. [degrees]
+        Module tilt from horizontal. [°] If not provided, the default value
+        of 30° from [1]_ and [2]_ is used.
 
     module_width : float, default 0.31579
-        Module width. The default value of 0.31579 meters in combination with
-        the default `module_length` gives a hydraulic diameter of 0.5 as
-        assumed in [1]_ and [2]_. [m]
+        Module width. [m] The default value of 0.31579 m in combination with
+        the default `module_length` gives a hydraulic diameter of 0.5 m as
+        assumed in [1]_ and [2]_.
 
     module_length : float, default 1.2
-        Module length. The default value of 1.2 meters in combination with
-        the default `module_width` gives a hydraulic diameter of 0.5 as
-        assumed in [1]_ and [2]_. [m]
+        Module length. [m] The default value of 1.2 m in combination with
+        the default `module_width` gives a hydraulic diameter of 0.5 m as
+        assumed in [1]_ and [2]_.
 
     Returns
     -------
     temperature_cell : pandas Series
-        The modeled cell temperature [C]
+        The modeled cell temperature. [°C]
 
     Notes
     -----
@@ -948,47 +950,47 @@ def noct_sam(poa_global, temp_air, wind_speed, noct, module_efficiency,
     Parameters
     ----------
     poa_global : numeric
-        Total incident irradiance. [W/m^2]
+        Total incident irradiance. [Wm⁻²]
 
     temp_air : numeric
-        Ambient dry bulb temperature. [C]
+        Ambient dry bulb temperature. [°C]
 
     wind_speed : numeric
-        Wind speed in m/s measured at the same height for which the wind loss
-        factor was determined.  The default value 1.0 m/s is the wind
-        speed at module height used to determine NOCT. [m/s]
+        Wind speed measured at the same height for which the wind loss factor
+        was determined. [m/s] The default value 1.0 m/s is the wind speed at
+        module height used to determine NOCT.
 
     noct : float
-        Nominal operating cell temperature [C], determined at conditions of
-        800 W/m^2 irradiance, 20 C ambient air temperature and 1 m/s wind.
+        Nominal operating cell temperature. [°C] Determined at conditions of
+        800 Wm⁻² irradiance, 20 °C ambient air temperature and 1 m/s wind.
 
     module_efficiency : float
-        Module external efficiency [unitless] at reference conditions of
-        1000 W/m^2 and 20C. Denoted as :math:`eta_{m}` in [1]_. Calculate as
-        :math:`\eta_{m} = \frac{V_{mp} I_{mp}}{A \times 1000 W/m^2}`
-        where A is module area [m^2].
+        Module external efficiency at reference conditions of 1000 Wm⁻² and
+        20 °C. [unitless] Denoted as :math:`\eta_{m}` in [1]_. Calculate as
+        :math:`\eta_{m} = \frac{V_{mp} I_{mp}}{A \times 1000\ \text{Wm}^{-2}}`
+        where :math:`A` is module area [m²].
 
     effective_irradiance : numeric, optional
-        The irradiance that is converted to photocurrent. If not specified,
-        assumed equal to poa_global. [W/m^2]
+        The irradiance that is converted to photocurrent. [Wm⁻²] If not
+        specified, assumed equal to ``poa_global``.
 
     transmittance_absorptance : numeric, default 0.9
         Coefficient for combined transmittance and absorptance effects.
         [unitless]
 
     array_height : int, default 1
-        Height of array above ground in stories (one story is about 3m). Must
+        Height of array above ground in stories (one story is about 3 m). Must
         be either 1 or 2. For systems elevated less than one story, use 1.
         If system is elevated more than two stories, use 2.
 
     mount_standoff : numeric, default 4
-        Distance between array mounting and mounting surface. Use default
-        if system is ground-mounted. [inches]
+        Distance between array mounting and mounting surface. [inches] Use
+        default if system is ground-mounted.
 
     Returns
     -------
     cell_temperature : numeric
-        Cell temperature. [C]
+        Cell temperature. [°C]
 
     Raises
     ------
@@ -1051,23 +1053,23 @@ def prilliman(temp_cell, wind_speed, unit_mass=11.1, coefficients=None):
     Parameters
     ----------
     temp_cell : pandas.Series with DatetimeIndex
-        Cell temperature modeled with steady-state assumptions. [C]
+        Cell temperature modeled with steady-state assumptions. [°C]
 
     wind_speed : pandas.Series
-        Wind speed, adjusted to correspond to array height [m/s]
+        Wind speed, adjusted to correspond to array height. [m/s]
 
     unit_mass : float, default 11.1
-        Total mass of module divided by its one-sided surface area [kg/m^2]
-        One-sided surface area is equal to module height times width
+        Total mass of module divided by its one-sided surface area. [kgm⁻²]
+        One-sided surface area is equal to module height times width.
 
     coefficients : 4-element list-like, optional
-        Values for coefficients a_0 through a_3, see Eq. 9 of [1]_
+        Values for coefficients a_0 through a_3, see Eq. 9 of [1]_.
 
     Returns
     -------
     temp_cell : pandas.Series
-        Smoothed version of the input cell temperature. Input temperature
-        with sampling interval >= 20 minutes is returned unchanged. [C]
+        Smoothed version of the input cell temperature. [°C] Input temperature
+        with sampling interval >= 20 minutes is returned unchanged.
 
     Notes
     -----
@@ -1199,30 +1201,31 @@ def generic_linear(poa_global, temp_air, wind_speed, u_const, du_wind,
     Parameters
     ----------
     poa_global : numeric
-        Total incident irradiance [W/m^2].
+        Total incident irradiance. [Wm⁻²]
 
     temp_air : numeric
-        Ambient dry bulb temperature [C].
+        Ambient dry bulb temperature. [°C]
 
     wind_speed : numeric
-        Wind speed at a height of 10 meters [m/s].
+        Wind speed at a height of 10 meters. [m/s]
 
     u_const : float
-        Combined heat transfer coefficient at zero wind speed [(W/m^2)/C]
+        Combined heat transfer coefficient at zero wind speed. [Wm⁻²°C⁻¹]
 
     du_wind : float
-        Influence of wind speed on combined heat transfer coefficient
-        [(W/m^2)/C/(m/s)]
+        Influence of wind speed on combined heat transfer coefficient.
+        [Wm⁻²°C⁻¹(m/s)⁻¹]
 
     module_efficiency : float
-        The electrical efficiency of the module. [-]
+        The electrical efficiency of the module. [unitless]
 
     absorptance : float
-        The light absorptance of the module. [-]
+        The light absorptance of the module. [unitless]
 
     Returns
     -------
-    numeric, values in degrees C.
+    numeric
+        Cell or module temperature. [°C]
 
     References
     ----------
@@ -1266,10 +1269,10 @@ class GenericLinearModel():
     Parameters
     ----------
     module_efficiency : float
-        The electrical efficiency of the module. [-]
+        The electrical efficiency of the module. [unitless]
 
     absorptance : float
-        The light absorptance of the module. [-]
+        The light absorptance of the module. [unitless]
 
     Notes
     -----
@@ -1328,22 +1331,23 @@ class GenericLinearModel():
         Parameters
         ----------
         poa_global : numeric
-            Total incident irradiance [W/m^2].
+            Total incident irradiance. [Wm⁻²]
 
         temp_air : numeric
-            Ambient dry bulb temperature [C].
+            Ambient dry bulb temperature. [°C]
 
         wind_speed : numeric
-            Wind speed in m/s measured at the same height for which the wind
-            loss factor was determined.  [m/s]
+            Wind speed measured at the same height for which the wind loss
+            factor was determined. [m/s]
 
         module_efficiency : numeric, optional
-            Module electrical efficiency.  The default value is the one
-            that was specified initially. [-]
+            Module electrical efficiency. [unitless] The default value is the
+            one that was specified initially.
 
         Returns
         -------
-        numeric, values in degrees Celsius
+        numeric
+            Module temperature. [°C]
 
         See also
         --------

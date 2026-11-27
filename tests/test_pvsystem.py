@@ -385,6 +385,14 @@ def test_PVSystem_multi_array_first_solar_spectral_loss():
     assert loss_one == loss_two
 
 
+def test_PVSsytem_first_solar_spectral_loss_error():
+    module_parameters = {'Technology': 'Thin Film'}  # returns None
+    system = pvsystem.PVSystem(module_parameters=module_parameters)
+    with pytest.raises(ValueError,
+                       match='No parameters provided for the First Solar'):
+        system.first_solar_spectral_loss(3, 3)
+
+
 @pytest.mark.parametrize('test_input,expected', [
     ([1000, 100, 5, 45], 1140.0510967821877),
     ([np.array([np.nan, 1000, 1000]),
@@ -842,6 +850,12 @@ def test_Array__infer_cell_type():
     array = pvsystem.Array(mount=pvsystem.FixedMount(0, 180),
                            module_parameters={})
     assert array._infer_cell_type() is None
+    array = pvsystem.Array(mount=pvsystem.FixedMount(0, 180),
+                           module_parameters={'Technology': 'Thin Film'})
+    assert array._infer_cell_type() is None
+    array = pvsystem.Array(mount=pvsystem.FixedMount(0, 180),
+                           module_parameters={'Technology': 'Multi-c-Si'})
+    assert array._infer_cell_type() == 'multisi'
 
 
 def _calcparams_correct_Python_type_numeric_type_cases():

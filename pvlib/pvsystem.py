@@ -1095,7 +1095,7 @@ class Array:
 
         _cell_type_dict = {'Multi-c-Si': 'multisi',
                            'Mono-c-Si': 'monosi',
-                           'Thin Film': None,
+                           'Thin Film': None,  # mixes CIGS & CdTe GH#1984
                            'a-Si/nc': 'asi',
                            'CIS': 'cigs',
                            'CIGS': 'cigs',
